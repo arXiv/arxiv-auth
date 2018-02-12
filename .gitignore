@@ -83,6 +83,7 @@ celerybeat-schedule
 .env
 
 # virtualenv
+requirements.txt
 .venv
 venv/
 ENV/
@@ -99,3 +100,16 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+.coverage
+.DS_Store
+accounts.db
+
+# Editor files & misc
+*~
+*.idea
+*.vscode
+default.nix
+*.db
+*#*
+*.#*

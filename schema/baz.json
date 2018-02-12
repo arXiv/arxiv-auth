@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Baz",
+    "type": "object",
+    "required": [
+        "mukluk",
+        "foo"
+    ],
+    "properties": {
+        "mukluk": {
+            "description": "The unique identifier for the baz.",
+            "type": "integer"
+        },
+        "foo": {
+            "description": "Some additional foo.",
+            "type": "string"
+        }
+    }
+}
