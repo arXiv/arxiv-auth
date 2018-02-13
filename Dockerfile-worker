@@ -1,21 +1,7 @@
-# arxiv/accounts
+# arxiv/accounts-worker
 
-FROM ubuntu:zesty
+FROM arxiv/base:latest
 
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    wget \
-    gcc \
-    g++ \
-    libpython3.6 \
-    python3.6 \
-    python3.6-dev \
-    python3.6-venv \
-    git \
- && rm -rf /var/lib/apt/lists/*
-
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN python3.6 get-pip.py
 ADD requirements/prod.txt /opt/arxiv/requirements.txt
 RUN pip install -U pip && pip install -r /opt/arxiv/requirements.txt
 

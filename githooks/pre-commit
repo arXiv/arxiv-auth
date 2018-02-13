@@ -1,0 +1,7 @@
+#!/bin/sh
+
+$(pipenv lock -r    > "${GIT_DIR}/../requirements/prod.txt")
+$(git add "${GIT_DIR}/../requirements/prod.txt")
+
+$(pipenv lock -r -d > "${GIT_DIR}/../requirements/dev.txt")
+$(git add "${GIT_DIR}/../requirements/dev.txt")

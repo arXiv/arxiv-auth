@@ -4,7 +4,6 @@ requests==2.18.4
 SQLAlchemy==1.1.15
 uWSGI==2.0.15
 PyJWT==1.5.3
--e git+git://github.com/cul-it/arxiv-base-ui.git@develop#egg=arxiv-base-ui
 coverage==4.4.2
 mypy==0.550
 nose2==0.7.2
@@ -14,3 +13,4 @@ coveralls==1.2.0
 celery==4.1.0
 redis==2.10.6
 pydocstyle==2.1.1
+arxiv-base>=0.1.3

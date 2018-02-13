@@ -1,17 +1,21 @@
 # arxiv/accounts
 
-FROM 626657773168.dkr.ecr.us-east-1.amazonaws.com/arxiv/base:latest
+FROM arxiv/base:latest
 
-ADD requirements/prod.txt /opt/arxiv/requirements.txt
-RUN pip install -U pip && pip install -r /opt/arxiv/requirements.txt
+WORKDIR /opt/arxiv/
+
+RUN yum install -y which
+ADD Pipfile Pipfile.lock /opt/arxiv/
+RUN pip install -U pip pipenv
+ENV LC_ALL en_US.utf-8
+ENV LANG en_US.utf-8
+RUN pipenv install
 
 ENV PATH "/opt/arxiv:${PATH}"
 
-ADD wsgi.py /opt/arxiv/
-ADD uwsgi.ini /opt/arxiv/uwsgi.ini
+ADD wsgi.py uwsgi.ini /opt/arxiv/
 ADD accounts/ /opt/arxiv/accounts/
 
 EXPOSE 8000
 
-WORKDIR /opt/arxiv/
-CMD uwsgi --ini uwsgi.ini
+CMD pipenv run uwsgi --ini uwsgi.ini

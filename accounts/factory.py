@@ -9,7 +9,7 @@ from accounts import celeryconfig
 from accounts.routes import external_api, ui
 from accounts.services import baz, things
 from accounts.encode import ISO8601JSONEncoder
-from baseui import BaseUI
+from arxiv.base import Base
 
 celery_app = Celery(__name__, results=celeryconfig.result_backend,
                     broker=celeryconfig.broker_url)
@@ -24,7 +24,7 @@ def create_web_app() -> Flask:
     baz.init_app(app)
     things.init_app(app)
 
-    BaseUI(app)    # Gives us access to the base UI templates and resources.
+    Base(app)    # Gives us access to the base UI templates and resources.
     app.register_blueprint(external_api.blueprint)
     app.register_blueprint(ui.blueprint)
 

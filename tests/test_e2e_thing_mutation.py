@@ -2,6 +2,8 @@
 
 from unittest import TestCase, mock
 import json
+import tempfile
+import shutil
 import os
 import jwt
 import time
@@ -41,8 +43,8 @@ class TestCreateAndMutate(TestCase):
 
         # Use an in-memory queue, and an on-disk SQLite DB for results.
         celery_app.conf.broker_url = 'memory://localhost/'
-        os.mkdir('/tmp/results')
-        celery_app.conf.result_backend = 'file:///tmp/results'
+        self.temppath = tempfile.mkdtemp()
+        celery_app.conf.result_backend = f'file://{self.temppath}'
         celery_app.conf.worker_prefetch_multiplier = 1
         celery_app.conf.task_acks_late = True
         celery_app.conf.task_always_eager = False
@@ -57,9 +59,10 @@ class TestCreateAndMutate(TestCase):
         t.start()
 
     def tearDown(self) -> None:
-        """Clear the database and tear down all tables."""
+        """Clear the database and tear down all tables, clean up filesystem."""
         self.things.db.session.remove() # type: ignore
         self.things.db.drop_all() # type: ignore
+        shutil.rmtree(self.temppath)
 
     def test_create_a_thing_and_mutate_it(self) -> None:
         """Create and mutate a thing via the API."""
