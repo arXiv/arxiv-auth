@@ -1,6 +1,6 @@
 [![Build Status](https://img.shields.io/travis/cul-it/arxiv-accounts/master.svg)](https://travis-ci.org/cul-it/arxiv-accounts) [![Coverage Status](https://img.shields.io/coveralls/github/cul-it/arxiv-accounts/master.svg)](https://coveralls.io/github/cul-it/arxiv-accounts?branch=master)
 
-# arXiv Zero
+# arXiv Accounts
 
 This is a sample project for a microservice implemented in Flask, as part of
 arXiv-NG. The goal of this project is to demonstrate the layout of a
@@ -52,10 +52,11 @@ Sometimes Docker adds more overhead than you want, especially when making quick
 changes. We assume your developer machine already has a version of Python 3.6
 with `pip`.
 
-1.  `pip install -r requirements/dev.txt`
-2.  `FLASK_APP=app.py python populate_test_database.py`
-3.  `FLASK_APP=app.py FLASK_DEBUG=1 flask run`
-4.  Test that the app is working: http://localhost:5000/accounts/api/status
+1.  `pip install pipenv && pipenv install --dev`
+2.  `pip-env shell` 
+3.  `FLASK_APP=app.py python populate_test_database.py`
+4.  `FLASK_APP=app.py FLASK_DEBUG=1 flask run`
+5.  Test that the app is working: http://localhost:5000/accounts/api/status
 
 #### Notes on the development server
 
