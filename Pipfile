@@ -7,7 +7,7 @@ name = "pypi"
 
 [packages]
 
-arxiv-base = "*"
+arxiv-base = "==0.2.2"
 celery = "*"
 flask = "*"
 flask-sqlalchemy = "*"
@@ -17,6 +17,10 @@ redis = "*"
 requests = "*"
 sqlalchemy = "*"
 uwsgi = "*"
+"nose2" = "*"
+coverage = "*"
+coveralls = "*"
+mypy = "*"
 
 
 [dev-packages]
