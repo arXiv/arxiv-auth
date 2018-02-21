@@ -3,6 +3,8 @@ sudo: required
 services:
   - docker
 cache: pip
+env:
+  - MIN_SCORE=9
 os:
   - linux
 python:
