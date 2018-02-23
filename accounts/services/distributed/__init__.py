@@ -10,7 +10,11 @@ from accounts.context import get_application_config, get_application_global
 
 
 class SessionCreationFailed(RuntimeError):
-    """Failed to create a session in the distributed session store."""
+    """Failed to create a session in the session store."""
+
+
+class SessionDeletionFailed(RuntimeError):
+    """Failed to delete a session in the session store."""
 
 
 class RedisSession(object):
@@ -61,6 +65,21 @@ class RedisSession(object):
             raise SessionCreationFailed(f'Failed to create: {e}') from e
         return SessionData(session_id, data)
 
+    def delete_session(self, session_id: str) -> None:
+        """
+        Delete a session in the key-value store.
+
+        Parameters
+        ----------
+        session_id : str
+        """
+        try:
+            self.r.delete(session_id)
+        except redis.exceptions.ConnectionError as e:
+            raise SessionDeletionFailed(f'Connection failed: {e}') from e
+        except Exception as e:
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
+
 
 def init_app(app: object = None) -> None:
     """Set default configuration parameters for an application instance."""
@@ -103,3 +122,15 @@ def create_session(user_data: UserData) -> SessionData:
     :class:`.SessionData`
     """
     return current_session().create_session(user_data)
+
+
+@wraps(RedisSession.create_session)
+def delete_session(session_id: str) -> None:
+    """
+    Delete a session in the key-value store.
+
+    Parameters
+    ----------
+    session_id : str
+    """
+    return current_session().delete_session(session_id)
