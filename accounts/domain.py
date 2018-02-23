@@ -11,6 +11,11 @@ class UserData(NamedTuple):
     end_time: int
     last_reissue: int
 
+    # Tracking information.
+    ip_address: str
+    remote_host: str
+    tracking_cookie: str
+
     # For distributed session.
     user_name: str
     user_email: str

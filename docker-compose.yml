@@ -6,30 +6,9 @@ services:
     container_name: accounts-test-redis
     networks:
       - accounts-test
-  accounts-worker:
-    build:
-      context: .
-      dockerfile: Dockerfile-worker
-    environment:
-      REDIS_ENDPOINT: "accounts-test-redis:6379"
-    networks:
-      - accounts-test
-    depends_on:
-      - accounts-test-redis
-  accounts-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: accounts-api
-    environment:
-      REDIS_ENDPOINT: "accounts-test-redis:6379"
     ports:
-      - "8003:8000"
-    networks:
-      - accounts-test
-    depends_on:
-      - accounts-test-redis
-      - accounts-worker
+      - '127.0.0.1:6379:6379'
+
 
 networks:
   accounts-test:
