@@ -31,6 +31,16 @@ class TestDistributedSessionService(TestCase):
         self.assertIsInstance(session, SessionData)
         self.assertTrue(bool(session.session_id))
         self.assertTrue(bool(session.data))
+        self.assertEqual(mock_redis_connection.set.call_count, 1)
+
+    @mock.patch('accounts.services.distributed.redis')
+    def test_delete_session(self, mock_redis):
+        """Delete a session from the datastore."""
+        mock_redis_connection = mock.MagicMock()
+        mock_redis.StrictRedis.return_value = mock_redis_connection
+        r = distributed.RedisSession('localhost', 6379, 0)
+        r.delete_session('fookey')
+        self.assertEqual(mock_redis_connection.delete.call_count, 1)
 
     @mock.patch('accounts.services.distributed.redis')
     def test_connection_failed(self, mock_redis):
