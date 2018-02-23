@@ -1,3 +1,5 @@
+"""Defines the core data structures for the arxiv-accounts service."""
+
 from typing import Any, Optional, Type, NamedTuple, List
 
 
