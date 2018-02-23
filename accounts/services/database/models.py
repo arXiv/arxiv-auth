@@ -1,6 +1,6 @@
 """arXiv accounts database models."""
 from sqlalchemy import BigInteger, Column, DateTime, Enum, \
-    ForeignKey, Index, Integer, String, text
+    ForeignKey, Index, Integer, SmallInteger, String, Text, text
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy, Model
 from typing import Any, NewType
@@ -10,7 +10,7 @@ dbx: SQLAlchemy = SQLAlchemy()
 
 
 class TapirSession(dbx.Model):
-    """Legacy arXiv session table:
+    '''Legacy arXiv session table:
         +--------------+-----------------+------+-----+---------+----------------+
         | Field        | Type            | Null | Key | Default | Extra          |
         +--------------+-----------------+------+-----+---------+----------------+
@@ -20,17 +20,17 @@ class TapirSession(dbx.Model):
         | start_time     | int(11)                | NO   | MUL | 0           |                |
         | end_time      | int(11)                | NO   | MUL | 0           |                |
         +--------------+-----------------+------+-----+---------+----------------+
-    """
+    '''
     
-        __tablename__ = 'tapir_sessions'
+    __tablename__ = 'tapir_sessions'
 
-        session_id = Column(Integer, primary_key=True)
-        user_id = Column(ForeignKey('tapir_users.user_id'), nullable=False, index=True, server_default=text("'0'"))
-        last_reissue = Column(Integer, nullable=False, server_default=text("'0'"))
-        start_time = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
-        end_time = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
+    session_id = Column(Integer, primary_key=True)
+    user_id = Column(ForeignKey('tapir_users.user_id'), nullable=False, index=True, server_default=text("'0'"))
+    last_reissue = Column(Integer, nullable=False, server_default=text("'0'"))
+    start_time = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
+    end_time = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
 
-        user = relationship('TapirUser')
+    user = relationship('TapirUser')
 
 
 ''' class TapirSessionsAudit(TapirSession):
@@ -43,8 +43,8 @@ class TapirSession(dbx.Model):
  '''
 
 class TapirUser(dbx.Model):
-         """Legacy table that is a foreign key depency of TapirSession"""
-         __tablename__ = 'tapir_users'
+    """Legacy table that is a foreign key depency of TapirSession"""
+    __tablename__ = 'tapir_users'
 
     user_id = Column(Integer, primary_key=True)
     first_name = Column(String(50), index=True)
@@ -71,8 +71,9 @@ class TapirUser(dbx.Model):
     tracking_cookie = Column(String(255), nullable=False, index=True, server_default=text("''"))
     flag_allow_tex_produced = Column(Integer, nullable=False, server_default=text("'0'"))
 
- class TapirPolicyClass(dbx.Model):
-     """Legacy table that is a foreign key depency of TapirUse, which is itself a dependency of TapirSession"""
+
+class TapirPolicyClass(dbx.Model):
+    """Legacy table that is a foreign key depency of TapirUse, which is itself a dependency of TapirSession"""
 
     __tablename__ = 'tapir_policy_classes'
 
