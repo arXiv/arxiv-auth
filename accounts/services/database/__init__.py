@@ -18,7 +18,9 @@ def get_session(id: int) -> Optional[TapirSession]:
     try:
 
         # session.query(User).filter(User.name.in_(['ed', 'fakeuser'])).all()
-        session: TapirSession = db.session.query(TapirSession).filter(TapirSession.session_id.in_([id])).one()
+        session: TapirSession = db.session.query(TapirSession) \
+            .filter(TapirSession.session_id.in_([id])) \
+            .one()
 
         return session
     except NoResultFound:
