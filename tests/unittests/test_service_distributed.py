@@ -11,7 +11,7 @@ class TestDistributedSessionService(TestCase):
 
     @mock.patch('accounts.services.distributed.redis')
     def test_create_session(self, mock_redis):
-        """Accepts a :class:`.UserData` and returns a :class:`.SessionData`."""
+        """Accept a :class:`.UserData` and returns a :class:`.SessionData`."""
         mock_redis_connection = mock.MagicMock()
         mock_redis.StrictRedis.return_value = mock_redis_connection
 

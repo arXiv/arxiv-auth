@@ -4,7 +4,7 @@
 # routes mapped out.
 
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any
 from arxiv import status
 from .forms import LoginForm
 
@@ -22,7 +22,7 @@ def post_login(form_data: dict, ip_address: str) -> Tuple[dict, int, dict]:
     if form.validate_on_submit():
         code = status.HTTP_303_SEE_OTHER
 
-    data = {'form': form}
+    data: Dict[str, Any] = {'form': form}
     # TODO: hook this up to session services.
     data['session_id'] = 'foo_session'
     data['tapir_session_id'] = 'tapir_foo_session'
