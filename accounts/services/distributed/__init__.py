@@ -38,7 +38,7 @@ class RedisSession(object):
         -------
         :class:`.SessionData`
         """
-        session_id = uuid.uuid4()
+        session_id = str(uuid.uuid4())
         data = json.dumps({
             'user_id': user_data.user_id,
             'user_name': user_data.user_name,
@@ -81,14 +81,14 @@ def get_session(app: object = None) -> RedisSession:
     return RedisSession(host, port, database)
 
 
-def current_session():
+def current_session() -> RedisSession:
     """Get/create :class:`.SearchSession` for this context."""
     g = get_application_global()
     if not g:
         return get_session()
     if 'redis' not in g:
-        g.redis = get_session()
-    return g.redis
+        g.redis = get_session()     # type: ignore
+    return g.redis      # type: ignore
 
 
 @wraps(RedisSession.create_session)

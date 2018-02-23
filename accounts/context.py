@@ -8,10 +8,9 @@ import werkzeug
 
 from typing import Optional
 
-# TODO for typing: not sure what the type of Flask.config is, 
-# TODO or why 'g' should have type LocalProxy
 
-def get_application_config(app: Optional[Flask] = None) -> Union[dict, os._Environ]:
+def get_application_config(app: Optional[Flask] = None) \
+        -> Union[dict, os._Environ]:
     """
     Get a configuration from the current app, or fall back to env.
 
@@ -27,9 +26,9 @@ def get_application_config(app: Optional[Flask] = None) -> Union[dict, os._Envir
     """
     if app is not None:
         if isinstance(app, Flask):
-            return app.config # type: ignore 
+            return app.config # type: ignore
     if flask_app:    # Proxy object; falsey if there is no application context.
-        return flask_app.config # type: ignore 
+        return flask_app.config # type: ignore
     return os.environ
 
 
@@ -42,5 +41,5 @@ def get_application_global() -> Optional[werkzeug.local.LocalProxy]:
     proxy or None
     """
     if g:
-        return g # type: ignore 
+        return g # type: ignore
     return None

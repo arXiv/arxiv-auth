@@ -14,8 +14,8 @@ AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
 LOGFILE = os.environ.get('LOGFILE')
 LOGLEVEL = os.environ.get('LOGLEVEL', 20)
 
-SQLALCHEMY_DATABASE_URI = os.environ.get('ZERO_SQLALCHEMY_DATABASE_URI',
-                                         'sqlite:///accounts.db')
-SQLALCHEMY_TRACK_MODIFICATIONS = False
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
+REDIS_DATABASE = os.environ.get('REDIS_DATABASE', '0')
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
