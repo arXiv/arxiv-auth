@@ -21,6 +21,7 @@ uwsgi = "*"
 coverage = "*"
 coveralls = "*"
 mypy = "*"
+flask-wtf = "*"
 
 
 [dev-packages]

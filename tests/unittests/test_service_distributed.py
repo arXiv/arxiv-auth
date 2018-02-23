@@ -22,7 +22,6 @@ class TestDistributedSessionService(TestCase):
             last_reissue=0,
             ip_address='127.0.0.1',
             remote_host='foo-host.foo.com',
-            tracking_cookie='4cbb1ae93066982df8a016277b245e65fa726afa',
             user_name='theuser',
             user_email='the@user.com',
             scopes=['foo:write']
@@ -47,7 +46,6 @@ class TestDistributedSessionService(TestCase):
             last_reissue=0,
             ip_address='127.0.0.1',
             remote_host='foo-host.foo.com',
-            tracking_cookie='4cbb1ae93066982df8a016277b245e65fa726afa',
             user_name='theuser',
             user_email='the@user.com',
             scopes=['foo:write']
