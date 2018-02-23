@@ -4,7 +4,6 @@ from functools import wraps
 import uuid
 import redis
 import json
-import jwt
 
 from accounts.domain import UserData, SessionData
 from accounts.context import get_application_config, get_application_global
@@ -23,12 +22,9 @@ class RedisSession(object):
     container for configuration.
     """
 
-    def __init__(self, host: str, port: int, database: int,
-                 secret: str) \
-            -> None:
+    def __init__(self, host: str, port: int, database: int) -> None:
         """Open the connection to Redis."""
         self.r = redis.StrictRedis(host=host, port=port, db=database)
-        self.secret = secret
 
     def create_session(self, user_data: UserData) -> SessionData:
         """
@@ -43,7 +39,7 @@ class RedisSession(object):
         :class:`.SessionData`
         """
         session_id = uuid.uuid4()
-        data = jwt.encode({
+        data = json.dumps({
             'user_id': user_data.user_id,
             'user_name': user_data.user_name,
             'user_email': user_data.user_email,
@@ -56,7 +52,7 @@ class RedisSession(object):
             'tracking_cookie': user_data.tracking_cookie,
 
             'scopes': user_data.scopes
-        }, self.secret)
+        })
 
         try:
             self.r.set(session_id, data)
@@ -74,7 +70,6 @@ def init_app(app: object = None) -> None:
     config.setdefault('REDIS_HOST', 'localhost')
     config.setdefault('REDIS_PORT', '6379')
     config.setdefault('REDIS_DATABASE', '0')
-    config.setdefault('JWT_SECRET', 'foosecret')
 
 
 def get_session(app: object = None) -> RedisSession:
@@ -83,8 +78,7 @@ def get_session(app: object = None) -> RedisSession:
     host = config.get('REDIS_HOST', 'localhost')
     port = int(config.get('REDIS_PORT', '6379'))
     database = int(config.get('REDIS_DATABASE', '0'))
-    secret = config.get('JWT_SECRET', 'foosecret')
-    return RedisSession(host, port, database, secret)
+    return RedisSession(host, port, database)
 
 
 def current_session():

@@ -54,6 +54,6 @@ class TestDistributedSessionServiceIntegration(TestCase):
         # Are the expected values stored in Redis?
         r = redis.StrictRedis(host='localhost', port=6379, db=0)
         raw = r.get(session.session_id)
-        stored_data = jwt.decode(raw, distributed.current_session().secret)
+        stored_data = json.loads(raw)
         self.assertEqual(user_data.end_time, stored_data['end_time'])
         self.assertDictEqual(user_data._asdict(), stored_data)

@@ -27,7 +27,7 @@ class TestDistributedSessionService(TestCase):
             user_email='the@user.com',
             scopes=['foo:write']
         )
-        r = distributed.RedisSession('localhost', 6379, 0, 'foo')
+        r = distributed.RedisSession('localhost', 6379, 0)
         session = r.create_session(user_data)
         self.assertIsInstance(session, SessionData)
         self.assertTrue(bool(session.session_id))
@@ -52,6 +52,6 @@ class TestDistributedSessionService(TestCase):
             user_email='the@user.com',
             scopes=['foo:write']
         )
-        r = distributed.RedisSession('localhost', 6379, 0, 'foo')
+        r = distributed.RedisSession('localhost', 6379, 0)
         with self.assertRaises(distributed.SessionCreationFailed):
             r.create_session(user_data)
