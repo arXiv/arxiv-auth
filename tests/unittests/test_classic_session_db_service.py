@@ -11,14 +11,23 @@ from typing import Optional
 DATABASE_URL = 'sqlite:///:memory:'
 
 
-class TestGetTapirSession(TestCase):
-    """:func:`.get_session` gets a session given a session_id."""
+class TestTapirSession(TestCase):
+    """
+    Test the following database methods:
+
+    :func:`.get_session` gets a session given a session_id.
+    """
 
     def setUp(self) -> None:
-        """Initialize a database session with in-memory SQLite."""
+        """
+        Initialize a database session with in-memory SQLite and creates a
+        session entry.
+        """
+
         mock_app = mock.MagicMock()
         mock_app.config = {'SQLALCHEMY_DATABASE_URI': DATABASE_URL,
-                           'SQLALCHEMY_TRACK_MODIFICATIONS': False}
+                           'SQLALCHEMY_TRACK_MODIFICATIONS': False
+        }
 
         mock_app.extensions = {}
         mock_app.root_path = ''
