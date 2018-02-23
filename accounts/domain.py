@@ -23,4 +23,4 @@ class SessionData(NamedTuple):
     """Data returned by the session store upon successful creation."""
 
     session_id: str
-    cookie_data: str
+    data: str
