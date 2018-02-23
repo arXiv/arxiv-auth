@@ -124,7 +124,7 @@ def create_session(user_data: UserData) -> SessionData:
     return current_session().create_session(user_data)
 
 
-@wraps(RedisSession.create_session)
+@wraps(RedisSession.delete_session)
 def delete_session(session_id: str) -> None:
     """
     Delete a session in the key-value store.
