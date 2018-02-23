@@ -11,9 +11,8 @@ python:
   - "3.6"
 script:
   - pip install pipenv
-  - pip install -r requirements/test.txt
   - ./lintstats.sh
   - ./tests/docker_tests.sh
-  - nose2
+  - pipenv run nose2
 after_success:
   - coveralls

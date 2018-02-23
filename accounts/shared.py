@@ -12,5 +12,5 @@ def url_for(endpoint: str, **values: dict) -> Any:
     """
     try:
         return flask_url_for(endpoint, **values)
-    except RuntimeError as e:
+    except RuntimeError:
         return endpoint

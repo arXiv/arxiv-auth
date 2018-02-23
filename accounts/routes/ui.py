@@ -51,3 +51,4 @@ def logout():  # type: ignore
         response.set_cookie('ARXIVNG_SESSION_ID', '', expires=0)
         response.set_cookie('tapir_session', '', expires=0)
         return response
+    return redirect(url_for('get_login'), code=status.HTTP_302_FOUND)

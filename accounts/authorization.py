@@ -1,10 +1,11 @@
 """A minimal example of scope-based authorization with JWT."""
 
 from functools import wraps
+from typing import Any, Callable, Dict, Tuple
+
 from flask import request, current_app, jsonify
 import jwt
 
-from typing import Any, Callable, Dict, Tuple
 
 INVALID_TOKEN = {'reason': 'Invalid authorization token'}
 INVALID_SCOPE = {'reason': 'Token not authorized for this action'}
