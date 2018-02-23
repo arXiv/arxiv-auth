@@ -11,6 +11,7 @@ python:
   - "3.6"
 script:
   - pip install pipenv
+  - pipenv install --dev
   - ./lintstats.sh
   - ./tests/docker_tests.sh
   - pipenv run nose2
