@@ -1,12 +1,10 @@
 """Helpers for working with Flask globals."""
 
 import os
-from typing import Union
+from typing import Union, Optional
 from flask import g, Flask
 from flask import current_app as flask_app
 import werkzeug
-
-from typing import Optional
 
 
 def get_application_config(app: Optional[Flask] = None) \

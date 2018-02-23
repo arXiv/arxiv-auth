@@ -1,6 +1,6 @@
 # Check pylint status
 if [ -z ${MIN_SCORE} ]; then MIN_SCORE="9"; fi
-PYLINT_SCORE=$( pipenv run pylint accounts | tail -2 | grep -Eo '[0-9\.]+/10' | tail -1 | sed s/\\/10// )
+PYLINT_SCORE=$( pipenv run pylint accounts --rcfile=./.pylintrc | tail -2 | grep -Eo '[0-9\.]+/10' | tail -1 | sed s/\\/10// )
 PYLINT_PASS=$(echo $PYLINT_SCORE">="$MIN_SCORE | bc -l)
 
 if [ "$TRAVIS_PULL_REQUEST_SHA" = "" ];  then SHA=$TRAVIS_COMMIT; else SHA=$TRAVIS_PULL_REQUEST_SHA; fi

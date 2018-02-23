@@ -49,7 +49,6 @@ class RedisSession(object):
             'last_reissue': user_data.last_reissue,
             'ip_address': user_data.ip_address,
             'remote_host': user_data.remote_host,
-            'tracking_cookie': user_data.tracking_cookie,
 
             'scopes': user_data.scopes
         })
@@ -60,7 +59,6 @@ class RedisSession(object):
             raise SessionCreationFailed(f'Connection failed: {e}') from e
         except Exception as e:
             raise SessionCreationFailed(f'Failed to create: {e}') from e
-
         return SessionData(session_id, data)
 
 

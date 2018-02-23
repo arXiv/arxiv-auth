@@ -1,3 +1,4 @@
+"""Configuration for arxiv-accounts documentation build."""
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #

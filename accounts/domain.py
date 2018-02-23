@@ -14,7 +14,6 @@ class UserData(NamedTuple):
     # Tracking information.
     ip_address: str
     remote_host: str
-    tracking_cookie: str
 
     # For distributed session.
     user_name: str
