@@ -19,6 +19,8 @@ class TestTapirSession(TestCase):
     :func:`.get_session` gets a session given a session_id.
     """
 
+    init_session_id: int = 424242424
+
     def setUp(self) -> None:
         """
         Initialize a database session with in-memory SQLite and creates a
@@ -38,7 +40,7 @@ class TestTapirSession(TestCase):
         database.db.create_all()
         issue_time =  int(time.time())
         inst_some_user1 = database.models.TapirSession(
-            session_id = 424242424,
+            session_id = self.init_session_id,
             user_id= 12345,
             last_reissue = issue_time,
             start_time = issue_time,
@@ -48,10 +50,14 @@ class TestTapirSession(TestCase):
 
     def test_get_session_returns_a_session(self) -> None:
         """If session_id matches a known session, a session is returned."""
-        session: Optional[TapirSession] = database.get_session(424242424)
-        self.assertIsNotNone(session, 'verifying we have a session')
-        if session is not None:
-            self.assertEqual(session.session_id, 424242424, "Returned session has correct session id.")
+        tapir_session: Optional[TapirSession] = database.get_session(self.init_session_id)
+        self.assertIsNotNone(tapir_session, 'verifying we have a session')
+        if tapir_session is not None:
+            self.assertEqual(
+                tapir_session.session_id, 
+                self.init_session_id, 
+                "Returned session has correct session id."
+            )
 
     def test_create_session(self):
         """Accepts a :class:`.UserData` and returns a :class:`.SessionData`."""
@@ -71,8 +77,37 @@ class TestTapirSession(TestCase):
         session = database.create_session(user_data)
         self.assertIsInstance(session, SessionData)
         self.assertIsNotNone(session, 'verifying we have a session')
-        print(f"session id returned is ${session.session_id}")
-        self.assertTrue(session.session_id == 0)
+        self.assertTrue(session.session_id == self.init_session_id + 1)
+
+        tapir_session: Optional[TapirSession] = database.get_session(session.session_id)
+        self.assertIsNotNone(session, 'verifying we have a session')
+        if tapir_session is not None:
+            self.assertEqual(
+                tapir_session.session_id, 
+                session.session_id, 
+                "Returned session has correct session id."
+            )
+            self.assertEqual(
+                tapir_session.user_id, 
+                user_data.user_id, 
+                "Returned session has correct user id."
+            )
+            self.assertEqual(
+                tapir_session.last_reissue, 
+                int(user_data.last_reissue), 
+                "Returned session has correct last_reissue time."
+            )
+            self.assertEqual(
+                tapir_session.start_time, 
+                int(user_data.start_time), 
+                "Returned session has correct start time."
+            )
+            self.assertEqual(
+                tapir_session.end_time, 
+                int(user_data.end_time), 
+                "Returned session has correct end time."
+            )
+
         self.assertTrue(bool(session.data))
         
     def tearDown(self) -> None:

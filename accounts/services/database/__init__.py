@@ -49,8 +49,10 @@ def create_session(user_data: UserData) -> SessionData:
 
     tapir_session: TapirSession = TapirSession(
         user_id = user_data.user_id,
-        last_reissue = int(user_data.start_time),
-        start_time = int(user_data.start_time) )
+        last_reissue = int(user_data.last_reissue),
+        start_time = int(user_data.start_time),
+        end_time = int(user_data.end_time)
+    )
 
     data = json.dumps({
         'user_id': user_data.user_id,
@@ -69,6 +71,7 @@ def create_session(user_data: UserData) -> SessionData:
 
     try:
         db.session.add(tapir_session)
+        db.session.commit()
     except Exception as e:
         raise SessionCreationFailed(f'Failed to create: {e}') from e
 
