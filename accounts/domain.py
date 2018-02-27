@@ -30,3 +30,10 @@ class SessionData(NamedTuple):
 
     session_id: str
     data: str
+
+class SessionCreationFailed(RuntimeError):
+    """Failed to create a session in the distributed session store."""    
+
+class SessionDeletionFailed(RuntimeError):
+    """Failed to delete a session in the session store."""
+    

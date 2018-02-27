@@ -5,17 +5,8 @@ import uuid
 import redis
 import json
 
-from accounts.domain import UserData, SessionData
+from accounts.domain import UserData, SessionData, SessionCreationFailed, SessionDeletionFailed
 from accounts.context import get_application_config, get_application_global
-
-
-class SessionCreationFailed(RuntimeError):
-    """Failed to create a session in the session store."""
-
-
-class SessionDeletionFailed(RuntimeError):
-    """Failed to delete a session in the session store."""
-
 
 class RedisSession(object):
     """

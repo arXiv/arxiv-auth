@@ -8,25 +8,22 @@ from typing import Any, NewType
 dbx: SQLAlchemy = SQLAlchemy()
 
 
-
 class TapirSession(dbx.Model):
-    """
-    Legacy arXiv session table.
-
-    +--------------+-----------------+------+-----+---------+----------------+
-    | Field        | Type            | Null | Key | Default | Extra          |
-    +--------------+-----------------+------+-----+---------+----------------+
-    | session_id   | int(4) unsigned | NO   | PRI | NULL    | auto_increment |
-    | user_id      | int(4) unsigned | NO   | MUL | 0       |                |
-    | last_reissue | int(11)         | NO   |     | 0       |                |
-    | start_time   | int(11)         | NO   | MUL | 0       |                |
-    | end_time     | int(11)         | NO   | MUL | 0       |                |
-    +--------------+-----------------+------+-----+---------+----------------+
+    """Legacy arXiv session table:
+        +----------------+-----------------+------+-------+---------+----------------+
+        | Field          | Type            | Null | Key   | Default | Extra          |
+        +----------------+-----------------+------+-------+---------+----------------+
+        | session_id     | int(4) unsigned | NO   | PRI   | NULL    | auto_increment |
+        | user_id        | int(4) unsigned | NO   | MUL   | 0       |                |
+        | last_reissue   | int(11)         | NO   |       | 0       |                |
+        | start_time     | int(11)         | NO   | MUL   | 0       |                |
+        | end_time       | int(11)         | NO   | MUL   | 0       |                |
+        +--------------+-------------------+------+-------+---------+----------------+
     """
 
     __tablename__ = 'tapir_sessions'
 
-    session_id = Column(Integer, primary_key=True)
+    session_id = Column(Integer, primary_key=True, autoincrement="auto")
     user_id = Column(ForeignKey('tapir_users.user_id'), nullable=False, index=True, server_default=text("'0'"))
     last_reissue = Column(Integer, nullable=False, server_default=text("'0'"))
     start_time = Column(Integer, nullable=False, index=True, server_default=text("'0'"))

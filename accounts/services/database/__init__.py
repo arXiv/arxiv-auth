@@ -1,12 +1,18 @@
 """Import db instance and define utility functions."""
 
+import calendar
+from datetime import datetime
 import ipaddress
+import json
 from accounts.services.database.models import dbx
 from accounts.services.database.models import TapirSession
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from flask_sqlalchemy import SQLAlchemy
+
+from accounts.domain import UserData, SessionData, SessionCreationFailed
+from accounts.context import get_application_config, get_application_global
 
 from typing import Optional
 
@@ -28,39 +34,42 @@ def get_session(id: int) -> Optional[TapirSession]:
     except SQLAlchemyError as e:
         raise IOError('Database error: %s' % e) from e
 
-    def create_session(self, user_data: UserData) -> SessionData:
-        """
-        Create a new legacy session.
+def create_session(user_data: UserData) -> SessionData:
+    """
+    Create a new legacy session.
 
-        Parameters
-        ----------
-        user_data : :class:`.UserData`
+    Parameters
+    ----------
+    user_data : :class:`.UserData`
 
-        Returns
-        -------
-        :class:`.SessionData`
-        """
-        session_id = str(uuid.uuid4()) # need to see how integer is created in Auth.pm
-        data = json.dumps({
-            'user_id': user_data.user_id,
-            'user_name': user_data.user_name,
-            'user_email': user_data.user_email,
+    Returns
+    -------
+    :class:`.SessionData`
+    """
 
-            'start_time': user_data.start_time,
-            'end_time': user_data.end_time,
-            'last_reissue': user_data.last_reissue,
-            'ip_address': user_data.ip_address,
-            'remote_host': user_data.remote_host,
-            'tracking_cookie': user_data.tracking_cookie,
+    tapir_session: TapirSession = TapirSession(
+        user_id = user_data.user_id,
+        last_reissue = int(user_data.start_time),
+        start_time = int(user_data.start_time) )
 
-            'scopes': user_data.scopes
-        })
+    data = json.dumps({
+        'user_id': user_data.user_id,
+        'user_name': user_data.user_name,
+        'user_email': user_data.user_email,
 
-        try:
-            self.r.set(session_id, data)
-        except redis.exceptions.ConnectionError as e:
-            raise SessionCreationFailed(f'Connection failed: {e}') from e
-        except Exception as e:
-            raise SessionCreationFailed(f'Failed to create: {e}') from e
+        'start_time': user_data.start_time,
+        'end_time': user_data.end_time,
+        'last_reissue': user_data.last_reissue,
+        'ip_address': user_data.ip_address,
+        'remote_host': user_data.remote_host,
+        'tracking_cookie': user_data.tracking_cookie,
 
-        return SessionData(session_id, data)
+        'scopes': user_data.scopes
+    })
+
+    try:
+        db.session.add(tapir_session)
+    except Exception as e:
+        raise SessionCreationFailed(f'Failed to create: {e}') from e
+
+    return SessionData(tapir_session.session_id, data)
