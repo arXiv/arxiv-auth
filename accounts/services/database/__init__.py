@@ -1,7 +1,5 @@
 """Import db instance and define utility functions."""
 
-import calendar
-from datetime import datetime
 import ipaddress
 import json
 from accounts.services.database.models import dbx
