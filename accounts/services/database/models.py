@@ -9,7 +9,9 @@ dbx: SQLAlchemy = SQLAlchemy()
 
 
 class TapirSession(dbx.Model):
-    """Legacy arXiv session table:
+    """
+    Legacy arXiv session table.
+
         +----------------+-----------------+------+-------+---------+----------------+
         | Field          | Type            | Null | Key   | Default | Extra          |
         +----------------+-----------------+------+-------+---------+----------------+
@@ -33,6 +35,8 @@ class TapirSession(dbx.Model):
 
 
 class TapirSessionsAudit(TapirSession):
+    """Legacy arXiv session audit table. Notably has a tracking cookie."""
+
     __tablename__ = 'tapir_sessions_audit'
 
     session_id = Column(ForeignKey('tapir_sessions.session_id'), primary_key=True, server_default=text("'0'"))

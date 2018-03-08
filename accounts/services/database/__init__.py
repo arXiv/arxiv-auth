@@ -46,7 +46,6 @@ def create_session(user_data: UserData) -> SessionData:
     -------
     :class:`.SessionData`
     """
-
     tapir_session = TapirSession(
         user_id = user_data.user_id,
         last_reissue = int(user_data.last_reissue),
