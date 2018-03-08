@@ -2,15 +2,17 @@
 
 import ipaddress
 import json
+import uuid
 from accounts.services.database.models import dbx
-from accounts.services.database.models import TapirSession
+from accounts.services.database.models import TapirSession, TapirSessionsAudit
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from flask_sqlalchemy import SQLAlchemy
 
-from accounts.domain import UserData, SessionData, SessionCreationFailed
+from accounts.domain import UserData, SessionData
 from accounts.context import get_application_config, get_application_global
+from accounts.services.exceptions import SessionCreationFailed
 
 from typing import Optional
 
@@ -45,30 +47,29 @@ def create_session(user_data: UserData) -> SessionData:
     :class:`.SessionData`
     """
 
-    tapir_session: TapirSession = TapirSession(
+    tapir_session = TapirSession(
         user_id = user_data.user_id,
         last_reissue = int(user_data.last_reissue),
         start_time = int(user_data.start_time),
         end_time = int(user_data.end_time)
     )
 
+    tracking_cookie = user_data.ip_address + str(uuid.uuid4)
+
+    tapir_sessions_audit = TapirSessionsAudit(
+        session_id = tapir_session.session_id,
+        ip_addr = user_data.ip_address,
+        remote_host = user_data.remote_host,
+        tracking_cookie = tracking_cookie
+    )
+    
     data = json.dumps({
-        'user_id': user_data.user_id,
-        'user_name': user_data.user_name,
-        'user_email': user_data.user_email,
-
-        'start_time': user_data.start_time,
-        'end_time': user_data.end_time,
-        'last_reissue': user_data.last_reissue,
-        'ip_address': user_data.ip_address,
-        'remote_host': user_data.remote_host,
-        'tracking_cookie': user_data.tracking_cookie,
-
-        'scopes': user_data.scopes
+        'tracking_cookie': tracking_cookie
     })
 
     try:
         db.session.add(tapir_session)
+        db.session.add(tapir_sessions_audit)
         db.session.commit()
     except Exception as e:
         raise SessionCreationFailed(f'Failed to create: {e}') from e

@@ -5,7 +5,8 @@ import uuid
 import redis
 import json
 
-from accounts.domain import UserData, SessionData, SessionCreationFailed, SessionDeletionFailed
+from accounts.domain import UserData, SessionData
+from accounts.services.exceptions import SessionCreationFailed, SessionDeletionFailed
 from accounts.context import get_application_config, get_application_global
 
 class RedisSession(object):

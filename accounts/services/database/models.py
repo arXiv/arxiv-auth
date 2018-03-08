@@ -32,14 +32,13 @@ class TapirSession(dbx.Model):
     user = relationship('TapirUser')
 
 
-""" class TapirSessionsAudit(TapirSession):
+class TapirSessionsAudit(TapirSession):
     __tablename__ = 'tapir_sessions_audit'
 
     session_id = Column(ForeignKey('tapir_sessions.session_id'), primary_key=True, server_default=text("'0'"))
     ip_addr = Column(String(16), nullable=False, index=True, server_default=text("''"))
     remote_host = Column(String(255), nullable=False, server_default=text("''"))
     tracking_cookie = Column(String(255), nullable=False, index=True, server_default=text("''"))
- """
 
 class TapirUser(dbx.Model):
     """Legacy table that is a foreign key depency of TapirSession."""
