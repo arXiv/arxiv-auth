@@ -30,3 +30,4 @@ class SessionData(NamedTuple):
 
     session_id: str
     data: str
+    
