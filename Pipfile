@@ -32,6 +32,7 @@ mypy = "*"
 "nose2" = "*"
 pydocstyle = "*"
 pylint = "*"
+Flask-Testing = "*"
 
 
 [requires]

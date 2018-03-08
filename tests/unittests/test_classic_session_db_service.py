@@ -1,13 +1,15 @@
 """Tests for database service."""
 import time
 
-from unittest import mock, TestCase
+from unittest import mock
 from accounts.services import database
 from accounts.services.database import TapirSession
 from accounts.domain import SessionData, UserData
 
 from typing import Optional
 
+from flask import Flask
+from flask_testing import TestCase
 
 DATABASE_URL = 'sqlite:///:memory:'
 
@@ -21,22 +23,32 @@ class TestTapirSession(TestCase):
 
     init_session_id: int = 424242424
 
+
+    def create_app(self):
+
+        app = Flask(__name__)
+        app.config['TESTING'] = True
+        return app
+
     def setUp(self) -> None:
         """
         Initialize a database session with in-memory SQLite and creates a
         session entry.
         """
 
+        # FIXME: shouldn't need this, ideally use the above
+        '''
         mock_app = mock.MagicMock()
         mock_app.config = {'SQLALCHEMY_DATABASE_URI': DATABASE_URL,
-                           'SQLALCHEMY_TRACK_MODIFICATIONS': False
+                           'SQLALCHEMY_TRACK_MODIFICATIONS': False,
+                           'TESTING': True
         }
 
         mock_app.extensions = {}
         mock_app.root_path = ''
 
         database.db.init_app(mock_app)
-        database.db.app = mock_app
+        '''
         database.db.create_all()
         issue_time =  int(time.time())
         inst_some_user1 = database.models.TapirSession(
