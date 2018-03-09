@@ -1,9 +1,10 @@
 """Provides a distributed session store."""
 
 from functools import wraps
-import uuid
-import redis
 import json
+import redis
+import time
+import uuid
 
 from accounts.domain import UserData, SessionData
 from accounts.services.exceptions import *
@@ -98,8 +99,10 @@ class RedisSession(object):
 
     def get_session(self, id: str) -> Optional[SessionData]: 
         """Get TapirSession from session id."""
+    
         try:
             session = self.r.get(id)
+            return session
         except Exception as e:
             return None
 
@@ -145,6 +148,17 @@ def create_session(user_data: UserData) -> SessionData:
     """
     return current_session().create_session(user_data)
 
+
+@wraps(RedisSession.get_session)
+def get_session(session_id: str) -> Optional[Any]:
+    """
+    Invalidates a session in the key-value store.
+
+    Parameters
+    ----------
+    session_id : str
+    """
+    return current_session().get_session(session_id)    
 
 @wraps(RedisSession.delete_session)
 def delete_session(session_id: str) -> None:

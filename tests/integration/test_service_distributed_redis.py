@@ -57,10 +57,25 @@ class TestDistributedSessionServiceIntegration(TestCase):
         self.assertEqual(user_data.end_time, stored_data['end_time'])
         self.assertDictEqual(user_data._asdict(), stored_data)
 
+    def test_get_session(self):
+        """Get a session from the datastore."""
+        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+        data_in = {
+            'user_id': 42
+        }
+        r.set('fookey', json.dumps(data_in))
+        session_raw = distributed.get_session('fookey')
+        self.assertNotEqual(None, session_raw)
+        data_out = json.loads(session_raw)
+        self.assertEqual(42, data_out['user_id'])     
+
     def test_invalidate_session(self):
         """Delete a session from the datastore."""
         r = redis.StrictRedis(host='localhost', port=6379, db=0)
-        r.set('fookey', b'foovalue')
+        data_in = {
+            'end_time': time.time() + 30*60
+        }
+        r.set('fookey', json.dumps(data_in))
         data0 = json.loads(r.get('fookey'))
         now = time.time()
         self.assertGreaterEqual(data0['end_time'], now)
