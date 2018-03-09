@@ -108,6 +108,33 @@ class TestTapirSession(TestCase):
             )
 
         self.assertTrue(bool(session.data))
+
+    def test_invalidate_session(self):
+        """Invalidates a session from the datastore."""
+
+        user_data = UserData(
+            user_id=1,
+            start_time=time.time() - 30*60,
+            end_time=time.time() + 30*60,
+            last_reissue=0,
+            ip_address='127.0.0.1',
+            remote_host='foo-host.foo.com',
+            user_name='theuser',
+            user_email='the@user.com',
+            scopes=['foo:write']
+        )
+
+        session0: SessionData = database.create_session(user_data)
+        self.assertIsInstance(session0, SessionData)
+        self.assertIsNotNone(session0, 'verifying we have a session')
+        self.assertGreaterEqual(user_data.end_time, time.time())
+
+        database.invalidate_session(session0.session_id)
+
+        tapir_session: Optional[TapirSession] = database.get_session(session0.session_id)
+        self.assertIsNotNone(tapir_session, 'verifying we have a session')
+        if tapir_session is not None:
+            self.assertGreaterEqual(time.time(), tapir_session.end_time)
         
     def tearDown(self) -> None:
         """Close the database session and drop all tables."""

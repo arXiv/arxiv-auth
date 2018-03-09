@@ -65,12 +65,12 @@ class TestDistributedSessionServiceIntegration(TestCase):
         }
         r.set('fookey', json.dumps(data_in))
         session_raw = distributed.get_session('fookey')
-        self.assertNotEqual(None, session_raw)
+        self.assertIsNotNone(session_raw)
         data_out = json.loads(session_raw)
         self.assertEqual(42, data_out['user_id'])     
 
     def test_invalidate_session(self):
-        """Delete a session from the datastore."""
+        """Invalidates a session from the datastore."""
         r = redis.StrictRedis(host='localhost', port=6379, db=0)
         data_in = {
             'end_time': time.time() + 30*60
