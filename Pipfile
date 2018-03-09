@@ -32,7 +32,7 @@ mypy = "*"
 "nose2" = "*"
 pydocstyle = "*"
 pylint = "*"
-
+rope = "*"
 
 [requires]
 

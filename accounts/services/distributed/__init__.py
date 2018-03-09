@@ -6,8 +6,10 @@ import redis
 import json
 
 from accounts.domain import UserData, SessionData
-from accounts.services.exceptions import SessionCreationFailed, SessionDeletionFailed
+from accounts.services.exceptions import *
 from accounts.context import get_application_config, get_application_global
+
+from typing import Any, Optional
 
 class RedisSession(object):
     """
@@ -72,6 +74,34 @@ class RedisSession(object):
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
+    def invalidate_session(self, session_id: str) -> None:
+        """
+        Invalidates a session in the key-value store
+
+        Parameters
+        ----------
+        session_id : str
+        """
+        try:
+            session_data_raw: Optional[Any] = self.get_session(session_id)
+            if session_data_raw is not None:
+                session_data = json.loads(session_data_raw)
+                session_data['end_time'] = time.time()
+                data = json.dumps(session_data)
+                self.r.set(session_id, data)
+            else:
+                raise SessionUnknown(f'Failed to find session {session_id}')
+        except redis.exceptions.ConnectionError as e:
+            raise SessionDeletionFailed(f'Connection failed: {e}') from e
+        except Exception as e:
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e            
+
+    def get_session(self, id: str) -> Optional[SessionData]: 
+        """Get TapirSession from session id."""
+        try:
+            session = self.r.get(id)
+        except Exception as e:
+            return None
 
 def init_app(app: object = None) -> None:
     """Set default configuration parameters for an application instance."""
@@ -81,7 +111,7 @@ def init_app(app: object = None) -> None:
     config.setdefault('REDIS_DATABASE', '0')
 
 
-def get_session(app: object = None) -> RedisSession:
+def get_redis_session(app: object = None) -> RedisSession:
     """Get a new session with the search index."""
     config = get_application_config(app)
     host = config.get('REDIS_HOST', 'localhost')
@@ -94,9 +124,9 @@ def current_session() -> RedisSession:
     """Get/create :class:`.SearchSession` for this context."""
     g = get_application_global()
     if not g:
-        return get_session()
+        return get_redis_session()
     if 'redis' not in g:
-        g.redis = get_session()     # type: ignore
+        g.redis = get_redis_session()     # type: ignore
     return g.redis      # type: ignore
 
 
@@ -126,3 +156,14 @@ def delete_session(session_id: str) -> None:
     session_id : str
     """
     return current_session().delete_session(session_id)
+
+@wraps(RedisSession.invalidate_session)
+def invalidate_session(session_id: str) -> None:
+    """
+    Invalidates a session in the key-value store.
+
+    Parameters
+    ----------
+    session_id : str
+    """
+    return current_session().invalidate_session(session_id)    
