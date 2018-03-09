@@ -1,7 +1,7 @@
 """Tests for database service."""
 import time
 
-from unittest import mock
+from unittest import mock, TestCase
 from accounts.services import database
 from accounts.services.database import TapirSession
 from accounts.domain import SessionData, UserData
@@ -9,7 +9,6 @@ from accounts.domain import SessionData, UserData
 from typing import Optional
 
 from flask import Flask
-from flask_testing import TestCase
 
 DATABASE_URL = 'sqlite:///:memory:'
 
@@ -24,11 +23,10 @@ class TestTapirSession(TestCase):
     init_session_id: int = 424242424
 
 
-    def create_app(self):
-
-        app = Flask(__name__)
-        app.config['TESTING'] = True
-        return app
+    # def create_app(self):
+    #     app = Flask(__name__)
+    #     app.config['TESTING'] = True
+    #     return app
 
     def setUp(self) -> None:
         """
@@ -37,7 +35,7 @@ class TestTapirSession(TestCase):
         """
 
         # FIXME: shouldn't need this, ideally use the above
-        '''
+
         mock_app = mock.MagicMock()
         mock_app.config = {'SQLALCHEMY_DATABASE_URI': DATABASE_URL,
                            'SQLALCHEMY_TRACK_MODIFICATIONS': False,
@@ -46,9 +44,9 @@ class TestTapirSession(TestCase):
 
         mock_app.extensions = {}
         mock_app.root_path = ''
-
+        database.db.app = mock_app
         database.db.init_app(mock_app)
-        '''
+
         database.db.create_all()
         issue_time =  int(time.time())
         inst_some_user1 = database.models.TapirSession(
@@ -66,8 +64,8 @@ class TestTapirSession(TestCase):
         self.assertIsNotNone(tapir_session, 'verifying we have a session')
         if tapir_session is not None:
             self.assertEqual(
-                tapir_session.session_id, 
-                self.init_session_id, 
+                tapir_session.session_id,
+                self.init_session_id,
                 "Returned session has correct session id."
             )
 
@@ -94,33 +92,33 @@ class TestTapirSession(TestCase):
         self.assertIsNotNone(session, 'verifying we have a session')
         if tapir_session is not None:
             self.assertEqual(
-                tapir_session.session_id, 
-                session.session_id, 
+                tapir_session.session_id,
+                session.session_id,
                 "Returned session has correct session id."
             )
             self.assertEqual(
-                tapir_session.user_id, 
-                user_data.user_id, 
+                tapir_session.user_id,
+                user_data.user_id,
                 "Returned session has correct user id."
             )
             self.assertEqual(
-                tapir_session.last_reissue, 
-                int(user_data.last_reissue), 
+                tapir_session.last_reissue,
+                int(user_data.last_reissue),
                 "Returned session has correct last_reissue time."
             )
             self.assertEqual(
-                tapir_session.start_time, 
-                int(user_data.start_time), 
+                tapir_session.start_time,
+                int(user_data.start_time),
                 "Returned session has correct start time."
             )
             self.assertEqual(
-                tapir_session.end_time, 
-                int(user_data.end_time), 
+                tapir_session.end_time,
+                int(user_data.end_time),
                 "Returned session has correct end time."
             )
 
         self.assertTrue(bool(session.data))
-        
+
     def tearDown(self) -> None:
         """Close the database session and drop all tables."""
         database.db.session.remove()
