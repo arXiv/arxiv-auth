@@ -20,7 +20,7 @@ from typing import Optional
 # Temporary fix for https://github.com/python/mypy/issues/4049 :
 db: SQLAlchemy = dbx
 
-def get_session(id: int) -> Optional[TapirSession]: 
+def get_session(id: int) -> Optional[TapirSession]:
     """Get TapirSession from session id."""
     try:
 
@@ -48,19 +48,19 @@ def create_session(user_data: UserData) -> SessionData:
     :class:`.SessionData`
     """
     tapir_session = TapirSession(
-        user_id = user_data.user_id,
-        last_reissue = int(user_data.last_reissue),
-        start_time = int(user_data.start_time),
-        end_time = int(user_data.end_time)
+        user_id=user_data.user_id,
+        last_reissue=int(user_data.last_reissue),
+        start_time=int(user_data.start_time),
+        end_time=int(user_data.end_time)
     )
 
     tracking_cookie = user_data.ip_address + str(uuid.uuid4)
 
     tapir_sessions_audit = TapirSessionsAudit(
-        session_id = tapir_session.session_id,
-        ip_addr = user_data.ip_address,
-        remote_host = user_data.remote_host,
-        tracking_cookie = tracking_cookie
+        session_id=tapir_session.session_id,
+        ip_addr=user_data.ip_address,
+        remote_host=user_data.remote_host,
+        tracking_cookie=tracking_cookie
     )
     
     data = json.dumps({
