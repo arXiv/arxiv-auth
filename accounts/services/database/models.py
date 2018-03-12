@@ -45,7 +45,7 @@ class TapirSessionsAudit(TapirSession):
     tracking_cookie = Column(String(255), nullable=False, index=True, server_default=text("''"))
 
 class TapirUser(dbx.Model):
-    """Legacy table that is a foreign key depency of TapirSession."""
+    """Legacy table that is a foreign key dependency of TapirSession."""
     
     __tablename__ = 'tapir_users'
 
