@@ -10,7 +10,7 @@ from accounts.domain import UserData, SessionData
 from accounts.services.exceptions import *
 from accounts.context import get_application_config, get_application_global
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 class RedisSession(object):
     """
@@ -84,7 +84,7 @@ class RedisSession(object):
         session_id : str
         """
         try:
-            session_data_raw: Optional[Any] = self.get_session(session_id)
+            session_data_raw: Union[str, bytes, bytearray] = self.get_session(session_id)
             session_data = json.loads(session_data_raw)
             session_data['end_time'] = time.time()
             data = json.dumps(session_data)
@@ -96,10 +96,10 @@ class RedisSession(object):
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e            
 
-    def get_session(self, id: str) -> SessionData: 
+    def get_session(self, id: str) -> Union[str, bytes, bytearray]: 
         """Get SessionData from session id."""
     
-        session = self.r.get(id)
+        session: Union[str, bytes, bytearray] = self.r.get(id)
         if session is None:
             raise SessionUnknown(f'Failed to find session {id}')
 
