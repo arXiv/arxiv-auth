@@ -3,6 +3,7 @@
 from unittest import TestCase
 import subprocess
 from accounts.services import distributed
+from accounts.services.exceptions import *
 from accounts.domain import SessionData, UserData
 import time
 import redis
@@ -56,6 +57,40 @@ class TestDistributedSessionServiceIntegration(TestCase):
         stored_data = json.loads(raw)
         self.assertEqual(user_data.end_time, stored_data['end_time'])
         self.assertDictEqual(user_data._asdict(), stored_data)
+
+    def test_get_session(self):
+        """Get a session from the datastore."""
+        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+        data_in = {
+            'user_id': 42
+        }
+        r.set('fookey', json.dumps(data_in))
+        session_raw = distributed.get_session('fookey')
+        data_out = json.loads(session_raw)
+        self.assertEqual(42, data_out['user_id'])    
+
+        try:
+            session_raw = distributed.get_session('barkey')
+            self.assertTrue(False, "Should have a SessionUnknown exception")
+        except SessionUnknown as e:
+            self.assertTrue(True, "Obtained a SessionUnknown exception")
+
+
+    def test_invalidate_session(self):
+        """Invalidates a session from the datastore."""
+        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+        data_in = {
+            'end_time': time.time() + 30*60
+        }
+        r.set('fookey', json.dumps(data_in))
+        data0 = json.loads(r.get('fookey'))
+        now = time.time()
+        self.assertGreaterEqual(data0['end_time'], now)
+        distributed.invalidate_session('fookey')
+        data1 = json.loads(r.get('fookey'))
+        now = time.time()
+        self.assertGreaterEqual(now, data1['end_time'])
+
 
     def test_delete_session(self):
         """Delete a session from the datastore."""

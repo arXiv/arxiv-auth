@@ -2,6 +2,7 @@
 
 import ipaddress
 import json
+import time
 import uuid
 from accounts.services.database.models import dbx
 from accounts.services.database.models import TapirSession, TapirSessionsAudit
@@ -12,7 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from accounts.domain import UserData, SessionData
 from accounts.context import get_application_config, get_application_global
-from accounts.services.exceptions import SessionCreationFailed
+from accounts.services.exceptions import *
 
 from typing import Optional
 
@@ -74,3 +75,23 @@ def create_session(user_data: UserData) -> SessionData:
         raise SessionCreationFailed(f'Failed to create: {e}') from e
 
     return SessionData(tapir_session.session_id, data)
+
+def invalidate_session(session_id: int) -> None:
+    """
+    Invalidates a tapir session
+
+    Parameters
+    ----------
+    session_id : int
+    """
+    try:
+        tapir_session: Optional[TapirSession] = get_session(session_id)
+        if tapir_session is not None:
+            tapir_session.end_time = time.time()
+            db.session.merge(tapir_session)
+        else:
+            raise SessionUnknown(f'Failed to find session {session_id}')
+    except NoResultFound as ex:
+        raise SessionUnknown(f'Failed to find session {session_id} for exception {ex}') from ex
+    except SQLAlchemyError as ex:
+        raise IOError('Database error: %s' % ex) from ex
