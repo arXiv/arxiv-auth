@@ -85,26 +85,26 @@ class RedisSession(object):
         """
         try:
             session_data_raw: Optional[Any] = self.get_session(session_id)
-            if session_data_raw is not None:
-                session_data = json.loads(session_data_raw)
-                session_data['end_time'] = time.time()
-                data = json.dumps(session_data)
-                self.r.set(session_id, data)
-            else:
-                raise SessionUnknown(f'Failed to find session {session_id}')
+            session_data = json.loads(session_data_raw)
+            session_data['end_time'] = time.time()
+            data = json.dumps(session_data)
+            self.r.set(session_id, data)
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
+        except SessionUnknown as e:
+            print(f"Warn: failed to find session to delete: {e}") # TODO: log          
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e            
 
     def get_session(self, id: str) -> Optional[SessionData]: 
-        """Get TapirSession from session id."""
+        """Get SessionData from session id."""
     
-        try:
-            session = self.r.get(id)
-            return session
-        except Exception as e:
-            return None
+        session = self.r.get(id)
+        if session is None:
+            raise SessionUnknown(f'Failed to find session {id}')
+
+        return session
+
 
 def init_app(app: object = None) -> None:
     """Set default configuration parameters for an application instance."""
@@ -160,6 +160,7 @@ def get_session(session_id: str) -> Optional[Any]:
     """
     return current_session().get_session(session_id)    
 
+
 @wraps(RedisSession.delete_session)
 def delete_session(session_id: str) -> None:
     """
@@ -170,6 +171,7 @@ def delete_session(session_id: str) -> None:
     session_id : str
     """
     return current_session().delete_session(session_id)
+
 
 @wraps(RedisSession.invalidate_session)
 def invalidate_session(session_id: str) -> None:
