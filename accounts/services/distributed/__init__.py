@@ -96,7 +96,7 @@ class RedisSession(object):
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e            
 
-    def get_session(self, id: str) -> Optional[SessionData]: 
+    def get_session(self, id: str) -> SessionData: 
         """Get SessionData from session id."""
     
         session = self.r.get(id)
