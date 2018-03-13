@@ -81,7 +81,7 @@ def create_session(user_data: UserData) -> SessionData:
 
 def invalidate_session(session_id: int) -> None:
     """
-    Invalidates a tapir session
+    Invalidates a tapir session.
 
     Parameters
     ----------

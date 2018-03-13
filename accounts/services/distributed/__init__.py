@@ -80,7 +80,7 @@ class RedisSession(object):
 
     def invalidate_session(self, session_id: str) -> None:
         """
-        Invalidates a session in the key-value store
+        Invalidates a session in the key-value store.
 
         Parameters
         ----------
@@ -95,13 +95,12 @@ class RedisSession(object):
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
         except SessionUnknown as e:
-            print(f"Warn: failed to find session to delete: {e}") # TODO: log
+            print(f'Warn: failed to find session to delete: {e}') # TODO: log
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
     def get_session(self, id: str) -> Union[str, bytes, bytearray]:
         """Get SessionData from session id."""
-
         session: Union[str, bytes, bytearray] = self.r.get(id)
         if session is None:
             raise SessionUnknown(f'Failed to find session {id}')
