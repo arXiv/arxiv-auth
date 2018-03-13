@@ -1,16 +1,19 @@
 """Provides a distributed session store."""
 
-from functools import wraps
 import json
-import redis
 import time
 import uuid
 
-from accounts.domain import UserData, SessionData
-from accounts.services.exceptions import *
-from accounts.context import get_application_config, get_application_global
+from typing import Any, Optional, Union
 
-from typing import Any, Optional
+from functools import wraps
+import redis
+
+
+from accounts.domain import UserData, SessionData
+from accounts.services.exceptions import SessionCreationFailed, \
+    SessionDeletionFailed, SessionUnknown
+from accounts.context import get_application_config, get_application_global
 
 class RedisSession(object):
     """
@@ -77,14 +80,14 @@ class RedisSession(object):
 
     def invalidate_session(self, session_id: str) -> None:
         """
-        Invalidates a session in the key-value store
+        Invalidates a session in the key-value store.
 
         Parameters
         ----------
         session_id : str
         """
         try:
-            session_data_raw: Optional[Any] = self.get_session(session_id)
+            session_data_raw: Union[str, bytes, bytearray] = self.get_session(session_id)
             session_data = json.loads(session_data_raw)
             session_data['end_time'] = time.time()
             data = json.dumps(session_data)
@@ -92,14 +95,13 @@ class RedisSession(object):
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
         except SessionUnknown as e:
-            print(f"Warn: failed to find session to delete: {e}") # TODO: log          
+            print(f'Warn: failed to find session to delete: {e}') # TODO: log
         except Exception as e:
-            raise SessionDeletionFailed(f'Failed to delete: {e}') from e            
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
-    def get_session(self, id: str) -> SessionData: 
+    def get_session(self, id: str) -> Union[str, bytes, bytearray]:
         """Get SessionData from session id."""
-    
-        session = self.r.get(id)
+        session: Union[str, bytes, bytearray] = self.r.get(id)
         if session is None:
             raise SessionUnknown(f'Failed to find session {id}')
 
@@ -158,7 +160,7 @@ def get_session(session_id: str) -> Optional[Any]:
     ----------
     session_id : str
     """
-    return current_session().get_session(session_id)    
+    return current_session().get_session(session_id)
 
 
 @wraps(RedisSession.delete_session)
@@ -182,4 +184,4 @@ def invalidate_session(session_id: str) -> None:
     ----------
     session_id : str
     """
-    return current_session().invalidate_session(session_id)    
+    return current_session().invalidate_session(session_id)

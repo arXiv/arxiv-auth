@@ -1,9 +1,11 @@
 """arXiv accounts database models."""
+
+from typing import Any, NewType
+
 from sqlalchemy import BigInteger, Column, DateTime, Enum, \
     ForeignKey, Index, Integer, SmallInteger, String, Text, text
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy, Model
-from typing import Any, NewType
 
 dbx: SQLAlchemy = SQLAlchemy()
 
@@ -26,7 +28,9 @@ class TapirSession(dbx.Model):
     __tablename__ = 'tapir_sessions'
 
     session_id = Column(Integer, primary_key=True, autoincrement="auto")
-    user_id = Column(ForeignKey('tapir_users.user_id'), nullable=False, index=True, server_default=text("'0'"))
+    user_id = Column(
+        ForeignKey('tapir_users.user_id'), nullable=False, index=True, server_default=text("'0'")
+    )
     last_reissue = Column(Integer, nullable=False, server_default=text("'0'"))
     start_time = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
     end_time = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
@@ -39,14 +43,16 @@ class TapirSessionsAudit(TapirSession):
 
     __tablename__ = 'tapir_sessions_audit'
 
-    session_id = Column(ForeignKey('tapir_sessions.session_id'), primary_key=True, server_default=text("'0'"))
+    session_id = Column(
+        ForeignKey('tapir_sessions.session_id'), primary_key=True, server_default=text("'0'")
+    )
     ip_addr = Column(String(16), nullable=False, index=True, server_default=text("''"))
     remote_host = Column(String(255), nullable=False, server_default=text("''"))
     tracking_cookie = Column(String(255), nullable=False, index=True, server_default=text("''"))
 
 class TapirUser(dbx.Model):
     """Legacy table that is a foreign key dependency of TapirSession."""
-    
+
     __tablename__ = 'tapir_users'
 
     user_id = Column(Integer, primary_key=True)
@@ -58,7 +64,10 @@ class TapirUser(dbx.Model):
     email = Column(String(255), nullable=False, unique=True, server_default=text("''"))
     share_email = Column(Integer, nullable=False, server_default=text("'8'"))
     email_bouncing = Column(Integer, nullable=False, server_default=text("'0'"))
-    policy_class = Column(ForeignKey('tapir_policy_classes.class_id'), nullable=False, index=True, server_default=text("'0'"))
+    policy_class = Column(
+        ForeignKey('tapir_policy_classes.class_id'),
+        nullable=False, index=True, server_default=text("'0'")
+    )
     joined_date = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
     joined_ip_num = Column(String(16), index=True)
     joined_remote_host = Column(String(255), nullable=False, server_default=text("''"))

@@ -4,23 +4,26 @@ import ipaddress
 import json
 import time
 import uuid
-from accounts.services.database.models import dbx
-from accounts.services.database.models import TapirSession, TapirSessionsAudit
+
+from typing import Optional
+
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from flask_sqlalchemy import SQLAlchemy
 
+from accounts.services.database.models import dbx
+from accounts.services.database.models import TapirSession, TapirSessionsAudit
+
 from accounts.domain import UserData, SessionData
 from accounts.context import get_application_config, get_application_global
-from accounts.services.exceptions import *
-
-from typing import Optional
+from accounts.services.exceptions import SessionCreationFailed, \
+    SessionDeletionFailed, SessionUnknown
 
 # Temporary fix for https://github.com/python/mypy/issues/4049 :
 db: SQLAlchemy = dbx
 
-def get_session(id: int) -> Optional[TapirSession]: 
+def get_session(id: int) -> Optional[TapirSession]:
     """Get TapirSession from session id."""
     try:
 
@@ -48,21 +51,21 @@ def create_session(user_data: UserData) -> SessionData:
     :class:`.SessionData`
     """
     tapir_session = TapirSession(
-        user_id = user_data.user_id,
-        last_reissue = int(user_data.last_reissue),
-        start_time = int(user_data.start_time),
-        end_time = int(user_data.end_time)
+        user_id=user_data.user_id,
+        last_reissue=int(user_data.last_reissue),
+        start_time=int(user_data.start_time),
+        end_time=int(user_data.end_time)
     )
 
     tracking_cookie = user_data.ip_address + str(uuid.uuid4)
 
     tapir_sessions_audit = TapirSessionsAudit(
-        session_id = tapir_session.session_id,
-        ip_addr = user_data.ip_address,
-        remote_host = user_data.remote_host,
-        tracking_cookie = tracking_cookie
+        session_id=tapir_session.session_id,
+        ip_addr=user_data.ip_address,
+        remote_host=user_data.remote_host,
+        tracking_cookie=tracking_cookie
     )
-    
+
     data = json.dumps({
         'tracking_cookie': tracking_cookie
     })
@@ -78,7 +81,7 @@ def create_session(user_data: UserData) -> SessionData:
 
 def invalidate_session(session_id: int) -> None:
     """
-    Invalidates a tapir session
+    Invalidates a tapir session.
 
     Parameters
     ----------

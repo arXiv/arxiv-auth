@@ -4,10 +4,11 @@ import logging
 
 from flask import Flask
 
+from arxiv.base import Base
+
 from accounts.routes import ui
 from accounts.services import distributed
 from accounts.encode import ISO8601JSONEncoder
-from arxiv.base import Base
 
 
 def create_web_app() -> Flask:
