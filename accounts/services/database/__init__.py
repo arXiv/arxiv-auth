@@ -4,18 +4,21 @@ import ipaddress
 import json
 import time
 import uuid
-from accounts.services.database.models import dbx
-from accounts.services.database.models import TapirSession, TapirSessionsAudit
+
+from typing import Optional
+
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from flask_sqlalchemy import SQLAlchemy
 
+from accounts.services.database.models import dbx
+from accounts.services.database.models import TapirSession, TapirSessionsAudit
+
 from accounts.domain import UserData, SessionData
 from accounts.context import get_application_config, get_application_global
-from accounts.services.exceptions import *
-
-from typing import Optional
+from accounts.services.exceptions import SessionCreationFailed, \
+    SessionDeletionFailed, SessionUnknown
 
 # Temporary fix for https://github.com/python/mypy/issues/4049 :
 db: SQLAlchemy = dbx
@@ -62,7 +65,7 @@ def create_session(user_data: UserData) -> SessionData:
         remote_host=user_data.remote_host,
         tracking_cookie=tracking_cookie
     )
-    
+
     data = json.dumps({
         'tracking_cookie': tracking_cookie
     })

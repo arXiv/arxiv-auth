@@ -1,16 +1,19 @@
 """Provides a distributed session store."""
 
-from functools import wraps
 import json
-import redis
 import time
 import uuid
 
-from accounts.domain import UserData, SessionData
-from accounts.services.exceptions import *
-from accounts.context import get_application_config, get_application_global
-
 from typing import Any, Optional, Union
+
+from functools import wraps
+import redis
+
+
+from accounts.domain import UserData, SessionData
+from accounts.services.exceptions import SessionCreationFailed, \
+    SessionDeletionFailed, SessionUnknown
+from accounts.context import get_application_config, get_application_global
 
 class RedisSession(object):
     """
@@ -92,13 +95,13 @@ class RedisSession(object):
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
         except SessionUnknown as e:
-            print(f"Warn: failed to find session to delete: {e}") # TODO: log          
+            print(f"Warn: failed to find session to delete: {e}") # TODO: log
         except Exception as e:
-            raise SessionDeletionFailed(f'Failed to delete: {e}') from e            
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
-    def get_session(self, id: str) -> Union[str, bytes, bytearray]: 
+    def get_session(self, id: str) -> Union[str, bytes, bytearray]:
         """Get SessionData from session id."""
-    
+
         session: Union[str, bytes, bytearray] = self.r.get(id)
         if session is None:
             raise SessionUnknown(f'Failed to find session {id}')
@@ -158,7 +161,7 @@ def get_session(session_id: str) -> Optional[Any]:
     ----------
     session_id : str
     """
-    return current_session().get_session(session_id)    
+    return current_session().get_session(session_id)
 
 
 @wraps(RedisSession.delete_session)
@@ -182,4 +185,4 @@ def invalidate_session(session_id: str) -> None:
     ----------
     session_id : str
     """
-    return current_session().invalidate_session(session_id)    
+    return current_session().invalidate_session(session_id)
