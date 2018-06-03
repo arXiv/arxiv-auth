@@ -136,7 +136,7 @@ class TestTapirSession(TestCase):
         self.assertIsNotNone(tapir_session, 'verifying we have a session')
         if tapir_session is not None:
             self.assertGreaterEqual(time.time(), tapir_session.end_time)
-        
+
     def tearDown(self) -> None:
         """Close the database session and drop all tables."""
         database.db.session.remove()
