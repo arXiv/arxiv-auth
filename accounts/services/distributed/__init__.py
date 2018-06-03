@@ -15,6 +15,8 @@ from accounts.services.exceptions import SessionCreationFailed, \
     SessionDeletionFailed, SessionUnknown
 from accounts.context import get_application_config, get_application_global
 
+from typing import Any, Optional
+
 class RedisSession(object):
     """
     Manages a connection to Redis.

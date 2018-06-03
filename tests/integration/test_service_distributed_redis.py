@@ -66,15 +66,9 @@ class TestDistributedSessionServiceIntegration(TestCase):
         }
         r.set('fookey', json.dumps(data_in))
         session_raw = distributed.get_session('fookey')
+        self.assertIsNotNone(session_raw)
         data_out = json.loads(session_raw)
-        self.assertEqual(42, data_out['user_id'])    
-
-        try:
-            session_raw = distributed.get_session('barkey')
-            self.assertTrue(False, "Should have a SessionUnknown exception")
-        except SessionUnknown as e:
-            self.assertTrue(True, "Obtained a SessionUnknown exception")
-
+        self.assertEqual(42, data_out['user_id'])
 
     def test_invalidate_session(self):
         """Invalidates a session from the datastore."""
