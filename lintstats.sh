@@ -12,9 +12,7 @@ curl -u $USERNAME:$GITHUB_TOKEN \
     > /dev/null 2>&1
 
 
-
-# Check mypy integration
-pipenv run mypy -p accounts
+pipenv run mypy accounts | grep -v "test.*" | grep -v "defined here"
 MYPY_STATUS=$?
 if [ $MYPY_STATUS -ne 0 ]; then MYPY_STATE="failure" && echo "mypy failed"; else MYPY_STATE="success" &&  echo "mypy passed"; fi
 

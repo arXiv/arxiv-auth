@@ -1,0 +1,41 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+arxiv-base = "==0.7.1"
+celery = "*"
+flask = "*"
+flask-sqlalchemy = "*"
+jsonschema = "*"
+pyjwt = "*"
+redis = "*"
+requests = "*"
+sqlalchemy = "*"
+uwsgi = "*"
+"nose2" = "*"
+coverage = "*"
+coveralls = "*"
+mypy = "*"
+flask-wtf = "*"
+pylint = "*"
+pycountry = "*"
+
+
+[dev-packages]
+
+coverage = "*"
+mypy = "*"
+"nose2" = "*"
+pydocstyle = "*"
+pylint = "*"
+rope = "*"
+
+
+[requires]
+
+python_version = "3.6"
