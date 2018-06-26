@@ -45,7 +45,7 @@ def authorize():
 def _authorize_from_cookie(auth_cookie: str) -> dict:
     """Authorize the request based on an auth cookie."""
     try:
-        claims = session_store.get_user_session(auth_cookie)
+        claims = session_store.load(auth_cookie)
     except session_store.InvalidToken:
         logger.error('Invalid user session token')
         raise BadRequest('Not a valid user session token')

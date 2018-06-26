@@ -7,7 +7,7 @@ either 200 (authorized) or 403 (unauthorized).
 
 In this implementation, we validate the client's auth token, which is contained
 either in the ``Authorization`` header or in a cookie, and (if valid)
-return an encrypted JWT describing the user/client and its privileges.
+return an encrypted JWT describing the user/client and its authorizations.
 NGINX inserts that token into the ``Authorization`` header when subsequently
 proxying the request to the target service.
 """

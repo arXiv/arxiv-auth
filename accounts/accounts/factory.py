@@ -5,7 +5,7 @@ from flask import Flask
 from arxiv.base import Base
 
 from accounts.routes import ui
-from accounts.services import session_store, classic_session_store, users
+from accounts.services import session_store, classic_session_store, user_data
 from accounts.encode import ISO8601JSONEncoder
 
 
@@ -17,9 +17,9 @@ def create_web_app() -> Flask:
 
     session_store.init_app(app)
     classic_session_store.init_app(app)
-    users.init_app(app)
+    # user_data.init_app(app)
 
-    Base(app)    # Gives us access to the base UI templates and resources.
     app.register_blueprint(ui.blueprint)
+    Base(app)    # Gives us access to the base UI templates and resources.
 
     return app

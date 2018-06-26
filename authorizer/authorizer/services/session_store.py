@@ -38,7 +38,7 @@ def _get_secret() -> str:
         raise ConfigurationError('Missing required config parameter') from e
 
 
-def get_user_session(session_token: str) -> dict:
+def load(session_token: str) -> dict:
     """
     Get a session from a user session token.
 
@@ -85,7 +85,7 @@ def get_user_session(session_token: str) -> dict:
 
 
 # Keeping this separate for now, in case mechanisms/formats change. We may
-# be able to merge this with `get_user_session` in the end.
+# be able to merge this with `load` in the end.
 def get_token_session(session_token: str) -> dict:
     """
     Get a session from a bearer token.

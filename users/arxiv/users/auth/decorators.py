@@ -4,8 +4,6 @@ from functools import wraps
 from flask import request, g
 from werkzeug.exceptions import BadRequest, Forbidden
 from arxiv import status
-from . import decode_authorization_token, DecodeError, get_auth_token
-
 
 INVALID_TOKEN = {'reason': 'Invalid authorization token'}
 INVALID_SCOPE = {'reason': 'Token not authorized for this action'}

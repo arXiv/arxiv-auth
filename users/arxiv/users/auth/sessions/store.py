@@ -1,4 +1,4 @@
-"""Provides a session_store session store."""
+"""Provides a session store."""
 
 import json
 import time
@@ -6,18 +6,18 @@ import uuid
 import random
 from datetime import datetime
 
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Tuple
 
 from functools import wraps
 import redis
 import jwt
 
-from accounts.domain import User, UserSession
-from accounts.services.exceptions import SessionCreationFailed, \
-    SessionDeletionFailed, UserSessionUnknown
+from ... import domain
+from ..exceptions import SessionCreationFailed, InvalidToken, \
+    SessionDeletionFailed, SessionUnknown
+
 from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
-from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def _now() -> int:
     return int(round(epoch))
 
 
-class RedisSession(object):
+class SessionStore(object):
     """
     Manages a connection to Redis.
 
@@ -45,58 +45,46 @@ class RedisSession(object):
         self.r = redis.StrictRedis(host=host, port=port, db=db)
         self._secret = secret
 
-    def create_user_session(self, user: User, ip_address: str,
-                            remote_host: str, tracking_cookie: str = '') \
-            -> UserSession:
+    def create(self, user: domain.User, authorizations: domain.Authorizations,
+               ip_address: str, remote_host: str, tracking_cookie: str = '') \
+            -> Tuple[domain.Session, str]:
         """
         Create a new session.
 
         Parameters
         ----------
-        user : :class:`.User`
+        user : :class:`domain.User`
+        authorizations : :class:`domain.Authorizations`
 
         Returns
         -------
-        :class:`.UserSession`
+        :class:`.Session`
         """
         session_id = str(uuid.uuid4())
-        nonce = _generate_nonce()
         start_time = _now()
-        data = json.dumps({
-            'user_id': user.user_id,
-            'username': user.username,
-            'user_email': user.email,
-
-            'start_time': start_time,
-            'end_time': None,
-            'ip_address': ip_address,
-            'remote_host': remote_host,
-
-            'scopes': user.privileges.scopes,
-            'domains': user.privileges.endorsement_domains,
-            'nonce': nonce
-        })
-
+        session = domain.Session(
+            session_id=session_id,
+            user=user,
+            start_time=start_time,
+            authorizations=authorizations,
+            nonce=_generate_nonce()
+        )
         cookie = self._pack_cookie({
             'user_id': user.user_id,
             'session_id': session_id,
-            'nonce': nonce
+            'nonce': session.nonce
         })
 
         try:
-            self.r.set(session_id, data)
+            self.r.set(session_id, json.dumps(domain.to_dict(session)))
         except redis.exceptions.ConnectionError as e:
             raise SessionCreationFailed(f'Connection failed: {e}') from e
         except Exception as e:
             raise SessionCreationFailed(f'Failed to create: {e}') from e
-        return UserSession(
-            session_id=session_id,
-            cookie=cookie,
-            user=user,
-            start_time=start_time
-        )
 
-    def delete_user_session(self, session_id: str) -> None:
+        return session, cookie
+
+    def delete(self, session_id: str) -> None:
         """
         Delete a session in the key-value store.
 
@@ -111,7 +99,7 @@ class RedisSession(object):
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
-    def invalidate_user_session(self, session_cookie: str) -> None:
+    def invalidate(self, cookie: str) -> None:
         """
         Invalidate a session in the key-value store.
 
@@ -120,30 +108,55 @@ class RedisSession(object):
         session_id : str
         """
         try:
-            cookie_data = self._unpack_cookie(session_cookie)
+            cookie_data = self._unpack_cookie(cookie)
         except jwt.exceptions.DecodeError as e:
             raise SessionDeletionFailed('Bad session token') from e
         try:
-            session_data = self.get_user_session(cookie_data['session_id'])
-            if session_data['nonce'] != cookie_data['nonce'] \
-                    or session_data['user_id'] != cookie_data['user_id']:
+            session_data = self.load(cookie_data['session_id'])
+            if session_data.nonce != cookie_data['nonce'] \
+                    or session_data.user_id != cookie_data['user_id']:
                 raise SessionDeletionFailed('Bad session token')
-            session_data['end_time'] = _now()
-            data = json.dumps(session_data)
+            session_data.end_time = _now()
+            data = json.dumps(domain.to_dict(session_data))
             self.r.set(cookie_data['session_id'], data)
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
-    def get_user_session(self, session_id: str) -> dict:
-        """Get Session from session id."""
+    def load(self, cookie: str) -> domain.Session:
+        """Load a session using a session cookie."""
+        try:
+            cookie_data = self._unpack_cookie(cookie)
+            session_id = cookie_data['session_id']
+            user_id = cookie_data.get('user_id')
+            client_id = cookie_data.get('client_id')
+            nonce = cookie_data['nonce']
+        except (KeyError, jwt.exceptions.DecodeError) as e:
+            raise InvalidToken('Token payload malformed') from e
+
+        session = self._load(session_id)
+        if session.expired:
+            raise InvalidToken('Session has expired')
+        if nonce != session.nonce:
+            raise InvalidToken('Invalid token; likely a forgery')
+        if user_id and user_id != session.user.user_id:
+            raise InvalidToken('Invalid token; likely a forgery')
+        if client_id and client_id != session.client.client_id:
+            raise InvalidToken('Invalid token; likely a forgery')
+        return session
+
+    def _load(self, session_id: str) -> domain.Session:
+        """Get session data by session ID."""
         user_session: Union[str, bytes, bytearray] = self.r.get(session_id)
         if not user_session:
             logger.error(f'No such session: {session_id}')
-            raise UserSessionUnknown(f'Failed to find session {id}')
-        data: dict = json.loads(user_session)
-        return data
+            raise SessionUnknown(f'Failed to find session {session_id}')
+        try:
+            data: dict = json.loads(user_session)
+        except json.decoder.JSONDecodeError:
+            raise InvalidToken('Invalid or corrupted session token')
+        return domain.from_dict(domain.Session, data)
 
     def _unpack_cookie(self, cookie: str) -> dict:
         return jwt.decode(cookie, self._secret)
@@ -161,17 +174,17 @@ def init_app(app: object = None) -> None:
     config.setdefault('JWT_SECRET', 'foosecret')
 
 
-def get_redis_session(app: object = None) -> RedisSession:
+def get_redis_session(app: object = None) -> SessionStore:
     """Get a new session with the search index."""
     config = get_application_config(app)
     host = config.get('REDIS_HOST', 'localhost')
     port = int(config.get('REDIS_PORT', '6379'))
     db = int(config.get('REDIS_DATABASE', '0'))
     secret = config['JWT_SECRET']
-    return RedisSession(host, port, db, secret)
+    return SessionStore(host, port, db, secret)
 
 
-def current_session() -> RedisSession:
+def current_session() -> SessionStore:
     """Get/create :class:`.SearchSession` for this context."""
     g = get_application_global()
     if not g:
@@ -181,26 +194,28 @@ def current_session() -> RedisSession:
     return g.redis      # type: ignore
 
 
-@wraps(RedisSession.create_user_session)
-def create_user_session(user: User, ip_address: str, remote_host: str,
-                        tracking_cookie: str = '') -> UserSession:
+@wraps(SessionStore.create)
+def create(user: domain.User, authorizations: domain.Authorizations,
+           ip_address: str, remote_host: str, tracking_cookie: str = '') \
+        -> domain.Session:
     """
     Create a new session.
 
     Parameters
     ----------
-    user : :class:`.User`
+    user : :class:`domain.User`
+    authorizations : :class:`domain.Authorizations`
 
     Returns
     -------
-    :class:`.UserSession`
+    :class:`.Session`
     """
-    return current_session().create_user_session(user, ip_address, remote_host,
-                                                 tracking_cookie)
+    return current_session().create(user, authorizations, ip_address,
+                                    remote_host, tracking_cookie)
 
 
-@wraps(RedisSession.get_user_session)
-def get_user_session(session_id: str) -> dict:
+@wraps(SessionStore.load)
+def load(session_id: str) -> dict:
     """
     Invalidate a session in the key-value store.
 
@@ -212,11 +227,11 @@ def get_user_session(session_id: str) -> dict:
     -------
     dict
     """
-    return current_session().get_user_session(session_id)
+    return current_session().load(session_id)
 
 
-@wraps(RedisSession.delete_user_session)
-def delete_user_session(session_id: str) -> None:
+@wraps(SessionStore.delete)
+def delete(session_id: str) -> None:
     """
     Delete a session in the key-value store.
 
@@ -224,11 +239,11 @@ def delete_user_session(session_id: str) -> None:
     ----------
     session_id : str
     """
-    return current_session().delete_user_session(session_id)
+    return current_session().delete(session_id)
 
 
-@wraps(RedisSession.invalidate_user_session)
-def invalidate_user_session(session_id: str) -> None:
+@wraps(SessionStore.invalidate)
+def invalidate(session_id: str) -> None:
     """
     Invalidates a session in the key-value store.
 
@@ -236,4 +251,4 @@ def invalidate_user_session(session_id: str) -> None:
     ----------
     session_id : str
     """
-    return current_session().invalidate_user_session(session_id)
+    return current_session().invalidate(session_id)

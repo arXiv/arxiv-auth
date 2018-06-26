@@ -9,8 +9,8 @@ from arxiv import status
 from arxiv.base import logging
 from accounts.services import session_store as sessions
 from accounts.services import classic_session_store as classic
-from accounts.services import exceptions, users
-from .forms import LoginForm, RegistrationForm
+from accounts.services import exceptions, user_data
+from .forms import LoginForm, RegistrationForm#, ProfileForm
 
 logger = logging.getLogger(__name__)
 
@@ -69,29 +69,30 @@ def post_login(form_data: MultiDict, ip_address: str, next_page: str,
     if form.validate():
         logger.debug('Login form is valid')
         try:
-            userdata = users.authenticate(
+            userdata, auths = user_data.authenticate(
                 username_or_email=form.username.data,
                 password=form.password.data
             )
-        except users.AuthenticationFailed as e:
-            raise BadRequest('Invalid username or password') from e    # type: ignore
+        except user_data.exceptions.AuthenticationFailed as e:
+            raise BadRequest('Invalid username or password') from e
         try:
-            session = sessions.create_user_session(userdata, ip_address,
-                                                   ip_address,
-                                                   tracking_cookie)
+            session, cookie = sessions.create(userdata, auths, ip_address,
+                                              ip_address, tracking_cookie)
             logger.debug('Created session: %s', session.session_id)
-            classic_session = classic.create_user_session(userdata,
-                                                          ip_address,
-                                                          ip_address,
-                                                          tracking_cookie)
+            classic_session, classic_cookie = classic.sessions.create(
+                userdata,
+                ip_address,
+                ip_address,
+                tracking_cookie
+            )
             logger.debug('Created classic session: %s',
                          classic_session.session_id)
         except exceptions.SessionCreationFailed as e:
             logger.debug('Could not create session: %s', e)
-            raise InternalServerError('Could not log in') from e    # type: ignore
+            raise InternalServerError('Could not log in') from e
 
-        data.update({'session_cookie': session.cookie,
-                     'classic_cookie': classic_session.cookie})
+        data.update({'session_cookie': cookie,
+                     'classic_cookie': classic_cookie})
         return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
 
     data.update({'form': form})
@@ -126,16 +127,16 @@ def logout(session_cookie: Optional[str],
     logger.debug('Request to log out')
     if session_cookie:
         try:
-            sessions.invalidate_user_session(session_cookie)
+            sessions.invalidate(session_cookie)
         except exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
-            raise InternalServerError('Could not log out') from e    # type: ignore
+            raise InternalServerError('Could not log out') from e
     if classic_session_cookie:
         try:
-            classic.invalidate_user_session(classic_session_cookie)
+            classic.sessions.invalidate(classic_session_cookie)
         except exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
-            raise InternalServerError('Could not log out') from e    # type: ignore
+            raise InternalServerError('Could not log out') from e
 
     return {}, status.HTTP_303_SEE_OTHER, {'Location': next_page}
 
@@ -155,3 +156,8 @@ def post_register(form_data: MultiDict) -> ResponseData:
         logger.debug('Registration form is valid')
         print(form.to_domain())
     return {'form': form}, status.HTTP_200_OK, {}
+
+#
+# def get_edit() -> ResponseData:
+#     form = ProfileForm()
+#     return {'form': form}, status.HTTP_200_OK, {}

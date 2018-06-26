@@ -9,5 +9,5 @@ class SessionDeletionFailed(RuntimeError):
     """Failed to delete a session in the session store."""
 
 
-class UserSessionUnknown(RuntimeError):
+class SessionUnknown(RuntimeError):
     """Failed to locate a session in the session store."""

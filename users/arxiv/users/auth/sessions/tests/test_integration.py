@@ -9,9 +9,8 @@ import os
 import redis
 import jwt
 
-from accounts.services import session_store
-from accounts.services.exceptions import *
-from accounts.domain import UserSession, User, UserPrivileges
+from .... import domain
+from .. import store
 
 
 class TestDistributedSessionServiceIntegration(TestCase):
@@ -38,66 +37,56 @@ class TestDistributedSessionServiceIntegration(TestCase):
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                        shell=True)
 
-    def test_create_user_session(self):
+    def test_store_create(self):
         """An entry should be created in Redis."""
-
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
-        user = User(
+        user = domain.User(
             user_id=1,
             username='theuser',
             email='the@user.com',
-            privileges=UserPrivileges(
-                classic=2,
-                scopes=['foo:write'],
-                endorsement_domains=[]
-            )
         )
-        session = session_store.create_user_session(user, ip, remote_host)
+        authorizations = domain.Authorizations(
+            classic=2,
+            scopes=['foo:write'],
+            endorsements=[]
+        )
+        session, cookie = store.create(user, authorizations, ip, remote_host)
 
         # API still works as expected.
-        self.assertIsInstance(session, UserSession)
+        self.assertIsInstance(session, domain.Session)
         self.assertTrue(bool(session.session_id))
-        self.assertIsNotNone(session.cookie)
+        self.assertIsNotNone(cookie)
 
         # Are the expected values stored in Redis?
         r = redis.StrictRedis(host='localhost', port=6379, db=0)
         raw = r.get(session.session_id)
         stored_data = json.loads(raw)
-        cookie_data = jwt.decode(session.cookie, self.secret)
+        cookie_data = jwt.decode(cookie, self.secret)
         self.assertEqual(stored_data['nonce'], cookie_data['nonce'])
 
-    def test_get_user_session(self):
-        """Get a session from the datastore."""
-        r = redis.StrictRedis(host='localhost', port=6379, db=0)
-        data_in = {'user_id': 42}
-        r.set('fookey', json.dumps(data_in))
-        data_out = session_store.get_user_session('fookey')
-        self.assertIsNotNone(data_out)
-        self.assertEqual(42, data_out['user_id'])
-
-    def test_invalidate_session(self):
-        """Invalidate a session from the datastore."""
-        r = redis.StrictRedis(host='localhost', port=6379, db=0)
-        data_in = {'end_time': time.time() + 30 * 60, 'user_id': 1,
-                   'nonce': '123'}
-        r.set('fookey', json.dumps(data_in))
-        data0 = json.loads(r.get('fookey'))
-        now = time.time()
-        self.assertGreaterEqual(data0['end_time'], now)
-        session_store.invalidate_user_session(
-            session_store.current_session()._pack_cookie({
-                'session_id': 'fookey',
-                'nonce': '123',
-                'user_id': 1
-            })
-        )
-        data1 = json.loads(r.get('fookey'))
-        now = time.time()
-        self.assertGreaterEqual(now, data1['end_time'])
+    # def test_invalidate_session(self):
+    #     """Invalidate a session from the datastore."""
+    #     r = redis.StrictRedis(host='localhost', port=6379, db=0)
+    #     data_in = {'end_time': time.time() + 30 * 60, 'user_id': 1,
+    #                'nonce': '123'}
+    #     r.set('fookey', json.dumps(data_in))
+    #     data0 = json.loads(r.get('fookey'))
+    #     now = time.time()
+    #     self.assertGreaterEqual(data0['end_time'], now)
+    #     store.invalidate(
+    #         store.current_session()._pack_cookie({
+    #             'session_id': 'fookey',
+    #             'nonce': '123',
+    #             'user_id': 1
+    #         })
+    #     )
+    #     data1 = json.loads(r.get('fookey'))
+    #     now = time.time()
+    #     self.assertGreaterEqual(now, data1['end_time'])
 
     def test_delete_session(self):
         """Delete a session from the datastore."""
         r = redis.StrictRedis(host='localhost', port=6379, db=0)
         r.set('fookey', b'foovalue')
-        session_store.delete_user_session('fookey')
+        store.delete('fookey')

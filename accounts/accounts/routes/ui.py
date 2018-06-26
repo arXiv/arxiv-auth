@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template, url_for, abort, request, \
     make_response, redirect, current_app
 from arxiv import status
-from accounts import authorization, controllers
+from accounts import controllers
 
 blueprint = Blueprint('ui', __name__, url_prefix='/user')
 
@@ -19,12 +19,22 @@ def get_next_page() -> None:
 
 @blueprint.route('/register', methods=['GET', 'POST'])
 def register():     # type: ignore
+    """Interface for creating new accounts."""
     if request.method == 'POST':
         data, code, headers = controllers.post_register(request.form)
     else:
         data, code, headers = controllers.get_register()
     return render_template("accounts/register.html", **data)
 
+
+@blueprint.route('/edit', methods=['GET', 'POST'])
+def profile():
+    """Interface for updating user profile."""
+    if request.method == 'POST':
+        data, code, headers = controllers.post_register(request.form)
+    else:
+        data, code, headers = controllers.get_register()
+    return render_template("accounts/profile.html", **data)
 
 
 @blueprint.route('/login', methods=['GET'])

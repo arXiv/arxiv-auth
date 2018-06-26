@@ -10,7 +10,6 @@ from base64 import b64encode
 
 from arxiv import status
 from accounts.factory import create_web_app
-from accounts.domain import User, UserSession, UserPrivileges
 
 
 def _parse_cookies(cookie_data):
@@ -25,6 +24,15 @@ def _parse_cookies(cookie_data):
         }
         cookies[key] = dict(value=value, **extra)
     return cookies
+
+
+def stop_container(container):
+    subprocess.run(f"docker rm -f {container}",
+                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                   shell=True)
+    from accounts.services import classic_session_store, user_data
+    classic_session_store.drop_all()
+    user_data.drop_all()
 
 
 class TestLoginLogoutRoutes(TestCase):
@@ -43,76 +51,75 @@ class TestLoginLogoutRoutes(TestCase):
 
         cls.container = cls.redis.stdout.decode('ascii').strip()
         cls.secret = 'bazsecret'
-        cls.app = create_web_app()
-        cls.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-        cls.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
-        cls.app.config['JWT_SECRET'] = cls.secret
-        cls.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
-        cls.client = cls.app.test_client()
-        cls.app.app_context().push()
-        from accounts.services import classic_session_store, users
-        classic_session_store.create_all()
-        users.create_all()
+        try:
+            cls.app = create_web_app()
+            cls.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
+            cls.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
+            cls.app.config['JWT_SECRET'] = cls.secret
+            cls.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///db.sqlite'
+            cls.client = cls.app.test_client()
+            cls.app.app_context().push()
+            from accounts.services import classic_session_store, user_data
+            classic_session_store.create_all()
+            user_data.create_all()
 
-        with users.transaction() as session:
-            # We have a good old-fashioned user.
-            user_class = users.models.TapirPolicyClass(
-                class_id=2,
-                name='Public user',
-                password_storage=2,
-                recovery_policy=3,
-                permanent_login=1,
-                description=''
-            )
-            db_user = users.models.TapirUser(
-                user_id=1,
-                first_name='first',
-                last_name='last',
-                suffix_name='iv',
-                email='first@last.iv',
-                policy_class=user_class.class_id,
-                flag_edit_users=1,
-                flag_email_verified=1,
-                flag_edit_system=0,
-                flag_approved=1,
-                flag_deleted=0,
-                flag_banned=0,
-                tracking_cookie='foocookie',
-            )
-            db_nick = users.models.TapirUserNickname(
-                nick_id=1,
-                nickname='foouser',
-                user_id=1,
-                user_seq=1,
-                flag_valid=1,
-                role=0,
-                policy=0,
-                flag_primary=1
-            )
-            salt = b'fdoo'
-            password = b'thepassword'
-            hashed = hashlib.sha1(salt + b'-' + password).digest()
-            encrypted = b64encode(salt + hashed)
-            db_password = users.models.TapirUserPassword(
-                user_id=1,
-                password_storage=2,
-                password_enc=encrypted
-            )
-            session.add(db_user)
-            session.add(db_password)
-            session.add(db_nick)
-            session.add(user_class)
-            session.commit()
+            with user_data.transaction() as session:
+                # We have a good old-fashioned user.
+                user_class = user_data.models.DBPolicyClass(
+                    class_id=2,
+                    name='Public user',
+                    password_storage=2,
+                    recovery_policy=3,
+                    permanent_login=1,
+                    description=''
+                )
+                db_user = user_data.models.DBUser(
+                    user_id=1,
+                    first_name='first',
+                    last_name='last',
+                    suffix_name='iv',
+                    email='first@last.iv',
+                    policy_class=user_class.class_id,
+                    flag_edit_users=1,
+                    flag_email_verified=1,
+                    flag_edit_system=0,
+                    flag_approved=1,
+                    flag_deleted=0,
+                    flag_banned=0,
+                    tracking_cookie='foocookie',
+                )
+                db_nick = user_data.models.DBUserNickname(
+                    nick_id=1,
+                    nickname='foouser',
+                    user_id=1,
+                    user_seq=1,
+                    flag_valid=1,
+                    role=0,
+                    policy=0,
+                    flag_primary=1
+                )
+                salt = b'fdoo'
+                password = b'thepassword'
+                hashed = hashlib.sha1(salt + b'-' + password).digest()
+                encrypted = b64encode(salt + hashed)
+                db_password = user_data.models.DBUserPassword(
+                    user_id=1,
+                    password_storage=2,
+                    password_enc=encrypted
+                )
+                session.add(db_user)
+                session.add(db_password)
+                session.add(db_nick)
+                session.add(user_class)
+                session.commit()
+        except Exception as e:
+            stop_container(cls.container)
+            raise
 
     @classmethod
     def tearDownClass(cls):
         """Tear down redis."""
-        subprocess.run(f"docker rm -f {cls.container}",
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                       shell=True)
-        from accounts.services import classic_session_store, users
-        classic_session_store.drop_all()
-        users.drop_all()
+        stop_container(cls.container)
 
     def test_get_login(self):
         """GET request to /login returns the login form."""
@@ -158,7 +165,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.assertEqual(
             cookies[self.app.config['SESSION_COOKIE_NAME']]['value'],
             '',
-            'UserSession cookie is unset'
+            'Session cookie is unset'
         )
         cookie_expires = datetime.strptime(
             cookies[self.app.config['SESSION_COOKIE_NAME']]['Expires'],

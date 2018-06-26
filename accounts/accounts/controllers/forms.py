@@ -5,8 +5,11 @@ from wtforms import StringField, PasswordField, SelectField, \
     SelectMultipleField, BooleanField, Form
 from wtforms.validators import DataRequired, Email, Length, URL, optional
 from wtforms.widgets import ListWidget, CheckboxInput, Select
+import pycountry
 
-from accounts.domain import UserRegistration, UserFullName, UserProfile
+# from .. import domain
+from accounts.domain import UserRegistration
+from arxiv import taxonomy, users
 from .util import MultiCheckboxField, OptGroupSelectField
 
 
@@ -20,10 +23,23 @@ class LoginForm(Form):
 class RegistrationForm(Form):
     """User registration form."""
 
-    COUNTRIES = [('', '')] + UserProfile.COUNTRIES
-    RANKS = [('', '')] + UserProfile.RANKS
-    GROUPS = UserProfile.GROUPS
-    CATEGORIES = UserProfile.CATEGORIES
+    COUNTRIES = [('', '')] + \
+        [(country.alpha_2, country.name) for country in pycountry.countries]
+    RANKS = [('', '')] + users.domain.UserProfile.RANKS
+    GROUPS = [
+        (key, group['name']) for key, group in taxonomy.GROUPS.items()
+        if not group.get('is_test', False)
+    ]
+    CATEGORIES = [
+        (archive['name'], [
+            (category_id, category['name'])
+            for category_id, category in taxonomy.CATEGORIES.items()
+            if category['is_active'] and category['in_archive'] == archive_id
+        ])
+        for archive_id, archive in taxonomy.ARCHIVES.items()
+        if 'end_date' not in archive
+    ]
+    """Categories grouped by archive."""
 
     email = StringField('Email address',
                         validators=[Email(), Length(max=255), DataRequired()],
@@ -49,7 +65,7 @@ class RegistrationForm(Form):
     organization = StringField('Organization',
                                validators=[Length(max=255), DataRequired()],
                                description=(
-        'This field accepts <a href="https://beta.arxiv.org/user/tex_accents">'
+        'This field accepts <a href="https://arxiv.org/user/tex_accents">'
         'pidgin TeX (\\\'o)</a> for foreign characters.'
     ))
     country = SelectField('Country', choices=COUNTRIES,
@@ -61,7 +77,8 @@ class RegistrationForm(Form):
     default_category = OptGroupSelectField('Your default category',
                                            choices=CATEGORIES, default='')
 
-    url = StringField('Your homepage URL', validators=[optional(), Length(max=255), URL()])
+    url = StringField('Your homepage URL', validators=[optional(),
+                      Length(max=255), URL()])
     remember_me = BooleanField('Have your browser remember who you are?',
                                default=True)
 
@@ -71,17 +88,19 @@ class RegistrationForm(Form):
             username=self.username.data,
             password=self.password.data,
             email=self.email.data,
-            name=UserFullName(
+            name=users.domain.UserFullName(
                 forename=self.forename.data,
                 surname=self.surname.data,
                 suffix=self.suffix.data
             ),
-            profile=UserProfile(
+            profile=users.domain.UserProfile(
                 organization=self.organization.data,
                 country=self.country.data,
                 rank=int(self.status.data),     # WTF can't handle int values.
                 submission_groups=self.groups.data,
-                default_category=self.default_category.data,
+                default_category=users.domain.Category(
+                    *self.default_category.data.split()
+                ),
                 homepage_url=self.url.data,
                 remember_me=self.remember_me.data
             )
