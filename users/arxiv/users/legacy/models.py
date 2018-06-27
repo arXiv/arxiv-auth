@@ -36,6 +36,8 @@ class DBSession(Base):  # type: ignore
     end_time = Column(Integer, nullable=False, index=True,
                       server_default=text("'0'"))
 
+    user = relationship('DBUser')
+
 
 class DBSessionsAudit(Base):
     """Legacy arXiv session audit table. Notably has a tracking cookie."""
@@ -258,3 +260,5 @@ class DBEndorsement(Base):  # type: ignore
     point_value = Column(Integer, nullable=False, server_default=text("'0'"))
     issued_when = Column(Integer, nullable=False, server_default=text("'0'"))
     request_id = Column(Integer, nullable=True, server_default=None)
+
+    endorsee = relationship('DBUser')

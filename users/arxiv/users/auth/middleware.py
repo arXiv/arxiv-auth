@@ -1,12 +1,19 @@
 """Middleware for decoding JWTs on requests. For demo purposes only."""
 
+import os
 from typing import Callable, Iterable, Tuple
 import jwt
 
+from werkzeug.exceptions import Unauthorized, InternalServerError
+
 from arxiv.base.middleware import BaseMiddleware
+from arxiv.base import logging
+
 from . import tokens
 from .exceptions import InvalidToken, ConfigurationError, MissingToken
 from .. import domain
+
+logger = logging.getLogger(__name__)
 
 WSGIRequest = Tuple[dict, Callable]
 
@@ -27,42 +34,30 @@ class AuthMiddleware(BaseMiddleware):
     """
 
     def before(self, environ: dict, start_response: Callable) -> WSGIRequest:
-        environ['user'] = None
-        # Try to verify the token in the Authorzation header first.
+        """Decode and unpack the auth token on the request."""
+        environ['session'] = None      # Create the session key, at a minimum.
+        environ['token'] = None
+        token = environ.get('HTTP_AUTHORIZATION')    # We may not have a token.
+        if token is None:
+            logger.info('No auth token')
+            return environ, start_response
+
+        # The token secret should be set in the WSGI environ, or in os.environ.
+        secret = environ.get('JWT_SECRET', os.environ.get('JWT_SECRET'))
+        if secret is None:
+            raise ConfigurationError('Missing decryption token')
+
         try:
-            token, decoded = self._verify_token(environ)
-            environ['auth'] = {
-                'scope': decoded.get('scope', []),
-                'user': decoded.get('user'),
-                'client': decoded.get('client'),
-                'token': token
-            }
-        except InvalidToken as e:   # Might be forged!
+            # Try to verify the token in the Authorization header, and attach
+            # the decoded session data to the request.
+            environ['session']: domain.Session = tokens.decode(token, secret)
+
+            # Attach the encrypted token so that we can use it in subrequests.
+            environ['token'] = token
+        except InvalidToken as e:   # Let the application decide what to do.
             logger.error('Auth token not valid')
-        except MissingToken as e:
-            logger.info('No auth token; attempting to use classic session')
-            # If we don't see a token, we're probably not deployed behind a
-            # gateway with an authorization service. If the legacy database
-            # is available, we can try to use that as a fall-back.
-            # if classic.database_is_configured():
-            #     try:
-            #         environ['user'] = User(**classic.verify_session(environ))
-            #     except classic.DatabaseNotAvailable as e:
-            #         logger.error('Classic database is not available')
-            #     except classic.InvalidSession as e:
-            #         logger.error('Classic session is not valid')
+            environ['session'] = Unauthorized('Invalid auth token')
         except Exception as e:
             logger.error(f'Unhandled exception: {e}')
+            environ['session'] = InternalServerError(f'Unhandled: {e}')
         return environ, start_response
-
-    def _verify_token(self, environ: dict) -> Tuple[str, dict]:
-        try:
-            token = environ['AUTHORIZATION']
-        except KeyError as e:
-            raise MissingToken('Authorization token not found') from e
-        try:
-            secret = self.app.config['JWT_SECRET']
-        except KeyError as e:
-            raise ConfigurationError('Missing decryption token') from e
-        data = tokens.decode(token, secret)
-        return token, data

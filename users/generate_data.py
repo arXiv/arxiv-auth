@@ -37,7 +37,7 @@ app = Flask('test')
 legacy.init_app(app)
 app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['CLASSIC_SESSION_HASH'] = 'foohash'
-print(app.config['CLASSIC_DATABASE_URI'])
+
 with app.app_context():
     legacy.create_all()
 
@@ -120,7 +120,7 @@ with app.app_context():
 
     for db_user in _users:
         user = domain.User(
-            user_id=db_user.user_id,
+            user_id=str(db_user.user_id),
             username=db_nick.nickname,
             email=db_user.email,
             authorizations=domain.Authorizations(

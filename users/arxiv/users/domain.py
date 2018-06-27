@@ -1,56 +1,26 @@
 """Defines user concepts for use in arXiv-NG services."""
 
-from typing import Any, Optional, Type, NamedTuple, List
+from typing import Any, Optional, Type, NamedTuple, List, Callable
 from datetime import datetime
 import dateutil.parser
+from functools import partial
 from arxiv import taxonomy
 
+from arxiv.base import logging
 
-def to_dict(obj: tuple) -> dict:
-    """Generate a dict representation of a NamedTuple instance."""
-    data = obj._asdict()
-    _data = {}
-    for key, value in data.items():
-        if hasattr(value, '_asdict'):
-            value = to_dict(value)
-        elif isinstance(value, datetime):
-            value = value.isoformat()
-        _data[key] = value
-    return _data
-
-
-def from_dict(cls, data: dict) -> NamedTuple:
-    """Generate a NamedTuple instance from a dict."""
-    _data = {}
-    for field, field_type in cls._field_types.items():
-        if field not in data:
-            continue
-        value = data[field]
-        if type(value) is dict:
-            if hasattr(field_type, '_fields'):
-                value = from_dict(field_type, value)
-            elif hasattr(field_type, '_subs_tree'):
-                for s_type in field_type._subs_tree():
-                    if s_type is dict:
-                        break
-                    if hasattr(s_type, '_fields'):
-                        value = from_dict(s_type, value)
-                        break
-        elif (field_type is datetime or
-              (hasattr(field_type, '_subs_tree') and
-               datetime in field_type._subs_tree())):
-            value = dateutil.parser.parse(value)
-        _data[field] = value
-    return cls(**_data)
+logger = logging.getLogger(__name__)
 
 
 class Category(NamedTuple):
+    """Reprents a classification category."""
+
     archive: str
     subject: Optional[str] = None
 
 
 class Client(NamedTuple):
     """Placeholder for API client."""
+
     client_id: str
 
 
@@ -108,12 +78,21 @@ class UserProfile(NamedTuple):
 
 
 class Authorizations(NamedTuple):
+    """Authorization information, e.g. associated with a :class:`.Session`."""
+
     classic: int = 0
+    """Capability code associated with a user's session."""
+
     endorsements: List[Category] = []
+    """Categories to which the user is permitted to submit."""
+
     scopes: list = []
+    """Authorized scopes. See :mod:`arxiv.users.auth.scopes`."""
 
 
 class UserFullName(NamedTuple):
+    """Represents a user's full name."""
+
     forename: str
     surname: str
     suffix: str = ''
@@ -131,6 +110,7 @@ class User(NamedTuple):
 
 class Session(NamedTuple):
     """Represents an authenticated session in the arXiv system."""
+
     session_id: str
     """Session cookie payload."""
     start_time: datetime
@@ -160,3 +140,130 @@ class UserRegistration(NamedTuple):
     email: str
     name: UserFullName
     profile: UserProfile
+
+
+# Helpers and private functions.
+
+
+def to_dict(obj: tuple) -> dict:
+    """
+    Generate a dict representation of a NamedTuple instance.
+
+    This just uses the built-in ``_asdict`` method on the intance, but also
+    calls this on any child NamedTuple instances (recursively) so that the
+    entire tree is cast to ``dict``.
+
+    Parameters
+    ----------
+    obj : tuple
+        A NamedTuple instance.
+
+    Returns
+    -------
+    dict
+
+    """
+    data = obj._asdict()
+    _data = {}
+    for key, value in data.items():
+        if hasattr(value, '_asdict'):
+            value = to_dict(value)
+        elif isinstance(value, datetime):
+            value = value.isoformat()
+        _data[key] = value
+    return _data
+
+
+def from_dict(cls: type, data: dict) -> NamedTuple:
+    """
+    Generate a NamedTuple instance from a dict, with recursion.
+
+    This is the inverse of :func:`to_dict`.
+
+    It's easy to instantiate NamedTuples from dicts, but it's not so easy if
+    a NamedTuple field is typed with another NamedTuple. This function
+    instantiates a NamedTuple class ``cls`` with the data in dict ``data``,
+    and also instantiates any referenced NamedTuple classes expected by
+    ``cls``'s fields with the appropriate data in ``data``.
+
+    Parameters
+    ----------
+    cls: type
+        Any NamedTuple class.
+
+    data: dict
+        Data with which to instantiate ``cls`` and its children.
+
+    Returns
+    -------
+    NamedTuple
+        An instance of ``cls``.
+    """
+    _data = {}
+    for field, field_type in cls._field_types.items():
+        if field not in data:
+            continue
+        value = data[field]
+        target_type = _get_cast_type(field_type, value)
+        if target_type:
+            value = target_type(value)
+        _data[field] = value
+    return cls(**_data)
+
+
+def _is_a_namedtuple(field_type: type) -> bool:
+    """Determine whether or not a field type is a NamedTuple class."""
+    return hasattr(field_type, '_fields')
+
+
+def _is_typing_type(field_type: type) -> bool:
+    """Determine whether a type is a typing class."""
+    return hasattr(field_type, '_subs_tree')
+
+
+def _is_nested_type(field_type: type) -> bool:
+    """Determine whether a typing class is nested (e.g. Union[str, int])."""
+    return type(field_type._subs_tree()) is tuple
+
+
+def _get_cast_type_for_str(field_type: type) -> Optional[Callable]:
+    """
+    Determine the target type for a ``str`` value.
+
+    Returns ``None`` if a suitable target cannot be determined.
+    """
+    if (field_type is datetime or
+        (_is_typing_type(field_type) and
+         _is_nested_type(field_type) and
+         datetime in field_type._subs_tree())):
+        return dateutil.parser.parse
+
+
+def _get_cast_type_for_dict(field_type: type) -> Optional[Callable]:
+    """
+    Determine the NamedTuple target type for a ``dict`` value.
+
+    Returns ``None`` if a suitable target cannot be determined.
+    """
+    # Is the expected type for the field a NamedTuple class?
+    if _is_a_namedtuple(field_type):
+        return partial(from_dict, field_type)
+
+    # Is the expected type a nested Type? There may be a NamedTuple hiding
+    # in there...
+    if _is_typing_type(field_type) and _is_nested_type(field_type):
+
+        # Look for either a NamedTuple class, or dict type.
+        for s_type in field_type._subs_tree():
+            if s_type is dict:
+                return      # We already have one of these, nothing to do.
+            if _is_a_namedtuple(s_type):
+                return partial(from_dict, s_type)
+
+
+def _get_cast_type(field_type: type, value: Any) -> Optional[Callable]:
+    """Get a casting callable for a field type/value."""
+    if type(value) is dict:
+        return _get_cast_type_for_dict(field_type)
+    if type(value) is str:
+        return _get_cast_type_for_str(field_type)

@@ -42,7 +42,7 @@ class TestDistributedSessionServiceIntegration(TestCase):
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         user = domain.User(
-            user_id=1,
+            user_id='1',
             username='theuser',
             email='the@user.com',
         )

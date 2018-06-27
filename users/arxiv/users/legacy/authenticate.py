@@ -68,9 +68,14 @@ def authenticate(username_or_email: Optional[str]=None,
         logger.debug('Neither username/password nor token provided')
         raise AuthenticationFailed('Username+password or token required')
     user = domain.User(
-        user_id=db_user.user_id,
+        user_id=str(db_user.user_id),
         username=db_nick.nickname,
         email=db_user.email,
+        name=domain.UserFullName(
+            forename=db_user.first_name,
+            surname=db_user.last_name,
+            suffix=db_user.suffix_name
+        )
     )
     auths = domain.Authorizations(
         classic=compute_capabilities(db_user),

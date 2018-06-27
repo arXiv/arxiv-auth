@@ -8,8 +8,6 @@ from base64 import b64encode, b64decode
 import hashlib
 from collections import Counter
 
-from flask import current_app
-
 from sqlalchemy.engine import Engine
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -168,7 +166,7 @@ def compute_capabilities(tapir_user: DBUser) -> int:
 def get_scopes(db_user: DBUser) -> List[str]:
     """Generate a list of authz scopes for a legacy user based on class."""
     if db_user.policy_class == DBPolicyClass.PUBLIC_USER:
-        return scopes.AUTHENTICATED_USER
+        return scopes.GENERAL_USER
     return []
 
 
@@ -193,3 +191,11 @@ def aggregate_endorsements(data: List[DBEndorsement]) -> List[domain.Category]:
     return [domain.Category(archive=archive, subject=subject)
             for (archive, subject), points
             in endorsement_points.items() if points > 0]
+
+
+def is_configured() -> bool:
+    """Determine whether or not the legacy database is configured."""
+    config = get_application_config()
+    if 'CLASSIC_DATABASE_URI' in config and 'CLASSIC_SESSION_HASH' in config:
+        return True
+    return False

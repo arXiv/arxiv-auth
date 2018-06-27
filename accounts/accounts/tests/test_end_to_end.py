@@ -1,4 +1,4 @@
-"""."""
+"""End-to-end tests, via requests to the user interface."""
 
 from unittest import TestCase, mock
 from datetime import datetime
@@ -30,9 +30,9 @@ def stop_container(container):
     subprocess.run(f"docker rm -f {container}",
                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                    shell=True)
-    from accounts.services import classic_session_store, user_data
-    classic_session_store.drop_all()
-    user_data.drop_all()
+    from accounts.services import legacy, users
+    legacy.drop_all()
+    users.drop_all()
 
 
 class TestLoginLogoutRoutes(TestCase):
@@ -59,13 +59,13 @@ class TestLoginLogoutRoutes(TestCase):
             cls.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///db.sqlite'
             cls.client = cls.app.test_client()
             cls.app.app_context().push()
-            from accounts.services import classic_session_store, user_data
-            classic_session_store.create_all()
-            user_data.create_all()
+            from accounts.services import legacy, users
+            legacy.create_all()
+            users.create_all()
 
-            with user_data.transaction() as session:
+            with users.transaction() as session:
                 # We have a good old-fashioned user.
-                user_class = user_data.models.DBPolicyClass(
+                user_class = users.models.DBPolicyClass(
                     class_id=2,
                     name='Public user',
                     password_storage=2,
@@ -73,7 +73,7 @@ class TestLoginLogoutRoutes(TestCase):
                     permanent_login=1,
                     description=''
                 )
-                db_user = user_data.models.DBUser(
+                db_user = users.models.DBUser(
                     user_id=1,
                     first_name='first',
                     last_name='last',
@@ -88,7 +88,7 @@ class TestLoginLogoutRoutes(TestCase):
                     flag_banned=0,
                     tracking_cookie='foocookie',
                 )
-                db_nick = user_data.models.DBUserNickname(
+                db_nick = users.models.DBUserNickname(
                     nick_id=1,
                     nickname='foouser',
                     user_id=1,
@@ -102,7 +102,7 @@ class TestLoginLogoutRoutes(TestCase):
                 password = b'thepassword'
                 hashed = hashlib.sha1(salt + b'-' + password).digest()
                 encrypted = b64encode(salt + hashed)
-                db_password = user_data.models.DBUserPassword(
+                db_password = users.models.DBUserPassword(
                     user_id=1,
                     password_storage=2,
                     password_enc=encrypted
@@ -162,6 +162,7 @@ class TestLoginLogoutRoutes(TestCase):
                       "Sets cookie for classic sessions.")
         response = self.client.get('/user/logout')
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
+
         self.assertEqual(
             cookies[self.app.config['SESSION_COOKIE_NAME']]['value'],
             '',

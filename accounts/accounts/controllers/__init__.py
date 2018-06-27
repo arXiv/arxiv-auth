@@ -7,10 +7,8 @@ from werkzeug.exceptions import BadRequest, InternalServerError
 
 from arxiv import status
 from arxiv.base import logging
-from accounts.services import session_store as sessions
-from accounts.services import classic_session_store as classic
-from accounts.services import exceptions, user_data
-from .forms import LoginForm, RegistrationForm#, ProfileForm
+from accounts.services import legacy, sessions, users
+from .forms import LoginForm, RegistrationForm
 
 logger = logging.getLogger(__name__)
 
@@ -69,25 +67,26 @@ def post_login(form_data: MultiDict, ip_address: str, next_page: str,
     if form.validate():
         logger.debug('Login form is valid')
         try:
-            userdata, auths = user_data.authenticate(
+            userdata, auths = users.authenticate(
                 username_or_email=form.username.data,
                 password=form.password.data
             )
-        except user_data.exceptions.AuthenticationFailed as e:
+        except users.exceptions.AuthenticationFailed as e:
             raise BadRequest('Invalid username or password') from e
         try:
             session, cookie = sessions.create(userdata, auths, ip_address,
                                               ip_address, tracking_cookie)
             logger.debug('Created session: %s', session.session_id)
-            classic_session, classic_cookie = classic.sessions.create(
+            classic_session, classic_cookie = legacy.create(
                 userdata,
+                auths,
                 ip_address,
                 ip_address,
                 tracking_cookie
             )
             logger.debug('Created classic session: %s',
                          classic_session.session_id)
-        except exceptions.SessionCreationFailed as e:
+        except legacy.exceptions.SessionCreationFailed as e:
             logger.debug('Could not create session: %s', e)
             raise InternalServerError('Could not log in') from e
 
@@ -128,13 +127,13 @@ def logout(session_cookie: Optional[str],
     if session_cookie:
         try:
             sessions.invalidate(session_cookie)
-        except exceptions.SessionDeletionFailed as e:
+        except sessions.exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
             raise InternalServerError('Could not log out') from e
     if classic_session_cookie:
         try:
-            classic.sessions.invalidate(classic_session_cookie)
-        except exceptions.SessionDeletionFailed as e:
+            legacy.invalidate(classic_session_cookie)
+        except legacy.exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
             raise InternalServerError('Could not log out') from e
 

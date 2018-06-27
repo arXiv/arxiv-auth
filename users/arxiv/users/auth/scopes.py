@@ -8,7 +8,7 @@ EDIT_SUBMISSION = 'submission:update'
 VIEW_SUBMISSION = 'submission:read'
 PROXY_SUBMISSION = 'submission:proxy'
 
-AUTHENTICATED_USER = [
+GENERAL_USER = [
     EDIT_PROFILE,
     VIEW_PROFILE,
     CREATE_SUBMISSION,

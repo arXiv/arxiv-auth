@@ -23,7 +23,7 @@ class TestDistributedSessionService(TestCase):
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         user = domain.User(
-            user_id=1,
+            user_id='1',
             username='theuser',
             email='the@user.com'
         )
@@ -59,7 +59,7 @@ class TestDistributedSessionService(TestCase):
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         user = domain.User(
-            user_id=1,
+            user_id='1',
             username='theuser',
             email='the@user.com'
         )
@@ -71,6 +71,58 @@ class TestDistributedSessionService(TestCase):
         r = store.SessionStore('localhost', 6379, 0, 'foosecret')
         with self.assertRaises(store.SessionCreationFailed):
             r.create(user, auths, ip, remote_host)
+
+
+class TestInvalidateSession(TestCase):
+    """Tests for :func:`store.invalidate`."""
+
+    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    def test_valid_token(self, mock_get_redis, mock_app):
+        """A valid token is passed."""
+        secret = 'barsecret'
+        mock_app.config = {
+            'JWT_SECRET': secret,
+            'REDIS_HOST': 'redis',
+            'REDIS_PORT': '1234',
+            'REDIS_DATABASE': 4
+        }
+        mock_redis = mock.MagicMock()
+        data = {
+            'session_id': 'ajx9043jjx00s',
+            'start_time': datetime.now().isoformat(),
+            'nonce': '0039299290098',
+            'user': {
+                'user_id': '1234',
+                'username': 'foouser',
+                'email': 'foo@foo.com'
+            }
+        }
+
+        def _get_data(*args, **kwargs):
+            return json.dumps(data)
+
+        def _update_data(key, new_data):
+            data.update(json.loads(new_data))
+
+        mock_redis.get = _get_data
+        mock_redis.set = _update_data
+        mock_get_redis.return_value = mock_redis
+
+        claims = {
+            'user_id': '1234',
+            'session_id': 'ajx9043jjx00s',
+            'nonce': '0039299290098'
+        }
+        token = jwt.encode(claims, secret)
+
+        session = store.load(token)
+        self.assertIsInstance(session, domain.Session, "Returns a session")
+        store.invalidate(token)
+
+        with self.assertRaises(store.InvalidToken):
+            store.load(token)
+
 
 
 class TestGetSession(TestCase):

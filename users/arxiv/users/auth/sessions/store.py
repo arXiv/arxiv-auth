@@ -26,11 +26,6 @@ def _generate_nonce(length: int = 8) -> str:
     return ''.join([str(random.randint(0, 9)) for i in range(length)])
 
 
-def _now() -> int:
-    epoch = (datetime.now() - datetime.utcfromtimestamp(0)).total_seconds()
-    return int(round(epoch))
-
-
 class SessionStore(object):
     """
     Manages a connection to Redis.
@@ -61,7 +56,7 @@ class SessionStore(object):
         :class:`.Session`
         """
         session_id = str(uuid.uuid4())
-        start_time = _now()
+        start_time = datetime.now()
         session = domain.Session(
             session_id=session_id,
             user=user,
@@ -107,22 +102,21 @@ class SessionStore(object):
         ----------
         session_id : str
         """
+        session = domain.to_dict(self.load(cookie))
         try:
             cookie_data = self._unpack_cookie(cookie)
         except jwt.exceptions.DecodeError as e:
             raise SessionDeletionFailed('Bad session token') from e
         try:
-            session_data = self.load(cookie_data['session_id'])
-            if session_data.nonce != cookie_data['nonce'] \
-                    or session_data.user_id != cookie_data['user_id']:
+            if session['nonce'] != cookie_data['nonce'] \
+                    or session['user']['user_id'] != cookie_data['user_id']:
                 raise SessionDeletionFailed('Bad session token')
-            session_data.end_time = _now()
-            data = json.dumps(domain.to_dict(session_data))
-            self.r.set(cookie_data['session_id'], data)
+            session['end_time'] = datetime.now().isoformat()
+            self.r.set(session['session_id'], json.dumps(session))
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
-        except Exception as e:
-            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
+        # except Exception as e:
+        #     raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
     def load(self, cookie: str) -> domain.Session:
         """Load a session using a session cookie."""

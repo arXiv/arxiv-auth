@@ -3,9 +3,11 @@
 from flask import Flask
 
 from arxiv.base import Base
+from arxiv.base.middleware import wrap
+from arxiv.users import auth
 
 from accounts.routes import ui
-from accounts.services import session_store, classic_session_store, user_data
+from accounts.services import sessions, legacy, users
 from accounts.encode import ISO8601JSONEncoder
 
 
@@ -15,11 +17,11 @@ def create_web_app() -> Flask:
     app.config.from_pyfile('config.py')
     app.json_encoder = ISO8601JSONEncoder
 
-    session_store.init_app(app)
-    classic_session_store.init_app(app)
-    # user_data.init_app(app)
+    sessions.init_app(app)
+    legacy.init_app(app)
+    users.init_app(app)
 
     app.register_blueprint(ui.blueprint)
     Base(app)    # Gives us access to the base UI templates and resources.
-
+    wrap(app, [auth.middleware.AuthMiddleware])
     return app

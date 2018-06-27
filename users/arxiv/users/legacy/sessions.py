@@ -23,7 +23,7 @@ from .models import Base, DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
 from .exceptions import SessionUnknown, SessionCreationFailed, \
     SessionDeletionFailed, SessionExpired
 from .util import transaction, now, pack_cookie, unpack_cookie, \
-    compute_capabilities, get_scopes, aggregate_endorsements, from_epoch, epoch
+    compute_capabilities, get_scopes, get_endorsements, from_epoch, epoch
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def _load(session_id: str) -> DBSession:
     return db_session
 
 
-def load(session_cookie: str) -> domain.User:
+def load(session_cookie: str) -> domain.Session:
     """
     Given a session cookie (from request), load the logged-in user.
 
@@ -53,7 +53,7 @@ def load(session_cookie: str) -> domain.User:
 
     Returns
     -------
-    :class:`.domain.User`
+    :class:`.domain.Session`
 
     Raises
     ------
@@ -65,18 +65,18 @@ def load(session_cookie: str) -> domain.User:
 
     with transaction() as session:
         data: List[_JoinedRow] = (
-            session.query(DBUser, DBSession, DBUserNickname, DBEndorsement)
-            .join(DBSession)
-            .join(DBUserNickname)
-            .join(DBEndorsement.endorsee_id)
+            session.query(DBUser, DBSession, DBUserNickname)
+            .filter(DBUser.user_id == user_id)
+            .filter(DBUserNickname.user_id == user_id)
             .filter(DBSession.user_id == user_id)
             .filter(DBSession.session_id == session_id)
-            .all()
+            .first()
         )
+
         if not data:
             raise SessionUnknown('No such user or session')
 
-        db_user, db_session, db_nick, _ = data[0]
+        db_user, db_session, db_nick = data
 
         # Verify that the session is not expired.
         if db_session.end_time != 0 and db_session.end_time < now():
@@ -84,7 +84,7 @@ def load(session_cookie: str) -> domain.User:
             raise SessionExpired(f'Session {session_id} has expired')
 
         user = domain.User(
-            user_id=user_id,
+            user_id=str(user_id),
             username=db_nick.nickname,
             email=db_user.email,
             name=domain.UserFullName(
@@ -97,16 +97,15 @@ def load(session_cookie: str) -> domain.User:
         # We should get one row per endorsement.
         authorizations = domain.Authorizations(
             classic=compute_capabilities(db_user),
-            endorsements=aggregate_endorsements(zip(*data)[-1]),
+            endorsements=get_endorsements(db_user),
             scopes=get_scopes(db_user)
         )
 
     return domain.Session(
-        db_session.session_id,
-        session_cookie,
+        str(db_session.session_id),
+        start_time=from_epoch(db_session.start_time),
         user=user,
-        authorizations=authorizations,
-        start_time=from_epoch(db_session.start_time)
+        authorizations=authorizations
     )
 
 
@@ -160,7 +159,8 @@ def create(user: domain.User, authorizations: domain.Authorizations,
     session = domain.Session(
         str(tapir_session.session_id),
         user=user,
-        start_time=start
+        start_time=start,
+        authorizations=authorizations
     )
     return session, cookie
 
@@ -185,7 +185,7 @@ def invalidate(cookie: str) -> None:
     try:
         with transaction() as session:
             tapir_session = _load(session_id)
-            tapir_session.end_time = end
+            tapir_session.end_time = end - 1
             session.merge(tapir_session)
     except NoResultFound as e:
         raise SessionUnknown(f'No such session {session_id}') from e

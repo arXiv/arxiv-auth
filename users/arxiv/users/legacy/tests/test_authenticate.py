@@ -22,7 +22,7 @@ class TestAuthenticateWithPermanentToken(TestCase):
         """Instantiate a user and its credentials in the DB."""
         self.path = tempfile.mkdtemp()
         self.db = f'sqlite:///{self.path}/test.db'
-        self.user_id = 1
+        self.user_id = '1'
         with temporary_db(self.db, drop=False) as session:
             self.user_class = models.DBPolicyClass(
                 class_id=2,
@@ -137,7 +137,7 @@ class TestAuthenticateWithPassword(TestCase):
         """Instantiate a user."""
         self.path = tempfile.mkdtemp()
         self.db = f'sqlite:///{self.path}/test.db'
-        self.user_id = 5
+        self.user_id = '5'
         with temporary_db(self.db, drop=False) as session:
             # We have a good old-fashioned user.
             self.user_class = models.DBPolicyClass(
