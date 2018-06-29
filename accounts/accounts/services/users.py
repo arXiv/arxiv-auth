@@ -9,3 +9,7 @@ models = legacy.models
 drop_all = legacy.util.drop_all
 exceptions = legacy.exceptions
 authenticate = legacy.authenticate.authenticate
+
+register = legacy.register.register
+username_exists = legacy.register.username_exists
+email_exists = legacy.register.email_exists

@@ -23,7 +23,9 @@ from .models import Base, DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
 from .exceptions import SessionUnknown, SessionCreationFailed, \
     SessionDeletionFailed, SessionExpired
 from .util import transaction, now, pack_cookie, unpack_cookie, \
-    compute_capabilities, get_scopes, get_endorsements, from_epoch, epoch
+    compute_capabilities, get_scopes, from_epoch, epoch
+
+from .endorsements import get_endorsements
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +64,8 @@ def load(session_cookie: str) -> domain.Session:
 
     """
     session_id, user_id, ip_addr, capabilities = unpack_cookie(session_cookie)
+    logger.debug('Load session %s for user %s at %s',
+                 session_id, user_id, ip_addr)
 
     with transaction() as session:
         data: List[_JoinedRow] = (
@@ -97,16 +101,18 @@ def load(session_cookie: str) -> domain.Session:
         # We should get one row per endorsement.
         authorizations = domain.Authorizations(
             classic=compute_capabilities(db_user),
-            endorsements=get_endorsements(db_user),
+            endorsements=get_endorsements(user),
             scopes=get_scopes(db_user)
         )
 
-    return domain.Session(
+    session = domain.Session(
         str(db_session.session_id),
         start_time=from_epoch(db_session.start_time),
         user=user,
         authorizations=authorizations
     )
+    logger.debug('loaded session %s', session.session_id)
+    return session
 
 
 def create(user: domain.User, authorizations: domain.Authorizations,
@@ -130,6 +136,7 @@ def create(user: domain.User, authorizations: domain.Authorizations,
     :class:`.Session`
 
     """
+    logger.debug('create session for user %s', user.user_id)
     start = datetime.now()
     try:
         with transaction() as session:
@@ -156,12 +163,15 @@ def create(user: domain.User, authorizations: domain.Authorizations,
         ip_address,
         str(authorizations.classic)
     )
+    logger.debug('generated cookie: %s', cookie)
+
     session = domain.Session(
         str(tapir_session.session_id),
         user=user,
         start_time=start,
         authorizations=authorizations
     )
+    logger.debug('created session %s', session.session_id)
     return session, cookie
 
 

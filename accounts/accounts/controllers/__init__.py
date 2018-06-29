@@ -4,11 +4,16 @@ from typing import Dict, Tuple, Any, Optional
 import uuid
 from werkzeug import MultiDict, ImmutableMultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
+from flask import url_for
 
 from arxiv import status
 from arxiv.base import logging
 from accounts.services import legacy, sessions, users
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm
+from .register import register
+from .profile import profile
+
+from .. import captcha
 
 logger = logging.getLogger(__name__)
 
@@ -138,25 +143,3 @@ def logout(session_cookie: Optional[str],
             raise InternalServerError('Could not log out') from e
 
     return {}, status.HTTP_303_SEE_OTHER, {'Location': next_page}
-
-
-def get_register() -> ResponseData:
-    form = RegistrationForm()
-    return {'form': form}, status.HTTP_200_OK, {}
-
-
-def post_register(form_data: MultiDict) -> ResponseData:
-    """
-    Processes submitted registration form, and create a new user.
-    """
-    logger.debug('Registration form submitted')
-    form = RegistrationForm(form_data)
-    if form.validate():
-        logger.debug('Registration form is valid')
-        print(form.to_domain())
-    return {'form': form}, status.HTTP_200_OK, {}
-
-#
-# def get_edit() -> ResponseData:
-#     form = ProfileForm()
-#     return {'form': form}, status.HTTP_200_OK, {}

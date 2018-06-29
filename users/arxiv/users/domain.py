@@ -17,6 +17,29 @@ class Category(NamedTuple):
     archive: str
     subject: Optional[str] = None
 
+    @classmethod
+    def from_compound(cls, category: str) -> 'Category':
+        """
+        Create a :class:`.Category` from a compound classification slug.
+
+        E.g. "astro-ph.CO" -> Category(archive="astro-ph", subject="CO")
+
+        Parameters
+        ----------
+        category : str
+            A dot-delimited compound category slug.
+
+        Returns
+        -------
+        :class:`.Category`
+
+        """
+        parts = category.split('.')
+        if len(parts) == 2:
+            return cls(*parts)
+        return cls(category, '')
+
+
 
 class Client(NamedTuple):
     """Placeholder for API client."""
@@ -66,15 +89,12 @@ class UserProfile(NamedTuple):
     @property
     def default_archive(self) -> str:
         """The archive of the default category."""
-        return self.default_category.split('.')[0]
+        return self.default_category.archive
 
     @property
     def default_subject(self) -> Optional[str]:
         """The subject of the default category."""
-        parts = self.default_category.split('.')
-        if len(parts) < 2:
-            return None
-        return parts[-1]
+        return self.default_category.subject
 
 
 class Authorizations(NamedTuple):

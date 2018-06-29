@@ -1,4 +1,4 @@
-"""Provides an API for user authentication using the legacy database."""
+"""Provide an API for user authentication using the legacy database."""
 
 from typing import Optional, Generator, Tuple
 import hashlib
@@ -14,12 +14,12 @@ from ..auth import scopes
 from arxiv.base import logging
 
 from .util import transaction, now, check_password, compute_capabilities, \
-    get_scopes, get_endorsements
+    get_scopes
 from .models import Base, DBUser, DBUserPassword, DBPermanentToken, \
     DBUserNickname, Profile
 from .exceptions import NoSuchUser, AuthenticationFailed, \
     PasswordAuthenticationFailed
-
+from .endorsements import get_endorsements
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ def authenticate(username_or_email: Optional[str]=None,
     auths = domain.Authorizations(
         classic=compute_capabilities(db_user),
         scopes=get_scopes(db_user),
-        endorsements=get_endorsements(db_user)
+        endorsements=get_endorsements(user)
     )
     return user, auths
 
@@ -112,7 +112,6 @@ def _authenticate_token(token: str) -> TokenData:
         raise AuthenticationFailed('Token is malformed') from e
     try:
         return _get_token(user_id, secret)
-        logger.debug(f'Got user with user_id: {db_user.user_id}')
     except NoSuchUser as e:
         logger.debug('Not a valid permanent token')
         raise AuthenticationFailed('Invalid token') from e
@@ -175,7 +174,6 @@ def _get_user(username_or_email: str) -> PassData:
         Raised when the user cannot be found.
 
     """
-
     with transaction() as session:
         tapir_user: DBUser = session.query(DBUser) \
             .filter(DBUser.email == username_or_email) \

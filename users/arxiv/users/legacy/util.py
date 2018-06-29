@@ -170,29 +170,6 @@ def get_scopes(db_user: DBUser) -> List[str]:
     return []
 
 
-def get_endorsements(db_user: DBUser) -> List[domain.Category]:
-    """Load endorsed categories for a user."""
-    with transaction() as session:
-        data: List[Row] = (
-            session.query(DBEndorsement)
-            .filter(DBEndorsement.endorsee_id == db_user.user_id)
-            .all()
-        )
-    return aggregate_endorsements(data)
-
-
-def aggregate_endorsements(data: List[DBEndorsement]) -> List[domain.Category]:
-    """Generate a set of endorsed categories from legacy endorsement data."""
-    endorsement_points = Counter()
-    for db_endorsement in data:
-        category = (db_endorsement.archive, db_endorsement.subject_class)
-        # This should be robust to negative endorsements.
-        endorsement_points[category] += db_endorsement.point_value
-    return [domain.Category(archive=archive, subject=subject)
-            for (archive, subject), points
-            in endorsement_points.items() if points > 0]
-
-
 def is_configured() -> bool:
     """Determine whether or not the legacy database is configured."""
     config = get_application_config()

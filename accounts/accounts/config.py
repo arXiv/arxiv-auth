@@ -45,3 +45,6 @@ CLASSIC_TOKEN_RECOVERY_TIMEOUT = os.environ.get(
 CLASSIC_SESSION_HASH = os.environ.get('CLASSIC_SESSION_HASH', 'foosecret')
 
 CLASSIC_DATABASE_URI = os.environ.get('CLASSIC_DATABASE_URI')
+
+CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', 'foocaptcha')
+"""Used to encrypt captcha answers, so that we don't need to store them."""

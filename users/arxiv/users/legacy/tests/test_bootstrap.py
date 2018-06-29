@@ -30,6 +30,10 @@ def _get_locale() -> str:
     return LOCALES[random.randint(0, len(LOCALES) - 1)]
 
 
+def _prob(P: int) -> bool:
+    return random.randint(0, 100) < P
+
+
 class TestBootstrap(TestCase):
     """Tests against legacy user integrations with fake data."""
 
@@ -56,8 +60,8 @@ class TestBootstrap(TestCase):
                     net = Internet(locale)
                     ip_addr = net.ip_v4()
                     email = person.email()
-                    approved = 1 if random.randint(0, 100) < 90 else 0
-                    deleted = 1 if random.randint(0, 100) < 2 else 0
+                    approved = 1 if _prob(90) else 0
+                    deleted = 1 if _prob(2) else 0
                     banned = 1 if random.randint(0, 100) <= 1 else 0
                     first_name = person.name()
                     last_name = person.surname()
@@ -86,7 +90,7 @@ class TestBootstrap(TestCase):
                     session.add(db_user)
 
                     # Create a username.
-                    username_is_valid = 1 if random.randint(0, 100) < 90 else 0
+                    username_is_valid = 1 if _prob(90) else 0
                     username = person.username()
                     db_nick = models.DBUserNickname(
                         user=db_user,
@@ -106,12 +110,12 @@ class TestBootstrap(TestCase):
                         archive=archive,
                         subject_class=subject_class,
                         original_subject_classes='',
-                        flag_group_math=1 if random.randint(0, 100) < 5 else 0,
-                        flag_group_cs=1 if random.randint(0, 100) < 5 else 0,
-                        flag_group_nlin=1 if random.randint(0, 100) < 5 else 0,
-                        flag_group_q_bio=1 if random.randint(0, 100) < 5 else 0,
-                        flag_group_q_fin=1 if random.randint(0, 100) < 5 else 0,
-                        flag_group_stat=1 if random.randint(0, 100) < 5 else 0
+                        flag_group_math=1 if _prob(5) else 0,
+                        flag_group_cs=1 if _prob(5) else 0,
+                        flag_group_nlin=1 if _prob(5) else 0,
+                        flag_group_q_bio=1 if _prob(5) else 0,
+                        flag_group_q_fin=1 if _prob(5) else 0,
+                        flag_group_stat=1 if _prob(5) else 0
                     )
 
                     # Set the user's password.
@@ -229,7 +233,7 @@ class TestBootstrap(TestCase):
                                  "Loaded the correct session")
 
                 # Invalidate 10% of the sessions, and try again.
-                if random.randint(0, 100) < 10:
+                if _prob(10):
                     sessions.invalidate(cookie)
                     with self.assertRaises(exceptions.SessionExpired):
                         sessions.load(cookie)

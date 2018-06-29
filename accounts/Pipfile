@@ -23,6 +23,8 @@ pycountry = "*"
 "de85c28" = {path = "./../../arxiv-base-ui"}
 mysqlclient = "*"
 "6c2b755" = {path = "./../users"}
+python-dateutil = "*"
+captcha = "*"
 
 [dev-packages]
 coverage = "*"

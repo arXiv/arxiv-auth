@@ -1,4 +1,4 @@
-"""Exceptions."""
+"""Exceptions for legacy user/session integration."""
 
 
 class AuthenticationFailed(RuntimeError):
@@ -6,24 +6,24 @@ class AuthenticationFailed(RuntimeError):
 
 
 class NoSuchUser(RuntimeError):
-    """User does not exist."""
+    """A reference to a non-existant user was passed."""
 
 
 class PasswordAuthenticationFailed(RuntimeError):
-    """Password is not correct."""
+    """An invalid username/password combination were provided."""
 
 
 class SessionCreationFailed(RuntimeError):
-    """Failed to create a session in the session store."""
+    """Failed to create a session in the legacy database."""
 
 
 class SessionDeletionFailed(RuntimeError):
-    """Failed to delete a session in the session store."""
+    """Failed to delete a session in the legacy database."""
 
 
 class SessionUnknown(RuntimeError):
-    """Failed to locate a session in the session store."""
+    """Failed to locate a session in the legacy database."""
 
 
 class SessionExpired(RuntimeError):
-    """User's session has expired."""
+    """A reference was made to an expired session."""

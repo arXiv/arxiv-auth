@@ -18,10 +18,12 @@ from ... import domain
 class TestScoped(TestCase):
     """Tests for :func:`.decorators.scoped`."""
 
+    @mock.patch(f'{decorators.__name__}.legacy')
     @mock.patch(f'{decorators.__name__}.request')
-    def test_no_session(self, mock_request):
+    def test_no_session(self, mock_request, mock_legacy):
         """No session is present on the request."""
         mock_request.environ = {'session': None}
+        mock_legacy.is_configured.return_value = False
 
         @decorators.scoped(scopes.CREATE_SUBMISSION)
         def protected():
@@ -40,7 +42,7 @@ class TestScoped(TestCase):
         mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
         mock_app.config = {'CLASSIC_COOKIE_NAME': 'foo_cookie'}
         mock_legacy.is_configured.return_value = True
-        mock_legacy.load.return_value = None
+        mock_legacy.sessions.load.return_value = None
 
         @decorators.scoped(scopes.CREATE_SUBMISSION)
         def protected():
@@ -49,7 +51,7 @@ class TestScoped(TestCase):
         with self.assertRaises(Unauthorized):
             protected()
 
-        self.assertEqual(mock_legacy.load.call_count, 1,
+        self.assertEqual(mock_legacy.sessions.load.call_count, 1,
                          "An attempt is made to load a legacy session")
 
     @mock.patch(f'{decorators.__name__}.legacy')
@@ -61,7 +63,7 @@ class TestScoped(TestCase):
         mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
         mock_app.config = {'CLASSIC_COOKIE_NAME': 'foo_cookie'}
         mock_legacy.is_configured.return_value = True
-        mock_legacy.load.return_value = domain.Session(
+        mock_legacy.sessions.return_value = domain.Session(
             session_id='fooid',
             start_time=datetime.now(),
             user=domain.User(

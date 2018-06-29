@@ -1,4 +1,4 @@
-"""Legacy database models."""
+"""ORM models for legacy user and session tables."""
 
 from typing import Any, NewType
 
@@ -17,7 +17,7 @@ class DBSession(Base):  # type: ignore
     +----------------+-----------------+------+-------+---------+----------------+
     | Field          | Type            | Null | Key   | Default | Extra          |
     +----------------+-----------------+------+-------+---------+----------------+
-    | session_id     | int(4) unsigned | NO   | PRI   | NULL    | auto_increment |
+    | session_id     | int(4) unsigned | NO   | PRI   | NULL    | autoincrement |
     | user_id        | int(4) unsigned | NO   | MUL   | 0       |                |
     | last_reissue   | int(11)         | NO   |       | 0       |                |
     | start_time     | int(11)         | NO   | MUL   | 0       |                |
@@ -101,9 +101,14 @@ class DBPolicyClass(Base):  # type: ignore
 
     __tablename__ = 'tapir_policy_classes'
 
-    ADMINISTRATOR = 1
+    ADMIN = 1
     PUBLIC_USER = 2
     LEGACY_USER = 3
+    POLICY_CLASSES = [
+        {"name": "Administrator", "class_id": ADMIN, "description": ""},
+        {"name": "Public user", "class_id": PUBLIC_USER, "description": ""},
+        {"name": "Legacy user", "class_id": LEGACY_USER, "description": ""}
+    ]
 
     class_id = Column(SmallInteger, primary_key=True)
     name = Column(String(64), nullable=False, server_default=text("''"))
@@ -166,7 +171,7 @@ class DBUserNickname(Base):  # type: ignore
     +--------------+------------------+------+-----+---------+----------------+
     | Field        | Type             | Null | Key | Default | Extra          |
     +--------------+------------------+------+-----+---------+----------------+
-    | nick_id      | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
+    | nick_id      | int(10) unsigned | NO   | PRI | NULL    | autoincrement |
     | nickname     | varchar(20)      | NO   | UNI |         |                |
     | user_id      | int(4) unsigned  | NO   | MUL | 0       |                |
     | user_seq     | int(1) unsigned  | NO   |     | 0       |                |
@@ -262,3 +267,152 @@ class DBEndorsement(Base):  # type: ignore
     request_id = Column(Integer, nullable=True, server_default=None)
 
     endorsee = relationship('DBUser')
+
+
+class DBEndorsementDomain(Base):
+    """
+    Encodes some policies about endorsement.
+
+    +--------------------+----------------------+------+-----+---------+
+    | Field              | Type                 | Null | Key | Default |
+    +--------------------+----------------------+------+-----+---------+
+    | endorsement_domain | varchar(32)          | NO   | PRI |         |
+    | endorse_all        | enum('y','n')        | NO   |     | n       |
+    | mods_endorse_all   | enum('y','n')        | NO   |     | n       |
+    | endorse_email      | enum('y','n')        | NO   |     | y       |
+    | papers_to_endorse  | smallint(5) unsigned | NO   |     | 4       |
+    +--------------------+----------------------+------+-----+---------+
+    """
+
+    __tablename__ = 'arXiv_endorsement_domains'
+
+    endorsement_domain = Column(String(32), primary_key=True)
+    endorse_all = Column(Enum('y', 'n'), server_default='n')
+    mods_endorse_all = Column(Enum('y', 'n'), server_default='n')
+    endorse_email = Column(Enum('y', 'n'), server_default='n')
+    papers_to_endorse = Column(Integer, nullable=False,
+                               server_default=text("'4'"))
+
+
+class DBCategory(Base):
+    """
+    Metadata about arXiv categories.
+
+    +--------------------+----------------------+------+-----+---------+
+    | Field              | Type                 | Null | Key | Default |
+    +--------------------+----------------------+------+-----+---------+
+    | archive            | varchar(16)          | NO   | PRI |         |
+    | subject_class      | varchar(16)          | NO   | PRI |         |
+    | definitive         | int(1)               | NO   |     | 0       |
+    | active             | int(1)               | NO   |     | 0       |
+    | category_name      | varchar(255)         | YES  |     | NULL    |
+    | endorse_all        | enum('y','n','d')    | NO   |     | d       |
+    | endorse_email      | enum('y','n','d')    | NO   |     | d       |
+    | papers_to_endorse  | smallint(5) unsigned | NO   |     | 0       |
+    | endorsement_domain | varchar(32)          | YES  | MUL | NULL    |
+    +--------------------+----------------------+------+-----+---------+
+    """
+
+    __tablename__ = 'arXiv_categories'
+
+    archive = Column(String(16), primary_key=True)
+    subject_class = Column(String(16), primary_key=True)
+    definitive = Column(Integer, nullable=False, server_default=text("'0'"))
+    active = Column(Integer, nullable=False, server_default=text("'0'"))
+    endorsement_domain = Column(String(32), nullable=True)
+
+
+class DBPaperOwners(Base):
+    """
+    Relates arXiv users to their owned papers.
+
+    +-----------------+-----------------------+------+-----+---------+-------+
+    | Field           | Type                  | Null | Key | Default | Extra |
+    +-----------------+-----------------------+------+-----+---------+-------+
+    | document_id     | mediumint(8) unsigned | NO   | PRI | 0       |       |
+    | user_id         | int(10) unsigned      | NO   | PRI | 0       |       |
+    | date            | int(10) unsigned      | NO   |     | 0       |       |
+    | valid           | int(1) unsigned       | NO   |     | 0       |       |
+    | flag_author     | int(1) unsigned       | NO   |     | 0       |       |
+    +-----------------+-----------------------+------+-----+---------+-------+
+    """
+
+    __tablename__ = 'arXiv_paper_owners'
+
+    document_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, primary_key=True)
+    date = Column(Integer, nullable=False, server_default=text("'0'"))
+    flag_author = Column(Integer, nullable=False, server_default=text("'0'"))
+    valid = Column(Integer, nullable=False, server_default=text("'0'"))
+
+
+class DBDocuments(Base):
+    """
+    Represents an arXiv paper.
+
+    +-----------------------+-----------------------+------+-----+---------+
+    | Field                 | Type                  | Null | Key | Default |
+    +-----------------------+-----------------------+------+-----+---------+
+    | document_id           | mediumint(8) unsigned | NO   | PRI | NULL    |
+    | paper_id              | varchar(20)           | NO   | UNI |         |
+    | title                 | varchar(255)          | NO   | MUL |         |
+    | authors               | text                  | YES  |     | NULL    |
+    | submitter_email       | varchar(64)           | NO   | MUL |         |
+    | submitter_id          | int(10) unsigned      | YES  | MUL | NULL    |
+    | dated                 | int(10) unsigned      | NO   | MUL | 0       |
+    | primary_subject_class | varchar(16)           | YES  |     | NULL    |
+    | created               | datetime              | YES  |     | NULL    |
+    +-----------------------+-----------------------+------+-----+---------+
+    """
+
+    __tablename__ = 'arXiv_documents'
+
+    document_id = Column(Integer, primary_key=True, autoincrement=True)
+    paper_id = Column(String(20), nullable=False, unique=True)
+    dated = Column(Integer, nullable=False, server_default=text("'0'"))
+
+
+class DBDocumentInCategory(Base):
+    """
+    M2M intermediate table for documents and their categories.
+
+    +---------------+-----------------------+------+-----+---------+-------+
+    | Field         | Type                  | Null | Key | Default | Extra |
+    +---------------+-----------------------+------+-----+---------+-------+
+    | document_id   | mediumint(8) unsigned | NO   | PRI | 0       |       |
+    | archive       | varchar(16)           | NO   | PRI |         |       |
+    | subject_class | varchar(16)           | NO   | PRI |         |       |
+    | is_primary    | tinyint(1)            | NO   |     | 0       |       |
+    +---------------+-----------------------+------+-----+---------+-------+
+    """
+
+    __tablename__ = 'arXiv_in_category'
+
+    document_id = Column(Integer, primary_key=True)
+    archive = Column(String(16), primary_key=True)
+    subject_class = Column(String(16), primary_key=True)
+    is_primary = Column(Integer, nullable=False, server_default=text("'0'"))
+
+
+class DBEmailWhitelist(Base):
+    """
+    Patterns for identifying academic addresses.
+
+    pattern | varchar(64) | YES  |     | NULL    |
+    """
+
+    __tablename__ = 'arXiv_white_email'
+
+    pattern = Column(String(64), primary_key=True)
+
+
+class DBEmailBlacklist(Base):
+    """
+    Patterns for identifying non-academic addresses.
+
+    pattern | varchar(64) | YES  |     | NULL    |
+    """
+
+    __tablename__ = 'arXiv_black_email'
+
+    pattern = Column(String(64), primary_key=True)

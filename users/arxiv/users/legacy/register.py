@@ -18,14 +18,38 @@ from .. import domain
 from arxiv.base import logging
 
 from .models import DBUser, DBUserPassword, DBPermanentToken, \
-    DBUserNickname, Profile
+    DBUserNickname, Profile, DBPolicyClass
 
-from .util import now, transaction, hash_password
+from .util import now, transaction, hash_password, compute_capabilities, \
+    get_scopes
+from .endorsements import get_endorsements
 
 
-def register(user_registration: domain.UserRegistration,
-             ip_address: str, remote_host: str) -> domain.User:
-    """Add a new user to the database."""
+def username_exists(username: str) -> bool:
+    """Determine whether or not a username already exists in the DB."""
+    with transaction() as session:
+        data = (
+            session.query(DBUserNickname)
+            .filter(DBUserNickname.nickname == username)
+            .first()
+        )
+        if data:
+            return True
+        return False
+
+
+def email_exists(email: str) -> bool:
+    """Determine whether or not a email address already exists in the DB."""
+    with transaction() as session:
+        data = session.query(DBUser).filter(DBUser.email == email).first()
+        if data:
+            return True
+        return False
+
+
+def register(user_registration: domain.UserRegistration, ip_address: str,
+             remote_host: str) -> Tuple[domain.User, domain.Authorizations]:
+    """Add a new user to the database and return user data."""
     with transaction() as session:
         # Main user entry.
         db_user = DBUser(
@@ -33,6 +57,7 @@ def register(user_registration: domain.UserRegistration,
             last_name=user_registration.name.surname,
             suffix_name=user_registration.name.suffix,
             email=user_registration.email,
+            policy_class=DBPolicyClass.PUBLIC_USER,
             joined_ip_num=ip_address,
             joined_remote_host=remote_host,
             joined_date=now(),
@@ -56,11 +81,12 @@ def register(user_registration: domain.UserRegistration,
         db_profile = Profile(
             user=db_user,
             country=user_registration.profile.country,
-            affiliation=user_registration.profile.affiliation,
+            affiliation=user_registration.profile.organization,
             url=user_registration.profile.homepage_url,
             rank=user_registration.profile.rank,
             archive=user_registration.profile.default_archive,
             subject_class=user_registration.profile.default_subject,
+            original_subject_classes='',
             flag_group_physics=_has_group('grp_physics'),
             flag_group_math=_has_group('grp_math'),
             flag_group_cs=_has_group('grp_cs'),
@@ -76,3 +102,20 @@ def register(user_registration: domain.UserRegistration,
         )
         session.add(db_pass)
         session.commit()
+
+        user = domain.User(
+            user_id=str(db_user.user_id),
+            username=db_nick.nickname,
+            email=db_user.email,
+            name=domain.UserFullName(
+                forename=db_user.first_name,
+                surname=db_user.last_name,
+                suffix=db_user.suffix_name
+            )
+        )
+        auths = domain.Authorizations(
+            classic=compute_capabilities(db_user),
+            scopes=get_scopes(db_user),
+            endorsements=get_endorsements(user)
+        )
+        return user, auths

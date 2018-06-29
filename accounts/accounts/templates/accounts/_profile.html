@@ -38,16 +38,19 @@
 </style>
 <div class="columns">
   <div class="column">
-
-    <h1>Register for the first time</h1>
+    <h1>Edit Your User Information</h1>
     <p>
-      You should only register with arXiv once: arXiv associates papers that
-      you have submitted with your user account. If you register twice, this
-      information will be inaccurate, which will cause confusion and wasted
-      time for both you and us.
+      Please supply your correct name and affiliation. Fields with * are required.
+
+      It is a violation of our policies to misrepresent your identity or
+      institutional affiliation. Claimed affiliation should be current in the
+      conventional sense: e.g., physical presence, funding, e-mail address,
+      mention on institutional web pages, etc. Misrepresentation of identity or
+      affiliation, for any reason, is possible grounds for immediate and
+      permanent suspension.
     </p>
 
-    <form action="{{ url_for('ui.register') }}" method="POST">
+    <form action="{{ url_for('ui.edit') }}" method="POST">
       {{ form.csrf_token }}
       <div class="field">
         {{ render_field(form.email) }}
@@ -120,11 +123,6 @@
           {{ form.remember_me.description|safe }}
         </p>
         {% endif %}
-      </div>
-      <div class="field">
-        {{ form.captcha_token }}
-        <img src="{{ url_for('ui.captcha_image') }}?token={{ form.captcha_token.data }}" />
-        {{ render_field(form.captcha_value) }}
       </div>
 
       <div class="control">
