@@ -12,6 +12,7 @@ arxiv-base = "==0.8.1"
 [dev-packages]
 mimesis = "*"
 "nose2" = "*"
+mypy = "==0.610"
 
 [requires]
 python_version = "3.6"

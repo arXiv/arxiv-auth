@@ -13,7 +13,8 @@ class MultiCheckboxField(SelectMultipleField):
     widget = ListWidget(prefix_label=False)
     option_widget = CheckboxInput()
 
-    def __call__(self, ul_class='', **kwargs):
+    def __call__(self, ul_class: str = '', **kwargs: Any) -> str:
+        """Render the multi-checkbox field."""
         kwargs.setdefault('type', 'checkbox')
         li_class = kwargs.pop('li_class')
         field_id = kwargs.pop('id', self.id)
@@ -34,7 +35,7 @@ class MultiCheckboxField(SelectMultipleField):
 class OptGroupSelectWidget(Select):
     """Select widget with optgroups."""
 
-    def __call__(self, field: SelectField, **kwargs: Dict) -> HTMLString:
+    def __call__(self, field: SelectField, **kwargs: Any) -> HTMLString:
         """Render the `select` element with `optgroup`s."""
         kwargs.setdefault('id', field.id)
         if self.multiple:

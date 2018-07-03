@@ -21,6 +21,7 @@ ResponseData = Tuple[dict, int, dict]
 
 
 def view_profile(user_id: str) -> ResponseData:
+    """Handle requests to view a user's profile."""
     user = users.get_user_by_id(user_id)
     return {'user': user}, status.HTTP_200_OK, {}
 
@@ -28,6 +29,7 @@ def view_profile(user_id: str) -> ResponseData:
 def edit_profile(method: str, user_id: str,
                  params: Optional[MultiDict] = None,
                  ip_address: Optional[str] = None) -> ResponseData:
+    """Handle requests to update a user's profile."""
     if method == 'GET':
         user = users.get_user_by_id(user_id)
         form = ProfileForm.from_domain(user)
@@ -37,7 +39,8 @@ def edit_profile(method: str, user_id: str,
         data = {'form': form, 'user_id': user_id}
         if form.validate():
             if form.user_id.data != user_id:
-                raise BadRequest('User ID in request does not match')
+                msg = 'User ID in request does not match'
+                raise BadRequest(msg)  # type: ignore
             user = form.to_domain()
             try:
                 users.update_user(user)

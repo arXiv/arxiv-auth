@@ -79,7 +79,7 @@ def login(method: str, form_data: MultiDict, ip: str,
             logger.debug('Created session: %s', session.session_id)
         except sessions.exceptions.SessionCreationFailed as e:
             logger.debug('Could not create session: %s', e)
-            raise InternalServerError('Could not log in') from e
+            raise InternalServerError('Cannot log in') from e  # type: ignore
 
         # Create a session in the legacy session store.
         try:
@@ -87,7 +87,7 @@ def login(method: str, form_data: MultiDict, ip: str,
             logger.debug('Created classic session: %s', c_session.session_id)
         except legacy.exceptions.SessionCreationFailed as e:
             logger.debug('Could not create legacy session: %s', e)
-            raise InternalServerError('Could not log in') from e
+            raise InternalServerError('Cannot log in') from e  # type: ignore
 
         # The UI route should use these to set cookies on the response.
         data.update({'session_cookie': cookie, 'classic_cookie': c_cookie})
@@ -127,13 +127,13 @@ def logout(session_cookie: Optional[str],
             sessions.invalidate(session_cookie)
         except sessions.exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
-            raise InternalServerError('Could not log out') from e
+            raise InternalServerError('Cannot log out') from e  # type: ignore
     if classic_session_cookie:
         try:
             legacy.invalidate(classic_session_cookie)
         except legacy.exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
-            raise InternalServerError('Could not log out') from e
+            raise InternalServerError('Cannot log out') from e  # type: ignore
 
     return {}, status.HTTP_303_SEE_OTHER, {'Location': next_page}
 

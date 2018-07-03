@@ -32,7 +32,8 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
     """Handle requests for the registration view."""
     if method == 'GET':
         captcha_token = stateless_captcha.new(captcha_secret, ip)
-        form = RegistrationForm(MultiDict({'captcha_token': captcha_token}))
+        _params = MultiDict({'captcha_token': captcha_token})  # type: ignore
+        form = RegistrationForm(_params)
         form.configure_captcha(captcha_secret, ip)
         data = {'form': form}
     elif method == 'POST':
@@ -53,7 +54,7 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
                          c_session.session_id)
         except legacy.exceptions.SessionCreationFailed as e:
             logger.debug('Could not create session: %s', e)
-            raise InternalServerError('Could not log in') from e
+            raise InternalServerError('Cannot log in') from e  # type: ignore
 
         data.update({'session_cookie': cookie, 'classic_cookie': c_cookie})
         headers = {'Location': url_for('ui.profile')}

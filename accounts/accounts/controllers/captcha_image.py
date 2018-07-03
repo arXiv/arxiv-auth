@@ -12,9 +12,9 @@ ResponseData = Tuple[dict, int, dict]
 def get(token: str, secret: str, ip_address: str) -> ResponseData:
     """Provide the image for stateless captcha."""
     if not token:
-        raise BadRequest('Captcha token is required for this endpoint')
+        raise BadRequest('Token is required for this endpoint')  # type: ignore
     try:
         image = stateless_captcha.render(token, secret, ip_address)
     except stateless_captcha.InvalidCaptchaToken as e:
-        raise BadRequest('Invalid or expired captcha token') from e
+        raise BadRequest('Invalid or expired token') from e  # type: ignore
     return {'image': image, 'mimetype': 'image/png'}

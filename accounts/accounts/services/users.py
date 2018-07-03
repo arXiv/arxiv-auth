@@ -18,6 +18,7 @@ get_user_by_id = legacy.authenticate.get_user_by_id
 register = legacy.register.register
 username_exists = legacy.register.username_exists
 email_exists = legacy.register.email_exists
+update_user = legacy.accounts.update_user
 
 
 def create_all() -> None:

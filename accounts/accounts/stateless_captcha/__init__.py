@@ -24,6 +24,7 @@ for use elsewhere.
 
 import random
 import io
+from typing import Dict, Mapping, Any
 from datetime import datetime, timedelta
 import dateutil.parser
 import string
@@ -58,7 +59,7 @@ def _generate_random_string(N: int = 6) -> str:
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=N))
 
 
-def _secret(secret: str, ip_address) -> str:
+def _secret(secret: str, ip_address: str) -> str:
     """Generate an encryption secret for the captha token."""
     return ':'.join([secret, ip_address])
 
@@ -89,14 +90,15 @@ def unpack(token: str, secret: str, ip_address: str) -> str:
 
     """
     try:
-        claims = jwt.decode(token.encode('ascii'),
-                            _secret(secret, ip_address))
-    except jwt.exceptions.DecodeError:
+        claims: Mapping[str, Any] = jwt.decode(token.encode('ascii'),
+                                               _secret(secret, ip_address))
+    except jwt.exceptions.DecodeError:  # type: ignore
         raise InvalidCaptchaToken('Could not decode token')
     try:
         if dateutil.parser.parse(claims['expires']) <= datetime.now():
             raise InvalidCaptchaToken('Expired token')
-        return claims['value']
+        value: str = claims['value']
+        return value
     except (KeyError, ValueError) as e:
         raise InvalidCaptchaToken('Malformed content') from e
 
@@ -155,7 +157,8 @@ def render(token: str, secret: str, ip_address: str) -> io.BytesIO:
     """
     value = unpack(token, secret, ip_address)
     image = ImageCaptcha()  # TODO: look at font options.
-    return image.generate(value)
+    data: io.BytesIO = image.generate(value)
+    return data
 
 
 def check(token: str, value: str, secret: str, ip_address: str) -> None:
