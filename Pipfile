@@ -4,12 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"17e504d" = {path = "./../arxiv-base-ui"}
 pycountry = "*"
 "nose2" = "*"
 mysqlclient = "*"
 python-dateutil = "*"
-"4010dd8" = {path = "./users"}
 
 [dev-packages]
 mimesis = "*"

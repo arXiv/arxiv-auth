@@ -12,6 +12,7 @@ python:
 script:
   - pip install pipenv
   - pipenv install --dev
+  - pipenv install ./users
   - ./lintstats.sh
   - ./tests/docker_tests.sh
   - pipenv run nose2

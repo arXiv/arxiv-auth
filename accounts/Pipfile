@@ -20,11 +20,10 @@ mypy = "*"
 flask-wtf = "*"
 pylint = "*"
 pycountry = "*"
-"de85c28" = {path = "./../../arxiv-base-ui"}
 mysqlclient = "*"
-"6c2b755" = {path = "./../users"}
 python-dateutil = "*"
 captcha = "*"
+arxiv-base = "==0.8.1"
 
 [dev-packages]
 coverage = "*"
