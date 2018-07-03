@@ -17,6 +17,9 @@ or cannot be decrypted for some reason (e.g. forgery, change of IP address),
 an :class:`InvalidCaptchaToken` exception is raised. If the token can be
 interpreted but the value is incorrect, an :class:`InvalidCaptchaValue`
 exception is raised.
+
+This was implemented as a stand-alone module in case we want to generalize it
+for use elsewhere.
 """
 
 import random
@@ -61,7 +64,30 @@ def _secret(secret: str, ip_address) -> str:
 
 
 def unpack(token: str, secret: str, ip_address: str) -> str:
-    """Unpack a captcha token, and get the target value."""
+    """
+    Unpack a captcha token, and get the target value.
+
+    Parameters
+    ----------
+    token : str
+        A captcha token (see :func:`new`).
+    secret : str
+        The captcha secret used to generate the token.
+    ip_address : str
+        The client IP address used to generate the token.
+
+    Returns
+    -------
+    str
+        The captcha challenge (i.e. the text that the user is asked to enter).
+
+    Raises
+    ------
+    :class:`InvalidCaptchaToken`
+        Raised if the token is malformed, expired, or the IP address does not
+        match the one used to generate the token.
+
+    """
     try:
         claims = jwt.decode(token.encode('ascii'),
                             _secret(secret, ip_address))
@@ -76,7 +102,25 @@ def unpack(token: str, secret: str, ip_address: str) -> str:
 
 
 def new(secret: str, ip_address: str, expires: int = 300) -> str:
-    """Generate a captcha token."""
+    """
+    Generate a captcha token.
+
+    Parameters
+    ----------
+    secret : str
+        Used to encrypt the captcha challenge.
+    ip_address : str
+        The client IP address, also used to encrypt the token.
+    expires : int
+        Number of seconds for which the token is valid. Default is 300 (5
+        minutes).
+
+    Returns
+    -------
+    str
+        A captcha token, which contains a captcha challenge and expiration.
+
+    """
     claims = {
         'value': _generate_random_string(),
         'expires': (datetime.now() + timedelta(seconds=300)).isoformat()
@@ -85,7 +129,30 @@ def new(secret: str, ip_address: str, expires: int = 300) -> str:
 
 
 def render(token: str, secret: str, ip_address: str) -> io.BytesIO:
-    """Render a captcha image using the value in a captcha token."""
+    """
+    Render a captcha image using the value in a captcha token.
+
+    Parameters
+    ----------
+    token : str
+        A captcha token (see :func:`new`).
+    secret : str
+        The captcha secret used to generate the token.
+    ip_address : str
+        The client IP address used to generate the token.
+
+    Returns
+    -------
+    :class:`io.BytesIO`
+        PNG image data.
+
+    Raises
+    ------
+    :class:`InvalidCaptchaToken`
+        Raised if the token is malformed, expired, or the IP address does not
+        match the one used to generate the token.
+
+    """
     value = unpack(token, secret, ip_address)
     image = ImageCaptcha()  # TODO: look at font options.
     return image.generate(value)
@@ -95,9 +162,26 @@ def check(token: str, value: str, secret: str, ip_address: str) -> None:
     """
     Evaluate whether a value matches a captcha token.
 
+    Parameters
+    ----------
+    token : str
+        A captcha token (see :func:`new`).
+    value : str
+        The value of the captcha challenge (i.e. the text that the user is
+        asked to enter).
+    secret : str
+        The captcha secret used to generate the token.
+    ip_address : str
+        The client IP address used to generate the token.
+
     Raises
     ------
     :class:`InvalidCaptchaValue`
+        If the passed ``value`` does not match the challenge contained in the
+        token, this exception is raised.
+    :class:`InvalidCaptchaToken`
+        Raised if the token is malformed, expired, or the IP address does not
+        match the one used to generate the token.
 
     """
     if value != unpack(token, secret, ip_address):

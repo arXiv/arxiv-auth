@@ -51,12 +51,13 @@ class TestLoginLogoutRoutes(TestCase):
 
         cls.container = cls.redis.stdout.decode('ascii').strip()
         cls.secret = 'bazsecret'
+        cls.db = 'db.sqlite'
         try:
             cls.app = create_web_app()
             cls.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
             cls.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
             cls.app.config['JWT_SECRET'] = cls.secret
-            cls.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///db.sqlite'
+            cls.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{cls.db}'
             cls.client = cls.app.test_client()
             cls.app.app_context().push()
             from accounts.services import legacy, users
@@ -65,21 +66,13 @@ class TestLoginLogoutRoutes(TestCase):
 
             with users.transaction() as session:
                 # We have a good old-fashioned user.
-                user_class = users.models.DBPolicyClass(
-                    class_id=2,
-                    name='Public user',
-                    password_storage=2,
-                    recovery_policy=3,
-                    permanent_login=1,
-                    description=''
-                )
                 db_user = users.models.DBUser(
                     user_id=1,
                     first_name='first',
                     last_name='last',
                     suffix_name='iv',
                     email='first@last.iv',
-                    policy_class=user_class.class_id,
+                    policy_class=2,
                     flag_edit_users=1,
                     flag_email_verified=1,
                     flag_edit_system=0,
@@ -110,7 +103,6 @@ class TestLoginLogoutRoutes(TestCase):
                 session.add(db_user)
                 session.add(db_password)
                 session.add(db_nick)
-                session.add(user_class)
                 session.commit()
         except Exception as e:
             stop_container(cls.container)
@@ -120,6 +112,7 @@ class TestLoginLogoutRoutes(TestCase):
     def tearDownClass(cls):
         """Tear down redis."""
         stop_container(cls.container)
+        os.remove(cls.db)
 
     def test_get_login(self):
         """GET request to /login returns the login form."""

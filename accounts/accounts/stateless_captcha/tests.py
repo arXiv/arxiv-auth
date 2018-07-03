@@ -92,6 +92,5 @@ class TestCaptcha(TestCase):
         secret = 'foo'
         ip_address = '127.0.0.1'
         token = new(secret, ip_address)
-        value = unpack(token, secret, ip_address)
         with self.assertRaises(InvalidCaptchaValue):
             check(token, 'nope', secret, ip_address)

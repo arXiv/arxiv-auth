@@ -50,22 +50,14 @@
       permanent suspension.
     </p>
 
-    <form action="{{ url_for('ui.edit') }}" method="POST">
+    <form action="{{ url_for('ui.edit_profile', user_id=user_id) }}" method="POST">
       {{ form.csrf_token }}
+      {{ form.user_id }}
       <div class="field">
         {{ render_field(form.email) }}
       </div>
       <div class="field">
         {{ render_field(form.username) }}
-      </div>
-      <div class="field is-grouped">
-        {{ render_field(form.password) }}
-        {{ render_field(form.password2) }}
-      </div>
-      <div class="field is-grouped">
-        {{ render_field(form.forename) }}
-        {{ render_field(form.surname) }}
-        {{ render_field(form.suffix) }}
       </div>
       <div class="field">
         {{ render_field(form.organization) }}
@@ -127,6 +119,7 @@
 
       <div class="control">
         <input type="submit" class="button is-link is-small"></input>
+        <a class="button is-link is-small is-danger" href="{{ url_for('ui.view_profile', user_id=user_id) }}">Cancel</a>
       </div>
     </form>
 

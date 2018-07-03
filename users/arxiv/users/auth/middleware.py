@@ -1,4 +1,36 @@
-"""Middleware for decoding JWTs on requests. For demo purposes only."""
+"""
+Middleware for interpreting authn/z information on requestsself.
+
+This module provides :class:`AuthMiddleware`, which unpacks encrypted JSON
+Web Tokens provided via the ``Authorization`` header. This is intended to
+support requests that have been pre-authorized by the web server using the
+authorizer service (see :ref:`authorizer-service-containers`).
+
+The configuration parameter ``JWT_SECRET`` must be set in the WSGI request
+environ (e.g. Apache's SetEnv) or in the runtime environment. This must be
+the same secret that was used by the authorizer service to mint the token.
+
+To install the middleware, use the pattern described in
+:mod:`arxiv.base.middleware`. For example:
+
+.. code-block:: python
+
+   > from arxiv.base import Base
+   > from arxiv.base.middleware import wrap
+   > from arxiv.users import auth
+   >
+   >
+   > def create_web_app() -> Flask:
+   .     app = Flask('foo')
+   .     Base(app)
+   .     wrap(app, [auth.middleware.AuthMiddleware])
+   .     return app
+
+
+For convenience, this is intended to be used with
+:mod:`arxiv.users.auth.decorators`.
+
+"""
 
 import os
 from typing import Callable, Iterable, Tuple
@@ -28,9 +60,15 @@ class AuthMiddleware(BaseMiddleware):
     to the request.
 
     This can be accessed in the application via
-    ``flask.request.environ['auth']``.  If Authorization header was not
-    included, or if the JWT could not be decrypted, then that value will be
-    ``None``.
+    ``flask.request.environ['session']``.  If Authorization header was not
+    included, then that value will be ``None``.
+
+    If the JWT could not be  decrypted, the value will be an
+    :class:`Unauthorized` exception instance. We cannot raise the exception
+    here, because the middleware is executed outside of the Flask application.
+    It's up to something running inside the application (e.g.
+    :func:`arxiv.users.auth.decorators.scoped`) to raise the exception.
+
     """
 
     def before(self, environ: dict, start_response: Callable) -> WSGIRequest:

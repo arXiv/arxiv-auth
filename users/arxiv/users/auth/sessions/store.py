@@ -1,4 +1,8 @@
-"""Provides a session store."""
+"""
+Internal service API for the distributed session store.
+
+Used to create, delete, and verify user and client session.
+"""
 
 import json
 import time
@@ -209,7 +213,7 @@ def create(user: domain.User, authorizations: domain.Authorizations,
 
 
 @wraps(SessionStore.load)
-def load(session_id: str) -> dict:
+def load(session_id: str) -> domain.Session:
     """
     Invalidate a session in the key-value store.
 

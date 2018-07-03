@@ -39,6 +39,18 @@ class Category(NamedTuple):
             return cls(*parts)
         return cls(category, '')
 
+    @property
+    def compound(self) -> str:
+        """Compound category name."""
+        if self.subject:
+            return f"{self.archive}.{self.subject}"
+        return self.archive
+
+    @property
+    def display(self) -> str:
+        """Display name for this category."""
+        return taxonomy.CATEGORIES[self.compound]['name']
+
 
 
 class Client(NamedTuple):
@@ -87,6 +99,11 @@ class UserProfile(NamedTuple):
     """Indicates whether the user prefers permanent session cookies."""
 
     @property
+    def rank_display(self) -> str:
+        """The display name of the user's rank."""
+        return dict(self.RANKS)[str(self.rank)]
+
+    @property
     def default_archive(self) -> str:
         """The archive of the default category."""
         return self.default_category.archive
@@ -95,6 +112,13 @@ class UserProfile(NamedTuple):
     def default_subject(self) -> Optional[str]:
         """The subject of the default category."""
         return self.default_category.subject
+
+    @property
+    def groups_display(self):
+        """Display-ready representation of active groups for this profile."""
+        return ", ".join([
+            taxonomy.GROUPS[group]['name'] for group in self.submission_groups
+        ])
 
 
 class Authorizations(NamedTuple):
@@ -126,6 +150,7 @@ class User(NamedTuple):
     email: str
 
     name: Optional[UserFullName] = None
+    profile: Optional[UserProfile] = None
 
 
 class Session(NamedTuple):

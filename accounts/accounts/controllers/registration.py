@@ -20,7 +20,7 @@ import pycountry
 from arxiv import taxonomy
 from .util import MultiCheckboxField, OptGroupSelectField
 
-from .. import captcha
+from .. import stateless_captcha
 
 logger = logging.getLogger(__name__)
 
@@ -31,15 +31,15 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
         -> ResponseData:
     """Handle requests for the registration view."""
     if method == 'GET':
-        captcha_token = captcha.new(captcha_secret, ip)
+        captcha_token = stateless_captcha.new(captcha_secret, ip)
         form = RegistrationForm(MultiDict({'captcha_token': captcha_token}))
         form.configure_captcha(captcha_secret, ip)
         data = {'form': form}
     elif method == 'POST':
         logger.debug('Registration form submitted')
         form = RegistrationForm(params)
-        form.configure_captcha(captcha_secret, ip)
         data = {'form': form}
+        form.configure_captcha(captcha_secret, ip)
         if not form.validate():
             return data, status.HTTP_400_BAD_REQUEST, {}
 
@@ -74,11 +74,10 @@ class RegistrationForm(Form):
     CATEGORIES = [
         (archive['name'], [
             (category_id, category['name'])
-            for category_id, category in taxonomy.CATEGORIES.items()
-            if category['is_active'] and category['in_archive'] == archive_id
+            for category_id, category in taxonomy.CATEGORIES_ACTIVE.items()
+            if category['in_archive'] == archive_id
         ])
-        for archive_id, archive in taxonomy.ARCHIVES.items()
-        if 'end_date' not in archive
+        for archive_id, archive in taxonomy.ARCHIVES_ACTIVE.items()
     ]
     """Categories grouped by archive."""
 
@@ -133,7 +132,7 @@ class RegistrationForm(Form):
     captcha_token = HiddenField()
 
     def configure_captcha(self, captcha_secret: str, ip_address: str) -> None:
-        """Set configuration details for the captcha."""
+        """Set configuration details for the stateless_captcha."""
         self.captcha_secret = captcha_secret
         self.ip_address = ip_address
 
@@ -164,13 +163,13 @@ class RegistrationForm(Form):
     def validate_captcha_value(self, field: StringField) -> None:
         """Check the captcha value against the captcha token."""
         try:
-            captcha.check(self.captcha_token.data, field.data,
-                          self.captcha_secret, self.ip_address)
-        except (captcha.InvalidCaptchaValue,
-                captcha.InvalidCaptchaToken) as e:
+            stateless_captcha.check(self.captcha_token.data, field.data,
+                                    self.captcha_secret, self.ip_address)
+        except (stateless_captcha.InvalidCaptchaValue,
+                stateless_captcha.InvalidCaptchaToken) as e:
             # Get a fresh captcha challenge. More than likely the user is
             # having trouble interpreting the challenge,
-            token = captcha.new(self.captcha_secret, self.ip_address)
+            token = stateless_captcha.new(self.captcha_secret, self.ip_address)
             self.captcha_token.data = token
 
             # It is convenient to provide feedback to the user via the

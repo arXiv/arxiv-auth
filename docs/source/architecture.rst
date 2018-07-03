@@ -4,194 +4,162 @@ Architecture
 Overview
 --------
 
-The arXiv Zero service is a starting-point for developing web services
-in the arXiv-NG project. It demonstrates some of the basic patterns for
-developing a web service in Flask.
+The arXiv platform provides both anonymous and authenticated interfaces to
+end-users (including moderators), API clients, and the arXiv operations team.
+This project provides applications and libraries to support authentication and
+authorization, including account creation and login, user sessions, and API
+token management. TLS is considered an infrastructure concern, and is therefore
+out of scope (albeit critical) for this project.
 
 Objectives & Requirements
 -------------------------
 
-The arXiv Zero service is responsible for demonstrating the basic internal
-architecture for arXiv-NG microservices. It should:
-
-1. Demonstrate the desired project layout for an NG microservice project.
-2. Provide an example of a WSGI application implemented in Flask, with the
-   desired internal architecture.
-3. Demonstrate some patterns for testing parts of the application.
-4. Demonstrate how to begin documenting a microservice for NG.
-5. Demonstrate the CI/CD and build mechanisms used for NG projects.
+1. Users must be able to register for and log in to the arXiv site, and
+   interact with parts of the platform that require authentication.
+2. API clients must be able to authenticate with the arXiv site, and obtain
+   secure authorization tokens using OAuth2 protocols.
+3. Administrators must be able to grant and revoke authorization for specific
+   actions and services within the arXiv platform, using a role-based system.
+4. It must be possible to revoke access from a user or client, and have that
+   revocation take effect immediately.
+5. Accessing authentication and authorization information in an arXiv
+   service/application must not require implementing new integrations; we need
+   a single, consistent solution for authn/z concerns in Flask applications.
+6. Services/applications deployed in the cloud must be able to obtain authn/z
+   information without accessing a central database. Services/applications
+   deployed on-premises must integrate with the legacy database so that users
+   can seamlessly move between legacy and NG interfaces using the same session.
 
 Solution Strategy
 -----------------
-This section shows how you might write the solution strategy section of an
-actual NG service.
 
-Context
-^^^^^^^
+The objectives above are separated into four distinct concerns, each addressed
+by a separate piece of software:
 
-The arXiv Zero service provides a RESTful API that exposes ``baz`` and
-``thing`` resources. It is primarily intended for use by API consumers via
-the API gateway.
-
-The Zero service relies on the ``Baz`` service to retrieve data about baz'.
-
-Building blocks
-^^^^^^^^^^^^^^^
-
-The Zero service is comprised of two main building blocks:
-
-* A Python WSGI application, implemented using Flask.
-* The Things data store, a relational database.
-
-Components
-^^^^^^^^^^
-
-WSGI
-""""
-The primary entrypoint for the arXiv Zero service is a Web Server Gateway
-Interface application provided by ``wsgi.py`` in the root of the project
-(outside of the ``accounts`` package). The WSGI module relies on an application
-factory in the :mod:`.factory` module, which is responsible for instantiating
-and configuring a Flask application instance upon each HTTP request.
-
-Routes
-""""""
-The HTTP routes provided by the application are defined in the :mod:`.routes`
-module. This module is responsible for routing requests, response
-serialization, and authorization.
-
-Each submodule
-provides a `blueprint <http://flask.pocoo.org/docs/0.12/blueprints/>`_ object
-that describes the HTTP routes available. That blueprint object is attached
-to the Flask application upon instantiation.
-
-* :mod:`.routes.external_api`
-
-  - :func:`.routes.external_api.read_baz`
-  - :func:`.routes.external_api.read_thing`
-
-Controllers
-"""""""""""
-Controller modules are the primary point of control for application execution.
-These modules orchestrate processing in response to request data, utilizing the
-functionality provided by the process and services modules, and generating a
-response.
-
-A controller module exposes an internal API for use by the routes modules. The
-functions that comprise that API should accept and return native Python data
-types. The objects/classes provided by the data domain modules do not escape
-beyond this point.
-
-Controller modules may make thoughtful use of Flask utilities and helpers,
-taking care not to undermine isolation for unit-testing. The Flask ``request``
-proxy object, however, should not be used directly here; interaction with the
-client request is the responsibility of the routes modules.
-
-* :mod:`.controllers.baz`
-* :mod:`.controllers.things`
-
-Data Domain
-"""""""""""
-The data domain modules provide descriptions of the data that will be passed
-around inside of the application. The objects or classes provided by these
-modules provide a shared reference point for the rest of the application. These
-descriptions may be as minimal as a set of `type aliases
-<https://docs.python.org/3/library/typing.html#type-aliases>`_  built from
-native Python data types, or as elaborate as a hierarchy of classes
-representing complex data structures. They assist in documentation, testing,
-and static analysis.
-
-The objects or classes in this module can be imported and used by the
-process, service, and controller modules.
-
-In contrast to some architectures, we don't assume that these structures relate
-to anything outside of a given service. They are strictly for reasoning about
-data inside of the service. Importantly, these modules **do not** implement
-business logic, nor are they concerned with persistence. Those concerns are
-left to the process and services modules.
-
-* :mod:`.domain`
+- :ref:`User accounts service <user-accounts_service-containers>`, which is
+  responsible for user registration, authentication, and role management.
+- :ref:`API client registry <api-client-registry-containers>`_, which is
+  responsible for API client authentication, workflows for obtaining
+  authorization tokens, and client access management.
+- :ref:`Authorizer service <authorizer-service-containers>`, which is
+  responsible for authorizing user/client requests (cloud only).
+- An auth library, which provides middleware and other components for working
+  with user/client sessions and authorization in arXiv services.
 
 
-Services
-""""""""
-Service modules provide integrations with external services, including
-databases. Each service module is concerned with a single external service, and
-provides an API (generally a set of functions) for use by the controller
-modules. The functions or methods exposed by each module should accept and
-return only native Python types and/or data objects defined in the data domain
-module(s).
+.. _figure-accounts-context:
 
-Modules for integrating with external services and data stores (the Baz service
-and the Thing data store) are provided by :mod:`.services`. Each service module
-provides a method for preparing the application to use the service (usually a
-function called ``init_app()``), and a set of methods for interacting with the
-service (e.g. to retrieve or update data). These service modules are used by
-the controllers to coordinate interaction with external services on the basis
-of client requests.
+.. figure:: _static/diagrams/accounts-context.png
 
-* :mod:`.services.baz`
-* :mod:`.services.things`
+   System context for authn/z services in arXiv.
 
 
-Process Modules
-"""""""""""""""
-Process modules provide data transformation functionality. They encode the
-majority of the  business logic of the application. Each process module exposes
-an internal API, generally a set of functions representing the use-cases
-supported by the module. The functions or methods exposed by each module should
-accept and return only native Python types and/or data objects defined in the
-data domain modules.
+.. _user-accounts_service-containers:
 
-To facilitate testing, process modules should generally be framework-agnostic.
-Process modules are imported and used by the controller modules.
+User accounts service
+---------------------
 
-* :mod:`.process.mutate`
+The user accounts service is a Flask application that provides user interfaces
+for account registration, profile management, and authentication. It also
+provides administrative interfaces for user management and authorization roles.
+
+User data encompasses account details, preferences, and authorization roles.
+During the NG project, this will be tables in the legacy database for which
+temporary integration is required. Ultimately, these data will be housed in a
+standalone database.
+
+Authenticated sessions are stored in a distributed session/token store. When a
+user authenticates, they are issued a session key in the form of a secure
+cookie. That key can be used by the authorizer service to retrieve session
+details on subsequent requests to the accounts service or any other service.
+
+During the NG project, authenticated sessions must continue to be available to
+legacy web controller components. This means that the accounts service must
+integrate with the relevant sessions-related tables in the legacy database,
+and issue cookies that are compatible with those legacy sessions.
+
+.. _figure-user-accounts-containers:
+
+.. figure:: _static/diagrams/user-accounts-containers.png
+
+   Containers in the user accounts system.
 
 
-Static Files & Templates
-""""""""""""""""""""""""
+.. _api-client-registry-containers:
 
-.. todo::
+API client registry service
+---------------------------
 
-   write this section
+The API client registry is a Flask application that provides user interfaces
+for registering new API clients, and managing API access. Authenticated users
+may register to obtain an API bearer token for public endpoints, and also to
+request additional authorization for protected endpoints such as submission.
+APIs are provided to support OAuth2 workflows for retrieving authorization
+tokens. Finally, administrative interfaces provide visibility and management.
+
+API client data encompasses details about the client, client tokens, and
+client authorizations. These data are stored in a stand-alone data store.
+
+Authorization tokens are registered in the distributed
+session/token store upon creation, where they can be retrieved by the
+authorizer service to authorize subsequent API requests.
 
 
-Cross-cutting Concepts
-----------------------
+.. _figure-client-registry-containers:
 
-Schema
-^^^^^^
-Each API endpoint should have a corresponding JSON schema document located in
-``schema/``. This will become part of the documentation for this service,
-and can also be used for testing.
+.. figure:: _static/diagrams/client-registry-containers.png
 
-Deployment
-^^^^^^^^^^
-The arXiv Zero service is intended to be deployed behind a WSGI application
-server in a Docker container.
+   Containers in the API client registry system.
 
-In this project, we use the `uWSGI
-<https://uwsgi-docs.readthedocs.io/en/latest/>`_ application server, which
-provides the `uGreen <http://uwsgi-docs.readthedocs.io/en/latest/uGreen.html>`_
-thread scheduler for asynchronous request handling.
 
-The ``Dockerfile`` in the root of the project defines the application server
-runtime. You can build it with:
+.. _authorizer-service-containers:
 
-.. code-block:: bash
+Authorizer service
+------------------
 
-   cd <project root>
-   docker build ./ -t arxiv/accounts
+The authorizer service is a Flask application that handles client authorization
+requests from NGINX.
 
-arXiv Zero is run within a private network topology, and is exposed to the
-outside world via a level 7 load balancer that handles SSL termination. Thus
-the Zero service is not responsible for SSL.
+In a cloud deployment scenario, upon request to the arXiv
+API or an authenticated endpoint, NGINX issues a sub-request to the
+authorization service including any cookies or auth headers. The
+authorization service is responsible for interpreting any auth information on
+the request, and either returns 200 (OK) if the request is authorized, 401
+(Unauthorized) if auth information was not available or invalid, or 403
+(Forbidden) if the request is denied.
 
-Continuous Integration
-^^^^^^^^^^^^^^^^^^^^^^
-NG projects are tested by `Travis-CI <https://travis-ci.com>`_ on each commit,
-PR, and release. See ``.travis.yml`` in the root of this project for a sample
-build configuration. See `this documentation
-<https://docs.travis-ci.com/user/customizing-the-build/>`_ for details on
-customing Travis builds.
+For our purposes, the authorizer service is mainly concerned with ensuring that
+the request has valid authentication information. The authorizer service
+includes in its response an encrypted JWT (see :mod:`arxiv.user.auth.tokens`)
+that contains information about the user or client session, including its
+authorization scopes (see :mod:`arxiv.user.auth.scopes`).
+
+.. _figure-authorizer-service-containers:
+
+.. figure:: _static/diagrams/authorizer-service-containers.png
+
+   Authorizer service containers.
+
+
+The authorizer service uses session keys and API auth tokens to retrieve
+session information from the distributed session/token store.
+
+
+.. _auth-package:
+
+Authn/z package
+---------------
+
+This package provides core functionality for working with users and sessions
+in arXiv-NG services. Housing these components in a library (separate from
+service implementations) ensures that users and sessions are represented
+and manipulated consistently.
+
+In addition to NG components, this package also provides integrations with the
+legacy user and session data in the classic database.
+
+The user accounts, API client registry, and authorizer services all rely on
+this package for domain representations and integration with the legacy
+system.
+
+See :mod:`arxiv.users`.

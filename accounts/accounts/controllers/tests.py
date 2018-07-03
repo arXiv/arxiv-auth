@@ -9,7 +9,7 @@ from werkzeug.exceptions import BadRequest
 from arxiv import status
 from arxiv.users import domain
 from accounts.services import legacy, users, sessions
-from accounts.controllers import get_login, post_login, logout, forms
+from accounts.controllers.authentication import login, logout, LoginForm
 
 
 def raise_authentication_failed(*args, **kwargs):
@@ -20,8 +20,8 @@ def raise_authentication_failed(*args, **kwargs):
 class TestLogout(TestCase):
     """Tests for :func:`.logout`."""
 
-    @mock.patch('accounts.controllers.sessions')
-    @mock.patch('accounts.controllers.legacy')
+    @mock.patch('accounts.controllers.authentication.sessions')
+    @mock.patch('accounts.controllers.authentication.legacy')
     def test_logout(self, mock_legacy, mock_sessions):
         """A logged-in user requests to log out."""
         mock_legacy.sessions.invalidate_session.return_value = None
@@ -35,8 +35,8 @@ class TestLogout(TestCase):
         self.assertEqual(header['Location'], next_page,
                          "Redirects user to next page.")
 
-    @mock.patch('accounts.controllers.sessions')
-    @mock.patch('accounts.controllers.legacy')
+    @mock.patch('accounts.controllers.authentication.sessions')
+    @mock.patch('accounts.controllers.authentication.legacy')
     def test_logout_anonymous(self, mock_legacy, mock_sessions):
         """An anonymous user requests to log out."""
         mock_legacy.sessions.invalidate_session.return_value = None
@@ -50,36 +50,36 @@ class TestLogout(TestCase):
 
 
 class TestGETLogin(TestCase):
-    """Tests for :func:`.get_login`."""
+    """Tests for :func:`.login`."""
 
-    def test_get_login(self):
+    def test_login(self):
         """User requests the login page."""
-        data, status_code, header = get_login()
+        data, status_code, header = login('GET', {}, '', '')
         self.assertIn('form', data)
-        self.assertIsInstance(data['form'], forms.LoginForm,
+        self.assertIsInstance(data['form'], LoginForm,
                               "Response includes a login form.")
         self.assertEqual(status_code, status.HTTP_200_OK)
 
 
 class TestPOSTLogin(TestCase):
-    """Tests for func:`.post_login`."""
+    """Tests for func:`.login`."""
 
     def test_post_invalid_data(self):
         """User submits invalid data."""
         form_data = MultiDict({'username': 'foouser'})     # Missing password.
         next_page = '/next'
         ip = '123.45.67.89'
-        data, status_code, header = post_login(form_data, ip, next_page)
+        data, status_code, header = login('POST', form_data, ip, next_page)
         self.assertIn('form', data)
-        self.assertIsInstance(data['form'], forms.LoginForm,
+        self.assertIsInstance(data['form'], LoginForm,
                               "Response includes a login form.")
         self.assertGreater(len(data['form'].password.errors), 0,
                            "Password field has an error")
         self.assertEqual(status_code, status.HTTP_200_OK,
                          "Response status is OK")
 
-    @mock.patch('accounts.controllers.users')
-    @mock.patch('accounts.controllers.legacy')
+    @mock.patch('accounts.controllers.authentication.users')
+    @mock.patch('accounts.controllers.authentication.legacy')
     def test_post_valid_data_bad_credentials(self, mock_legacy, mock_users):
         """Form data are valid but don't check out."""
         mock_users.exceptions.AuthenticationFailed = \
@@ -91,12 +91,15 @@ class TestPOSTLogin(TestCase):
         form_data = MultiDict({'username': 'foouser', 'password': 'barpass'})
         next_page = '/next'
         ip = '123.45.67.89'
-        with self.assertRaises(BadRequest):
-            post_login(form_data, ip, next_page)
 
-    @mock.patch('accounts.controllers.users')
-    @mock.patch('accounts.controllers.sessions')
-    @mock.patch('accounts.controllers.legacy')
+        data, code, headers = login('POST', form_data, ip, next_page)
+        self.assertEqual(code, status.HTTP_400_BAD_REQUEST)
+        self.assertIsInstance(data['form'], LoginForm,
+                              "Response includes a login form.")
+
+    @mock.patch('accounts.controllers.authentication.users')
+    @mock.patch('accounts.controllers.authentication.sessions')
+    @mock.patch('accounts.controllers.authentication.legacy')
     def test_post_great(self, mock_legacy, mock_sessions, mock_users):
         """Form data are valid and check out."""
         mock_users.exceptions.AuthenticationFailed = \
@@ -138,7 +141,7 @@ class TestPOSTLogin(TestCase):
         cookie = 'foodata'
         mock_sessions.create.return_value = session, cookie
 
-        data, status_code, header = post_login(form_data, ip, next_page)
+        data, status_code, header = login('POST', form_data, ip, next_page)
         self.assertEqual(status_code, status.HTTP_303_SEE_OTHER,
                          "Redirects user to next page")
         self.assertEqual(header['Location'], next_page,

@@ -7,6 +7,9 @@ from sqlalchemy import BigInteger, Column, DateTime, Enum, \
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
+from arxiv import taxonomy
+from .. import domain
+
 Base = declarative_base()
 
 
@@ -197,7 +200,7 @@ class DBUserNickname(Base):  # type: ignore
     user = relationship('DBUser')
 
 
-class Profile(Base):   # type: ignore
+class DBProfile(Base):   # type: ignore
     """arXiv user profile."""
 
     __tablename__ = 'arxiv_demographics'
@@ -229,6 +232,33 @@ class Profile(Base):   # type: ignore
     flag_group_stat = Column(Integer, nullable=False, server_default=text("'0'"))
     # TODO: where are new categories?
     user = relationship('DBUser')
+
+    GROUP_FLAGS = [
+        ('grp_physics', 'flag_group_physics'),
+        ('grp_math', 'flag_group_math'),
+        ('grp_cs', 'flag_group_cs'),
+        ('grp_q-bio', 'flag_group_q_bio'),
+        ('grp_q-fin', 'flag_group_q_fin'),
+        ('grp_q-stat', 'flag_group_stat')
+    ]
+
+    @property
+    def groups(self):
+        """Active groups for this user profile."""
+        return [group for group, column in self.GROUP_FLAGS
+                if getattr(self, column) == 1]
+
+    def to_domain(self) -> domain.UserProfile:
+        """Generate a domain representation from this database instance."""
+        return domain.UserProfile(
+            organization=self.affiliation,
+            country=self.country,
+            rank=self.rank,
+            submission_groups=self.groups,
+            default_category=domain.Category(self.archive, self.subject_class),
+            homepage_url=self.url,
+        )
+
 
 
 class DBEndorsement(Base):  # type: ignore

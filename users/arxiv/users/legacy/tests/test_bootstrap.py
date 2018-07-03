@@ -101,7 +101,7 @@ class TestBootstrap(TestCase):
 
                     # Create the user's profile.
                     archive, subject_class = _random_category()
-                    db_profile = models.Profile(
+                    db_profile = models.DBProfile(
                         user=db_user,
                         country=locale,
                         affiliation=person.university(),

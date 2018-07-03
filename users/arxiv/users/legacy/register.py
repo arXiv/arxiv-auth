@@ -18,7 +18,7 @@ from .. import domain
 from arxiv.base import logging
 
 from .models import DBUser, DBUserPassword, DBPermanentToken, \
-    DBUserNickname, Profile, DBPolicyClass
+    DBUserNickname, DBProfile, DBPolicyClass
 
 from .util import now, transaction, hash_password, compute_capabilities, \
     get_scopes
@@ -78,7 +78,7 @@ def register(user_registration: domain.UserRegistration, ip_address: str,
             return int(group in user_registration.profile.submission_groups)
 
         # TODO: where to put the new categories?
-        db_profile = Profile(
+        db_profile = DBProfile(
             user=db_user,
             country=user_registration.profile.country,
             affiliation=user_registration.profile.organization,

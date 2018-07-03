@@ -1,4 +1,4 @@
-"""Auth-related exceptions."""
+"""Authn/z-related exceptions raised by components in this module."""
 
 
 class InvalidToken(ValueError):

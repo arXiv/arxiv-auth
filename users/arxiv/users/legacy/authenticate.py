@@ -16,7 +16,7 @@ from arxiv.base import logging
 from .util import transaction, now, check_password, compute_capabilities, \
     get_scopes
 from .models import Base, DBUser, DBUserPassword, DBPermanentToken, \
-    DBUserNickname, Profile
+    DBUserNickname, DBProfile
 from .exceptions import NoSuchUser, AuthenticationFailed, \
     PasswordAuthenticationFailed
 from .endorsements import get_endorsements
@@ -141,20 +141,20 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
     """
     logger.debug(f'Authenticate with password, user: {username_or_email}')
     try:
-        db_user, db_password, db_nick = _get_user(username_or_email)
+        db_user, db_pass, db_nick = _get_user_by_username(username_or_email)
     except NoSuchUser as e:
         logger.debug(f'No such user: {username_or_email}')
         raise AuthenticationFailed('Invalid username or password') from e
     logger.debug(f'Got user with user_id: {db_user.user_id}')
     try:
-        check_password(password, db_password.password_enc)
+        check_password(password, db_pass.password_enc)
     except PasswordAuthenticationFailed as e:
         raise AuthenticationFailed('Invalid username or password') from e
-    return db_user, db_password, db_nick
+    return db_user, db_pass, db_nick
 
 
 # TODO: look at if/how we can optimize these queries.
-def _get_user(username_or_email: str) -> PassData:
+def _get_user_by_username(username_or_email: str) -> PassData:
     """
     Retrieve user data by username or email address.
 
