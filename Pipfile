@@ -5,12 +5,13 @@ name = "pypi"
 
 [packages]
 pycountry = "*"
-"nose2" = "*"
 mysqlclient = "*"
 python-dateutil = "*"
+arxiv-base = "==0.8.1"
 
 [dev-packages]
 mimesis = "*"
+"nose2" = "*"
 
 [requires]
 python_version = "3.6"
