@@ -1,7 +1,7 @@
-accounts\.stateless\_captcha\.tests module
+accounts.accounts.controllers.tests module
 ==========================================
 
-.. automodule:: accounts.stateless_captcha.tests
+.. automodule:: accounts.accounts.controllers.tests
     :members:
     :undoc-members:
     :show-inheritance:

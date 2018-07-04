@@ -6,13 +6,6 @@ arxiv.users.auth.sessions package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-    arxiv.users.auth.sessions.tests
-
 Submodules
 ----------
 

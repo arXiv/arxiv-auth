@@ -12,7 +12,6 @@ Subpackages
 .. toctree::
 
     arxiv.users.auth.sessions
-    arxiv.users.auth.tests
 
 Submodules
 ----------

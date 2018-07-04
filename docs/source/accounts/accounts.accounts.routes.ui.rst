@@ -1,7 +1,7 @@
-accounts\.controllers\.util module
+accounts.accounts.routes.ui module
 ==================================
 
-.. automodule:: accounts.controllers.util
+.. automodule:: accounts.accounts.routes.ui
     :members:
     :undoc-members:
     :show-inheritance:

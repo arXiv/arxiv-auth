@@ -1,7 +1,7 @@
-arxiv.users.auth.sessions.tests.test\_unit module
+accounts.accounts.stateless\_captcha.tests module
 =================================================
 
-.. automodule:: arxiv.users.auth.sessions.tests.test_unit
+.. automodule:: accounts.accounts.stateless_captcha.tests
     :members:
     :undoc-members:
     :show-inheritance:

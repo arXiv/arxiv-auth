@@ -1,7 +1,7 @@
-accounts\.controllers\.registration module
+accounts.accounts.services.sessions module
 ==========================================
 
-.. automodule:: accounts.controllers.registration
+.. automodule:: accounts.accounts.services.sessions
     :members:
     :undoc-members:
     :show-inheritance:

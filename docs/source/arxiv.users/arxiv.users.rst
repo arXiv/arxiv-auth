@@ -13,7 +13,6 @@ Subpackages
 
     arxiv.users.auth
     arxiv.users.legacy
-    arxiv.users.tests
 
 Submodules
 ----------

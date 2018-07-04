@@ -12,7 +12,8 @@ setup(
         "sqlalchemy",
         "mysqlclient",
         "python-dateutil",
-        "arxiv-base"
+        "arxiv-base",
+        "jwt"
     ],
     zip_safe=False
 )

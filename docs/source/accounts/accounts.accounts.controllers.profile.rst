@@ -1,7 +1,7 @@
-accounts\.controllers\.captcha\_image module
+accounts.accounts.controllers.profile module
 ============================================
 
-.. automodule:: accounts.controllers.captcha_image
+.. automodule:: accounts.accounts.controllers.profile
     :members:
     :undoc-members:
     :show-inheritance:

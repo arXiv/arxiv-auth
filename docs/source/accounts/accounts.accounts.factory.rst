@@ -1,7 +1,7 @@
-accounts\.services\.users module
+accounts.accounts.factory module
 ================================
 
-.. automodule:: accounts.services.users
+.. automodule:: accounts.accounts.factory
     :members:
     :undoc-members:
     :show-inheritance:

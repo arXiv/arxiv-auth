@@ -5,5 +5,3 @@ accounts
    :maxdepth: 4
 
    accounts
-   app
-   wsgi

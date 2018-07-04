@@ -6,13 +6,6 @@ arxiv.users.legacy package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-    arxiv.users.legacy.tests
-
 Submodules
 ----------
 
