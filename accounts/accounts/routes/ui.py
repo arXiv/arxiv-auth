@@ -1,7 +1,8 @@
 """Provides Flask integration for the external user interface."""
 
+from typing import Any
 from flask import Blueprint, render_template, url_for, abort, request, \
-    make_response, redirect, current_app, send_file
+    make_response, redirect, current_app, send_file, Response
 from arxiv import status
 from arxiv.users.auth.decorators import scoped
 from arxiv.users.auth import scopes
@@ -14,9 +15,9 @@ from werkzeug.exceptions import BadRequest
 blueprint = Blueprint('ui', __name__, url_prefix='/user')
 
 
-def user_is_owner(session: domain.Session, user_id: str, **kwargs) -> bool:
+def user_is_owner(session: domain.Session, user_id: str, **kw: Any) -> bool:
     """Determine whether the authenticated user matches the requested user."""
-    return session.user.user_id == user_id
+    return bool(session.user.user_id == user_id)
 
 
 @blueprint.before_request
@@ -26,7 +27,7 @@ def get_next_page() -> None:
 
 
 @blueprint.route('/register', methods=['GET', 'POST'])
-def register():     # type: ignore
+def register() -> Response:
     """Interface for creating new accounts."""
     captcha_secret = current_app.config['CAPTCHA_SECRET']
     ip_address = request.remote_addr
@@ -50,7 +51,7 @@ def register():     # type: ignore
 
 @blueprint.route('/<string:user_id>/profile', methods=['GET'])
 @scoped(scopes.VIEW_PROFILE, authorizer=user_is_owner)
-def view_profile(user_id: str):
+def view_profile(user_id: str) -> Response:
     """User can view their account information."""
     data, code, headers = profile.view_profile(user_id)
     return render_template("accounts/profile.html", **data)
@@ -58,7 +59,7 @@ def view_profile(user_id: str):
 
 @blueprint.route('/<string:user_id>/profile/edit', methods=['GET', 'POST'])
 @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)
-def edit_profile(user_id: str):
+def edit_profile(user_id: str) -> Response:
     """User can update their account information."""
     data, code, headers = profile.edit_profile(request.method, user_id,
                                                request.form,
@@ -67,7 +68,8 @@ def edit_profile(user_id: str):
 
 
 @blueprint.route('/login', methods=['GET', 'POST'])
-def login():
+def login() -> Response:
+    """User can log in with username and password, or permanent token."""
     ip_address = request.remote_addr
     form_data = request.form
 
@@ -89,11 +91,11 @@ def login():
         return response
 
     # Form is invalid, or login failed.
-    return render_template("accounts/login.html", **data)
+    return render_template("accounts/login.html", **data), code
 
 
 @blueprint.route('/logout', methods=['GET'])
-def logout():  # type: ignore
+def logout() -> Response:
     """Log out of arXiv."""
     session_cookie_key = current_app.config['SESSION_COOKIE_NAME']
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
@@ -113,7 +115,7 @@ def logout():  # type: ignore
 
 
 @blueprint.route('/captcha', methods=['GET'])
-def captcha_image():
+def captcha_image() -> Response:
     """Provide the image for stateless stateless_captcha."""
     secret = current_app.config['CAPTCHA_SECRET']
     token = request.args.get('token')

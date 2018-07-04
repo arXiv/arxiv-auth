@@ -6,7 +6,7 @@
     <h1>Log in to arXiv.org</h1>
     <h2>If you're already registered</h2>
 
-    <form action="{{ url_for('ui.post_login') }}" method="POST">
+    <form action="{{ url_for('ui.login') }}" method="POST">
       {{ form.csrf_token }}
       <div class="field">
         <div class="control">

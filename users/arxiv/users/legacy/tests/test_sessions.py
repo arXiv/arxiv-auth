@@ -74,5 +74,5 @@ class TestInvalidateSession(TestCase):
     def test_invalidate_nonexistant_session(self):
         """An exception is raised if the session doesn't exist."""
         with temporary_db():
-            with self.assertRaises(exceptions.SessionUnknown):
+            with self.assertRaises(exceptions.UnknownSession):
                 sessions.invalidate('foosession')

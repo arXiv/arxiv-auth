@@ -88,14 +88,17 @@ class AuthMiddleware(BaseMiddleware):
         try:
             # Try to verify the token in the Authorization header, and attach
             # the decoded session data to the request.
-            environ['session']: domain.Session = tokens.decode(token, secret)
+            session: domain.Session = tokens.decode(token, secret)
+            environ['session'] = session
 
             # Attach the encrypted token so that we can use it in subrequests.
             environ['token'] = token
         except InvalidToken as e:   # Let the application decide what to do.
             logger.error('Auth token not valid')
-            environ['session'] = Unauthorized('Invalid auth token')
+            exception = Unauthorized('Invalid auth token')  # type: ignore
+            environ['session'] = exception
         except Exception as e:
             logger.error(f'Unhandled exception: {e}')
-            environ['session'] = InternalServerError(f'Unhandled: {e}')
+            exception = InternalServerError(f'Unhandled: {e}')  # type: ignore
+            environ['session'] = exception
         return environ, start_response

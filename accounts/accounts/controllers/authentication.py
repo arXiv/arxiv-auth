@@ -60,40 +60,42 @@ def login(method: str, form_data: MultiDict, ip: str,
     logger.debug('Login form submitted')
     form = LoginForm(form_data)
     data: Dict[str, Any] = {'form': form}
-    if form.validate():
-        logger.debug('Login form is valid')
-        # Attempt to authenticate the user with the credentials provided.
-        try:
-            userdata, auths = users.authenticate(
-                username_or_email=form.username.data,
-                password=form.password.data
-            )
-            print(userdata, auths)
-        except users.exceptions.AuthenticationFailed as e:
-            data.update({'error': 'Invalid username or password'})
-            return data, status.HTTP_400_BAD_REQUEST, {}
+    if not form.validate():
+        logger.debug('Form data is not valid')
+        return data, status.HTTP_400_BAD_REQUEST, {}
 
-        # Create a session in the distributed session store.
-        try:
-            session, cookie = sessions.create(userdata, auths, ip, ip, track)
-            logger.debug('Created session: %s', session.session_id)
-        except sessions.exceptions.SessionCreationFailed as e:
-            logger.debug('Could not create session: %s', e)
-            raise InternalServerError('Cannot log in') from e  # type: ignore
+    logger.debug('Login form is valid')
+    # Attempt to authenticate the user with the credentials provided.
+    try:
+        userdata, auths = users.authenticate(
+            username_or_email=form.username.data,
+            password=form.password.data
+        )
+    except users.exceptions.AuthenticationFailed as e:
+        logger.debug('Authentication failed for %s with %s',
+                     form.username.data, form.password.data)
+        data.update({'error': 'Invalid username or password'})
+        return data, status.HTTP_400_BAD_REQUEST, {}
 
-        # Create a session in the legacy session store.
-        try:
-            c_session, c_cookie = legacy.create(userdata, auths, ip, ip, track)
-            logger.debug('Created classic session: %s', c_session.session_id)
-        except legacy.exceptions.SessionCreationFailed as e:
-            logger.debug('Could not create legacy session: %s', e)
-            raise InternalServerError('Cannot log in') from e  # type: ignore
+    # Create a session in the distributed session store.
+    try:
+        session, cookie = sessions.create(userdata, auths, ip, ip, track)
+        logger.debug('Created session: %s', session.session_id)
+    except sessions.exceptions.SessionCreationFailed as e:
+        logger.debug('Could not create session: %s', e)
+        raise InternalServerError('Cannot log in') from e  # type: ignore
 
-        # The UI route should use these to set cookies on the response.
-        data.update({'session_cookie': cookie, 'classic_cookie': c_cookie})
-        return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
+    # Create a session in the legacy session store.
+    try:
+        c_session, c_cookie = legacy.create(userdata, auths, ip, ip, track)
+        logger.debug('Created classic session: %s', c_session.session_id)
+    except legacy.exceptions.SessionCreationFailed as e:
+        logger.debug('Could not create legacy session: %s', e)
+        raise InternalServerError('Cannot log in') from e  # type: ignore
 
-    return data, status.HTTP_200_OK, {}
+    # The UI route should use these to set cookies on the response.
+    data.update({'session_cookie': cookie, 'classic_cookie': c_cookie})
+    return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
 
 
 def logout(session_cookie: Optional[str],

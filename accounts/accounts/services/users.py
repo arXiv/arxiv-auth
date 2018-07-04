@@ -13,11 +13,11 @@ models = legacy.models
 drop_all = legacy.util.drop_all
 exceptions = legacy.exceptions
 authenticate = legacy.authenticate.authenticate
-get_user_by_id = legacy.authenticate.get_user_by_id
 
-register = legacy.register.register
-username_exists = legacy.register.username_exists
-email_exists = legacy.register.email_exists
+get_user_by_id = legacy.accounts.get_user_by_id
+register = legacy.accounts.register
+username_exists = legacy.accounts.username_exists
+email_exists = legacy.accounts.email_exists
 update_user = legacy.accounts.update_user
 
 

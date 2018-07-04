@@ -49,8 +49,8 @@ class Category(NamedTuple):
     @property
     def display(self) -> str:
         """Display name for this category."""
-        return taxonomy.CATEGORIES[self.compound]['name']
-
+        name: str = taxonomy.CATEGORIES[self.compound]['name']
+        return name
 
 
 class Client(NamedTuple):
@@ -62,12 +62,14 @@ class Client(NamedTuple):
 class UserProfile(NamedTuple):
     """User profile data."""
 
-    STAFF = ('1', 'Staff')
-    PROFESSOR = ('2', 'Professor')
-    POST_DOC = ('3', 'Post doc')
-    GRAD_STUDENT = ('4', 'Grad student')
-    OTHER = ('5', 'Other')
-    RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]
+    # mypy (oddly) does not support class attributes:
+    #  https://github.com/python/mypy/issues/3959
+    STAFF = ('1', 'Staff')  # type: ignore
+    PROFESSOR = ('2', 'Professor')  # type: ignore
+    POST_DOC = ('3', 'Post doc')  # type: ignore
+    GRAD_STUDENT = ('4', 'Grad student')  # type: ignore
+    OTHER = ('5', 'Other')  # type: ignore
+    RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]  # type: ignore
 
     organization: str
     """Institutional affiliation."""
@@ -101,7 +103,8 @@ class UserProfile(NamedTuple):
     @property
     def rank_display(self) -> str:
         """The display name of the user's rank."""
-        return dict(self.RANKS)[str(self.rank)]
+        _rank: str = dict(self.RANKS)[str(self.rank)]
+        return _rank
 
     @property
     def default_archive(self) -> str:
@@ -114,7 +117,7 @@ class UserProfile(NamedTuple):
         return self.default_category.subject
 
     @property
-    def groups_display(self):
+    def groups_display(self) -> str:
         """Display-ready representation of active groups for this profile."""
         return ", ".join([
             taxonomy.GROUPS[group]['name'] for group in self.submission_groups
@@ -208,7 +211,9 @@ def to_dict(obj: tuple) -> dict:
     dict
 
     """
-    data = obj._asdict()
+    if not hasattr(obj, '_asdict'):  # NamedTuple-generated classes have this.
+        return {}
+    data = obj._asdict()  # type: ignore
     _data = {}
     for key, value in data.items():
         if hasattr(value, '_asdict'):
@@ -219,7 +224,7 @@ def to_dict(obj: tuple) -> dict:
     return _data
 
 
-def from_dict(cls: type, data: dict) -> NamedTuple:
+def from_dict(cls: type, data: dict) -> Any:
     """
     Generate a NamedTuple instance from a dict, with recursion.
 
@@ -245,7 +250,7 @@ def from_dict(cls: type, data: dict) -> NamedTuple:
         An instance of ``cls``.
     """
     _data = {}
-    for field, field_type in cls._field_types.items():
+    for field, field_type in cls._field_types.items():  # type: ignore
         if field not in data:
             continue
         value = data[field]
@@ -268,7 +273,7 @@ def _is_typing_type(field_type: type) -> bool:
 
 def _is_nested_type(field_type: type) -> bool:
     """Determine whether a typing class is nested (e.g. Union[str, int])."""
-    return type(field_type._subs_tree()) is tuple
+    return type(field_type._subs_tree()) is tuple  # type: ignore
 
 
 def _get_cast_type_for_str(field_type: type) -> Optional[Callable]:
@@ -280,8 +285,9 @@ def _get_cast_type_for_str(field_type: type) -> Optional[Callable]:
     if (field_type is datetime or
         (_is_typing_type(field_type) and
          _is_nested_type(field_type) and
-         datetime in field_type._subs_tree())):
+         datetime in field_type._subs_tree())):  # type: ignore
         return dateutil.parser.parse
+    return None
 
 
 def _get_cast_type_for_dict(field_type: type) -> Optional[Callable]:
@@ -299,11 +305,12 @@ def _get_cast_type_for_dict(field_type: type) -> Optional[Callable]:
     if _is_typing_type(field_type) and _is_nested_type(field_type):
 
         # Look for either a NamedTuple class, or dict type.
-        for s_type in field_type._subs_tree():
+        for s_type in field_type._subs_tree():  # type: ignore
             if s_type is dict:
-                return      # We already have one of these, nothing to do.
+                return None    # We already have one of these, nothing to do.
             if _is_a_namedtuple(s_type):
                 return partial(from_dict, s_type)
+    return None
 
 
 def _get_cast_type(field_type: type, value: Any) -> Optional[Callable]:
@@ -312,3 +319,4 @@ def _get_cast_type(field_type: type, value: Any) -> Optional[Callable]:
         return _get_cast_type_for_dict(field_type)
     if type(value) is str:
         return _get_cast_type_for_str(field_type)
+    return None

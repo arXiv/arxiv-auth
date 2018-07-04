@@ -61,7 +61,7 @@ When the decorated route function is called...
 from typing import Optional, Union, Callable, Any
 from functools import wraps
 from flask import request, current_app
-from werkzeug.exceptions import BadRequest, Forbidden, Unauthorized
+from werkzeug.exceptions import BadRequest, Unauthorized, Forbidden
 from arxiv import status
 from arxiv.base import logging
 from .. import domain, legacy
@@ -79,9 +79,9 @@ def _get_legacy_session() -> Optional[domain.Session]:
     classic_cookie = request.cookies.get(classic_cookie_key, None)
     try:
         return legacy.sessions.load(classic_cookie)
-    except legacy.exceptions.SessionUnknown as e:
+    except legacy.exceptions.UnknownSession as e:
         logger.debug('No legacy session available')
-    return
+    return None
 
 
 def scoped(required: Optional[str] = None,
@@ -101,7 +101,7 @@ def scoped(required: Optional[str] = None,
         that the requesting user is the owner of a resource. Should have the
         signature: ``(session: domain.Session, *args, **kwargs) -> bool``.
         ``*args`` and ``**kwargs`` are the parameters passed to the decorated
-        function. If the authorizer returns ``False``, an :class:`.Forbidden`
+        function. If the authorizer returns ``False``, an :class:`.`
         exception is raised.
 
     Returns
@@ -124,7 +124,7 @@ def scoped(required: Optional[str] = None,
             ------
             :class:`.Unauthorized`
                 Raised when session data is not available.
-            :class:`.Forbidden`
+            :class:`.`
                 Raised when the session has insufficient auth scope, or the
                 provided authorizer returns ``False``.
 
@@ -149,21 +149,22 @@ def scoped(required: Optional[str] = None,
             # present. So we'll complain here if it's not.
             if not session or not (session.user or session.client):
                 logger.debug('No valid session; aborting')
-                raise Unauthorized('Not a valid session')
+                raise Unauthorized('Not a valid session')  # type: ignore
 
             # Attach the session to the request so that other
             # components can access it easily.
             request.session = session
 
             # Check the required scopes.
-            if required and required not in session.authorizations.scopes:
+            if required and (session.authorizations is None
+                             or required not in session.authorizations.scopes):
                 logger.debug('Session is not authorized for %s', required)
-                raise Forbidden('Not authorized for this route')
+                raise Forbidden('Access denied')  # type: ignore
 
             # Call the provided authorizer function.
             if authorizer and not authorizer(session, *args, **kwargs):
                 logger.debug('Authorizer retured negative result')
-                raise Forbidden('Insufficient privileges')
+                raise Forbidden('Access denied')  # type: ignore
 
             logger.debug('Request is authorized, proceeding')
             return func(*args, **kwargs)

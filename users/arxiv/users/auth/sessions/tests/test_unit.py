@@ -303,7 +303,7 @@ class TestGetSession(TestCase):
             'nonce': '0039299290099',
         }
         expired_token = jwt.encode(claims, secret)
-        with self.assertRaises(store.SessionUnknown):
+        with self.assertRaises(store.UnknownSession):
             store.load(expired_token)
 
     @mock.patch('arxiv.base.globals.flask_app')

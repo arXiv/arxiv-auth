@@ -7,7 +7,7 @@ they are required by both the accounts service and the authn/z middlware,
 and maintaining them in both places would create too much duplication.
 """
 
-from . import sessions, exceptions, authenticate, models, register, util, \
+from . import sessions, exceptions, authenticate, models, accounts, util, \
     endorsements
 from .util import create_all, init_app, current_session, drop_all, \
     is_configured

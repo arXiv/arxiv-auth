@@ -17,14 +17,12 @@ from datetime import datetime
 
 from sqlalchemy.sql.expression import literal
 
+from . import util
+from .. import domain
 from arxiv import taxonomy
 from .models import DBUser, DBEndorsement, DBPaperOwners, DBDocuments, \
     DBDocumentInCategory, DBCategory, DBEndorsementDomain, DBEmailWhitelist, \
     DBEmailBlacklist
-
-from .. import domain
-
-from .util import transaction, epoch, from_epoch
 
 
 GENERAL_CATEGORIES = [
@@ -32,7 +30,7 @@ GENERAL_CATEGORIES = [
     domain.Category('physics', 'gen-ph')
 ]
 
-WINDOW_START = from_epoch(157783680)
+WINDOW_START = util.from_epoch(157783680)
 
 
 def get_endorsements(user: domain.User) -> List[domain.Category]:
@@ -48,6 +46,7 @@ def get_endorsements(user: domain.User) -> List[domain.Category]:
     list
         Each item is a :class:`.domain.Category` for which the user is
         either explicitly or implicitly endorsed.
+
     """
     return list(set(explicit_endorsements(user))
                 | set(implicit_endorsements(user)))
@@ -70,7 +69,7 @@ def explicit_endorsements(user: domain.User) -> List[domain.Category]:
         Each item is a :class:`.domain.Category` for which the user is
         explicitly endorsed.
     """
-    with transaction() as session:
+    with util.transaction() as session:
         data: List[DBEndorsement] = (
             session.query(
                 DBEndorsement.archive,
@@ -81,7 +80,7 @@ def explicit_endorsements(user: domain.User) -> List[domain.Category]:
             .filter(DBEndorsement.flag_valid == 1)
             .all()
         )
-    pooled = Counter()
+    pooled: Counter = Counter()
     for archive, subject, points in data:
         pooled[domain.Category(archive, subject)] += points
     return [category for category, points in pooled.items() if points]
@@ -141,7 +140,7 @@ def is_academic(user: domain.User) -> bool:
     -------
     bool
     """
-    with transaction() as session:
+    with util.transaction() as session:
         in_whitelist = (
             session.query(DBEmailWhitelist)
             .filter(literal(user.email).like(DBEmailWhitelist.pattern))
@@ -179,8 +178,8 @@ def _disqualifying_invalidations(category: domain.Category,
     -------
     bool
     """
-    return ((category in GENERAL_CATEGORIES and category in invalidated)
-            or (category not in GENERAL_CATEGORIES and invalidated))
+    return bool((category in GENERAL_CATEGORIES and category in invalidated)
+                or (category not in GENERAL_CATEGORIES and invalidated))
 
 
 def _endorse_by_email(category: domain.Category,
@@ -206,7 +205,10 @@ def _endorse_by_email(category: domain.Category,
     -------
     bool
     """
-    return policies.get(category)['endorse_email'] and user_is_academic
+    policy = policies.get(category)
+    if policy is None or 'endorse_email' not in policy:
+        return False
+    return policy['endorse_email'] and user_is_academic
 
 
 def _endorse_by_papers(category: domain.Category,
@@ -236,7 +238,7 @@ def _endorse_by_papers(category: domain.Category,
     """
     N_papers = papers[policies[category]['domain']]
     min_papers = policies[category]['min_papers']
-    return N_papers >= min_papers
+    return bool(N_papers >= min_papers)
 
 
 def domain_papers(user: domain.User,
@@ -259,7 +261,7 @@ def domain_papers(user: domain.User,
         in each respective domain (int).
 
     """
-    with transaction() as session:
+    with util.transaction() as session:
         query = (
             session.query(
                 DBPaperOwners.document_id,
@@ -279,7 +281,7 @@ def domain_papers(user: domain.User,
             )
         )
         if start_date:
-            query = query.filter(DBDocuments.dated > epoch(start_date))
+            query = query.filter(DBDocuments.dated > util.epoch(start_date))
         data = query.all()
     return dict(Counter(domain for _, _, _, domain in data).items())
 
@@ -297,8 +299,9 @@ def category_policies() -> Dict[domain.Category, Dict]:
     dict
         Keys are :class:`.domain.Category` instances. Values are dicts with
         policiy details.
+
     """
-    with transaction() as session:
+    with util.transaction() as session:
         data = (
             session.query(
                 DBCategory.archive,
@@ -340,7 +343,7 @@ def invalidated_autoendorsements(user: domain.User) -> List[domain.Category]:
         Items are :class:`.domain.Category` for which the user has had past
         auto-endorsements revoked.
     """
-    with transaction() as session:
+    with util.transaction() as session:
         data: List[DBEndorsement] = (
             session.query(
                 DBEndorsement.archive,

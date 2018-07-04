@@ -1,6 +1,6 @@
 """ORM models for legacy user and session tables."""
 
-from typing import Any, NewType
+from typing import Any, NewType, List
 
 from sqlalchemy import BigInteger, Column, DateTime, Enum, \
     ForeignKey, Index, Integer, SmallInteger, String, Text, text
@@ -42,7 +42,7 @@ class DBSession(Base):  # type: ignore
     user = relationship('DBUser')
 
 
-class DBSessionsAudit(Base):
+class DBSessionsAudit(Base):  # type: ignore
     """Legacy arXiv session audit table. Notably has a tracking cookie."""
 
     __tablename__ = 'tapir_sessions_audit'
@@ -243,14 +243,14 @@ class DBProfile(Base):   # type: ignore
     ]
 
     @property
-    def groups(self):
+    def groups(self) -> List[str]:
         """Active groups for this user profile."""
         return [group for group, column in self.GROUP_FLAGS
                 if getattr(self, column) == 1]
 
     def to_domain(self) -> domain.UserProfile:
         """Generate a domain representation from this database instance."""
-        return domain.UserProfile(
+        return domain.UserProfile(  # type: ignore
             organization=self.affiliation,
             country=self.country,
             rank=self.rank,
@@ -299,7 +299,7 @@ class DBEndorsement(Base):  # type: ignore
     endorsee = relationship('DBUser')
 
 
-class DBEndorsementDomain(Base):
+class DBEndorsementDomain(Base):  # type: ignore
     """
     Encodes some policies about endorsement.
 
@@ -324,7 +324,7 @@ class DBEndorsementDomain(Base):
                                server_default=text("'4'"))
 
 
-class DBCategory(Base):
+class DBCategory(Base):  # type: ignore
     """
     Metadata about arXiv categories.
 
@@ -352,7 +352,7 @@ class DBCategory(Base):
     endorsement_domain = Column(String(32), nullable=True)
 
 
-class DBPaperOwners(Base):
+class DBPaperOwners(Base):  # type: ignore
     """
     Relates arXiv users to their owned papers.
 
@@ -376,7 +376,7 @@ class DBPaperOwners(Base):
     valid = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBDocuments(Base):
+class DBDocuments(Base):  # type: ignore
     """
     Represents an arXiv paper.
 
@@ -402,7 +402,7 @@ class DBDocuments(Base):
     dated = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBDocumentInCategory(Base):
+class DBDocumentInCategory(Base):  # type: ignore
     """
     M2M intermediate table for documents and their categories.
 
@@ -424,7 +424,7 @@ class DBDocumentInCategory(Base):
     is_primary = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBEmailWhitelist(Base):
+class DBEmailWhitelist(Base):  # type: ignore
     """
     Patterns for identifying academic addresses.
 
@@ -436,7 +436,7 @@ class DBEmailWhitelist(Base):
     pattern = Column(String(64), primary_key=True)
 
 
-class DBEmailBlacklist(Base):
+class DBEmailBlacklist(Base):  # type: ignore
     """
     Patterns for identifying non-academic addresses.
 

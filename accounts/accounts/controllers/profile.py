@@ -1,3 +1,5 @@
+"""Controllers for user profile-related requests."""
+
 from typing import Tuple, Optional
 from werkzeug import MultiDict
 from werkzeug.exceptions import BadRequest
@@ -116,7 +118,7 @@ class ProfileForm(Form):
     @classmethod
     def from_domain(cls, user: domain.User) -> 'ProfileForm':
         """Instantiate this form with data from a domain object."""
-        return cls(MultiDict({
+        return cls(MultiDict({  # type: ignore
             'username': user.username,
             'email': user.email,
             'forename': user.name.forename,

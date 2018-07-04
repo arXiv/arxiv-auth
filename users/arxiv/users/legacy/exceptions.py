@@ -21,9 +21,13 @@ class SessionDeletionFailed(RuntimeError):
     """Failed to delete a session in the legacy database."""
 
 
-class SessionUnknown(RuntimeError):
+class UnknownSession(RuntimeError):
     """Failed to locate a session in the legacy database."""
 
 
 class SessionExpired(RuntimeError):
     """A reference was made to an expired session."""
+
+
+class InvalidCookie(ValueError):
+    """The value of a passed legacy cookie is not valid."""

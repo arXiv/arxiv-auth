@@ -9,17 +9,15 @@ from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 
+from . import util, endorsements
 from .. import domain
 from ..auth import scopes
 from arxiv.base import logging
 
-from .util import transaction, now, check_password, compute_capabilities, \
-    get_scopes
 from .models import Base, DBUser, DBUserPassword, DBPermanentToken, \
     DBUserNickname, DBProfile
 from .exceptions import NoSuchUser, AuthenticationFailed, \
     PasswordAuthenticationFailed
-from .endorsements import get_endorsements
 
 logger = logging.getLogger(__name__)
 
@@ -78,9 +76,9 @@ def authenticate(username_or_email: Optional[str]=None,
         )
     )
     auths = domain.Authorizations(
-        classic=compute_capabilities(db_user),
-        scopes=get_scopes(db_user),
-        endorsements=get_endorsements(user)
+        classic=util.compute_capabilities(db_user),
+        scopes=util.get_scopes(db_user),
+        endorsements=endorsements.get_endorsements(user)
     )
     return user, auths
 
@@ -147,7 +145,7 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
         raise AuthenticationFailed('Invalid username or password') from e
     logger.debug(f'Got user with user_id: {db_user.user_id}')
     try:
-        check_password(password, db_pass.password_enc)
+        util.check_password(password, db_pass.password_enc)
     except PasswordAuthenticationFailed as e:
         raise AuthenticationFailed('Invalid username or password') from e
     return db_user, db_pass, db_nick
@@ -174,7 +172,7 @@ def _get_user_by_username(username_or_email: str) -> PassData:
         Raised when the user cannot be found.
 
     """
-    with transaction() as session:
+    with util.transaction() as session:
         tapir_user: DBUser = session.query(DBUser) \
             .filter(DBUser.email == username_or_email) \
             .filter(DBUser.flag_approved == 1) \
@@ -223,7 +221,7 @@ def _invalidate_token(user_id: str, secret: str) -> None:
         Raised when the token or user cannot be found.
 
     """
-    with transaction() as session:
+    with util.transaction() as session:
         _, db_token, _ = _get_token(user_id, secret)
         db_token.valid = 0
         session.add(db_token)
@@ -255,7 +253,7 @@ def _get_token(user_id: str, secret: str, valid: int = 1) -> TokenData:
         Raised when the token or user cannot be found.
 
     """
-    with transaction() as session:
+    with util.transaction() as session:
         db_token: DBPermanentToken = session.query(DBPermanentToken) \
             .filter(DBPermanentToken.user_id == user_id) \
             .filter(DBPermanentToken.secret == secret) \

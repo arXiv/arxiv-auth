@@ -18,7 +18,7 @@ import jwt
 
 from ... import domain
 from ..exceptions import SessionCreationFailed, InvalidToken, \
-    SessionDeletionFailed, SessionUnknown
+    SessionDeletionFailed, UnknownSession
 
 from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
@@ -109,7 +109,7 @@ class SessionStore(object):
         session = domain.to_dict(self.load(cookie))
         try:
             cookie_data = self._unpack_cookie(cookie)
-        except jwt.exceptions.DecodeError as e:
+        except jwt.exceptions.DecodeError as e:   # type: ignore
             raise SessionDeletionFailed('Bad session token') from e
         try:
             if session['nonce'] != cookie_data['nonce'] \
@@ -130,7 +130,7 @@ class SessionStore(object):
             user_id = cookie_data.get('user_id')
             client_id = cookie_data.get('client_id')
             nonce = cookie_data['nonce']
-        except (KeyError, jwt.exceptions.DecodeError) as e:
+        except (KeyError, jwt.exceptions.DecodeError) as e:    # type: ignore
             raise InvalidToken('Token payload malformed') from e
 
         session = self._load(session_id)
@@ -138,9 +138,13 @@ class SessionStore(object):
             raise InvalidToken('Session has expired')
         if nonce != session.nonce:
             raise InvalidToken('Invalid token; likely a forgery')
-        if user_id and user_id != session.user.user_id:
+        if session.user is None and session.client is None:
+            raise InvalidToken('Neither user nor client data are present')
+        if user_id and session.user is not None \
+                and user_id != session.user.user_id:
             raise InvalidToken('Invalid token; likely a forgery')
-        if client_id and client_id != session.client.client_id:
+        if client_id and session.client is not None \
+                and client_id != session.client.client_id:
             raise InvalidToken('Invalid token; likely a forgery')
         return session
 
@@ -149,18 +153,19 @@ class SessionStore(object):
         user_session: Union[str, bytes, bytearray] = self.r.get(session_id)
         if not user_session:
             logger.error(f'No such session: {session_id}')
-            raise SessionUnknown(f'Failed to find session {session_id}')
+            raise UnknownSession(f'Failed to find session {session_id}')
         try:
             data: dict = json.loads(user_session)
         except json.decoder.JSONDecodeError:
             raise InvalidToken('Invalid or corrupted session token')
-        return domain.from_dict(domain.Session, data)
+        session: domain.Session = domain.from_dict(domain.Session, data)
+        return session
 
     def _unpack_cookie(self, cookie: str) -> dict:
-        return jwt.decode(cookie, self._secret)
+        return dict(jwt.decode(cookie, self._secret))
 
     def _pack_cookie(self, cookie_data: dict) -> str:
-        return jwt.encode(cookie_data, self._secret)
+        return jwt.encode(cookie_data, self._secret).decode('ascii')
 
 
 def init_app(app: object = None) -> None:
@@ -194,8 +199,8 @@ def current_session() -> SessionStore:
 
 @wraps(SessionStore.create)
 def create(user: domain.User, authorizations: domain.Authorizations,
-           ip_address: str, remote_host: str, tracking_cookie: str = '') \
-        -> domain.Session:
+           ip_address: str, remote_host: str, tracking_cookie: str = '',
+           session_hash: str = '') -> Tuple[domain.Session, str]:
     """
     Create a new session.
 

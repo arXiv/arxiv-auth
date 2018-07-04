@@ -75,8 +75,8 @@ class TestPOSTLogin(TestCase):
                               "Response includes a login form.")
         self.assertGreater(len(data['form'].password.errors), 0,
                            "Password field has an error")
-        self.assertEqual(status_code, status.HTTP_200_OK,
-                         "Response status is OK")
+        self.assertEqual(status_code, status.HTTP_400_BAD_REQUEST,
+                         "Response status is 400 bad request")
 
     @mock.patch('accounts.controllers.authentication.users')
     @mock.patch('accounts.controllers.authentication.legacy')

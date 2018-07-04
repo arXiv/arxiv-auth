@@ -18,7 +18,7 @@ from arxiv.base.globals import get_application_config, get_application_global
 from ..auth import scopes
 from .. import domain
 from .models import Base, DBUser, DBPolicyClass, DBEndorsement, DBSession
-from .exceptions import SessionUnknown, PasswordAuthenticationFailed
+from .exceptions import UnknownSession, PasswordAuthenticationFailed
 
 # TODO: timezone!
 
@@ -115,45 +115,6 @@ def check_password(password: str, encrypted: bytes) -> None:
     pass_hashed = hashlib.sha1(salt + b'-' + password.encode('utf-8')).digest()
     if pass_hashed != enc_hashed:
         raise PasswordAuthenticationFailed('Incorrect password')
-
-
-def unpack_cookie(session_cookie: str) -> Tuple[str, str, str, int, str]:
-    """Unpack the legacy session cookie."""
-    parts = session_cookie.split(':')
-    payload = tuple(part for part in parts[:-1])
-    try:
-        expected_cookie = pack_cookie(*payload)
-        assert expected_cookie == session_cookie
-    except (TypeError, AssertionError) as e:
-        raise SessionUnknown('Invalid session cookie; forged?') from e
-    return payload
-
-
-def pack_cookie(session_id: str, user_id: str, ip: str, capabilities: int) \
-        -> bytes:
-    """
-    Generate a value for the classic session cookie.
-
-    Parameters
-    ----------
-    session_id : str
-    user_id : str
-    ip : str
-        Client IP address.
-    capabilities : str
-        This is essentially a user privilege level.
-
-    Returns
-    -------
-    bytes
-        Signed cookie value.
-
-    """
-    session_hash = get_application_config()['CLASSIC_SESSION_HASH']
-    value = ':'.join(map(str, [session_id, user_id, ip, capabilities]))
-    to_sign = f'{value}-{session_hash}'.encode('utf-8')
-    cookie_hash = b64encode(hashlib.sha256(to_sign).digest())
-    return value + ':' + cookie_hash.decode('utf-8')
 
 
 def compute_capabilities(tapir_user: DBUser) -> int:

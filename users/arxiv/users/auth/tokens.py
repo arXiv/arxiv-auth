@@ -37,13 +37,14 @@ def encode(session: domain.Session, secret: str) -> str:
         An encrypted JWT.
 
     """
-    return jwt.encode(domain.to_dict(session), secret)
+    return jwt.encode(domain.to_dict(session), secret).decode('ascii')
 
 
 def decode(token: str, secret: str) -> domain.Session:
     """Decode an auth token to access session information."""
     try:
-        data: dict = jwt.decode(token, secret, algorithms=['HS256'])
-    except jwt.exceptions.DecodeError as e:
+        data = dict(jwt.decode(token, secret, algorithms=['HS256']))
+    except jwt.exceptions.DecodeError as e:  # type: ignore
         raise exceptions.InvalidToken('Not a valid token') from e
-    return domain.from_dict(domain.Session, data)
+    session: domain.Session = domain.from_dict(domain.Session, data)
+    return session

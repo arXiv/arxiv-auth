@@ -38,6 +38,8 @@ def stop_container(container):
 class TestLoginLogoutRoutes(TestCase):
     """Test logging in and logging out."""
 
+    __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
+
     @classmethod
     def setUpClass(cls):
         """Spin up redis."""
