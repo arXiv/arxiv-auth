@@ -9,6 +9,7 @@ setup(
               in find_packages('./arxiv', exclude=['*test*'])],
     install_requires=[
         "pycountry",
+        "sqlalchemy",
         "mysqlclient",
         "python-dateutil",
         "arxiv-base"

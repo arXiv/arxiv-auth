@@ -22,7 +22,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.append(os.path.abspath('../..'))
-sys.path.append(os.path.abspath('../users/arxiv'))
+sys.path.append(os.path.abspath('../users'))
 sys.path.append(os.path.abspath('../accounts'))
 
 # -- General configuration ------------------------------------------------
