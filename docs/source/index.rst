@@ -6,7 +6,8 @@ arXiv Authorization & Authentication
    :caption: Contents:
 
    architecture.rst
-   api/modules.rst
+   arxiv.users/modules.rst
+   accounts/modules.rst
 
 
 
