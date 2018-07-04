@@ -119,8 +119,8 @@ class SessionStore(object):
             self.r.set(session['session_id'], json.dumps(session))
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
-        # except Exception as e:
-        #     raise SessionDeletionFailed(f'Failed to delete: {e}') from e
+        except Exception as e:
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
     def load(self, cookie: str) -> domain.Session:
         """Load a session using a session cookie."""

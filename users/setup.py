@@ -7,5 +7,11 @@ setup(
     version='0.1.1',
     packages=[f'arxiv.{package}' for package
               in find_packages('./arxiv', exclude=['*test*'])],
+    install_requires=[
+        "pycountry",
+        "mysqlclient",
+        "python-dateutil",
+        "arxiv-base"
+    ],
     zip_safe=False
 )
