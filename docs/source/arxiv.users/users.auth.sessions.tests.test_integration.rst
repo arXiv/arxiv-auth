@@ -1,0 +1,7 @@
+users\.auth\.sessions\.tests\.test\_integration module
+======================================================
+
+.. automodule:: users.auth.sessions.tests.test_integration
+    :members:
+    :undoc-members:
+    :show-inheritance:
