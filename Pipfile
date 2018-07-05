@@ -22,7 +22,7 @@ wtforms = "*"
 
 [dev-packages]
 mimesis = "*"
-mypy = "==0.610"
+mypy = "*"
 pydocstyle = "*"
 pylint = "*"
 sphinx = "*"
