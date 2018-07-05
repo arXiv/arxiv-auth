@@ -35,15 +35,6 @@ current branch, install the package directly with ``pipenv install ./users``.
 Otherwise, you can install the latest release with
 ``pipenv install arxiv-users``.
 
-## Documentation
-
-Documentation source files can be found in ``docs``
-
-sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
-sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
-cd docs
-make html SPHINXBUILD=$(pipenv --venv)/bin/sphinx-build
-
 ## Testing
 
 Each of the applications/packages in this repository has its own test suite.
@@ -194,8 +185,8 @@ are **not** under version control (per ``.gitignore``).
 To build the full documentation for this project:
 
 ```bash
-$ cd <project_root>/docs
-$ make html
+cd <project_root>/docs
+make html SPHINXBUILD=$(pipenv --venv)/bin/sphinx-build
 ```
 
 Point your browser to: ``file:///path/to/arxiv-accounts/docs/build/html/index.html``.
@@ -203,6 +194,10 @@ Point your browser to: ``file:///path/to/arxiv-accounts/docs/build/html/index.ht
 There are other build targets available. Run ``make`` without any arguments
 for more info.
 
+
+sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
+sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
+cd docs
 
 
 ### Architecture
