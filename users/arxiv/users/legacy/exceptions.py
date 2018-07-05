@@ -31,3 +31,7 @@ class SessionExpired(RuntimeError):
 
 class InvalidCookie(ValueError):
     """The value of a passed legacy cookie is not valid."""
+
+
+class RegistrationFailed(RuntimeError):
+    """Could not create a new user."""

@@ -17,15 +17,15 @@ class DBSession(Base):  # type: ignore
     """
     Legacy arXiv session table.
 
-    +----------------+-----------------+------+-------+---------+----------------+
-    | Field          | Type            | Null | Key   | Default | Extra          |
-    +----------------+-----------------+------+-------+---------+----------------+
-    | session_id     | int(4) unsigned | NO   | PRI   | NULL    | autoincrement |
-    | user_id        | int(4) unsigned | NO   | MUL   | 0       |                |
-    | last_reissue   | int(11)         | NO   |       | 0       |                |
-    | start_time     | int(11)         | NO   | MUL   | 0       |                |
-    | end_time       | int(11)         | NO   | MUL   | 0       |                |
-    +--------------+-------------------+------+-------+---------+----------------+
+    +----------------+-----------------+------+-------+---------+
+    | Field          | Type            | Null | Key   | Default |
+    +----------------+-----------------+------+-------+---------+
+    | session_id     | int(4) unsigned | NO   | PRI   | NULL    |
+    | user_id        | int(4) unsigned | NO   | MUL   | 0       |
+    | last_reissue   | int(11)         | NO   |       | 0       |
+    | start_time     | int(11)         | NO   | MUL   | 0       |
+    | end_time       | int(11)         | NO   | MUL   | 0       |
+    +--------------+-------------------+------+-------+---------+
     """
 
     __tablename__ = 'tapir_sessions'
@@ -174,7 +174,7 @@ class DBUserNickname(Base):  # type: ignore
     +--------------+------------------+------+-----+---------+----------------+
     | Field        | Type             | Null | Key | Default | Extra          |
     +--------------+------------------+------+-----+---------+----------------+
-    | nick_id      | int(10) unsigned | NO   | PRI | NULL    | autoincrement |
+    | nick_id      | int(10) unsigned | NO   | PRI | NULL    | autoincrement  |
     | nickname     | varchar(20)      | NO   | UNI |         |                |
     | user_id      | int(4) unsigned  | NO   | MUL | 0       |                |
     | user_seq     | int(1) unsigned  | NO   |     | 0       |                |

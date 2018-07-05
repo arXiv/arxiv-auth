@@ -38,14 +38,6 @@ Here's an example of how you might use this in a Flask application:
 
 When the decorated route function is called...
 
-- The WSGI request environ object is checked for the ``session`` key, which
-  is where the auth middleware puts any unpacked auth information from the
-  request OR any exceptions that need to be raised withing the request context.
-- If the payload from the middleware is an exception, it is raised here. This
-  might be (for example) an :class:`Unauthorized` exception due to a bad auth
-  token.
-- If there is no session data from the middleware, and the legacy database is
-  available, an attempt is made to load a session from the legacy database.
 - If no session is available from either the middleware or the legacy database,
   an :class:`Unauthorized` exception is raised.
 - If a required scope was provided, the session is checked for the presence of
@@ -64,24 +56,13 @@ from flask import request, current_app
 from werkzeug.exceptions import BadRequest, Unauthorized, Forbidden
 from arxiv import status
 from arxiv.base import logging
-from .. import domain, legacy
+from .. import domain
 
 INVALID_TOKEN = {'reason': 'Invalid authorization token'}
 INVALID_SCOPE = {'reason': 'Token not authorized for this action'}
 
 
 logger = logging.getLogger(__name__)
-
-
-def _get_legacy_session() -> Optional[domain.Session]:
-    """Attempt to load a legacy auth session."""
-    classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
-    classic_cookie = request.cookies.get(classic_cookie_key, None)
-    try:
-        return legacy.sessions.load(classic_cookie)
-    except legacy.exceptions.UnknownSession as e:
-        logger.debug('No legacy session available')
-    return None
 
 
 def scoped(required: Optional[str] = None,
@@ -129,31 +110,12 @@ def scoped(required: Optional[str] = None,
                 provided authorizer returns ``False``.
 
             """
-            session: Optional[Union[domain.Session, Exception]] = \
-                request.environ.get('session')
-
-            # Middlware may have passed an exception, which needs to be raised
-            # within the app/execution context to be handled correctly.
-            if isinstance(session, Exception):
-                logger.debug('Middleware passed an exception: %s', session)
-                raise session
-
-            # If we don't see a session, we may not be deployed behind a
-            # gateway with an authorization service. If the legacy database
-            # is available, we can try to use that as a fall-back.
-            if not session and legacy.is_configured():
-                logger.debug('No session; attempting to get legacy session')
-                session = _get_legacy_session()
-
+            session = request.session
             # Use of the decorator implies that an auth session ought to be
             # present. So we'll complain here if it's not.
             if not session or not (session.user or session.client):
                 logger.debug('No valid session; aborting')
                 raise Unauthorized('Not a valid session')  # type: ignore
-
-            # Attach the session to the request so that other
-            # components can access it easily.
-            request.session = session
 
             # Check the required scopes.
             if required and (session.authorizations is None

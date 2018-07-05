@@ -146,7 +146,7 @@ class TestPOSTLogin(TestCase):
                          "Redirects user to next page")
         self.assertEqual(header['Location'], next_page,
                          "Redirects user to next page.")
-        self.assertEqual(data['session_cookie'], cookie,
+        self.assertEqual(data['cookies']['session_cookie'], (cookie, None),
                          "Session cookie is returned")
-        self.assertEqual(data['classic_cookie'], c_cookie,
+        self.assertEqual(data['cookies']['classic_cookie'], (c_cookie, None),
                          "Classic session cookie is returned")

@@ -13,7 +13,7 @@ setup(
         "mysqlclient",
         "python-dateutil",
         "arxiv-base",
-        "jwt"
+        "pyjwt"
     ],
     zip_safe=False
 )

@@ -123,7 +123,7 @@
       </div>
       <div class="field">
         {{ form.captcha_token }}
-        <img src="{{ url_for('ui.captcha_image') }}?token={{ form.captcha_token.data }}" />
+        <img src="{{ url_for('ui.captcha') }}?token={{ form.captcha_token.data }}" />
         {{ render_field(form.captcha_value) }}
       </div>
 

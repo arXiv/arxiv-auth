@@ -2,7 +2,7 @@ import sys
 sys.path.append('./arxiv')
 
 from flask import Flask
-from users import authorization, legacy
+from arxiv.users import auth, legacy
 
 app = Flask('test')
 legacy.init_app(app)

@@ -17,6 +17,8 @@ mimesis = "*"
 mypy = "==0.610"
 pydocstyle = "*"
 pylint = "*"
+sphinx = "*"
+sphinx-autodoc-typehints = "*"
 
 [requires]
 python_version = "3.6"

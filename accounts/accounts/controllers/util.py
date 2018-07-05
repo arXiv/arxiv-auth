@@ -7,6 +7,7 @@ from wtforms import StringField, PasswordField, SelectField, \
     SelectMultipleField, Form
 
 
+
 class MultiCheckboxField(SelectMultipleField):
     """Multi-select with checkbox inputs."""
 

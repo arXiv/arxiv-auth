@@ -104,19 +104,51 @@ class SessionStore(object):
 
         Parameters
         ----------
-        session_id : str
+        cookie : str
+
         """
-        session = domain.to_dict(self.load(cookie))
+        try:
+            session = domain.to_dict(self.load(cookie))
+        except redis.exceptions.ConnectionError as e:
+            raise SessionDeletionFailed(f'Connection failed: {e}') from e
+        except InvalidToken as e:
+            logger.debug('Could not load session data: %s', e)
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
         try:
             cookie_data = self._unpack_cookie(cookie)
         except jwt.exceptions.DecodeError as e:   # type: ignore
             raise SessionDeletionFailed('Bad session token') from e
+
         try:
             if session['nonce'] != cookie_data['nonce'] \
                     or session['user']['user_id'] != cookie_data['user_id']:
                 raise SessionDeletionFailed('Bad session token')
             session['end_time'] = datetime.now().isoformat()
             self.r.set(session['session_id'], json.dumps(session))
+        except redis.exceptions.ConnectionError as e:
+            raise SessionDeletionFailed(f'Connection failed: {e}') from e
+        except Exception as e:
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
+
+    def invalidate_by_id(self, session_id: str) -> None:
+        """
+        Invalidate a session in the key-value store by ID.
+
+        Parameters
+        ----------
+        session_id : str
+        """
+        try:
+            session_data = domain.to_dict(self._load(session_id))
+        except redis.exceptions.ConnectionError as e:
+            raise SessionDeletionFailed(f'Connection failed: {e}') from e
+        except InvalidToken as e:
+            logger.debug('Could not load session data: %s', e)
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
+
+        session_data['end_time'] = datetime.now().isoformat()
+        try:
+            self.r.set(session_id, json.dumps(session_data))
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
         except Exception as e:
@@ -199,8 +231,8 @@ def current_session() -> SessionStore:
 
 @wraps(SessionStore.create)
 def create(user: domain.User, authorizations: domain.Authorizations,
-           ip_address: str, remote_host: str, tracking_cookie: str = '',
-           session_hash: str = '') -> Tuple[domain.Session, str]:
+           ip_address: str, remote_host: str, tracking_cookie: str = '') \
+        -> Tuple[domain.Session, str]:
     """
     Create a new session.
 
@@ -246,12 +278,26 @@ def delete(session_id: str) -> None:
 
 
 @wraps(SessionStore.invalidate)
-def invalidate(session_id: str) -> None:
+def invalidate(cookie: str) -> None:
     """
     Invalidates a session in the key-value store.
 
     Parameters
     ----------
-    session_id : str
+    cookie : str
+
     """
-    return current_session().invalidate(session_id)
+    return current_session().invalidate(cookie)
+
+
+@wraps(SessionStore.invalidate_by_id)
+def invalidate_by_id(session_id: str) -> None:
+    """
+    Invalidates a session in the key-value store by identifier.
+
+    Parameters
+    ----------
+    session_id : str
+
+    """
+    return current_session().invalidate_by_id(session_id)

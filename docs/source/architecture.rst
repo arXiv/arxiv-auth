@@ -38,7 +38,7 @@ by a separate piece of software:
 
 - :ref:`User accounts service <user-accounts_service-containers>`, which is
   responsible for user registration, authentication, and role management.
-- :ref:`API client registry <api-client-registry-containers>`_, which is
+- :ref:`API client registry <api-client-registry-containers>`, which is
   responsible for API client authentication, workflows for obtaining
   authorization tokens, and client access management.
 - :ref:`Authorizer service <authorizer-service-containers>`, which is
@@ -47,9 +47,9 @@ by a separate piece of software:
   with user/client sessions and authorization in arXiv services.
 
 
-.. _figure-accounts-context:
+.. _figure-authnz-context:
 
-.. figure:: _static/diagrams/accounts-context.png
+.. figure:: _static/diagrams/authnz-context.png
 
    System context for authn/z services in arXiv.
 
@@ -84,6 +84,7 @@ and issue cookies that are compatible with those legacy sessions.
 
    Containers in the user accounts system.
 
+For details, see :py:mod:`accounts`.
 
 .. _api-client-registry-containers:
 
@@ -110,6 +111,8 @@ authorizer service to authorize subsequent API requests.
 .. figure:: _static/diagrams/client-registry-containers.png
 
    Containers in the API client registry system.
+
+For details, see ___
 
 
 .. _authorizer-service-containers:
@@ -143,6 +146,8 @@ authorization scopes (see :mod:`arxiv.user.auth.scopes`).
 
 The authorizer service uses session keys and API auth tokens to retrieve
 session information from the distributed session/token store.
+
+For details, see ___.
 
 
 .. _auth-package:

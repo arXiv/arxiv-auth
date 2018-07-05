@@ -15,7 +15,10 @@ class Category(NamedTuple):
     """Reprents a classification category."""
 
     archive: str
+    """Archives group together related subjects in a domain."""
+
     subject: Optional[str] = None
+    """Leaf-level classification in the arXiv taxonomy."""
 
     @classmethod
     def from_compound(cls, category: str) -> 'Category':
@@ -57,6 +60,7 @@ class Client(NamedTuple):
     """Placeholder for API client."""
 
     client_id: str
+    """Unique identifier for a :class:`.Client`."""
 
 
 class UserProfile(NamedTuple):
@@ -75,10 +79,10 @@ class UserProfile(NamedTuple):
     """Institutional affiliation."""
 
     country: str
-    """Should be one of :prop:`.COUNTRIES`."""
+    """Should be an ISO 3166-1 alpha-2 country code."""
 
     rank: int
-    """Academic rank. Must be one of :prop:`.RANKS`."""
+    """Academic rank. Must be one of :attr:`UserProfile.RANKS`."""
 
     submission_groups: List[str]
     """
@@ -91,7 +95,7 @@ class UserProfile(NamedTuple):
     """
     Default submission category.
 
-    Should be one of :ref:`.arxiv.taxonomy.CATEGORIES`.
+    Should be one of :ref:`arxiv.taxonomy.CATEGORIES`.
     """
 
     homepage_url: str = ''
@@ -141,53 +145,83 @@ class UserFullName(NamedTuple):
     """Represents a user's full name."""
 
     forename: str
+    """First name or given name."""
+
     surname: str
+    """Last name or family name."""
+
     suffix: str = ''
+    """Any title or qualifier used as a suffix/postfix."""
 
 
 class User(NamedTuple):
     """Represents an arXiv user and their authorizations."""
 
-    user_id: str
     username: str
+    """Slug-like username."""
+
     email: str
+    """The user's primary e-mail address."""
+
+    user_id: Optional[str] = None
+    """Unique identifier for the user. If ``None``, the user does not exist."""
 
     name: Optional[UserFullName] = None
+    """The user's full name (if available)."""
+
     profile: Optional[UserProfile] = None
+    """The user's account profile (if available)."""
 
 
 class Session(NamedTuple):
     """Represents an authenticated session in the arXiv system."""
 
     session_id: str
-    """Session cookie payload."""
+    """Unique identifier for the session."""
+
     start_time: datetime
+    """The ISO-8601 datetime when the session was created."""
+
     user: Optional[User] = None
+    """The user for which the session was created."""
+
     client: Optional[Client] = None
+    """The client for which the session was created."""
+
     end_time: Optional[datetime] = None
+    """The ISO-8601 datetime when the session ended."""
+
     authorizations: Optional[Authorizations] = None
+    """Authorizations for the current session."""
+
     ip_address: Optional[str] = None
+    """The IP address of the client for which the session was created."""
+
     remote_host: Optional[str] = None
+    """The hostname of the client for which the session was created."""
+
     nonce: Optional[str] = None
+    """A pseudo-random nonce generated when the session was created."""
 
     @property
     def expired(self) -> bool:
-        """Expired if the current time is later than :prop:`.end_time`."""
+        """Expired if the current time is later than :attr:`.end_time`."""
         return bool(self.end_time and datetime.now() >= self.end_time)
+
+    @property
+    def expires(self) -> Optional[int]:
+        """
+        Number of seconds until the session expires.
+
+        If the session is already expired, returns 0.
+        """
+        if self.end_time is None:
+            return None
+        return max((self.end_time - datetime.now()).seconds, 0)
 
     # Consider for later:
     #  localization (preferred language)
     #  preferences for sharing contact info
-
-
-class UserRegistration(NamedTuple):
-    """Represents a request to register a new user."""
-
-    username: str
-    password: str
-    email: str
-    name: UserFullName
-    profile: UserProfile
 
 
 # Helpers and private functions.

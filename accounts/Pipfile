@@ -23,7 +23,8 @@ pycountry = "*"
 mysqlclient = "*"
 python-dateutil = "*"
 captcha = "*"
-arxiv-base = "==0.8.1"
+"6c2b755" = {path = "./../users"}
+arxiv-base = "*"
 
 [dev-packages]
 coverage = "*"

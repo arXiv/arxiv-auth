@@ -1,18 +1,26 @@
-accounts namespace
-==================
+accounts package
+================
+
+.. automodule:: accounts
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Subpackages
 -----------
 
 .. toctree::
 
-    accounts.accounts
+    accounts.controllers
+    accounts.routes
+    accounts.services
+    accounts.stateless_captcha
 
 Submodules
 ----------
 
 .. toctree::
 
-   accounts.app
-   accounts.wsgi
+   accounts.config
+   accounts.factory
 

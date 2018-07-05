@@ -137,3 +137,9 @@ def is_configured() -> bool:
     if 'CLASSIC_DATABASE_URI' in config and 'CLASSIC_SESSION_HASH' in config:
         return True
     return False
+
+
+def get_session_hash() -> str:
+    """Get the legacy hash secret."""
+    config = get_application_config()
+    return config['CLASSIC_SESSION_HASH']

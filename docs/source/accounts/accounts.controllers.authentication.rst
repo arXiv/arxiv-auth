@@ -1,7 +1,7 @@
-accounts.accounts.services.sessions module
+accounts.controllers.authentication module
 ==========================================
 
-.. automodule:: accounts.accounts.services.sessions
+.. automodule:: accounts.controllers.authentication
     :members:
     :undoc-members:
     :show-inheritance:

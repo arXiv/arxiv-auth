@@ -94,7 +94,12 @@ def login(method: str, form_data: MultiDict, ip: str,
         raise InternalServerError('Cannot log in') from e  # type: ignore
 
     # The UI route should use these to set cookies on the response.
-    data.update({'session_cookie': cookie, 'classic_cookie': c_cookie})
+    data.update({
+        'cookies': {
+            'session_cookie': (cookie, session.expires),
+            'classic_cookie': (c_cookie, c_session.expires)
+        }
+    })
     return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
 
 
@@ -137,7 +142,13 @@ def logout(session_cookie: Optional[str],
             logger.debug('Logout failed: %s', e)
             raise InternalServerError('Cannot log out') from e  # type: ignore
 
-    return {}, status.HTTP_303_SEE_OTHER, {'Location': next_page}
+    data = {
+        'cookies': {
+            'session_cookie': ('', 0),
+            'classic_cookie': ('', 0)
+        }
+    }
+    return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
 
 
 class LoginForm(Form):

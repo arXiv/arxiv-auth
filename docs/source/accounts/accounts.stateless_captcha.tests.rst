@@ -1,7 +1,7 @@
-accounts.accounts.services.legacy module
+accounts.stateless\_captcha.tests module
 ========================================
 
-.. automodule:: accounts.accounts.services.legacy
+.. automodule:: accounts.stateless_captcha.tests
     :members:
     :undoc-members:
     :show-inheritance:

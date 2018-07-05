@@ -5,9 +5,10 @@ from base64 import b64encode, b64decode
 import hashlib
 
 from .exceptions import InvalidCookie
+from . import util
 
 
-def unpack(cookie: str, session_hash: str) -> Tuple[str, str, str, str]:
+def unpack(cookie: str) -> Tuple[str, str, str, str]:
     """
     Unpack the legacy session cookie.
 
@@ -15,8 +16,6 @@ def unpack(cookie: str, session_hash: str) -> Tuple[str, str, str, str]:
     ----------
     cookie : str
         The value of session cookie.
-    session_hash: str
-        The secret used to sign the cookie when it was created.
 
     Returns
     -------
@@ -40,15 +39,14 @@ def unpack(cookie: str, session_hash: str) -> Tuple[str, str, str, str]:
     payload = tuple(part for part in parts[:4])  # type: ignore
 
     try:
-        expected_cookie = pack(*payload, session_hash=session_hash)
+        expected_cookie = pack(*payload)
         assert expected_cookie == cookie
     except (TypeError, AssertionError) as e:
         raise InvalidCookie('Invalid session cookie; forged?') from e
     return payload
 
 
-def pack(session_id: str, user_id: str, ip: str, capabilities: str,
-         session_hash: str = '') -> str:
+def pack(session_id: str, user_id: str, ip: str, capabilities: str) -> str:
     """
     Generate a value for the classic session cookie.
 
@@ -69,6 +67,7 @@ def pack(session_id: str, user_id: str, ip: str, capabilities: str,
         Signed session cookie value.
 
     """
+    session_hash = util.get_session_hash()
     value = ':'.join(map(str, [session_id, user_id, ip, capabilities]))
     to_sign = f'{value}-{session_hash}'.encode('utf-8')
     cookie_hash = b64encode(hashlib.sha256(to_sign).digest())

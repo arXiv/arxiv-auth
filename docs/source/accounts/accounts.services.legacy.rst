@@ -1,7 +1,7 @@
-accounts.accounts.encode module
+accounts.services.legacy module
 ===============================
 
-.. automodule:: accounts.accounts.encode
+.. automodule:: accounts.services.legacy
     :members:
     :undoc-members:
     :show-inheritance:

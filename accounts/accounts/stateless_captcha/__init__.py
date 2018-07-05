@@ -31,6 +31,10 @@ import string
 import jwt
 from captcha.image import ImageCaptcha
 
+from arxiv.base import logging
+
+logger = logging.getLogger(__name__)
+
 
 class InvalidCaptchaToken(ValueError):
     """A token was passed that is either expired or corrupted."""
@@ -89,17 +93,21 @@ def unpack(token: str, secret: str, ip_address: str) -> str:
         match the one used to generate the token.
 
     """
+    logger.debug('Unpack captcha token, %s', token)
     try:
         claims: Mapping[str, Any] = jwt.decode(token.encode('ascii'),
                                                _secret(secret, ip_address))
+        logger.debug('Unpacked captcha token: %s', claims)
     except jwt.exceptions.DecodeError:  # type: ignore
         raise InvalidCaptchaToken('Could not decode token')
     try:
         if dateutil.parser.parse(claims['expires']) <= datetime.now():
+            logger.debug('captcha token expired: %s', claims['expires'])
             raise InvalidCaptchaToken('Expired token')
         value: str = claims['value']
         return value
     except (KeyError, ValueError) as e:
+        logger.debug('captcha token invalid: %s', e)
         raise InvalidCaptchaToken('Malformed content') from e
 
 
@@ -187,5 +195,8 @@ def check(token: str, value: str, secret: str, ip_address: str) -> None:
         match the one used to generate the token.
 
     """
-    if value != unpack(token, secret, ip_address):
+    target = unpack(token, secret, ip_address)
+    logger.debug('target: %s, value: %s', target, value)
+    if value != target:
+        logger.debug('incorrect value for this captcha')
         raise InvalidCaptchaValue('Incorrect value for this captcha')

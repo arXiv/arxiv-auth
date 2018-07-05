@@ -41,7 +41,7 @@ def _load(session_id: str) -> DBSession:
     return db_session
 
 
-def load(cookie: str, session_hash: str = '') -> domain.Session:
+def load(cookie: str) -> domain.Session:
     """
     Given a session cookie (from request), load the logged-in user.
 
@@ -49,8 +49,6 @@ def load(cookie: str, session_hash: str = '') -> domain.Session:
     ----------
     cookie : str
         Legacy cookie value passed with the request.
-    session_hash : str
-        Hash used to generate the cookie.
 
     Returns
     -------
@@ -58,11 +56,11 @@ def load(cookie: str, session_hash: str = '') -> domain.Session:
 
     Raises
     ------
-    :class:`.SessionExpired`
-    :class:`.UnknownSession`
+    :class:`.legacy.exceptions.SessionExpired`
+    :class:`.legacy.exceptions.UnknownSession`
 
     """
-    session_id, user_id, ip, _ = cookies.unpack(cookie, session_hash)
+    session_id, user_id, ip, _ = cookies.unpack(cookie)
     logger.debug('Load session %s for user %s at %s',
                  session_id, user_id, ip)
 
@@ -108,13 +106,13 @@ def load(cookie: str, session_hash: str = '') -> domain.Session:
     user_session = domain.Session(str(db_session.session_id),
                                   start_time=start_time, user=user,
                                   authorizations=authorizations)
-    logger.debug('loaded session %s', session.session_id)
+    logger.debug('loaded session %s', user_session.session_id)
     return user_session
 
 
 def create(user: domain.User, authorizations: domain.Authorizations,
-           ip: str, remote_host: str, tracking_cookie: str = '',
-           session_hash: str = '') -> Tuple[domain.Session, str]:
+           ip: str, remote_host: str, tracking_cookie: str = '') \
+        -> Tuple[domain.Session, str]:
     """
     Create a new legacy session for an authenticated user.
 
@@ -155,17 +153,17 @@ def create(user: domain.User, authorizations: domain.Authorizations,
         raise SessionCreationFailed(f'Failed to create: {e}') from e
 
     cookie = cookies.pack(str(tapir_session.session_id), user.user_id, ip,
-                          str(authorizations.classic),
-                          session_hash=session_hash)
+                          str(authorizations.classic))
     logger.debug('generated cookie: %s', cookie)
 
-    session = domain.Session(str(tapir_session.session_id), user=user,
-                             start_time=start, authorizations=authorizations)
-    logger.debug('created session %s', session.session_id)
-    return session, cookie
+    user_session = domain.Session(str(tapir_session.session_id), user=user,
+                                  start_time=start,
+                                  authorizations=authorizations)
+    logger.debug('created session %s', user_session.session_id)
+    return user_session, cookie
 
 
-def invalidate(cookie: str, session_hash: str = '') -> None:
+def invalidate(cookie: str) -> None:
     """
     Invalidate a legacy user session.
 
@@ -180,7 +178,25 @@ def invalidate(cookie: str, session_hash: str = '') -> None:
         The session could not be found, or the cookie was not valid.
 
     """
-    session_id, user_id, ip, _ = cookies.unpack(cookie, session_hash)
+    session_id, user_id, ip, _ = cookies.unpack(cookie)
+    invalidate_by_id(session_id)
+
+
+def invalidate_by_id(session_id: str) -> None:
+    """
+    Invalidate a legacy user session by ID.
+
+    Parameters
+    ----------
+    session_id : str
+        Unique identifier for the session.
+
+    Raises
+    ------
+    :class:`UnknownSession`
+        The session could not be found, or the cookie was not valid.
+
+    """
     end = (datetime.now() - datetime.utcfromtimestamp(0)).total_seconds()
     try:
         with util.transaction() as session:

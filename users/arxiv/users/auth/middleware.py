@@ -15,16 +15,17 @@ To install the middleware, use the pattern described in
 
 .. code-block:: python
 
-   > from arxiv.base import Base
-   > from arxiv.base.middleware import wrap
-   > from arxiv.users import auth
-   >
-   >
-   > def create_web_app() -> Flask:
-   .     app = Flask('foo')
-   .     Base(app)
-   .     wrap(app, [auth.middleware.AuthMiddleware])
-   .     return app
+   from arxiv.base import Base
+   from arxiv.base.middleware import wrap
+   from arxiv.users import auth
+
+
+   def create_web_app() -> Flask:
+       app = Flask('foo')
+       Base(app)
+       auth.Auth(app)
+       wrap(app, [auth.middleware.AuthMiddleware])
+       return app
 
 
 For convenience, this is intended to be used with

@@ -2,14 +2,34 @@
 
 # arXiv Accounts
 
-This is a sample project for a microservice implemented in Flask, as part of
-arXiv-NG. The goal of this project is to demonstrate the layout of a
-microservice project in NG, desired internal architecture, testing and
-documentation strategies, etc.
+The arXiv platform provides both anonymous and authenticated interfaces to
+end-users (including moderators), API clients, and the arXiv operations team.
+This project provides applications and libraries to support authentication and
+authorization, including account creation and login, user sessions, and API
+token management.
 
-A developer working on a new microservice should be able to clone this
-repository and build from there. This should lead to greater consistency
-across microservice projects, and cut down on time spent on project setup.
+There are currently three pieces of software in this repository:
+
+1. [``users/``](users/) contains the ``arxiv.users`` package, which provides
+   core authentication and authorization functionality and domain classes.
+   This includes integrations with the legacy database for user accounts and
+   sessions.
+2. [``accounts/``](accounts/) contains the user accounts service, which
+   provides the main UIs for registration, login/logout, profile management,
+   etc.
+3. [``authorizer/``](authorizer/) contains the authorizer service, which
+   handles authorization requests from NGINX in a cloud deployment scenario.
+
+TLS is considered an infrastructure concern, and is therefore out of scope
+(albeit critical) for this project.
+
+## Documentation
+
+Documentation source files can be found in ``docs``
+
+sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
+sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
+
 
 ## Quick start
 
@@ -18,12 +38,12 @@ There are multiple ways to run this server:
 ### Docker
 
 1.  Setup [Docker CE using the instructions for your OS](https://docs.docker.com/engine/installation/)
-2.  Build [arxiv-base](https://github.com/cul-it/arxiv-base) 
+2.  Build [arxiv-base](https://github.com/cul-it/arxiv-base)
 (clone repo, then `docker build -t arxiv-base:latest .`) if not using a registry.
     Also note, if not using a registry, you may need to create the tag manually in some docker
     installations or versions: `docker tag built_image_id arxiv-base:latest` (seems to be a docker bug).
-3.  Build the Docker image, which will execute all the commands in the 
-    [`Dockerfile`](https://github.com/cul-it/arxiv-accounts/blob/master/Dockerfile): 
+3.  Build the Docker image, which will execute all the commands in the
+    [`Dockerfile`](https://github.com/cul-it/arxiv-accounts/blob/master/Dockerfile):
     `docker build -t arxiv-accounts .`
 4.  `docker run -p 8000:8000 --name container_name arxiv-accounts` (add a `-d` flag
     to run in daemon mode)
@@ -37,14 +57,14 @@ There are multiple ways to run this server:
 #### Clean-up
 
 To purge your container run  `docker rmi arxiv-accounts`. If you receive the
-following error, run `docker rm CONTAINER_ID` for each stopped container 
+following error, run `docker rm CONTAINER_ID` for each stopped container
 until it clears:
 
 ```
 $ docker rmi c196c3ef21c7
 Error response from daemon: conflict: unable to delete c196c3ef21c7 (must be
 forced) - image is being used by stopped container 75bb481b5857
-``` 
+```
 
 ### Local Deployment
 
@@ -53,7 +73,7 @@ changes. We assume your developer machine already has a version of Python 3.6
 with `pip`.
 
 1.  `pip install pipenv && pipenv install --dev`
-2.  `pipenv shell` 
+2.  `pipenv shell`
 3.  `FLASK_APP=app.py python populate_test_database.py`
 4.  `FLASK_APP=app.py FLASK_DEBUG=1 flask run`
 5.  Test that the app is working: http://localhost:5000/accounts/api/status
@@ -91,8 +111,8 @@ $ FLASK_APP=app.py python populate_test_database.py
 Some example unit tests are provided in [``tests/``](tests/). They are written
 using the built-in [unit-test](https://docs.python.org/3/library/unittest.html)
 framework. **Be sure to change** [``tests/test_mypy.py``](tests/test_mypy.py) to reference
-your python package by change the line `self.pkgname: str = "accounts"` to have 
-your package name rather than "accounts". 
+your python package by change the line `self.pkgname: str = "accounts"` to have
+your package name rather than "accounts".
 
 We use the [nose2](http://nose2.readthedocs.io/en/latest/) test runner, with
 coverage. For example:
@@ -186,8 +206,8 @@ pydocstyle --convention=numpy --add-ignore=D401
 Use [type hint annotations](https://docs.python.org/3/library/typing.html)
 wherever practicable. Use [mypy](http://mypy-lang.org/) to check your code.
 If you run across typechecking errors in your code and you have a good reason
-for `mypy` to ignore them, you should be able to add `# type: ignore`, 
-ideally along with an actual comment describing why the type checking should be 
+for `mypy` to ignore them, you should be able to add `# type: ignore`,
+ideally along with an actual comment describing why the type checking should be
 ignored on this line. In cases where it is hoped the types can be specified later,
 just simplying adding the `# type: ignore` without further comment is fine.
 

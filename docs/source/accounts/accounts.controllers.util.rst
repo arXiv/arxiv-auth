@@ -1,7 +1,7 @@
-accounts.accounts.factory module
+accounts.controllers.util module
 ================================
 
-.. automodule:: accounts.accounts.factory
+.. automodule:: accounts.controllers.util
     :members:
     :undoc-members:
     :show-inheritance:

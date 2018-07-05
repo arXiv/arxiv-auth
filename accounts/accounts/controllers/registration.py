@@ -1,8 +1,9 @@
+"""Controllers for registration and user profile management."""
+
 from typing import Dict, Tuple, Any, Optional
 import uuid
 from werkzeug import MultiDict, ImmutableMultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
-from flask import url_for
 
 from arxiv import status
 from arxiv.users import domain
@@ -27,6 +28,37 @@ logger = logging.getLogger(__name__)
 ResponseData = Tuple[dict, int, dict]
 
 
+def _login_classic(user: domain.User, auth: domain.Authorizations,
+                   ip: str) -> Tuple[domain.Session, str]:
+    try:
+        c_session, c_cookie = legacy.create(user, auth, ip, ip)
+        logger.debug('Created classic session: %s', c_session.session_id)
+    except legacy.exceptions.SessionCreationFailed as e:
+        logger.debug('Could not create classic session: %s', e)
+        raise InternalServerError('Cannot log in') from e  # type: ignore
+    return c_session, c_cookie
+
+
+def _logout(session_id: str) -> None:
+    try:
+        sessions.invalidate_by_id(session_id)
+    except sessions.exceptions.SessionDeletionFailed as e:
+        logger.debug('Could not delete session %s', session_id)
+        raise InternalServerError('Cannot logout') from e  # type: ignore
+    return None
+
+
+def _login(user: domain.User, auth: domain.Authorizations, ip: str) \
+        -> Tuple[domain.Session, str]:
+    try:
+        session, cookie = sessions.create(user, auth, ip, ip)
+        logger.debug('Created session: %s', session.session_id)
+    except legacy.exceptions.SessionCreationFailed as e:
+        logger.debug('Could not create session: %s', e)
+        raise InternalServerError('Cannot log in') from e  # type: ignore
+    return session, cookie
+
+
 def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
         -> ResponseData:
     """Handle requests for the registration view."""
@@ -41,28 +73,77 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
         form = RegistrationForm(params)
         data = {'form': form}
         form.configure_captcha(captcha_secret, ip)
+
         if not form.validate():
+            logger.debug('Registration form not valid')
             return data, status.HTTP_400_BAD_REQUEST, {}
 
-        logger.debug('Form is valid')
-        user, auth = users.register(form.to_domain(), ip, ip)
-        try:
-            session, cookie = sessions.create(user, auth, ip, ip)
-            logger.debug('Created session: %s', session.session_id)
-            c_session, c_cookie = legacy.create(user, auth, ip, ip)
-            logger.debug('Created classic session: %s',
-                         c_session.session_id)
-        except legacy.exceptions.SessionCreationFailed as e:
-            logger.debug('Could not create session: %s', e)
-            raise InternalServerError('Cannot log in') from e  # type: ignore
+        logger.debug('Registration form is valid')
+        password = form.password.data
 
-        data.update({'session_cookie': cookie, 'classic_cookie': c_cookie})
-        headers = {'Location': url_for('ui.profile')}
-        return data, status.HTTP_303_SEE_OTHER, headers
+        # Perform the actual registration.
+        try:
+            user, auth = users.register(form.to_domain(), password, ip, ip)
+        except users.exceptions.RegistrationFailed as e:
+            raise InternalServerError('Registration failed') from e
+
+        # Log the user in.
+        session, cookie = _login(user, auth, ip)
+        c_session, c_cookie = _login_classic(user, auth, ip)
+        data.update({
+            'cookies': {
+                'session_cookie': (cookie, session.expires),
+                'classic_cookie': (c_cookie, c_session.expires)
+            },
+            'user_id': user.user_id
+        })
+        return data, status.HTTP_201_CREATED, {}
     return data, status.HTTP_200_OK, {}
 
 
-class RegistrationForm(Form):
+def view_profile(user_id: str, session: domain.Session) -> ResponseData:
+    """Handle requests to view a user's profile."""
+    user = users.get_user_by_id(user_id)
+    return {'user': user}, status.HTTP_200_OK, {}
+
+
+def edit_profile(method: str, user_id: str, session: domain.Session,
+                 params: Optional[MultiDict] = None,
+                 ip: Optional[str] = None) -> ResponseData:
+    """Handle requests to update a user's profile."""
+    if method == 'GET':
+        user = users.get_user_by_id(user_id)
+        form = ProfileForm.from_domain(user)
+        data = {'form': form, 'user_id': user_id}
+    elif method == 'POST':
+        form = ProfileForm(params)
+        data = {'form': form, 'user_id': user_id}
+
+        if not form.validate():
+            return data, status.HTTP_400_BAD_REQUEST, {}
+
+        if form.user_id.data != user_id:
+            msg = 'User ID in request does not match'
+            raise BadRequest(msg)  # type: ignore
+
+        user = form.to_domain()
+        try:
+            user, auth = users.update_user(user)
+        except Exception as e:
+            data['error'] = 'Could not save user profile; please try again'
+            return data, status.HTTP_500_INTERNAL_SERVER_ERROR, {}
+
+        # We need a new session, to update user's data.
+        _logout(session.session_id)
+        new_session, new_cookie = _login(user, auth, ip)
+        data.update({'cookies': {
+            'session_cookie': (new_cookie, new_session.expires)
+        }})
+        return data, status.HTTP_303_SEE_OTHER, {}
+    return data, status.HTTP_200_OK, {}
+
+
+class ProfileForm(Form):
     """User registration form."""
 
     COUNTRIES = [('', '')] + \
@@ -82,24 +163,21 @@ class RegistrationForm(Form):
     ]
     """Categories grouped by archive."""
 
+    user_id = HiddenField('User ID')
+
     email = StringField(
         'Email address',
         validators=[Email(), Length(max=255), DataRequired()],
-        description="You must be able to receive mail at this address to"
-        " register. We take <a href='https://arxiv.org/help/email-protection'>"
+        description="You must be able to receive mail at this address."
+        " We take <a href='https://arxiv.org/help/email-protection'>"
         " strong measures</a> to protect your email address from viruses and"
-        " spam. Do not register with an e-mail address that belongs to someone"
+        " spam. Do not enter an e-mail address that belongs to someone"
         " else: if we discover that you've done so, we will suspend your"
         " account."
     )
 
     username = StringField('Username',
                            validators=[Length(min=5, max=20), DataRequired()])
-    password = PasswordField('Password',
-                             validators=[Length(min=6), DataRequired()])
-    password2 = PasswordField('Re-enter password',
-                              validators=[Length(min=6), DataRequired()])
-
     forename = StringField('First or given name',
                            validators=[Length(min=1, max=50), DataRequired()])
     surname = StringField('Last or family name',
@@ -126,22 +204,29 @@ class RegistrationForm(Form):
     remember_me = BooleanField('Have your browser remember who you are?',
                                default=True)
 
-    captcha_value = StringField('Are you a robot?',
-                                validators=[DataRequired()],
-                                description="Please enter the text that you"
-                                            " see in the image above")
-    captcha_token = HiddenField()
+    @classmethod
+    def from_domain(cls, user: domain.User) -> 'ProfileForm':
+        """Instantiate this form with data from a domain object."""
+        return cls(MultiDict({  # type: ignore
+            'username': user.username,
+            'email': user.email,
+            'forename': user.name.forename,
+            'surname': user.name.surname,
+            'suffix': user.name.suffix,
+            'organization': user.profile.organization,
+            'country': user.profile.country.upper(),
+            'status': user.profile.rank,
+            'groups': user.profile.submission_groups,
+            'default_category': user.profile.default_category.compound,
+            'url': user.profile.homepage_url,
+            'remember_me': user.profile.remember_me
+        }))
 
-    def configure_captcha(self, captcha_secret: str, ip_address: str) -> None:
-        """Set configuration details for the stateless_captcha."""
-        self.captcha_secret = captcha_secret
-        self.ip_address = ip_address
-
-    def to_domain(self) -> domain.UserRegistration:
-        """Generate a :class:`.UserRegistration` from this form's data."""
-        return domain.UserRegistration(
+    def to_domain(self) -> domain.User:
+        """Generate a :class:`.User` from this form's data."""
+        return domain.User(
+            user_id=self.user_id.data if self.user_id.data else None,
             username=self.username.data,
-            password=self.password.data,
             email=self.email.data,
             name=domain.UserFullName(
                 forename=self.forename.data,
@@ -154,29 +239,12 @@ class RegistrationForm(Form):
                 rank=int(self.status.data),     # WTF can't handle int values.
                 submission_groups=self.groups.data,
                 default_category=domain.Category(
-                    *self.default_category.data.split()
+                    *self.default_category.data.split('.')
                 ),
                 homepage_url=self.url.data,
                 remember_me=self.remember_me.data
             )
         )
-
-    def validate_captcha_value(self, field: StringField) -> None:
-        """Check the captcha value against the captcha token."""
-        try:
-            stateless_captcha.check(self.captcha_token.data, field.data,
-                                    self.captcha_secret, self.ip_address)
-        except (stateless_captcha.InvalidCaptchaValue,
-                stateless_captcha.InvalidCaptchaToken) as e:
-            # Get a fresh captcha challenge. More than likely the user is
-            # having trouble interpreting the challenge,
-            token = stateless_captcha.new(self.captcha_secret, self.ip_address)
-            self.captcha_token.data = token
-
-            # It is convenient to provide feedback to the user via the
-            # form, so we'll do that here if the captcha doesn't check out.
-            self.captcha_value.data = ''    # Clear the field.
-            raise ValidationError('Please try again')
 
     def validate_username(self, field: StringField) -> None:
         """Ensure that the username is unique."""
@@ -189,3 +257,45 @@ class RegistrationForm(Form):
         if users.email_exists(field.data):
             raise ValidationError('An account with that email address'
                                   ' already exists')
+
+
+class RegistrationForm(ProfileForm):
+    """User registration form."""
+
+    password = PasswordField('Password',
+                             validators=[Length(min=6), DataRequired()])
+    password2 = PasswordField('Re-enter password',
+                              validators=[Length(min=6), DataRequired()])
+
+    captcha_value = StringField('Are you a robot?',
+                                validators=[DataRequired()],
+                                description="Please enter the text that you"
+                                            " see in the image above")
+    captcha_token = HiddenField()
+
+    def configure_captcha(self, captcha_secret: str, ip: str) -> None:
+        """Set configuration details for the stateless_captcha."""
+        self.captcha_secret = captcha_secret
+        self.ip = ip
+
+    def validate_captcha_value(self, field: StringField) -> None:
+        """Check the captcha value against the captcha token."""
+        try:
+            stateless_captcha.check(self.captcha_token.data, field.data,
+                                    self.captcha_secret, self.ip)
+        except (stateless_captcha.InvalidCaptchaValue,
+                stateless_captcha.InvalidCaptchaToken) as e:
+            # Get a fresh captcha challenge. More than likely the user is
+            # having trouble interpreting the challenge,
+            token = stateless_captcha.new(self.captcha_secret, self.ip)
+            self.captcha_token.data = token
+
+            # It is convenient to provide feedback to the user via the
+            # form, so we'll do that here if the captcha doesn't check out.
+            self.captcha_value.data = ''    # Clear the field.
+            raise ValidationError('Please try again')
+
+    def validate_password(self, field: StringField) -> None:
+        """Verify that the password is the same in both fields."""
+        if self.password.data != self.password2.data:
+            raise ValidationError('Passwords must match')

@@ -5,7 +5,7 @@ import os
 VERSION = '0.2'
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'asdf1234')
-SERVER_NAME = os.environ.get('ZERO_SERVER_NAME')
+SERVER_NAME = os.environ.get('ACCOUNTS_SERVER_NAME')
 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', 'nope')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', 'nope')
