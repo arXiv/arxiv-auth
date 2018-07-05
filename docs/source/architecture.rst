@@ -43,8 +43,9 @@ by a separate piece of software:
   authorization tokens, and client access management.
 - :ref:`Authorizer service <authorizer-service-containers>`, which is
   responsible for authorizing user/client requests (cloud only).
-- An auth library, which provides middleware and other components for working
-  with user/client sessions and authorization in arXiv services.
+- An :ref:`auth library <auth-package>`, which provides middleware and other
+  components for working with user/client sessions and authorization in arXiv
+  services.
 
 
 .. _figure-authnz-context:
