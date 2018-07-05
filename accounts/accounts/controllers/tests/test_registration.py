@@ -280,7 +280,7 @@ class TestEditProfile(TestCase):
         users.get_user_by_id.return_value = mock.MagicMock(user_id=1)
         users.username_exists.return_value = False
         users.email_exists.return_value = False
-        users.update_user.return_value = (mock.MagicMock(), mock.MagicMock())
+        users.update.return_value = (mock.MagicMock(), mock.MagicMock())
         create.return_value = (mock.MagicMock(), mock.MagicMock())
         current_session = mock.MagicMock(session_id='52')
 
@@ -302,7 +302,7 @@ class TestEditProfile(TestCase):
         self.assertEqual(code, status.HTTP_303_SEE_OTHER,
                          "Returns 303 redirect")
 
-        args, kwargs = users.update_user.call_args
+        args, kwargs = users.update.call_args
         user = args[0]
         self.assertEqual(user.username, profile_data['username'])
         self.assertEqual(user.email, profile_data['email'])
@@ -353,7 +353,7 @@ class TestEditProfile(TestCase):
         users.get_user_by_id.return_value = mock.MagicMock(user_id=1)
         users.username_exists.return_value = True
         users.email_exists.return_value = False
-        users.update_user.return_value = (mock.MagicMock(), mock.MagicMock())
+        users.update.return_value = (mock.MagicMock(), mock.MagicMock())
         current_session = mock.MagicMock(session_id='52')
 
         profile_data = {
@@ -380,7 +380,7 @@ class TestEditProfile(TestCase):
         users.get_user_by_id.return_value = mock.MagicMock(user_id=1)
         users.username_exists.return_value = False
         users.email_exists.return_value = True
-        users.update_user.return_value = (mock.MagicMock(), mock.MagicMock())
+        users.update.return_value = (mock.MagicMock(), mock.MagicMock())
         current_session = mock.MagicMock(session_id='52')
 
         profile_data = {

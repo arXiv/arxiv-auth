@@ -142,4 +142,5 @@ def is_configured() -> bool:
 def get_session_hash() -> str:
     """Get the legacy hash secret."""
     config = get_application_config()
-    return config['CLASSIC_SESSION_HASH']
+    session_hash: str = config['CLASSIC_SESSION_HASH']
+    return session_hash

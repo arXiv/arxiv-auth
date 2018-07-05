@@ -194,10 +194,12 @@ class SessionStore(object):
         return session
 
     def _unpack_cookie(self, cookie: str) -> dict:
-        return dict(jwt.decode(cookie, self._secret))
+        secret = self._secret
+        return dict(jwt.decode(cookie, secret))
 
     def _pack_cookie(self, cookie_data: dict) -> str:
-        return jwt.encode(cookie_data, self._secret).decode('ascii')
+        secret = self._secret
+        return jwt.encode(cookie_data, secret).decode('ascii')
 
 
 def init_app(app: object = None) -> None:
@@ -250,19 +252,19 @@ def create(user: domain.User, authorizations: domain.Authorizations,
 
 
 @wraps(SessionStore.load)
-def load(session_id: str) -> domain.Session:
+def load(cookie: str) -> domain.Session:
     """
-    Invalidate a session in the key-value store.
+    Load a session by cookie value.
 
     Parameters
     ----------
-    session_id : str
+    cookie : str
 
     Returns
     -------
     dict
     """
-    return current_session().load(session_id)
+    return current_session().load(cookie)
 
 
 @wraps(SessionStore.delete)
@@ -280,7 +282,7 @@ def delete(session_id: str) -> None:
 @wraps(SessionStore.invalidate)
 def invalidate(cookie: str) -> None:
     """
-    Invalidates a session in the key-value store.
+    Invalidate a session in the key-value store.
 
     Parameters
     ----------
@@ -293,7 +295,7 @@ def invalidate(cookie: str) -> None:
 @wraps(SessionStore.invalidate_by_id)
 def invalidate_by_id(session_id: str) -> None:
     """
-    Invalidates a session in the key-value store by identifier.
+    Invalidate a session in the key-value store by identifier.
 
     Parameters
     ----------

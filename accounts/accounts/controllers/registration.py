@@ -29,7 +29,7 @@ ResponseData = Tuple[dict, int, dict]
 
 
 def _login_classic(user: domain.User, auth: domain.Authorizations,
-                   ip: str) -> Tuple[domain.Session, str]:
+                   ip: Optional[str]) -> Tuple[domain.Session, str]:
     try:
         c_session, c_cookie = legacy.create(user, auth, ip, ip)
         logger.debug('Created classic session: %s', c_session.session_id)
@@ -48,7 +48,7 @@ def _logout(session_id: str) -> None:
     return None
 
 
-def _login(user: domain.User, auth: domain.Authorizations, ip: str) \
+def _login(user: domain.User, auth: domain.Authorizations, ip: Optional[str]) \
         -> Tuple[domain.Session, str]:
     try:
         session, cookie = sessions.create(user, auth, ip, ip)
@@ -62,6 +62,7 @@ def _login(user: domain.User, auth: domain.Authorizations, ip: str) \
 def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
         -> ResponseData:
     """Handle requests for the registration view."""
+    data: Dict[str, Any]
     if method == 'GET':
         captcha_token = stateless_captcha.new(captcha_secret, ip)
         _params = MultiDict({'captcha_token': captcha_token})  # type: ignore
@@ -85,7 +86,8 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
         try:
             user, auth = users.register(form.to_domain(), password, ip, ip)
         except users.exceptions.RegistrationFailed as e:
-            raise InternalServerError('Registration failed') from e
+            msg = 'Registration failed'
+            raise InternalServerError(msg) from e  # type: ignore
 
         # Log the user in.
         session, cookie = _login(user, auth, ip)
@@ -128,7 +130,7 @@ def edit_profile(method: str, user_id: str, session: domain.Session,
 
         user = form.to_domain()
         try:
-            user, auth = users.update_user(user)
+            user, auth = users.update(user)
         except Exception as e:
             data['error'] = 'Could not save user profile; please try again'
             return data, status.HTTP_500_INTERNAL_SERVER_ERROR, {}

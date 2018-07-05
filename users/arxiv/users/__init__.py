@@ -1,6 +1,5 @@
 """
-arXiv AuthN/Z
-=============
+arXiv authentication and authorization tools.
 
 This package provides core functionality for working with users and sessions
 in arXiv-NG services. Housing these components in a library (separate from

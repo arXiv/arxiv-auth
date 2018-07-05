@@ -1,6 +1,6 @@
 [run]
 omit =
-    app.py
-    wsgi.py
+    */app.py
+    */wsgi.py
     docs/*
     */tests*

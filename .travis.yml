@@ -14,6 +14,6 @@ script:
   - pipenv install --dev
   - pipenv install ./users
   - ./lintstats.sh
-  - pipenv run nose2 -s accounts -s users/arxiv
+  - WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov=users/arxiv --cov-report=term-missing accounts users/arxiv
 after_success:
   - coveralls

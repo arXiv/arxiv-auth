@@ -66,10 +66,10 @@ class TestRegistration(TestCase):
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.client = self.app.test_client()
-            self.app.app_context().push()
-            from accounts.services import legacy, users
-            legacy.create_all()
-            users.create_all()
+            with self.app.app_context():
+                from accounts.services import legacy, users
+                legacy.create_all()
+                users.create_all()
         except Exception as e:
             stop_container(self.container)
             raise
@@ -78,6 +78,7 @@ class TestRegistration(TestCase):
         """Tear down redis."""
         stop_container(self.container)
         os.remove(self.db)
+
 
     def test_get_registration_form(self):
         """GET request for the registration form."""
@@ -300,51 +301,51 @@ class TestLoginLogoutRoutes(TestCase):
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.client = self.app.test_client()
-            self.app.app_context().push()
-            from accounts.services import legacy, users
-            legacy.create_all()
-            users.create_all()
+            with self.app.app_context():
+                from accounts.services import legacy, users
+                legacy.create_all()
+                users.create_all()
 
-            with users.transaction() as session:
-                # We have a good old-fashioned user.
-                db_user = users.models.DBUser(
-                    user_id=1,
-                    first_name='first',
-                    last_name='last',
-                    suffix_name='iv',
-                    email='first@last.iv',
-                    policy_class=2,
-                    flag_edit_users=1,
-                    flag_email_verified=1,
-                    flag_edit_system=0,
-                    flag_approved=1,
-                    flag_deleted=0,
-                    flag_banned=0,
-                    tracking_cookie='foocookie',
-                )
-                db_nick = users.models.DBUserNickname(
-                    nick_id=1,
-                    nickname='foouser',
-                    user_id=1,
-                    user_seq=1,
-                    flag_valid=1,
-                    role=0,
-                    policy=0,
-                    flag_primary=1
-                )
-                salt = b'fdoo'
-                password = b'thepassword'
-                hashed = hashlib.sha1(salt + b'-' + password).digest()
-                encrypted = b64encode(salt + hashed)
-                db_password = users.models.DBUserPassword(
-                    user_id=1,
-                    password_storage=2,
-                    password_enc=encrypted
-                )
-                session.add(db_user)
-                session.add(db_password)
-                session.add(db_nick)
-                session.commit()
+                with users.transaction() as session:
+                    # We have a good old-fashioned user.
+                    db_user = users.models.DBUser(
+                        user_id=1,
+                        first_name='first',
+                        last_name='last',
+                        suffix_name='iv',
+                        email='first@last.iv',
+                        policy_class=2,
+                        flag_edit_users=1,
+                        flag_email_verified=1,
+                        flag_edit_system=0,
+                        flag_approved=1,
+                        flag_deleted=0,
+                        flag_banned=0,
+                        tracking_cookie='foocookie',
+                    )
+                    db_nick = users.models.DBUserNickname(
+                        nick_id=1,
+                        nickname='foouser',
+                        user_id=1,
+                        user_seq=1,
+                        flag_valid=1,
+                        role=0,
+                        policy=0,
+                        flag_primary=1
+                    )
+                    salt = b'fdoo'
+                    password = b'thepassword'
+                    hashed = hashlib.sha1(salt + b'-' + password).digest()
+                    encrypted = b64encode(salt + hashed)
+                    db_password = users.models.DBUserPassword(
+                        user_id=1,
+                        password_storage=2,
+                        password_enc=encrypted
+                    )
+                    session.add(db_user)
+                    session.add(db_password)
+                    session.add(db_nick)
+
         except Exception as e:
             stop_container(self.container)
             raise

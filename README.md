@@ -24,6 +24,14 @@ There are currently three pieces of software in this repository:
 TLS is considered an infrastructure concern, and is therefore out of scope
 (albeit critical) for this project.
 
+## TODO
+
+- Password reset in ``arxiv.users.legacy.accounts`` and in the accounts
+  service.
+- Support for permanent login token.
+- Clean up and document authorizer service.
+- Fuzz testing registration?
+
 ## Dependencies
 
 We use pipenv to manage dependencies. To install the dependencies for this
@@ -39,12 +47,36 @@ Otherwise, you can install the latest release with
 
 Each of the applications/packages in this repository has its own test suite.
 
+You can run everything together with:
+
+```bash
+pipenv run pytest \
+    --cov=accounts \
+    --cov=users/arxiv \
+    --cov-report=term-missing \
+    accounts users/arxiv
+```
+
+To enable integration + end-to-end tests with Redis, run:
+
+```bash
+WITH_INTEGRATION=1 pipenv run pytest \
+    --cov=accounts \
+    --cov=users/arxiv \
+    --cov-report=term-missing \
+    accounts users/arxiv
+```
+
+Note that this requires Docker to be running, and port 6379 to be free on your
+machine.
+
+
 ### ``arxiv.users``
 
 You can run the tests for the ``arxiv.users`` package with:
 
 ```bash
-pipenv run nose2 -s users/arxiv
+pipenv run pytest --cov=users/arxiv --cov-report=term-missing users/arxiv
 ```
 
 ### Accounts service
@@ -56,13 +88,13 @@ Note that in order to run the accounts service, you will need to install
 You can run tests for the accounts service with:
 
 ```bash
-pipenv run nose2 -s accounts/    # Unit tests only.  
+pipenv run pytest --cov=accounts --cov-report=term-missing accounts
 ```
 
 To run integration and end-to-end tests with a live Redis, use:
 
 ```bash
-WITH_INTEGRATION=1 pipenv run nose2 -s accounts/   
+WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov-report=term-missing accounts
 ```
 
 Note that this requires Docker to be running, and port 6379 to be free on your
@@ -194,12 +226,6 @@ Point your browser to: ``file:///path/to/arxiv-accounts/docs/build/html/index.ht
 There are other build targets available. Run ``make`` without any arguments
 for more info.
 
-
-sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
-sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
-cd docs
-
-
 ### Architecture
 
 Architectural documentation is located at
@@ -227,7 +253,6 @@ Specifically, we describe the system at three levels:
    case of a Flask application, this might be a module or submodule that has
    specific responsibilities, behaviors, and interactions.
 
-
 ### Code API documentation
 
 Documentation for the (code) API is generated automatically with
@@ -242,13 +267,8 @@ won't need to run sphinx-apidoc unless the structure of the project changes
 To rebuild the API docs, run (from the project root):
 
 ```bash
-$ sphinx-apidoc -M -f -o docs/source/api/ accounts
+rm -rf docs/source/arxiv.users
+sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
+rfm -rf docs/source/accounts
+sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
 ```
-
-
-## TODO
-
-- Add docker image push step to .travis.yml (needs authentication).
-- Incorporate JSON schema into documentation.
-- Add an example e2e test.
-- Add an example controller test.

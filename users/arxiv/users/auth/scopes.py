@@ -17,14 +17,19 @@ This module simply defines a set of constants (str) that can be used to refer
 to specific authorization scopes. Rather than refer to scopes by writing new
 str objects, these constants should be imported and used. This improves the
 semantics of code, and reduces the risk of programming errors. For an example,
-see :mod:`arxiv.users.auth.decorators`. 
+see :mod:`arxiv.users.auth.decorators`.
 
 """
 
 EDIT_PROFILE = 'profile:update'
+"""Authorizes editing user profile."""
+
 VIEW_PROFILE = 'profile:read'
+"""Authorizes viewing user profile."""
 
 CREATE_SUBMISSION = 'submission:create'
+"""Authorizes creating a submission."""
+
 EDIT_SUBMISSION = 'submission:update'
 VIEW_SUBMISSION = 'submission:read'
 PROXY_SUBMISSION = 'submission:proxy'

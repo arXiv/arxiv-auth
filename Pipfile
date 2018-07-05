@@ -14,7 +14,6 @@ redis = "*"
 
 [dev-packages]
 mimesis = "*"
-"nose2" = "*"
 mypy = "==0.610"
 pydocstyle = "*"
 pylint = "*"
@@ -22,6 +21,8 @@ sphinx = "*"
 sphinx-autodoc-typehints = "*"
 coverage = "*"
 coveralls = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.6"

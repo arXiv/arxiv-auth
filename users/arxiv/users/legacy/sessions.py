@@ -152,7 +152,8 @@ def create(user: domain.User, authorizations: domain.Authorizations,
     except Exception as e:  # TODO: be more specific.
         raise SessionCreationFailed(f'Failed to create: {e}') from e
 
-    cookie = cookies.pack(str(tapir_session.session_id), user.user_id, ip,
+    user_id = '' if user.user_id is None else user.user_id
+    cookie = cookies.pack(str(tapir_session.session_id), user_id, ip,
                           str(authorizations.classic))
     logger.debug('generated cookie: %s', cookie)
 

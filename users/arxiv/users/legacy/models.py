@@ -62,7 +62,7 @@ class DBSessionsAudit(Base):  # type: ignore
 
 
 class DBUser(Base):  # type: ignore
-    """Legacy table that is a foreign key dependency of DBSession."""
+    """Legacy user data table."""
 
     __tablename__ = 'tapir_users'
 
@@ -96,11 +96,7 @@ class DBUser(Base):  # type: ignore
 
 
 class DBPolicyClass(Base):  # type: ignore
-    """
-    Legacy table that is a foreign key depency of DBUse.
-
-    DBUse is itself a dependency of DBSession.
-    """
+    """Legacy authorization table."""
 
     __tablename__ = 'tapir_policy_classes'
 
@@ -125,6 +121,8 @@ class DBPolicyClass(Base):  # type: ignore
 
 
 class DBUserPassword(Base):  # type: ignore
+    """Legacy password table."""
+
     __tablename__ = 'tapir_users_password'
 
     user_id = Column(ForeignKey('tapir_users.user_id'), nullable=False,
@@ -200,8 +198,9 @@ class DBUserNickname(Base):  # type: ignore
     user = relationship('DBUser')
 
 
+# TODO: update based on recent schema changes.
 class DBProfile(Base):   # type: ignore
-    """arXiv user profile."""
+    """Legacy user profiles."""
 
     __tablename__ = 'arxiv_demographics'
 
@@ -258,7 +257,6 @@ class DBProfile(Base):   # type: ignore
             default_category=domain.Category(self.archive, self.subject_class),
             homepage_url=self.url,
         )
-
 
 
 class DBEndorsement(Base):  # type: ignore

@@ -206,7 +206,8 @@ class Session(NamedTuple):
     @property
     def expired(self) -> bool:
         """Expired if the current time is later than :attr:`.end_time`."""
-        return bool(self.end_time and datetime.now() >= self.end_time)
+        return bool(self.end_time is not None
+                    and datetime.now() >= self.end_time)
 
     @property
     def expires(self) -> Optional[int]:

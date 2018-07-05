@@ -130,8 +130,11 @@ def get_user_by_id(user_id: str) -> domain.User:
     return user
 
 
-def update_user(user: domain.User) -> None:
+def update(user: domain.User) -> Tuple[domain.User, domain.Authorizations]:
     """Update a user in the database."""
+    if user.user_id is None:
+        raise ValueError('User ID must be set')
+
     db_user, db_nick, db_profile = _get_user_data(user.user_id)
     with util.transaction() as session:
         _update_field(db_nick.nickname, user.username)
@@ -194,6 +197,11 @@ def _get_user_data(user_id: str) -> Tuple[DBUser, DBUserNickname, DBProfile]:
 
 def _create(user: domain.User, password: str, ip: str, remote_host: str) \
         -> Tuple[DBUser, DBUserNickname, DBProfile]:
+    if user.name is None:
+        raise ValueError('User name must be set')
+    if user.profile is None:
+        raise ValueError('User profile must be set')
+
     with util.transaction() as session:
         # Main user entry.
         db_user = DBUser(
@@ -219,6 +227,8 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
         session.add(db_nick)
 
         def _has_group(group: str) -> int:
+            if user.profile is None:
+                return 0
             return int(group in user.profile.submission_groups)
 
         db_profile = DBProfile(

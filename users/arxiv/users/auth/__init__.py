@@ -1,7 +1,4 @@
-"""
-Provides tools for working with authenticated user/client sessions.
-
-"""
+"""Provides tools for working with authenticated user/client sessions."""
 
 from typing import Optional, Union
 from flask import Flask, request
@@ -24,6 +21,7 @@ class Auth(object):
        from flask import Flask
        from arxiv.users.auth import Auth
        from someapp import routes
+
 
        def create_web_app() -> Flask:
           app = Flask('someapp')

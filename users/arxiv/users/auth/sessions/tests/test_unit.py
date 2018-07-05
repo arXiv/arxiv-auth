@@ -14,9 +14,11 @@ from .. import store
 class TestDistributedSessionService(TestCase):
     """The store session service puts sessions in a key-value store."""
 
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis')
-    def test_create(self, mock_redis):
+    def test_create(self, mock_redis, mock_get_config):
         """Accept a :class:`.User` and returns a :class:`.Session`."""
+        mock_get_config.return_value = {'JWT_SECRET': 'foosecret'}
         mock_redis.exceptions.ConnectionError = ConnectionError
         mock_redis_connection = mock.MagicMock()
         mock_redis.StrictRedis.return_value = mock_redis_connection
@@ -39,9 +41,11 @@ class TestDistributedSessionService(TestCase):
         self.assertIsNotNone(cookie)
         self.assertEqual(mock_redis_connection.set.call_count, 1)
 
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis')
-    def test_delete(self, mock_redis):
+    def test_delete(self, mock_redis, mock_get_config):
         """Delete a session from the datastore."""
+        mock_get_config.return_value = {'JWT_SECRET': 'foosecret'}
         mock_redis.exceptions.ConnectionError = ConnectionError
         mock_redis_connection = mock.MagicMock()
         mock_redis.StrictRedis.return_value = mock_redis_connection
@@ -49,9 +53,11 @@ class TestDistributedSessionService(TestCase):
         r.delete('fookey')
         self.assertEqual(mock_redis_connection.delete.call_count, 1)
 
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis')
-    def test_connection_failed(self, mock_redis):
+    def test_connection_failed(self, mock_redis, mock_get_config):
         """:class:`.SessionCreationFailed` is raised when creation fails."""
+        mock_get_config.return_value = {'JWT_SECRET': 'foosecret'}
         mock_redis.exceptions.ConnectionError = ConnectionError
         mock_redis_connection = mock.MagicMock()
         mock_redis_connection.set.side_effect = ConnectionError
@@ -76,12 +82,12 @@ class TestDistributedSessionService(TestCase):
 class TestInvalidateSession(TestCase):
     """Tests for :func:`store.invalidate`."""
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_valid_token(self, mock_get_redis, mock_app):
+    def test_valid_token(self, mock_get_redis, mock_get_config):
         """A valid token is passed."""
         secret = 'barsecret'
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': secret,
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -114,7 +120,7 @@ class TestInvalidateSession(TestCase):
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290098'
         }
-        token = jwt.encode(claims, secret)
+        token = jwt.encode(claims, secret).decode('ascii')
 
         session = store.load(token)
         self.assertIsInstance(session, domain.Session, "Returns a session")
@@ -124,15 +130,14 @@ class TestInvalidateSession(TestCase):
             store.load(token)
 
 
-
 class TestGetSession(TestCase):
     """Tests for :func:`store.load`."""
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_not_a_token(self, mock_get_redis, mock_app):
+    def test_not_a_token(self, mock_get_redis, mock_get_config):
         """Something other than a JWT is passed."""
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': 'barsecret',
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -143,12 +148,12 @@ class TestGetSession(TestCase):
         with self.assertRaises(store.InvalidToken):
             store.load('notatoken')
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_malformed_token(self, mock_get_redis, mock_app):
+    def test_malformed_token(self, mock_get_redis, mock_get_config):
         """A JWT with missing claims is passed."""
         secret = 'barsecret'
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': secret,
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -159,16 +164,16 @@ class TestGetSession(TestCase):
         required_claims = ['session_id', 'nonce']
         for exc in required_claims:
             claims = {claim: '' for claim in required_claims if claim != exc}
-            malformed_token = jwt.encode(claims, secret)
+            malformed_token = jwt.encode(claims, secret).decode('ascii')
             with self.assertRaises(store.InvalidToken):
                 store.load(malformed_token)
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_token_with_bad_encryption(self, mock_get_redis, mock_app):
+    def test_token_with_bad_encryption(self, mock_get_redis, mock_get_config):
         """A JWT produced with a different secret is passed."""
         secret = 'barsecret'
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': secret,
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -181,16 +186,16 @@ class TestGetSession(TestCase):
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099'
         }
-        bad_token = jwt.encode(claims, 'nottherightsecret')
+        bad_token = jwt.encode(claims, 'nottherightsecret').decode('ascii')
         with self.assertRaises(store.InvalidToken):
             store.load(bad_token)
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_expired_token(self, mock_get_redis, mock_app):
+    def test_expired_token(self, mock_get_redis, mock_get_config):
         """A JWT produced with a different secret is passed."""
         secret = 'barsecret'
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': secret,
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -212,16 +217,16 @@ class TestGetSession(TestCase):
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099'
         }
-        expired_token = jwt.encode(claims, secret)
+        expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
             store.load(expired_token)
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_forged_token(self, mock_get_redis, mock_app):
+    def test_forged_token(self, mock_get_redis, mock_get_config):
         """A JWT with the wrong nonce is passed."""
         secret = 'barsecret'
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': secret,
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -245,16 +250,16 @@ class TestGetSession(TestCase):
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099'    # <- Doesn't match!
         }
-        expired_token = jwt.encode(claims, secret)
+        expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
             store.load(expired_token)
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_other_forged_token(self, mock_get_redis, mock_app):
+    def test_other_forged_token(self, mock_get_redis, mock_get_config):
         """A JWT with the wrong user_id is passed."""
         secret = 'barsecret'
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': secret,
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -278,16 +283,16 @@ class TestGetSession(TestCase):
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099'
         }
-        expired_token = jwt.encode(claims, secret)
+        expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
             store.load(expired_token)
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_empty_session(self, mock_get_redis, mock_app):
+    def test_empty_session(self, mock_get_redis, mock_get_config):
         """Session has been removed, or may never have existed."""
         secret = 'barsecret'
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': secret,
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -302,16 +307,16 @@ class TestGetSession(TestCase):
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099',
         }
-        expired_token = jwt.encode(claims, secret)
+        expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.UnknownSession):
             store.load(expired_token)
 
-    @mock.patch('arxiv.base.globals.flask_app')
+    @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
-    def test_valid_token(self, mock_get_redis, mock_app):
+    def test_valid_token(self, mock_get_redis, mock_get_config):
         """A valid token is passed."""
         secret = 'barsecret'
-        mock_app.config = {
+        mock_get_config.return_value = {
             'JWT_SECRET': secret,
             'REDIS_HOST': 'redis',
             'REDIS_PORT': '1234',
@@ -335,7 +340,7 @@ class TestGetSession(TestCase):
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290098'
         }
-        expired_token = jwt.encode(claims, secret)
+        valid_token = jwt.encode(claims, secret).decode('ascii')
 
-        session = store.load(expired_token)
+        session = store.load(valid_token)
         self.assertIsInstance(session, domain.Session, "Returns a session")

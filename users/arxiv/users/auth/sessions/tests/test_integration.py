@@ -1,6 +1,6 @@
 """Integration tests for the session_store session store with Redis."""
 
-from unittest import TestCase
+from unittest import TestCase, mock
 import subprocess
 import time
 import json
@@ -16,29 +16,30 @@ from .. import store
 class TestDistributedSessionServiceIntegration(TestCase):
     """Test integration with Redis."""
 
-    @classmethod
-    def setUpClass(cls):
+    __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
+
+    def setUp(self):
         """Spin up redis."""
-        cls.redis = subprocess.run(
+        self.redis = subprocess.run(
             "docker run -d -p 6379:6379 redis",
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
         )
-        if cls.redis.returncode > 0:
+        if self.redis.returncode > 0:
             raise RuntimeError('Could not start redis. Is Docker running?')
-        cls.container = cls.redis.stdout.decode('ascii').strip()
-        cls.secret = 'bazsecret'
-        os.environ['JWT_SECRET'] = cls.secret
-        time.sleep(5)    # In case it takes a moment to start.
+        self.container = self.redis.stdout.decode('ascii').strip()
+        self.secret = 'bazsecret'
+        time.sleep(2)    # In case it takes a moment to start.
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         """Tear down redis."""
-        subprocess.run(f"docker rm -f {cls.container}",
+        subprocess.run(f"docker rm -f {self.container}",
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                        shell=True)
 
-    def test_store_create(self):
+    @mock.patch(f'{store.__name__}.get_application_config')
+    def test_store_create(self, mock_get_config):
         """An entry should be created in Redis."""
+        mock_get_config.return_value = {'JWT_SECRET': self.secret}
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         user = domain.User(
@@ -85,8 +86,10 @@ class TestDistributedSessionServiceIntegration(TestCase):
     #     now = time.time()
     #     self.assertGreaterEqual(now, data1['end_time'])
 
-    def test_delete_session(self):
+    @mock.patch(f'{store.__name__}.get_application_config')
+    def test_delete_session(self, mock_get_config):
         """Delete a session from the datastore."""
+        mock_get_config.return_value = {'JWT_SECRET': self.secret}
         r = redis.StrictRedis(host='localhost', port=6379, db=0)
         r.set('fookey', b'foovalue')
         store.delete('fookey')
