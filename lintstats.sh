@@ -12,7 +12,7 @@ curl -u $USERNAME:$GITHUB_TOKEN \
     > /dev/null 2>&1
 
 
-pipenv run mypy accounts users/arxiv | grep -v "test.*" | grep -v "defined here"
+pipenv run mypy accounts users/arxiv | grep -v "test.*" | grep -v "defined here" | wc -l | tr -d '[:space:]'
 MYPY_STATUS=$?
 if [ $MYPY_STATUS -ne 0 ]; then MYPY_STATE="failure" && echo "mypy failed"; else MYPY_STATE="success" &&  echo "mypy passed"; fi
 
