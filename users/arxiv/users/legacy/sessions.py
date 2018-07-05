@@ -23,7 +23,7 @@ from . import cookies, util
 from .models import Base, DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
     DBUserNickname
 from .exceptions import UnknownSession, SessionCreationFailed, \
-    SessionDeletionFailed, SessionExpired
+    SessionDeletionFailed, SessionExpired, InvalidCookie
 from .endorsements import get_endorsements
 
 logger = logging.getLogger(__name__)
@@ -178,7 +178,11 @@ def invalidate(cookie: str) -> None:
         The session could not be found, or the cookie was not valid.
 
     """
-    session_id, user_id, ip, _ = cookies.unpack(cookie)
+    try:
+        session_id, user_id, ip, _ = cookies.unpack(cookie)
+    except InvalidCookie as e:
+        raise UnknownSession('No such session') from e
+
     invalidate_by_id(session_id)
 
 

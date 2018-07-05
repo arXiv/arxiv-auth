@@ -4,7 +4,7 @@ from typing import Optional
 from unittest import mock, TestCase
 from datetime import datetime
 
-from .. import exceptions, sessions, util, models
+from .. import exceptions, sessions, util, models, cookies
 
 from .util import temporary_db
 
@@ -53,7 +53,7 @@ class TestInvalidateSession(TestCase):
         capabilities = 6
 
         with temporary_db() as db_session:
-            cookie = util.pack_cookie(session_id, user_id, ip, capabilities)
+            cookie = cookies.pack(session_id, user_id, ip, capabilities)
             start = (datetime.now() - datetime.utcfromtimestamp(0))\
                 .total_seconds()
             with util.transaction() as db_session:

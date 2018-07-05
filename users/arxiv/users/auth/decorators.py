@@ -18,22 +18,22 @@ Here's an example of how you might use this in a Flask application:
 
 .. code-block:: python
 
-   > from arxiv.users.auth.decorators import scoped
-   > from arxiv.users.auth import scopes
-   > from arxiv.users import domain
-   >
-   >
-   > def is_owner(session: domain.Session, user_id: str, **kwargs) -> bool:
-   .   '''Check whether the authenticated user matches the requested user.'''
-   .   return session.user.user_id == user_id
-   >
-   >
-   > @blueprint.route('/<string:user_id>/profile', methods=['GET'])
-   . @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)
-   . def edit_profile(user_id: str):
-   .   '''User can update their account information.'''
-   .   data, code, headers = profile.get_profile(user_id)
-   .   return render_template('accounts/profile.html', **data)
+   from arxiv.users.auth.decorators import scoped
+   from arxiv.users.auth import scopes
+   from arxiv.users import domain
+
+
+   def is_owner(session: domain.Session, user_id: str, **kwargs) -> bool:
+       '''Check whether the authenticated user matches the requested user.'''
+       return session.user.user_id == user_id
+
+
+   @blueprint.route('/<string:user_id>/profile', methods=['GET'])
+   @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)
+   def edit_profile(user_id: str):
+       '''User can update their account information.'''
+       data, code, headers = profile.get_profile(user_id)
+       return render_template('accounts/profile.html', **data)
 
 
 When the decorated route function is called...
@@ -52,7 +52,7 @@ When the decorated route function is called...
 
 from typing import Optional, Union, Callable, Any
 from functools import wraps
-from flask import request, current_app
+from flask import request
 from werkzeug.exceptions import BadRequest, Unauthorized, Forbidden
 from arxiv import status
 from arxiv.base import logging

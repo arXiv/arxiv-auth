@@ -19,9 +19,21 @@ There are currently three pieces of software in this repository:
    etc.
 3. [``authorizer/``](authorizer/) contains the authorizer service, which
    handles authorization requests from NGINX in a cloud deployment scenario.
+   This is currently not ready for use nor evaluation.
 
 TLS is considered an infrastructure concern, and is therefore out of scope
 (albeit critical) for this project.
+
+## Dependencies
+
+We use pipenv to manage dependencies. To install the dependencies for this
+project, run ``pipenv install`` in the root of this repository.
+
+Note that the ``Pipfile`` does not contain a reference to the ``arxiv.users``
+package, which is located in ``users/``. To test against the code in your
+current branch, install the package directly with ``pipenv install ./users``.
+Otherwise, you can install the latest release with
+``pipenv install arxiv-users``.
 
 ## Documentation
 
@@ -29,7 +41,41 @@ Documentation source files can be found in ``docs``
 
 sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
 sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
+cd docs
+make html SPHINXBUILD=$(pipenv --venv)/bin/sphinx-build
 
+## Testing
+
+Each of the applications/packages in this repository has its own test suite.
+
+### ``arxiv.users``
+
+You can run the tests for the ``arxiv.users`` package with:
+
+```bash
+pipenv run nose2 -s users/arxiv
+```
+
+### Accounts service
+
+Note that in order to run the accounts service, you will need to install
+``arxiv.users`` (not included in the Pipfile). See
+[#documentation](documentation), above.
+
+You can run tests for the accounts service with:
+
+```bash
+pipenv run nose2 -s accounts/    # Unit tests only.  
+```
+
+To run integration and end-to-end tests with a live Redis, use:
+
+```bash
+WITH_INTEGRATION=1 pipenv run nose2 -s accounts/   
+```
+
+Note that this requires Docker to be running, and port 6379 to be free on your
+machine.
 
 ## Quick start
 
