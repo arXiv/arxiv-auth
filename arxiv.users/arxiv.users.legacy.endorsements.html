@@ -1,0 +1,287 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.legacy.endorsements module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.users.legacy.exceptions module" href="arxiv.users.legacy.exceptions.html" />
+    <link rel="prev" title="arxiv.users.legacy.cookies module" href="arxiv.users.legacy.cookies.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.users.legacy.endorsements">
+<span id="arxiv-users-legacy-endorsements-module"></span><h1>arxiv.users.legacy.endorsements module<a class="headerlink" href="#module-arxiv.users.legacy.endorsements" title="Permalink to this headline">¶</a></h1>
+<p>Provide endorsement authorizations for users.</p>
+<p>Endorsements are authorization scopes tied to specific classificatory
+categories, and are used primarily to determine whether or not a user may
+submit a paper with a particular primary or secondary classification.</p>
+<p>This module preserves the behavior of the legacy system with respect to
+interpreting endorsements and evaluating potential autoendorsement. The
+relevant policies can be found on the <a class="reference external" href="https://arxiv.org/help/endorsement">arXiv help pages</a>.</p>
+<dl class="function">
+<dt id="arxiv.users.legacy.endorsements.category_policies">
+<code class="descclassname">arxiv.users.legacy.endorsements.</code><code class="descname">category_policies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/endorsements.html#category_policies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.endorsements.category_policies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load auto-endorsement policies for each category from the database.</p>
+<p>Each category belongs to an endorsement domain, which defines the
+auto-endorsement policies. We retrieve those policies from the perspective
+of the individueal category for ease of lookup.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Keys are <a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Category</span></code></a> instances. Values are dicts with
+policiy details.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[~KT, ~VT]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.endorsements.domain_papers">
+<code class="descclassname">arxiv.users.legacy.endorsements.</code><code class="descname">domain_papers</code><span class="sig-paren">(</span><em>user</em>, <em>start_date=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/endorsements.html#domain_papers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.endorsements.domain_papers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the number of papers that a user owns in each endorsement domain.</p>
+<p>This includes both submitted and claimed papers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user</strong> (<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code></a>) – </li>
+<li><strong>start_date</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code> or None) – If provided, will only count papers published after this date.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Keys are classification domains (str), values are the number of papers
+in each respective domain (int).</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.endorsements.explicit_endorsements">
+<code class="descclassname">arxiv.users.legacy.endorsements.</code><code class="descname">explicit_endorsements</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/endorsements.html#explicit_endorsements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.endorsements.explicit_endorsements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load endorsed categories for a user.</p>
+<p>These are endorsements (including auto-endorsements) that have been
+explicitly commemorated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Each item is a <a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Category</span></code></a> for which the user is
+explicitly endorsed.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.endorsements.get_endorsements">
+<code class="descclassname">arxiv.users.legacy.endorsements.</code><code class="descname">get_endorsements</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/endorsements.html#get_endorsements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.endorsements.get_endorsements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all endorsements (explicit and implicit) for a user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Each item is a <a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Category</span></code></a> for which the user is
+either explicitly or implicitly endorsed.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.endorsements.implicit_endorsements">
+<code class="descclassname">arxiv.users.legacy.endorsements.</code><code class="descname">implicit_endorsements</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/endorsements.html#implicit_endorsements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.endorsements.implicit_endorsements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine categories for which a user may be autoendorsed.</p>
+<p>In the classic system, this was determined upon request, when the user
+attempted to submit to a particular category. Because we are separating
+authorization concerns (which includes endorsement) from the submission
+system itself, we want to calculate possible autoendorsement categories
+ahead of time.</p>
+<p>New development of autoendorsement-related functionality should not happen
+here. This function and related code are intended only to preserve the
+business logic already implemented in the classic system.</p>
+<p>:param <a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a>:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Each item is a <a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Category</span></code></a> for which the user may be
+auto-endorsed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.endorsements.invalidated_autoendorsements">
+<code class="descclassname">arxiv.users.legacy.endorsements.</code><code class="descname">invalidated_autoendorsements</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/endorsements.html#invalidated_autoendorsements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.endorsements.invalidated_autoendorsements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load any invalidated (revoked) auto-endorsements for a user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Items are <a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Category</span></code></a> for which the user has had past
+auto-endorsements revoked.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.endorsements.is_academic">
+<code class="descclassname">arxiv.users.legacy.endorsements.</code><code class="descname">is_academic</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/endorsements.html#is_academic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.endorsements.is_academic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether a user is academic, based on their email address.</p>
+<p>Uses whitelist and blacklist patterns in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/modules.html">accounts</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.users.html">arxiv.users package</a><ul>
+  <li><a href="arxiv.users.legacy.html">arxiv.users.legacy package</a><ul>
+      <li>Previous: <a href="arxiv.users.legacy.cookies.html" title="previous chapter">arxiv.users.legacy.cookies module</a></li>
+      <li>Next: <a href="arxiv.users.legacy.exceptions.html" title="next chapter">arxiv.users.legacy.exceptions module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/arxiv.users/arxiv.users.legacy.endorsements.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

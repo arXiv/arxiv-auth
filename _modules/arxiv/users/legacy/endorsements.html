@@ -1,0 +1,456 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.legacy.endorsements &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for arxiv.users.legacy.endorsements</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Provide endorsement authorizations for users.</span>
+
+<span class="sd">Endorsements are authorization scopes tied to specific classificatory</span>
+<span class="sd">categories, and are used primarily to determine whether or not a user may</span>
+<span class="sd">submit a paper with a particular primary or secondary classification.</span>
+
+<span class="sd">This module preserves the behavior of the legacy system with respect to</span>
+<span class="sd">interpreting endorsements and evaluating potential autoendorsement. The</span>
+<span class="sd">relevant policies can be found on the `arXiv help pages</span>
+<span class="sd">&lt;https://arxiv.org/help/endorsement&gt;`_.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy.sql.expression</span> <span class="k">import</span> <span class="n">literal</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">domain</span>
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">taxonomy</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="n">DBUser</span><span class="p">,</span> <span class="n">DBEndorsement</span><span class="p">,</span> <span class="n">DBPaperOwners</span><span class="p">,</span> <span class="n">DBDocuments</span><span class="p">,</span> \
+    <span class="n">DBDocumentInCategory</span><span class="p">,</span> <span class="n">DBCategory</span><span class="p">,</span> <span class="n">DBEndorsementDomain</span><span class="p">,</span> <span class="n">DBEmailWhitelist</span><span class="p">,</span> \
+    <span class="n">DBEmailBlacklist</span>
+
+
+<span class="n">GENERAL_CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">(</span><span class="s1">&#39;math&#39;</span><span class="p">,</span> <span class="s1">&#39;GM&#39;</span><span class="p">),</span>
+    <span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">(</span><span class="s1">&#39;physics&#39;</span><span class="p">,</span> <span class="s1">&#39;gen-ph&#39;</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="n">WINDOW_START</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">from_epoch</span><span class="p">(</span><span class="mi">157783680</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_endorsements"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.get_endorsements">[docs]</a><span class="k">def</span> <span class="nf">get_endorsements</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get all endorsements (explicit and implicit) for a user.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : :class:`.domain.User`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        Each item is a :class:`.domain.Category` for which the user is</span>
+<span class="sd">        either explicitly or implicitly endorsed.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">explicit_endorsements</span><span class="p">(</span><span class="n">user</span><span class="p">))</span>
+                <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">implicit_endorsements</span><span class="p">(</span><span class="n">user</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="explicit_endorsements"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.explicit_endorsements">[docs]</a><span class="k">def</span> <span class="nf">explicit_endorsements</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load endorsed categories for a user.</span>
+
+<span class="sd">    These are endorsements (including auto-endorsements) that have been</span>
+<span class="sd">    explicitly commemorated.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : :class:`.domain.User`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        Each item is a :class:`.domain.Category` for which the user is</span>
+<span class="sd">        explicitly endorsed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DBEndorsement</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="n">DBEndorsement</span><span class="o">.</span><span class="n">archive</span><span class="p">,</span>
+                <span class="n">DBEndorsement</span><span class="o">.</span><span class="n">subject_class</span><span class="p">,</span>
+                <span class="n">DBEndorsement</span><span class="o">.</span><span class="n">point_value</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBEndorsement</span><span class="o">.</span><span class="n">endorsee_id</span> <span class="o">==</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBEndorsement</span><span class="o">.</span><span class="n">flag_valid</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="n">pooled</span><span class="p">:</span> <span class="n">Counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">archive</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">points</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">pooled</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">subject</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">points</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">category</span> <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">points</span> <span class="ow">in</span> <span class="n">pooled</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">points</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="implicit_endorsements"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.implicit_endorsements">[docs]</a><span class="k">def</span> <span class="nf">implicit_endorsements</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine categories for which a user may be autoendorsed.</span>
+
+<span class="sd">    In the classic system, this was determined upon request, when the user</span>
+<span class="sd">    attempted to submit to a particular category. Because we are separating</span>
+<span class="sd">    authorization concerns (which includes endorsement) from the submission</span>
+<span class="sd">    system itself, we want to calculate possible autoendorsement categories</span>
+<span class="sd">    ahead of time.</span>
+
+<span class="sd">    New development of autoendorsement-related functionality should not happen</span>
+<span class="sd">    here. This function and related code are intended only to preserve the</span>
+<span class="sd">    business logic already implemented in the classic system.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    :class:`.User`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        Each item is a :class:`.domain.Category` for which the user may be</span>
+<span class="sd">        auto-endorsed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="o">.</span><span class="n">from_compound</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+                  <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">CATEGORIES_ACTIVE</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+    <span class="n">policies</span> <span class="o">=</span> <span class="n">category_policies</span><span class="p">()</span>
+    <span class="n">invalidated</span> <span class="o">=</span> <span class="n">invalidated_autoendorsements</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">papers</span> <span class="o">=</span> <span class="n">domain_papers</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">user_is_academic</span> <span class="o">=</span> <span class="n">is_academic</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">category</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">candidates</span>
+        <span class="k">if</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">policies</span>
+        <span class="ow">and</span> <span class="ow">not</span> <span class="n">_disqualifying_invalidations</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">invalidated</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="p">(</span><span class="n">policies</span><span class="p">[</span><span class="n">category</span><span class="p">][</span><span class="s1">&#39;endorse_all&#39;</span><span class="p">]</span>
+             <span class="ow">or</span> <span class="n">_endorse_by_email</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">policies</span><span class="p">,</span> <span class="n">user_is_academic</span><span class="p">)</span>
+             <span class="ow">or</span> <span class="n">_endorse_by_papers</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">policies</span><span class="p">,</span> <span class="n">papers</span><span class="p">))</span>
+    <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="is_academic"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.is_academic">[docs]</a><span class="k">def</span> <span class="nf">is_academic</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine whether a user is academic, based on their email address.</span>
+
+<span class="sd">    Uses whitelist and blacklist patterns in the database.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : :class:`.domain.User`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">in_whitelist</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DBEmailWhitelist</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">literal</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">)</span><span class="o">.</span><span class="n">like</span><span class="p">(</span><span class="n">DBEmailWhitelist</span><span class="o">.</span><span class="n">pattern</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">in_whitelist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">in_blacklist</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DBEmailBlacklist</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">literal</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">)</span><span class="o">.</span><span class="n">like</span><span class="p">(</span><span class="n">DBEmailBlacklist</span><span class="o">.</span><span class="n">pattern</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">in_blacklist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<span class="k">def</span> <span class="nf">_disqualifying_invalidations</span><span class="p">(</span><span class="n">category</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">,</span>
+                                 <span class="n">invalidated</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate whether endorsement invalidations are disqualifying.</span>
+
+<span class="sd">    This enforces the policy that invalidated (revoked) auto-endorsements can</span>
+<span class="sd">    prevent future auto-endorsement.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    category : :class:`.Category`</span>
+<span class="sd">        The category for which an auto-endorsement is being considered.</span>
+<span class="sd">    invalidated : list</span>
+<span class="sd">        Categories for which the user has had auto-endorsements invalidated</span>
+<span class="sd">        (revoked).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">((</span><span class="n">category</span> <span class="ow">in</span> <span class="n">GENERAL_CATEGORIES</span> <span class="ow">and</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">invalidated</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="n">category</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GENERAL_CATEGORIES</span> <span class="ow">and</span> <span class="n">invalidated</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_endorse_by_email</span><span class="p">(</span><span class="n">category</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">,</span>
+                      <span class="n">policies</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">,</span> <span class="n">Dict</span><span class="p">],</span>
+                      <span class="n">user_is_academic</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate whether an auto-endorsement can be issued based on email address.</span>
+
+<span class="sd">    This enforces the policy that some categories allow auto-endorsement for</span>
+<span class="sd">    academic users.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    category : :class:`.Category`</span>
+<span class="sd">        The category for which an auto-endorsement is being considered.</span>
+<span class="sd">    policies : dict</span>
+<span class="sd">        Describes auto-endorsement policies for each category (inherited from</span>
+<span class="sd">        their endorsement domains).</span>
+<span class="sd">    user_is_academic : bool</span>
+<span class="sd">        Whether or not the user has been determined to be academic.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">policy</span> <span class="o">=</span> <span class="n">policies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">policy</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s1">&#39;endorse_email&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">policy</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">policy</span><span class="p">[</span><span class="s1">&#39;endorse_email&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">user_is_academic</span>
+
+
+<span class="k">def</span> <span class="nf">_endorse_by_papers</span><span class="p">(</span><span class="n">category</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">,</span>
+                       <span class="n">policies</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">,</span> <span class="n">Dict</span><span class="p">],</span>
+                       <span class="n">papers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate whether an auto-endorsement can be issued based on prior papers.</span>
+
+<span class="sd">    This enforces the policy that some categories allow auto-endorsements for</span>
+<span class="sd">    users who have published a minimum number of papers in categories that</span>
+<span class="sd">    share an endoresement domain.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    category : :class:`.Category`</span>
+<span class="sd">        The category for which an auto-endorsement is being considered.</span>
+<span class="sd">    policies : dict</span>
+<span class="sd">        Describes auto-endorsement policies for each category (inherited from</span>
+<span class="sd">        their endorsement domains).</span>
+<span class="sd">    papers : dict</span>
+<span class="sd">        The number of papers that the user has published in each endorsement</span>
+<span class="sd">        domain. Keys are str names of endorsement domains, values are int.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N_papers</span> <span class="o">=</span> <span class="n">papers</span><span class="p">[</span><span class="n">policies</span><span class="p">[</span><span class="n">category</span><span class="p">][</span><span class="s1">&#39;domain&#39;</span><span class="p">]]</span>
+    <span class="n">min_papers</span> <span class="o">=</span> <span class="n">policies</span><span class="p">[</span><span class="n">category</span><span class="p">][</span><span class="s1">&#39;min_papers&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">N_papers</span> <span class="o">&gt;=</span> <span class="n">min_papers</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="domain_papers"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.domain_papers">[docs]</a><span class="k">def</span> <span class="nf">domain_papers</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">,</span>
+                  <span class="n">start_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the number of papers that a user owns in each endorsement domain.</span>
+
+<span class="sd">    This includes both submitted and claimed papers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : :class:`.domain.User`</span>
+<span class="sd">    start_date : :class:`.datetime` or None</span>
+<span class="sd">        If provided, will only count papers published after this date.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Keys are classification domains (str), values are the number of papers</span>
+<span class="sd">        in each respective domain (int).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="n">DBPaperOwners</span><span class="o">.</span><span class="n">document_id</span><span class="p">,</span>
+                <span class="n">DBDocuments</span><span class="o">.</span><span class="n">document_id</span><span class="p">,</span>
+                <span class="n">DBDocumentInCategory</span><span class="o">.</span><span class="n">document_id</span><span class="p">,</span>
+                <span class="n">DBCategory</span><span class="o">.</span><span class="n">endorsement_domain</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBPaperOwners</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
+            <span class="c1"># Lots of joins...</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBDocuments</span><span class="o">.</span><span class="n">document_id</span> <span class="o">==</span> <span class="n">DBPaperOwners</span><span class="o">.</span><span class="n">document_id</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">DBDocumentInCategory</span><span class="o">.</span><span class="n">document_id</span> <span class="o">==</span> <span class="n">DBDocuments</span><span class="o">.</span><span class="n">document_id</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBCategory</span><span class="o">.</span><span class="n">archive</span> <span class="o">==</span> <span class="n">DBDocumentInCategory</span><span class="o">.</span><span class="n">archive</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">DBCategory</span><span class="o">.</span><span class="n">subject_class</span> <span class="o">==</span> <span class="n">DBDocumentInCategory</span><span class="o">.</span><span class="n">subject_class</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">start_date</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBDocuments</span><span class="o">.</span><span class="n">dated</span> <span class="o">&gt;</span> <span class="n">util</span><span class="o">.</span><span class="n">epoch</span><span class="p">(</span><span class="n">start_date</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">domain</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">domain</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="category_policies"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.category_policies">[docs]</a><span class="k">def</span> <span class="nf">category_policies</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load auto-endorsement policies for each category from the database.</span>
+
+<span class="sd">    Each category belongs to an endorsement domain, which defines the</span>
+<span class="sd">    auto-endorsement policies. We retrieve those policies from the perspective</span>
+<span class="sd">    of the individueal category for ease of lookup.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Keys are :class:`.domain.Category` instances. Values are dicts with</span>
+<span class="sd">        policiy details.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="n">DBCategory</span><span class="o">.</span><span class="n">archive</span><span class="p">,</span>
+                <span class="n">DBCategory</span><span class="o">.</span><span class="n">subject_class</span><span class="p">,</span>
+                <span class="n">DBEndorsementDomain</span><span class="o">.</span><span class="n">endorse_all</span><span class="p">,</span>
+                <span class="n">DBEndorsementDomain</span><span class="o">.</span><span class="n">endorse_email</span><span class="p">,</span>
+                <span class="n">DBEndorsementDomain</span><span class="o">.</span><span class="n">papers_to_endorse</span><span class="p">,</span>
+                <span class="n">DBEndorsementDomain</span><span class="o">.</span><span class="n">endorsement_domain</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBCategory</span><span class="o">.</span><span class="n">definitive</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBCategory</span><span class="o">.</span><span class="n">active</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBCategory</span><span class="o">.</span><span class="n">endorsement_domain</span> <span class="o">==</span>
+                    <span class="n">DBEndorsementDomain</span><span class="o">.</span><span class="n">endorsement_domain</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">subject</span><span class="p">):</span> <span class="p">{</span>
+            <span class="s1">&#39;domain&#39;</span><span class="p">:</span> <span class="n">e_domain</span><span class="p">,</span>
+            <span class="s1">&#39;endorse_all&#39;</span><span class="p">:</span> <span class="n">endorse_all</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;endorse_email&#39;</span><span class="p">:</span> <span class="n">endorse_email</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;min_papers&#39;</span><span class="p">:</span> <span class="n">min_papers</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">archive</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">endorse_all</span><span class="p">,</span> <span class="n">endorse_email</span><span class="p">,</span> <span class="n">min_papers</span><span class="p">,</span> <span class="n">e_domain</span>
+        <span class="ow">in</span> <span class="n">data</span>
+    <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="invalidated_autoendorsements"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.invalidated_autoendorsements">[docs]</a><span class="k">def</span> <span class="nf">invalidated_autoendorsements</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load any invalidated (revoked) auto-endorsements for a user.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : :class:`.domain.User`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        Items are :class:`.domain.Category` for which the user has had past</span>
+<span class="sd">        auto-endorsements revoked.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DBEndorsement</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="n">DBEndorsement</span><span class="o">.</span><span class="n">archive</span><span class="p">,</span>
+                <span class="n">DBEndorsement</span><span class="o">.</span><span class="n">subject_class</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBEndorsement</span><span class="o">.</span><span class="n">endorsee_id</span> <span class="o">==</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBEndorsement</span><span class="o">.</span><span class="n">flag_valid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">DBEndorsement</span><span class="o">.</span><span class="n">endorsement_type</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">subject</span><span class="p">)</span> <span class="k">for</span> <span class="n">archive</span><span class="p">,</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/modules.html">arxiv</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../accounts/modules.html">accounts</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

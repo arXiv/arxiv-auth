@@ -1,0 +1,214 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.legacy.accounts module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.users.legacy.authenticate module" href="arxiv.users.legacy.authenticate.html" />
+    <link rel="prev" title="arxiv.users.legacy package" href="arxiv.users.legacy.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.users.legacy.accounts">
+<span id="arxiv-users-legacy-accounts-module"></span><h1>arxiv.users.legacy.accounts module<a class="headerlink" href="#module-arxiv.users.legacy.accounts" title="Permalink to this headline">¶</a></h1>
+<p>Provide methods for working with user accounts.</p>
+<dl class="function">
+<dt id="arxiv.users.legacy.accounts.email_exists">
+<code class="descclassname">arxiv.users.legacy.accounts.</code><code class="descname">email_exists</code><span class="sig-paren">(</span><em>email</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/accounts.html#email_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.accounts.email_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether a user with a particular address already exists.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>email</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.accounts.get_user_by_id">
+<code class="descclassname">arxiv.users.legacy.accounts.</code><code class="descname">get_user_by_id</code><span class="sig-paren">(</span><em>user_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/accounts.html#get_user_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.accounts.get_user_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load user data from the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.accounts.register">
+<code class="descclassname">arxiv.users.legacy.accounts.</code><code class="descname">register</code><span class="sig-paren">(</span><em>user</em>, <em>password</em>, <em>ip</em>, <em>remote_host</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/accounts.html#register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.accounts.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user</strong> (<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code></a>) – User data for the new account.</li>
+<li><strong>password</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Password for the account.</li>
+<li><strong>ip</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The IP address of the client requesting the registration.</li>
+<li><strong>remote_host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The remote hostname of the client requesting the registration.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
+<li><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code></a> – Data about the created user.</li>
+<li><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Authorizations" title="arxiv.users.domain.Authorizations"><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Authorizations</span></code></a> – Privileges attached to the created user.</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a>, <a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Authorizations" title="arxiv.users.domain.Authorizations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Authorizations</span></code></a>]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.accounts.update">
+<code class="descclassname">arxiv.users.legacy.accounts.</code><code class="descname">update</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/accounts.html#update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.accounts.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a user in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a>, <a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Authorizations" title="arxiv.users.domain.Authorizations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Authorizations</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.accounts.username_exists">
+<code class="descclassname">arxiv.users.legacy.accounts.</code><code class="descname">username_exists</code><span class="sig-paren">(</span><em>username</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/accounts.html#username_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.accounts.username_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether a user with a particular username already exists.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>username</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/modules.html">accounts</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.users.html">arxiv.users package</a><ul>
+  <li><a href="arxiv.users.legacy.html">arxiv.users.legacy package</a><ul>
+      <li>Previous: <a href="arxiv.users.legacy.html" title="previous chapter">arxiv.users.legacy package</a></li>
+      <li>Next: <a href="arxiv.users.legacy.authenticate.html" title="next chapter">arxiv.users.legacy.authenticate module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/arxiv.users/arxiv.users.legacy.accounts.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,565 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.domain module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="accounts" href="../accounts/modules.html" />
+    <link rel="prev" title="arxiv.users.legacy.util module" href="arxiv.users.legacy.util.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.users.domain">
+<span id="arxiv-users-domain-module"></span><h1>arxiv.users.domain module<a class="headerlink" href="#module-arxiv.users.domain" title="Permalink to this headline">¶</a></h1>
+<p>Defines user concepts for use in arXiv-NG services.</p>
+<dl class="class">
+<dt id="arxiv.users.domain.Authorizations">
+<em class="property">class </em><code class="descclassname">arxiv.users.domain.</code><code class="descname">Authorizations</code><a class="reference internal" href="../_modules/arxiv/users/domain.html#Authorizations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.Authorizations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Authorization information, e.g. associated with a <a class="reference internal" href="#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>.</p>
+<dl class="attribute">
+<dt id="arxiv.users.domain.Authorizations.classic">
+<code class="descname">classic</code><a class="headerlink" href="#arxiv.users.domain.Authorizations.classic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Capability code associated with a user’s session.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Authorizations.endorsements">
+<code class="descname">endorsements</code><a class="headerlink" href="#arxiv.users.domain.Authorizations.endorsements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Categories to which the user is permitted to submit.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Authorizations.scopes">
+<code class="descname">scopes</code><a class="headerlink" href="#arxiv.users.domain.Authorizations.scopes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorized scopes. See <a class="reference internal" href="arxiv.users.auth.scopes.html#module-arxiv.users.auth.scopes" title="arxiv.users.auth.scopes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users.auth.scopes</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.domain.Category">
+<em class="property">class </em><code class="descclassname">arxiv.users.domain.</code><code class="descname">Category</code><a class="reference internal" href="../_modules/arxiv/users/domain.html#Category"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.Category" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Reprents a classification category.</p>
+<dl class="attribute">
+<dt id="arxiv.users.domain.Category.archive">
+<code class="descname">archive</code><a class="headerlink" href="#arxiv.users.domain.Category.archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Archives group together related subjects in a domain.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Category.compound">
+<code class="descname">compound</code><a class="headerlink" href="#arxiv.users.domain.Category.compound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compound category name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Category.display">
+<code class="descname">display</code><a class="headerlink" href="#arxiv.users.domain.Category.display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display name for this category.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="arxiv.users.domain.Category.from_compound">
+<em class="property">classmethod </em><code class="descname">from_compound</code><span class="sig-paren">(</span><em>category</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/domain.html#Category.from_compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.Category.from_compound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a> from a compound classification slug.</p>
+<p>E.g. “astro-ph.CO” -&gt; Category(archive=”astro-ph”, subject=”CO”)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A dot-delimited compound category slug.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Category.subject">
+<code class="descname">subject</code><a class="headerlink" href="#arxiv.users.domain.Category.subject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leaf-level classification in the arXiv taxonomy.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.domain.Client">
+<em class="property">class </em><code class="descclassname">arxiv.users.domain.</code><code class="descname">Client</code><a class="reference internal" href="../_modules/arxiv/users/domain.html#Client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.Client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Placeholder for API client.</p>
+<dl class="attribute">
+<dt id="arxiv.users.domain.Client.client_id">
+<code class="descname">client_id</code><a class="headerlink" href="#arxiv.users.domain.Client.client_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier for a <a class="reference internal" href="#arxiv.users.domain.Client" title="arxiv.users.domain.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.domain.Session">
+<em class="property">class </em><code class="descclassname">arxiv.users.domain.</code><code class="descname">Session</code><a class="reference internal" href="../_modules/arxiv/users/domain.html#Session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.Session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Represents an authenticated session in the arXiv system.</p>
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.authorizations">
+<code class="descname">authorizations</code><a class="headerlink" href="#arxiv.users.domain.Session.authorizations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizations for the current session.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.client">
+<code class="descname">client</code><a class="headerlink" href="#arxiv.users.domain.Session.client" title="Permalink to this definition">¶</a></dt>
+<dd><p>The client for which the session was created.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.end_time">
+<code class="descname">end_time</code><a class="headerlink" href="#arxiv.users.domain.Session.end_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ISO-8601 datetime when the session ended.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.expired">
+<code class="descname">expired</code><a class="headerlink" href="#arxiv.users.domain.Session.expired" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expired if the current time is later than <a class="reference internal" href="#arxiv.users.domain.Session.end_time" title="arxiv.users.domain.Session.end_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">end_time</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.expires">
+<code class="descname">expires</code><a class="headerlink" href="#arxiv.users.domain.Session.expires" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of seconds until the session expires.</p>
+<p>If the session is already expired, returns 0.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.ip_address">
+<code class="descname">ip_address</code><a class="headerlink" href="#arxiv.users.domain.Session.ip_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>The IP address of the client for which the session was created.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.nonce">
+<code class="descname">nonce</code><a class="headerlink" href="#arxiv.users.domain.Session.nonce" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pseudo-random nonce generated when the session was created.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.remote_host">
+<code class="descname">remote_host</code><a class="headerlink" href="#arxiv.users.domain.Session.remote_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>The hostname of the client for which the session was created.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.session_id">
+<code class="descname">session_id</code><a class="headerlink" href="#arxiv.users.domain.Session.session_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier for the session.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.start_time">
+<code class="descname">start_time</code><a class="headerlink" href="#arxiv.users.domain.Session.start_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ISO-8601 datetime when the session was created.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.Session.user">
+<code class="descname">user</code><a class="headerlink" href="#arxiv.users.domain.Session.user" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user for which the session was created.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.domain.User">
+<em class="property">class </em><code class="descclassname">arxiv.users.domain.</code><code class="descname">User</code><a class="reference internal" href="../_modules/arxiv/users/domain.html#User"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.User" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Represents an arXiv user and their authorizations.</p>
+<dl class="attribute">
+<dt id="arxiv.users.domain.User.email">
+<code class="descname">email</code><a class="headerlink" href="#arxiv.users.domain.User.email" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user’s primary e-mail address.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.User.name">
+<code class="descname">name</code><a class="headerlink" href="#arxiv.users.domain.User.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user’s full name (if available).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.User.profile">
+<code class="descname">profile</code><a class="headerlink" href="#arxiv.users.domain.User.profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user’s account profile (if available).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.User.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#arxiv.users.domain.User.user_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier for the user. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the user does not exist.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.User.username">
+<code class="descname">username</code><a class="headerlink" href="#arxiv.users.domain.User.username" title="Permalink to this definition">¶</a></dt>
+<dd><p>Slug-like username.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.domain.UserFullName">
+<em class="property">class </em><code class="descclassname">arxiv.users.domain.</code><code class="descname">UserFullName</code><a class="reference internal" href="../_modules/arxiv/users/domain.html#UserFullName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.UserFullName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Represents a user’s full name.</p>
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserFullName.forename">
+<code class="descname">forename</code><a class="headerlink" href="#arxiv.users.domain.UserFullName.forename" title="Permalink to this definition">¶</a></dt>
+<dd><p>First name or given name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserFullName.suffix">
+<code class="descname">suffix</code><a class="headerlink" href="#arxiv.users.domain.UserFullName.suffix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Any title or qualifier used as a suffix/postfix.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserFullName.surname">
+<code class="descname">surname</code><a class="headerlink" href="#arxiv.users.domain.UserFullName.surname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last name or family name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.domain.UserProfile">
+<em class="property">class </em><code class="descclassname">arxiv.users.domain.</code><code class="descname">UserProfile</code><a class="reference internal" href="../_modules/arxiv/users/domain.html#UserProfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.UserProfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>User profile data.</p>
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.GRAD_STUDENT">
+<code class="descname">GRAD_STUDENT</code><em class="property"> = ('4', 'Grad student')</em><a class="headerlink" href="#arxiv.users.domain.UserProfile.GRAD_STUDENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.OTHER">
+<code class="descname">OTHER</code><em class="property"> = ('5', 'Other')</em><a class="headerlink" href="#arxiv.users.domain.UserProfile.OTHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.POST_DOC">
+<code class="descname">POST_DOC</code><em class="property"> = ('3', 'Post doc')</em><a class="headerlink" href="#arxiv.users.domain.UserProfile.POST_DOC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.PROFESSOR">
+<code class="descname">PROFESSOR</code><em class="property"> = ('2', 'Professor')</em><a class="headerlink" href="#arxiv.users.domain.UserProfile.PROFESSOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.RANKS">
+<code class="descname">RANKS</code><em class="property"> = [('1', 'Staff'), ('2', 'Professor'), ('3', 'Post doc'), ('4', 'Grad student'), ('5', 'Other')]</em><a class="headerlink" href="#arxiv.users.domain.UserProfile.RANKS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.STAFF">
+<code class="descname">STAFF</code><em class="property"> = ('1', 'Staff')</em><a class="headerlink" href="#arxiv.users.domain.UserProfile.STAFF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.country">
+<code class="descname">country</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.country" title="Permalink to this definition">¶</a></dt>
+<dd><p>Should be an ISO 3166-1 alpha-2 country code.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.default_archive">
+<code class="descname">default_archive</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.default_archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>The archive of the default category.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.default_category">
+<code class="descname">default_category</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.default_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default submission category.</p>
+<p>Should be one of <span class="xref std std-ref">arxiv.taxonomy.CATEGORIES</span>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.default_subject">
+<code class="descname">default_subject</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.default_subject" title="Permalink to this definition">¶</a></dt>
+<dd><p>The subject of the default category.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.groups_display">
+<code class="descname">groups_display</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.groups_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display-ready representation of active groups for this profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.homepage_url">
+<code class="descname">homepage_url</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.homepage_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>User’s homepage or external profile URL.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.organization">
+<code class="descname">organization</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.organization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Institutional affiliation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.rank">
+<code class="descname">rank</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Academic rank. Must be one of <a class="reference internal" href="#arxiv.users.domain.UserProfile.RANKS" title="arxiv.users.domain.UserProfile.RANKS"><code class="xref py py-attr docutils literal notranslate"><span class="pre">UserProfile.RANKS</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.rank_display">
+<code class="descname">rank_display</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.rank_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>The display name of the user’s rank.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.remember_me">
+<code class="descname">remember_me</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.remember_me" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates whether the user prefers permanent session cookies.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.domain.UserProfile.submission_groups">
+<code class="descname">submission_groups</code><a class="headerlink" href="#arxiv.users.domain.UserProfile.submission_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Groups to which the user prefers to submit.</p>
+<p>Items should be one of <span class="xref std std-ref">arxiv.taxonomy.GROUPS</span>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.domain.from_dict">
+<code class="descclassname">arxiv.users.domain.</code><code class="descname">from_dict</code><span class="sig-paren">(</span><em>cls</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/domain.html#from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a NamedTuple instance from a dict, with recursion.</p>
+<p>This is the inverse of <a class="reference internal" href="#arxiv.users.domain.to_dict" title="arxiv.users.domain.to_dict"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_dict()</span></code></a>.</p>
+<p>It’s easy to instantiate NamedTuples from dicts, but it’s not so easy if
+a NamedTuple field is typed with another NamedTuple. This function
+instantiates a NamedTuple class <code class="docutils literal notranslate"><span class="pre">cls</span></code> with the data in dict <code class="docutils literal notranslate"><span class="pre">data</span></code>,
+and also instantiates any referenced NamedTuple classes expected by
+<code class="docutils literal notranslate"><span class="pre">cls</span></code>’s fields with the appropriate data in <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.7)"><em>type</em></a>) – Any NamedTuple class.</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – Data with which to instantiate <code class="docutils literal notranslate"><span class="pre">cls</span></code> and its children.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An instance of <code class="docutils literal notranslate"><span class="pre">cls</span></code>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">NamedTuple</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.domain.to_dict">
+<code class="descclassname">arxiv.users.domain.</code><code class="descname">to_dict</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/domain.html#to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.domain.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a dict representation of a NamedTuple instance.</p>
+<p>This just uses the built-in <code class="docutils literal notranslate"><span class="pre">_asdict</span></code> method on the intance, but also
+calls this on any child NamedTuple instances (recursively) so that the
+entire tree is cast to <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – A NamedTuple instance.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/modules.html">accounts</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.users.html">arxiv.users package</a><ul>
+      <li>Previous: <a href="arxiv.users.legacy.util.html" title="previous chapter">arxiv.users.legacy.util module</a></li>
+      <li>Next: <a href="../accounts/modules.html" title="next chapter">accounts</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/arxiv.users/arxiv.users.domain.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,197 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>accounts.stateless_captcha.tests &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for accounts.stateless_captcha.tests</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tests for :mod:`accounts.captcha`.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">jwt</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">new</span><span class="p">,</span> <span class="n">unpack</span><span class="p">,</span> <span class="n">render</span><span class="p">,</span> <span class="n">check</span><span class="p">,</span> <span class="n">InvalidCaptchaToken</span><span class="p">,</span> \
+    <span class="n">InvalidCaptchaValue</span>
+
+
+<div class="viewcode-block" id="TestCaptcha"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha">[docs]</a><span class="k">class</span> <span class="nc">TestCaptcha</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :mod:`accounts.captcha`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestCaptcha.test_new_captcha"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha.test_new_captcha">[docs]</a>    <span class="k">def</span> <span class="nf">test_new_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate and render a new captcha token.&quot;&quot;&quot;</span>
+        <span class="n">secret</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;The captcha value is returned&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">render</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">,</span> <span class="s2">&quot;Bytes data are returned&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x89</span><span class="s2">PNG&quot;</span><span class="p">),</span>
+                        <span class="s2">&quot;Returns a PNG image&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestCaptcha.test_not_a_token"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha.test_not_a_token">[docs]</a>    <span class="k">def</span> <span class="nf">test_not_a_token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Something other than a captcha token is passed.&quot;&quot;&quot;</span>
+        <span class="n">secret</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
+            <span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;nope&#39;</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
+            <span class="n">check</span><span class="p">(</span><span class="s1">&#39;nope&#39;</span><span class="p">,</span> <span class="s1">&#39;nada&#39;</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
+            <span class="n">render</span><span class="p">(</span><span class="s1">&#39;nope&#39;</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestCaptcha.test_forged_captcha"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha.test_forged_captcha">[docs]</a>    <span class="k">def</span> <span class="nf">test_forged_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The captcha token cannot be decrypted.&quot;&quot;&quot;</span>
+        <span class="n">secret</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+
+        <span class="n">forged_token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">encode</span><span class="p">({</span>
+            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">3600</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="p">},</span> <span class="s1">&#39;notthesecret&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
+            <span class="n">unpack</span><span class="p">(</span><span class="n">forged_token</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestCaptcha.test_ip_address_changed"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha.test_ip_address_changed">[docs]</a>    <span class="k">def</span> <span class="nf">test_ip_address_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The captcha token cannot be decrypted.&quot;&quot;&quot;</span>
+        <span class="n">secret</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
+            <span class="n">render</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="s1">&#39;10.10.10.10&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestCaptcha.test_malformed_captcha"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha.test_malformed_captcha">[docs]</a>    <span class="k">def</span> <span class="nf">test_malformed_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The captcha token cannot be decrypted.&quot;&quot;&quot;</span>
+        <span class="n">secret</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+
+        <span class="n">malformed_token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">encode</span><span class="p">({</span>
+            <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">3600</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="p">},</span> <span class="n">secret</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
+            <span class="n">unpack</span><span class="p">(</span><span class="n">malformed_token</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+
+        <span class="n">malformed_token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">encode</span><span class="p">({</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">},</span> <span class="n">secret</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
+            <span class="n">unpack</span><span class="p">(</span><span class="n">malformed_token</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestCaptcha.test_check_valid"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha.test_check_valid">[docs]</a>    <span class="k">def</span> <span class="nf">test_check_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The correct value is passed.&quot;&quot;&quot;</span>
+        <span class="n">secret</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">check</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestCaptcha.test_check_invalid"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha.test_check_invalid">[docs]</a>    <span class="k">def</span> <span class="nf">test_check_invalid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An incorrect value is passed.&quot;&quot;&quot;</span>
+        <span class="n">secret</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span>
+        <span class="n">ip_address</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaValue</span><span class="p">):</span>
+            <span class="n">check</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="s1">&#39;nope&#39;</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/modules.html">arxiv</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../accounts/modules.html">accounts</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../stateless_captcha.html">accounts.stateless_captcha</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

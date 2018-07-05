@@ -1,0 +1,179 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.legacy.exceptions module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.users.legacy.models module" href="arxiv.users.legacy.models.html" />
+    <link rel="prev" title="arxiv.users.legacy.endorsements module" href="arxiv.users.legacy.endorsements.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.users.legacy.exceptions">
+<span id="arxiv-users-legacy-exceptions-module"></span><h1>arxiv.users.legacy.exceptions module<a class="headerlink" href="#module-arxiv.users.legacy.exceptions" title="Permalink to this headline">¶</a></h1>
+<p>Exceptions for legacy user/session integration.</p>
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.AuthenticationFailed">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">AuthenticationFailed</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#AuthenticationFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.AuthenticationFailed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>Failed to authenticate user with provided credentials.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.InvalidCookie">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">InvalidCookie</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#InvalidCookie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.InvalidCookie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<p>The value of a passed legacy cookie is not valid.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.NoSuchUser">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">NoSuchUser</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#NoSuchUser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.NoSuchUser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>A reference to a non-existant user was passed.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.PasswordAuthenticationFailed">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">PasswordAuthenticationFailed</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#PasswordAuthenticationFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.PasswordAuthenticationFailed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>An invalid username/password combination were provided.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.RegistrationFailed">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">RegistrationFailed</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#RegistrationFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.RegistrationFailed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>Could not create a new user.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.SessionCreationFailed">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">SessionCreationFailed</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#SessionCreationFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.SessionCreationFailed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>Failed to create a session in the legacy database.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.SessionDeletionFailed">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">SessionDeletionFailed</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#SessionDeletionFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.SessionDeletionFailed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>Failed to delete a session in the legacy database.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.SessionExpired">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">SessionExpired</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#SessionExpired"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.SessionExpired" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>A reference was made to an expired session.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="arxiv.users.legacy.exceptions.UnknownSession">
+<em class="property">exception </em><code class="descclassname">arxiv.users.legacy.exceptions.</code><code class="descname">UnknownSession</code><a class="reference internal" href="../_modules/arxiv/users/legacy/exceptions.html#UnknownSession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.exceptions.UnknownSession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>Failed to locate a session in the legacy database.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/modules.html">accounts</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">arxiv</a><ul>
+  <li><a href="arxiv.users.html">arxiv.users package</a><ul>
+  <li><a href="arxiv.users.legacy.html">arxiv.users.legacy package</a><ul>
+      <li>Previous: <a href="arxiv.users.legacy.endorsements.html" title="previous chapter">arxiv.users.legacy.endorsements module</a></li>
+      <li>Next: <a href="arxiv.users.legacy.models.html" title="next chapter">arxiv.users.legacy.models module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/arxiv.users/arxiv.users.legacy.exceptions.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

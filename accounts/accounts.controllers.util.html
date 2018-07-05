@@ -1,0 +1,168 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>accounts.controllers.util module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="accounts.routes package" href="accounts.routes.html" />
+    <link rel="prev" title="accounts.controllers.registration module" href="accounts.controllers.registration.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-accounts.controllers.util">
+<span id="accounts-controllers-util-module"></span><h1>accounts.controllers.util module<a class="headerlink" href="#module-accounts.controllers.util" title="Permalink to this headline">¶</a></h1>
+<p>Helpers for <a class="reference internal" href="accounts.controllers.html#module-accounts.controllers" title="accounts.controllers"><code class="xref py py-mod docutils literal notranslate"><span class="pre">accounts.controllers</span></code></a>.</p>
+<dl class="class">
+<dt id="accounts.controllers.util.MultiCheckboxField">
+<em class="property">class </em><code class="descclassname">accounts.controllers.util.</code><code class="descname">MultiCheckboxField</code><span class="sig-paren">(</span><em>label=None</em>, <em>validators=None</em>, <em>coerce=&lt;class 'str'&gt;</em>, <em>choices=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/util.html#MultiCheckboxField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.util.MultiCheckboxField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.fields.core.SelectMultipleField</span></code></p>
+<p>Multi-select with checkbox inputs.</p>
+<dl class="attribute">
+<dt id="accounts.controllers.util.MultiCheckboxField.option_widget">
+<code class="descname">option_widget</code><em class="property"> = &lt;wtforms.widgets.core.CheckboxInput object&gt;</em><a class="headerlink" href="#accounts.controllers.util.MultiCheckboxField.option_widget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.util.MultiCheckboxField.widget">
+<code class="descname">widget</code><em class="property"> = &lt;wtforms.widgets.core.ListWidget object&gt;</em><a class="headerlink" href="#accounts.controllers.util.MultiCheckboxField.widget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="accounts.controllers.util.OptGroupSelectField">
+<em class="property">class </em><code class="descclassname">accounts.controllers.util.</code><code class="descname">OptGroupSelectField</code><span class="sig-paren">(</span><em>label=None</em>, <em>validators=None</em>, <em>coerce=&lt;class 'str'&gt;</em>, <em>choices=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/util.html#OptGroupSelectField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.util.OptGroupSelectField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.fields.core.SelectField</span></code></p>
+<p>A select field with optgroups.</p>
+<dl class="method">
+<dt id="accounts.controllers.util.OptGroupSelectField.pre_validate">
+<code class="descname">pre_validate</code><span class="sig-paren">(</span><em>form</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/util.html#OptGroupSelectField.pre_validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.util.OptGroupSelectField.pre_validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Don’t forget to validate also values from embedded lists.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.util.OptGroupSelectField.widget">
+<code class="descname">widget</code><em class="property"> = &lt;accounts.controllers.util.OptGroupSelectWidget object&gt;</em><a class="headerlink" href="#accounts.controllers.util.OptGroupSelectField.widget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="accounts.controllers.util.OptGroupSelectWidget">
+<em class="property">class </em><code class="descclassname">accounts.controllers.util.</code><code class="descname">OptGroupSelectWidget</code><span class="sig-paren">(</span><em>multiple=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/util.html#OptGroupSelectWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.util.OptGroupSelectWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.widgets.core.Select</span></code></p>
+<p>Select widget with optgroups.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/modules.html">arxiv</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">accounts</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="accounts.html">accounts package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app.html">app module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wsgi.html">wsgi module</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">accounts</a><ul>
+  <li><a href="accounts.html">accounts package</a><ul>
+  <li><a href="accounts.controllers.html">accounts.controllers package</a><ul>
+      <li>Previous: <a href="accounts.controllers.registration.html" title="previous chapter">accounts.controllers.registration module</a></li>
+      <li>Next: <a href="accounts.routes.html" title="next chapter">accounts.routes package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/accounts/accounts.controllers.util.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,378 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>accounts.controllers.registration module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="accounts.controllers.util module" href="accounts.controllers.util.html" />
+    <link rel="prev" title="accounts.controllers.captcha_image module" href="accounts.controllers.captcha_image.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-accounts.controllers.registration">
+<span id="accounts-controllers-registration-module"></span><h1>accounts.controllers.registration module<a class="headerlink" href="#module-accounts.controllers.registration" title="Permalink to this headline">¶</a></h1>
+<p>Controllers for registration and user profile management.</p>
+<dl class="class">
+<dt id="accounts.controllers.registration.ProfileForm">
+<em class="property">class </em><code class="descclassname">accounts.controllers.registration.</code><code class="descname">ProfileForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#ProfileForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.ProfileForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.form.Form</span></code></p>
+<p>User registration form.</p>
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.CATEGORIES">
+<code class="descname">CATEGORIES</code><em class="property"> = [('Astrophysics', [('astro-ph.CO', 'Cosmology and Nongalactic Astrophysics'), ('astro-ph.EP', 'Earth and Planetary Astrophysics'), ('astro-ph.GA', 'Astrophysics of Galaxies'), ('astro-ph.HE', 'High Energy Astrophysical Phenomena'), ('astro-ph.IM', 'Instrumentation and Methods for Astrophysics'), ('astro-ph.SR', 'Solar and Stellar Astrophysics')]), ('Condensed Matter', [('cond-mat.dis-nn', 'Disordered Systems and Neural Networks'), ('cond-mat.mes-hall', 'Mesoscale and Nanoscale Physics'), ('cond-mat.mtrl-sci', 'Materials Science'), ('cond-mat.other', 'Other Condensed Matter'), ('cond-mat.quant-gas', 'Quantum Gases'), ('cond-mat.soft', 'Soft Condensed Matter'), ('cond-mat.stat-mech', 'Statistical Mechanics'), ('cond-mat.str-el', 'Strongly Correlated Electrons'), ('cond-mat.supr-con', 'Superconductivity')]), ('Computer Science', [('cs.AI', 'Artificial Intelligence'), ('cs.AR', 'Hardware Architecture'), ('cs.CC', 'Computational Complexity'), ('cs.CE', 'Computational Engineering, Finance, and Science'), ('cs.CG', 'Computational Geometry'), ('cs.CL', 'Computation and Language'), ('cs.CR', 'Cryptography and Security'), ('cs.CV', 'Computer Vision and Pattern Recognition'), ('cs.CY', 'Computers and Society'), ('cs.DB', 'Databases'), ('cs.DC', 'Distributed, Parallel, and Cluster Computing'), ('cs.DL', 'Digital Libraries'), ('cs.DM', 'Discrete Mathematics'), ('cs.DS', 'Data Structures and Algorithms'), ('cs.ET', 'Emerging Technologies'), ('cs.FL', 'Formal Languages and Automata Theory'), ('cs.GL', 'General Literature'), ('cs.GR', 'Graphics'), ('cs.GT', 'Computer Science and Game Theory'), ('cs.HC', 'Human-Computer Interaction'), ('cs.IR', 'Information Retrieval'), ('cs.IT', 'Information Theory'), ('cs.LG', 'Machine Learning'), ('cs.LO', 'Logic in Computer Science'), ('cs.MA', 'Multiagent Systems'), ('cs.MM', 'Multimedia'), ('cs.MS', 'Mathematical Software'), ('cs.NA', 'Numerical Analysis'), ('cs.NE', 'Neural and Evolutionary Computing'), ('cs.NI', 'Networking and Internet Architecture'), ('cs.OH', 'Other Computer Science'), ('cs.OS', 'Operating Systems'), ('cs.PF', 'Performance'), ('cs.PL', 'Programming Languages'), ('cs.RO', 'Robotics'), ('cs.SC', 'Symbolic Computation'), ('cs.SD', 'Sound'), ('cs.SE', 'Software Engineering'), ('cs.SI', 'Social and Information Networks'), ('cs.SY', 'Systems and Control')]), ('Economics', [('econ.EM', 'Econometrics')]), ('Electrical Engineering and Systems Science', [('eess.AS', 'Audio and Speech Processing'), ('eess.IV', 'Image and Video Processing'), ('eess.SP', 'Signal Processing')]), ('General Relativity and Quantum Cosmology', [('gr-qc', 'General Relativity and Quantum Cosmology')]), ('High Energy Physics - Experiment', [('hep-ex', 'High Energy Physics - Experiment')]), ('High Energy Physics - Lattice', [('hep-lat', 'High Energy Physics - Lattice')]), ('High Energy Physics - Phenomenology', [('hep-ph', 'High Energy Physics - Phenomenology')]), ('High Energy Physics - Theory', [('hep-th', 'High Energy Physics - Theory')]), ('Mathematics', [('math.AC', 'Commutative Algebra'), ('math.AG', 'Algebraic Geometry'), ('math.AP', 'Analysis of PDEs'), ('math.AT', 'Algebraic Topology'), ('math.CA', 'Classical Analysis and ODEs'), ('math.CO', 'Combinatorics'), ('math.CT', 'Category Theory'), ('math.CV', 'Complex Variables'), ('math.DG', 'Differential Geometry'), ('math.DS', 'Dynamical Systems'), ('math.FA', 'Functional Analysis'), ('math.GM', 'General Mathematics'), ('math.GN', 'General Topology'), ('math.GR', 'Group Theory'), ('math.GT', 'Geometric Topology'), ('math.HO', 'History and Overview'), ('math.IT', 'Information Theory'), ('math.KT', 'K-Theory and Homology'), ('math.LO', 'Logic'), ('math.MG', 'Metric Geometry'), ('math.MP', 'Mathematical Physics'), ('math.NA', 'Numerical Analysis'), ('math.NT', 'Number Theory'), ('math.OA', 'Operator Algebras'), ('math.OC', 'Optimization and Control'), ('math.PR', 'Probability'), ('math.QA', 'Quantum Algebra'), ('math.RA', 'Rings and Algebras'), ('math.RT', 'Representation Theory'), ('math.SG', 'Symplectic Geometry'), ('math.SP', 'Spectral Theory'), ('math.ST', 'Statistics Theory')]), ('Mathematical Physics', [('math-ph', 'Mathematical Physics')]), ('Nonlinear Sciences', [('nlin.AO', 'Adaptation and Self-Organizing Systems'), ('nlin.CD', 'Chaotic Dynamics'), ('nlin.CG', 'Cellular Automata and Lattice Gases'), ('nlin.PS', 'Pattern Formation and Solitons'), ('nlin.SI', 'Exactly Solvable and Integrable Systems')]), ('Nuclear Experiment', [('nucl-ex', 'Nuclear Experiment')]), ('Nuclear Theory', [('nucl-th', 'Nuclear Theory')]), ('Physics', [('physics.acc-ph', 'Accelerator Physics'), ('physics.ao-ph', 'Atmospheric and Oceanic Physics'), ('physics.app-ph', 'Applied Physics'), ('physics.atm-clus', 'Atomic and Molecular Clusters'), ('physics.atom-ph', 'Atomic Physics'), ('physics.bio-ph', 'Biological Physics'), ('physics.chem-ph', 'Chemical Physics'), ('physics.class-ph', 'Classical Physics'), ('physics.comp-ph', 'Computational Physics'), ('physics.data-an', 'Data Analysis, Statistics and Probability'), ('physics.ed-ph', 'Physics Education'), ('physics.flu-dyn', 'Fluid Dynamics'), ('physics.gen-ph', 'General Physics'), ('physics.geo-ph', 'Geophysics'), ('physics.hist-ph', 'History and Philosophy of Physics'), ('physics.ins-det', 'Instrumentation and Detectors'), ('physics.med-ph', 'Medical Physics'), ('physics.optics', 'Optics'), ('physics.plasm-ph', 'Plasma Physics'), ('physics.pop-ph', 'Popular Physics'), ('physics.soc-ph', 'Physics and Society'), ('physics.space-ph', 'Space Physics')]), ('Quantitative Biology', [('q-bio.BM', 'Biomolecules'), ('q-bio.CB', 'Cell Behavior'), ('q-bio.GN', 'Genomics'), ('q-bio.MN', 'Molecular Networks'), ('q-bio.NC', 'Neurons and Cognition'), ('q-bio.OT', 'Other Quantitative Biology'), ('q-bio.PE', 'Populations and Evolution'), ('q-bio.QM', 'Quantitative Methods'), ('q-bio.SC', 'Subcellular Processes'), ('q-bio.TO', 'Tissues and Organs')]), ('Quantitative Finance', [('q-fin.CP', 'Computational Finance'), ('q-fin.EC', 'Economics'), ('q-fin.GN', 'General Finance'), ('q-fin.MF', 'Mathematical Finance'), ('q-fin.PM', 'Portfolio Management'), ('q-fin.PR', 'Pricing of Securities'), ('q-fin.RM', 'Risk Management'), ('q-fin.ST', 'Statistical Finance'), ('q-fin.TR', 'Trading and Market Microstructure')]), ('Quantum Physics', [('quant-ph', 'Quantum Physics')]), ('Statistics', [('stat.AP', 'Applications'), ('stat.CO', 'Computation'), ('stat.ME', 'Methodology'), ('stat.ML', 'Machine Learning'), ('stat.OT', 'Other Statistics'), ('stat.TH', 'Statistics Theory')]), ('Test', [])]</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.CATEGORIES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Categories grouped by archive.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.COUNTRIES">
+<code class="descname">COUNTRIES</code><em class="property"> = [('', ''), ('AW', 'Aruba'), ('AF', 'Afghanistan'), ('AO', 'Angola'), ('AI', 'Anguilla'), ('AX', 'Åland Islands'), ('AL', 'Albania'), ('AD', 'Andorra'), ('AE', 'United Arab Emirates'), ('AR', 'Argentina'), ('AM', 'Armenia'), ('AS', 'American Samoa'), ('AQ', 'Antarctica'), ('TF', 'French Southern Territories'), ('AG', 'Antigua and Barbuda'), ('AU', 'Australia'), ('AT', 'Austria'), ('AZ', 'Azerbaijan'), ('BI', 'Burundi'), ('BE', 'Belgium'), ('BJ', 'Benin'), ('BQ', 'Bonaire, Sint Eustatius and Saba'), ('BF', 'Burkina Faso'), ('BD', 'Bangladesh'), ('BG', 'Bulgaria'), ('BH', 'Bahrain'), ('BS', 'Bahamas'), ('BA', 'Bosnia and Herzegovina'), ('BL', 'Saint Barthélemy'), ('BY', 'Belarus'), ('BZ', 'Belize'), ('BM', 'Bermuda'), ('BO', 'Bolivia, Plurinational State of'), ('BR', 'Brazil'), ('BB', 'Barbados'), ('BN', 'Brunei Darussalam'), ('BT', 'Bhutan'), ('BV', 'Bouvet Island'), ('BW', 'Botswana'), ('CF', 'Central African Republic'), ('CA', 'Canada'), ('CC', 'Cocos (Keeling) Islands'), ('CH', 'Switzerland'), ('CL', 'Chile'), ('CN', 'China'), ('CI', &quot;Côte d'Ivoire&quot;), ('CM', 'Cameroon'), ('CD', 'Congo, The Democratic Republic of the'), ('CG', 'Congo'), ('CK', 'Cook Islands'), ('CO', 'Colombia'), ('KM', 'Comoros'), ('CV', 'Cabo Verde'), ('CR', 'Costa Rica'), ('CU', 'Cuba'), ('CW', 'Curaçao'), ('CX', 'Christmas Island'), ('KY', 'Cayman Islands'), ('CY', 'Cyprus'), ('CZ', 'Czechia'), ('DE', 'Germany'), ('DJ', 'Djibouti'), ('DM', 'Dominica'), ('DK', 'Denmark'), ('DO', 'Dominican Republic'), ('DZ', 'Algeria'), ('EC', 'Ecuador'), ('EG', 'Egypt'), ('ER', 'Eritrea'), ('EH', 'Western Sahara'), ('ES', 'Spain'), ('EE', 'Estonia'), ('ET', 'Ethiopia'), ('FI', 'Finland'), ('FJ', 'Fiji'), ('FK', 'Falkland Islands (Malvinas)'), ('FR', 'France'), ('FO', 'Faroe Islands'), ('FM', 'Micronesia, Federated States of'), ('GA', 'Gabon'), ('GB', 'United Kingdom'), ('GE', 'Georgia'), ('GG', 'Guernsey'), ('GH', 'Ghana'), ('GI', 'Gibraltar'), ('GN', 'Guinea'), ('GP', 'Guadeloupe'), ('GM', 'Gambia'), ('GW', 'Guinea-Bissau'), ('GQ', 'Equatorial Guinea'), ('GR', 'Greece'), ('GD', 'Grenada'), ('GL', 'Greenland'), ('GT', 'Guatemala'), ('GF', 'French Guiana'), ('GU', 'Guam'), ('GY', 'Guyana'), ('HK', 'Hong Kong'), ('HM', 'Heard Island and McDonald Islands'), ('HN', 'Honduras'), ('HR', 'Croatia'), ('HT', 'Haiti'), ('HU', 'Hungary'), ('ID', 'Indonesia'), ('IM', 'Isle of Man'), ('IN', 'India'), ('IO', 'British Indian Ocean Territory'), ('IE', 'Ireland'), ('IR', 'Iran, Islamic Republic of'), ('IQ', 'Iraq'), ('IS', 'Iceland'), ('IL', 'Israel'), ('IT', 'Italy'), ('JM', 'Jamaica'), ('JE', 'Jersey'), ('JO', 'Jordan'), ('JP', 'Japan'), ('KZ', 'Kazakhstan'), ('KE', 'Kenya'), ('KG', 'Kyrgyzstan'), ('KH', 'Cambodia'), ('KI', 'Kiribati'), ('KN', 'Saint Kitts and Nevis'), ('KR', 'Korea, Republic of'), ('KW', 'Kuwait'), ('LA', &quot;Lao People's Democratic Republic&quot;), ('LB', 'Lebanon'), ('LR', 'Liberia'), ('LY', 'Libya'), ('LC', 'Saint Lucia'), ('LI', 'Liechtenstein'), ('LK', 'Sri Lanka'), ('LS', 'Lesotho'), ('LT', 'Lithuania'), ('LU', 'Luxembourg'), ('LV', 'Latvia'), ('MO', 'Macao'), ('MF', 'Saint Martin (French part)'), ('MA', 'Morocco'), ('MC', 'Monaco'), ('MD', 'Moldova, Republic of'), ('MG', 'Madagascar'), ('MV', 'Maldives'), ('MX', 'Mexico'), ('MH', 'Marshall Islands'), ('MK', 'Macedonia, Republic of'), ('ML', 'Mali'), ('MT', 'Malta'), ('MM', 'Myanmar'), ('ME', 'Montenegro'), ('MN', 'Mongolia'), ('MP', 'Northern Mariana Islands'), ('MZ', 'Mozambique'), ('MR', 'Mauritania'), ('MS', 'Montserrat'), ('MQ', 'Martinique'), ('MU', 'Mauritius'), ('MW', 'Malawi'), ('MY', 'Malaysia'), ('YT', 'Mayotte'), ('NA', 'Namibia'), ('NC', 'New Caledonia'), ('NE', 'Niger'), ('NF', 'Norfolk Island'), ('NG', 'Nigeria'), ('NI', 'Nicaragua'), ('NU', 'Niue'), ('NL', 'Netherlands'), ('NO', 'Norway'), ('NP', 'Nepal'), ('NR', 'Nauru'), ('NZ', 'New Zealand'), ('OM', 'Oman'), ('PK', 'Pakistan'), ('PA', 'Panama'), ('PN', 'Pitcairn'), ('PE', 'Peru'), ('PH', 'Philippines'), ('PW', 'Palau'), ('PG', 'Papua New Guinea'), ('PL', 'Poland'), ('PR', 'Puerto Rico'), ('KP', &quot;Korea, Democratic People's Republic of&quot;), ('PT', 'Portugal'), ('PY', 'Paraguay'), ('PS', 'Palestine, State of'), ('PF', 'French Polynesia'), ('QA', 'Qatar'), ('RE', 'Réunion'), ('RO', 'Romania'), ('RU', 'Russian Federation'), ('RW', 'Rwanda'), ('SA', 'Saudi Arabia'), ('SD', 'Sudan'), ('SN', 'Senegal'), ('SG', 'Singapore'), ('GS', 'South Georgia and the South Sandwich Islands'), ('SH', 'Saint Helena, Ascension and Tristan da Cunha'), ('SJ', 'Svalbard and Jan Mayen'), ('SB', 'Solomon Islands'), ('SL', 'Sierra Leone'), ('SV', 'El Salvador'), ('SM', 'San Marino'), ('SO', 'Somalia'), ('PM', 'Saint Pierre and Miquelon'), ('RS', 'Serbia'), ('SS', 'South Sudan'), ('ST', 'Sao Tome and Principe'), ('SR', 'Suriname'), ('SK', 'Slovakia'), ('SI', 'Slovenia'), ('SE', 'Sweden'), ('SZ', 'Swaziland'), ('SX', 'Sint Maarten (Dutch part)'), ('SC', 'Seychelles'), ('SY', 'Syrian Arab Republic'), ('TC', 'Turks and Caicos Islands'), ('TD', 'Chad'), ('TG', 'Togo'), ('TH', 'Thailand'), ('TJ', 'Tajikistan'), ('TK', 'Tokelau'), ('TM', 'Turkmenistan'), ('TL', 'Timor-Leste'), ('TO', 'Tonga'), ('TT', 'Trinidad and Tobago'), ('TN', 'Tunisia'), ('TR', 'Turkey'), ('TV', 'Tuvalu'), ('TW', 'Taiwan, Province of China'), ('TZ', 'Tanzania, United Republic of'), ('UG', 'Uganda'), ('UA', 'Ukraine'), ('UM', 'United States Minor Outlying Islands'), ('UY', 'Uruguay'), ('US', 'United States'), ('UZ', 'Uzbekistan'), ('VA', 'Holy See (Vatican City State)'), ('VC', 'Saint Vincent and the Grenadines'), ('VE', 'Venezuela, Bolivarian Republic of'), ('VG', 'Virgin Islands, British'), ('VI', 'Virgin Islands, U.S.'), ('VN', 'Viet Nam'), ('VU', 'Vanuatu'), ('WF', 'Wallis and Futuna'), ('WS', 'Samoa'), ('YE', 'Yemen'), ('ZA', 'South Africa'), ('ZM', 'Zambia'), ('ZW', 'Zimbabwe')]</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.COUNTRIES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.GROUPS">
+<code class="descname">GROUPS</code><em class="property"> = [('grp_physics', 'Physics'), ('grp_math', 'Mathematics'), ('grp_q-bio', 'Quantitative Biology'), ('grp_cs', 'Computer Science'), ('grp_q-fin', 'Quantitative Finance'), ('grp_stat', 'Statistics'), ('grp_eess', 'Electrical Engineering and Systems Science'), ('grp_econ', 'Economics')]</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.GROUPS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.RANKS">
+<code class="descname">RANKS</code><em class="property"> = [('', ''), ('1', 'Staff'), ('2', 'Professor'), ('3', 'Post doc'), ('4', 'Grad student'), ('5', 'Other')]</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.RANKS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.country">
+<code class="descname">country</code><em class="property"> = &lt;UnboundField(SelectField, ('Country',), {'choices': [('', ''), ('AW', 'Aruba'), ('AF', 'Afghanistan'), ('AO', 'Angola'), ('AI', 'Anguilla'), ('AX', 'Åland Islands'), ('AL', 'Albania'), ('AD', 'Andorra'), ('AE', 'United Arab Emirates'), ('AR', 'Argentina'), ('AM', 'Armenia'), ('AS', 'American Samoa'), ('AQ', 'Antarctica'), ('TF', 'French Southern Territories'), ('AG', 'Antigua and Barbuda'), ('AU', 'Australia'), ('AT', 'Austria'), ('AZ', 'Azerbaijan'), ('BI', 'Burundi'), ('BE', 'Belgium'), ('BJ', 'Benin'), ('BQ', 'Bonaire, Sint Eustatius and Saba'), ('BF', 'Burkina Faso'), ('BD', 'Bangladesh'), ('BG', 'Bulgaria'), ('BH', 'Bahrain'), ('BS', 'Bahamas'), ('BA', 'Bosnia and Herzegovina'), ('BL', 'Saint Barthélemy'), ('BY', 'Belarus'), ('BZ', 'Belize'), ('BM', 'Bermuda'), ('BO', 'Bolivia, Plurinational State of'), ('BR', 'Brazil'), ('BB', 'Barbados'), ('BN', 'Brunei Darussalam'), ('BT', 'Bhutan'), ('BV', 'Bouvet Island'), ('BW', 'Botswana'), ('CF', 'Central African Republic'), ('CA', 'Canada'), ('CC', 'Cocos (Keeling) Islands'), ('CH', 'Switzerland'), ('CL', 'Chile'), ('CN', 'China'), ('CI', &quot;Côte d'Ivoire&quot;), ('CM', 'Cameroon'), ('CD', 'Congo, The Democratic Republic of the'), ('CG', 'Congo'), ('CK', 'Cook Islands'), ('CO', 'Colombia'), ('KM', 'Comoros'), ('CV', 'Cabo Verde'), ('CR', 'Costa Rica'), ('CU', 'Cuba'), ('CW', 'Curaçao'), ('CX', 'Christmas Island'), ('KY', 'Cayman Islands'), ('CY', 'Cyprus'), ('CZ', 'Czechia'), ('DE', 'Germany'), ('DJ', 'Djibouti'), ('DM', 'Dominica'), ('DK', 'Denmark'), ('DO', 'Dominican Republic'), ('DZ', 'Algeria'), ('EC', 'Ecuador'), ('EG', 'Egypt'), ('ER', 'Eritrea'), ('EH', 'Western Sahara'), ('ES', 'Spain'), ('EE', 'Estonia'), ('ET', 'Ethiopia'), ('FI', 'Finland'), ('FJ', 'Fiji'), ('FK', 'Falkland Islands (Malvinas)'), ('FR', 'France'), ('FO', 'Faroe Islands'), ('FM', 'Micronesia, Federated States of'), ('GA', 'Gabon'), ('GB', 'United Kingdom'), ('GE', 'Georgia'), ('GG', 'Guernsey'), ('GH', 'Ghana'), ('GI', 'Gibraltar'), ('GN', 'Guinea'), ('GP', 'Guadeloupe'), ('GM', 'Gambia'), ('GW', 'Guinea-Bissau'), ('GQ', 'Equatorial Guinea'), ('GR', 'Greece'), ('GD', 'Grenada'), ('GL', 'Greenland'), ('GT', 'Guatemala'), ('GF', 'French Guiana'), ('GU', 'Guam'), ('GY', 'Guyana'), ('HK', 'Hong Kong'), ('HM', 'Heard Island and McDonald Islands'), ('HN', 'Honduras'), ('HR', 'Croatia'), ('HT', 'Haiti'), ('HU', 'Hungary'), ('ID', 'Indonesia'), ('IM', 'Isle of Man'), ('IN', 'India'), ('IO', 'British Indian Ocean Territory'), ('IE', 'Ireland'), ('IR', 'Iran, Islamic Republic of'), ('IQ', 'Iraq'), ('IS', 'Iceland'), ('IL', 'Israel'), ('IT', 'Italy'), ('JM', 'Jamaica'), ('JE', 'Jersey'), ('JO', 'Jordan'), ('JP', 'Japan'), ('KZ', 'Kazakhstan'), ('KE', 'Kenya'), ('KG', 'Kyrgyzstan'), ('KH', 'Cambodia'), ('KI', 'Kiribati'), ('KN', 'Saint Kitts and Nevis'), ('KR', 'Korea, Republic of'), ('KW', 'Kuwait'), ('LA', &quot;Lao People's Democratic Republic&quot;), ('LB', 'Lebanon'), ('LR', 'Liberia'), ('LY', 'Libya'), ('LC', 'Saint Lucia'), ('LI', 'Liechtenstein'), ('LK', 'Sri Lanka'), ('LS', 'Lesotho'), ('LT', 'Lithuania'), ('LU', 'Luxembourg'), ('LV', 'Latvia'), ('MO', 'Macao'), ('MF', 'Saint Martin (French part)'), ('MA', 'Morocco'), ('MC', 'Monaco'), ('MD', 'Moldova, Republic of'), ('MG', 'Madagascar'), ('MV', 'Maldives'), ('MX', 'Mexico'), ('MH', 'Marshall Islands'), ('MK', 'Macedonia, Republic of'), ('ML', 'Mali'), ('MT', 'Malta'), ('MM', 'Myanmar'), ('ME', 'Montenegro'), ('MN', 'Mongolia'), ('MP', 'Northern Mariana Islands'), ('MZ', 'Mozambique'), ('MR', 'Mauritania'), ('MS', 'Montserrat'), ('MQ', 'Martinique'), ('MU', 'Mauritius'), ('MW', 'Malawi'), ('MY', 'Malaysia'), ('YT', 'Mayotte'), ('NA', 'Namibia'), ('NC', 'New Caledonia'), ('NE', 'Niger'), ('NF', 'Norfolk Island'), ('NG', 'Nigeria'), ('NI', 'Nicaragua'), ('NU', 'Niue'), ('NL', 'Netherlands'), ('NO', 'Norway'), ('NP', 'Nepal'), ('NR', 'Nauru'), ('NZ', 'New Zealand'), ('OM', 'Oman'), ('PK', 'Pakistan'), ('PA', 'Panama'), ('PN', 'Pitcairn'), ('PE', 'Peru'), ('PH', 'Philippines'), ('PW', 'Palau'), ('PG', 'Papua New Guinea'), ('PL', 'Poland'), ('PR', 'Puerto Rico'), ('KP', &quot;Korea, Democratic People's Republic of&quot;), ('PT', 'Portugal'), ('PY', 'Paraguay'), ('PS', 'Palestine, State of'), ('PF', 'French Polynesia'), ('QA', 'Qatar'), ('RE', 'Réunion'), ('RO', 'Romania'), ('RU', 'Russian Federation'), ('RW', 'Rwanda'), ('SA', 'Saudi Arabia'), ('SD', 'Sudan'), ('SN', 'Senegal'), ('SG', 'Singapore'), ('GS', 'South Georgia and the South Sandwich Islands'), ('SH', 'Saint Helena, Ascension and Tristan da Cunha'), ('SJ', 'Svalbard and Jan Mayen'), ('SB', 'Solomon Islands'), ('SL', 'Sierra Leone'), ('SV', 'El Salvador'), ('SM', 'San Marino'), ('SO', 'Somalia'), ('PM', 'Saint Pierre and Miquelon'), ('RS', 'Serbia'), ('SS', 'South Sudan'), ('ST', 'Sao Tome and Principe'), ('SR', 'Suriname'), ('SK', 'Slovakia'), ('SI', 'Slovenia'), ('SE', 'Sweden'), ('SZ', 'Swaziland'), ('SX', 'Sint Maarten (Dutch part)'), ('SC', 'Seychelles'), ('SY', 'Syrian Arab Republic'), ('TC', 'Turks and Caicos Islands'), ('TD', 'Chad'), ('TG', 'Togo'), ('TH', 'Thailand'), ('TJ', 'Tajikistan'), ('TK', 'Tokelau'), ('TM', 'Turkmenistan'), ('TL', 'Timor-Leste'), ('TO', 'Tonga'), ('TT', 'Trinidad and Tobago'), ('TN', 'Tunisia'), ('TR', 'Turkey'), ('TV', 'Tuvalu'), ('TW', 'Taiwan, Province of China'), ('TZ', 'Tanzania, United Republic of'), ('UG', 'Uganda'), ('UA', 'Ukraine'), ('UM', 'United States Minor Outlying Islands'), ('UY', 'Uruguay'), ('US', 'United States'), ('UZ', 'Uzbekistan'), ('VA', 'Holy See (Vatican City State)'), ('VC', 'Saint Vincent and the Grenadines'), ('VE', 'Venezuela, Bolivarian Republic of'), ('VG', 'Virgin Islands, British'), ('VI', 'Virgin Islands, U.S.'), ('VN', 'Viet Nam'), ('VU', 'Vanuatu'), ('WF', 'Wallis and Futuna'), ('WS', 'Samoa'), ('YE', 'Yemen'), ('ZA', 'South Africa'), ('ZM', 'Zambia'), ('ZW', 'Zimbabwe')], 'validators': [&lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.country" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.default_category">
+<code class="descname">default_category</code><em class="property"> = &lt;UnboundField(OptGroupSelectField, ('Your default category',), {'choices': [('Astrophysics', [('astro-ph.CO', 'Cosmology and Nongalactic Astrophysics'), ('astro-ph.EP', 'Earth and Planetary Astrophysics'), ('astro-ph.GA', 'Astrophysics of Galaxies'), ('astro-ph.HE', 'High Energy Astrophysical Phenomena'), ('astro-ph.IM', 'Instrumentation and Methods for Astrophysics'), ('astro-ph.SR', 'Solar and Stellar Astrophysics')]), ('Condensed Matter', [('cond-mat.dis-nn', 'Disordered Systems and Neural Networks'), ('cond-mat.mes-hall', 'Mesoscale and Nanoscale Physics'), ('cond-mat.mtrl-sci', 'Materials Science'), ('cond-mat.other', 'Other Condensed Matter'), ('cond-mat.quant-gas', 'Quantum Gases'), ('cond-mat.soft', 'Soft Condensed Matter'), ('cond-mat.stat-mech', 'Statistical Mechanics'), ('cond-mat.str-el', 'Strongly Correlated Electrons'), ('cond-mat.supr-con', 'Superconductivity')]), ('Computer Science', [('cs.AI', 'Artificial Intelligence'), ('cs.AR', 'Hardware Architecture'), ('cs.CC', 'Computational Complexity'), ('cs.CE', 'Computational Engineering, Finance, and Science'), ('cs.CG', 'Computational Geometry'), ('cs.CL', 'Computation and Language'), ('cs.CR', 'Cryptography and Security'), ('cs.CV', 'Computer Vision and Pattern Recognition'), ('cs.CY', 'Computers and Society'), ('cs.DB', 'Databases'), ('cs.DC', 'Distributed, Parallel, and Cluster Computing'), ('cs.DL', 'Digital Libraries'), ('cs.DM', 'Discrete Mathematics'), ('cs.DS', 'Data Structures and Algorithms'), ('cs.ET', 'Emerging Technologies'), ('cs.FL', 'Formal Languages and Automata Theory'), ('cs.GL', 'General Literature'), ('cs.GR', 'Graphics'), ('cs.GT', 'Computer Science and Game Theory'), ('cs.HC', 'Human-Computer Interaction'), ('cs.IR', 'Information Retrieval'), ('cs.IT', 'Information Theory'), ('cs.LG', 'Machine Learning'), ('cs.LO', 'Logic in Computer Science'), ('cs.MA', 'Multiagent Systems'), ('cs.MM', 'Multimedia'), ('cs.MS', 'Mathematical Software'), ('cs.NA', 'Numerical Analysis'), ('cs.NE', 'Neural and Evolutionary Computing'), ('cs.NI', 'Networking and Internet Architecture'), ('cs.OH', 'Other Computer Science'), ('cs.OS', 'Operating Systems'), ('cs.PF', 'Performance'), ('cs.PL', 'Programming Languages'), ('cs.RO', 'Robotics'), ('cs.SC', 'Symbolic Computation'), ('cs.SD', 'Sound'), ('cs.SE', 'Software Engineering'), ('cs.SI', 'Social and Information Networks'), ('cs.SY', 'Systems and Control')]), ('Economics', [('econ.EM', 'Econometrics')]), ('Electrical Engineering and Systems Science', [('eess.AS', 'Audio and Speech Processing'), ('eess.IV', 'Image and Video Processing'), ('eess.SP', 'Signal Processing')]), ('General Relativity and Quantum Cosmology', [('gr-qc', 'General Relativity and Quantum Cosmology')]), ('High Energy Physics - Experiment', [('hep-ex', 'High Energy Physics - Experiment')]), ('High Energy Physics - Lattice', [('hep-lat', 'High Energy Physics - Lattice')]), ('High Energy Physics - Phenomenology', [('hep-ph', 'High Energy Physics - Phenomenology')]), ('High Energy Physics - Theory', [('hep-th', 'High Energy Physics - Theory')]), ('Mathematics', [('math.AC', 'Commutative Algebra'), ('math.AG', 'Algebraic Geometry'), ('math.AP', 'Analysis of PDEs'), ('math.AT', 'Algebraic Topology'), ('math.CA', 'Classical Analysis and ODEs'), ('math.CO', 'Combinatorics'), ('math.CT', 'Category Theory'), ('math.CV', 'Complex Variables'), ('math.DG', 'Differential Geometry'), ('math.DS', 'Dynamical Systems'), ('math.FA', 'Functional Analysis'), ('math.GM', 'General Mathematics'), ('math.GN', 'General Topology'), ('math.GR', 'Group Theory'), ('math.GT', 'Geometric Topology'), ('math.HO', 'History and Overview'), ('math.IT', 'Information Theory'), ('math.KT', 'K-Theory and Homology'), ('math.LO', 'Logic'), ('math.MG', 'Metric Geometry'), ('math.MP', 'Mathematical Physics'), ('math.NA', 'Numerical Analysis'), ('math.NT', 'Number Theory'), ('math.OA', 'Operator Algebras'), ('math.OC', 'Optimization and Control'), ('math.PR', 'Probability'), ('math.QA', 'Quantum Algebra'), ('math.RA', 'Rings and Algebras'), ('math.RT', 'Representation Theory'), ('math.SG', 'Symplectic Geometry'), ('math.SP', 'Spectral Theory'), ('math.ST', 'Statistics Theory')]), ('Mathematical Physics', [('math-ph', 'Mathematical Physics')]), ('Nonlinear Sciences', [('nlin.AO', 'Adaptation and Self-Organizing Systems'), ('nlin.CD', 'Chaotic Dynamics'), ('nlin.CG', 'Cellular Automata and Lattice Gases'), ('nlin.PS', 'Pattern Formation and Solitons'), ('nlin.SI', 'Exactly Solvable and Integrable Systems')]), ('Nuclear Experiment', [('nucl-ex', 'Nuclear Experiment')]), ('Nuclear Theory', [('nucl-th', 'Nuclear Theory')]), ('Physics', [('physics.acc-ph', 'Accelerator Physics'), ('physics.ao-ph', 'Atmospheric and Oceanic Physics'), ('physics.app-ph', 'Applied Physics'), ('physics.atm-clus', 'Atomic and Molecular Clusters'), ('physics.atom-ph', 'Atomic Physics'), ('physics.bio-ph', 'Biological Physics'), ('physics.chem-ph', 'Chemical Physics'), ('physics.class-ph', 'Classical Physics'), ('physics.comp-ph', 'Computational Physics'), ('physics.data-an', 'Data Analysis, Statistics and Probability'), ('physics.ed-ph', 'Physics Education'), ('physics.flu-dyn', 'Fluid Dynamics'), ('physics.gen-ph', 'General Physics'), ('physics.geo-ph', 'Geophysics'), ('physics.hist-ph', 'History and Philosophy of Physics'), ('physics.ins-det', 'Instrumentation and Detectors'), ('physics.med-ph', 'Medical Physics'), ('physics.optics', 'Optics'), ('physics.plasm-ph', 'Plasma Physics'), ('physics.pop-ph', 'Popular Physics'), ('physics.soc-ph', 'Physics and Society'), ('physics.space-ph', 'Space Physics')]), ('Quantitative Biology', [('q-bio.BM', 'Biomolecules'), ('q-bio.CB', 'Cell Behavior'), ('q-bio.GN', 'Genomics'), ('q-bio.MN', 'Molecular Networks'), ('q-bio.NC', 'Neurons and Cognition'), ('q-bio.OT', 'Other Quantitative Biology'), ('q-bio.PE', 'Populations and Evolution'), ('q-bio.QM', 'Quantitative Methods'), ('q-bio.SC', 'Subcellular Processes'), ('q-bio.TO', 'Tissues and Organs')]), ('Quantitative Finance', [('q-fin.CP', 'Computational Finance'), ('q-fin.EC', 'Economics'), ('q-fin.GN', 'General Finance'), ('q-fin.MF', 'Mathematical Finance'), ('q-fin.PM', 'Portfolio Management'), ('q-fin.PR', 'Pricing of Securities'), ('q-fin.RM', 'Risk Management'), ('q-fin.ST', 'Statistical Finance'), ('q-fin.TR', 'Trading and Market Microstructure')]), ('Quantum Physics', [('quant-ph', 'Quantum Physics')]), ('Statistics', [('stat.AP', 'Applications'), ('stat.CO', 'Computation'), ('stat.ME', 'Methodology'), ('stat.ML', 'Machine Learning'), ('stat.OT', 'Other Statistics'), ('stat.TH', 'Statistics Theory')]), ('Test', [])], 'default': ''})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.default_category" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.email">
+<code class="descname">email</code><em class="property"> = &lt;UnboundField(StringField, ('Email address',), {'validators': [&lt;wtforms.validators.Email object&gt;, &lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': &quot;You must be able to receive mail at this address. We take &lt;a href='https://arxiv.org/help/email-protection'&gt; strong measures&lt;/a&gt; to protect your email address from viruses and spam. Do not enter an e-mail address that belongs to someone else: if we discover that you've done so, we will suspend your account.&quot;})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.forename">
+<code class="descname">forename</code><em class="property"> = &lt;UnboundField(StringField, ('First or given name',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.forename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="accounts.controllers.registration.ProfileForm.from_domain">
+<em class="property">classmethod </em><code class="descname">from_domain</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#ProfileForm.from_domain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.from_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate this form with data from a domain object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#accounts.controllers.registration.ProfileForm" title="accounts.controllers.registration.ProfileForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProfileForm</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.groups">
+<code class="descname">groups</code><em class="property"> = &lt;UnboundField(MultiCheckboxField, ('Group(s) to which you would like to submit',), {'choices': [('grp_physics', 'Physics'), ('grp_math', 'Mathematics'), ('grp_q-bio', 'Quantitative Biology'), ('grp_cs', 'Computer Science'), ('grp_q-fin', 'Quantitative Finance'), ('grp_stat', 'Statistics'), ('grp_eess', 'Electrical Engineering and Systems Science'), ('grp_econ', 'Economics')], 'default': ''})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.organization">
+<code class="descname">organization</code><em class="property"> = &lt;UnboundField(StringField, ('Organization',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': 'This field accepts &lt;a href=&quot;https://arxiv.org/user/tex_accents&quot;&gt;pidgin TeX (\\\'o)&lt;/a&gt; for foreign characters.'})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.organization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.remember_me">
+<code class="descname">remember_me</code><em class="property"> = &lt;UnboundField(BooleanField, ('Have your browser remember who you are?',), {'default': True})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.remember_me" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.status">
+<code class="descname">status</code><em class="property"> = &lt;UnboundField(SelectField, ('Status',), {'choices': [('', ''), ('1', 'Staff'), ('2', 'Professor'), ('3', 'Post doc'), ('4', 'Grad student'), ('5', 'Other')], 'validators': [&lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.suffix">
+<code class="descname">suffix</code><em class="property"> = &lt;UnboundField(StringField, ('Suffix',), {'validators': [&lt;wtforms.validators.Length object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.suffix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.surname">
+<code class="descname">surname</code><em class="property"> = &lt;UnboundField(StringField, ('Last or family name',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.surname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="accounts.controllers.registration.ProfileForm.to_domain">
+<code class="descname">to_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#ProfileForm.to_domain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.to_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a <a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a> from this form’s data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.url">
+<code class="descname">url</code><em class="property"> = &lt;UnboundField(StringField, ('Your homepage URL',), {'validators': [&lt;wtforms.validators.Optional object&gt;, &lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.URL object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.user_id">
+<code class="descname">user_id</code><em class="property"> = &lt;UnboundField(HiddenField, ('User ID',), {})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.username">
+<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('Username',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="accounts.controllers.registration.ProfileForm.validate_email">
+<code class="descname">validate_email</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#ProfileForm.validate_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.validate_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the email address is unique.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.controllers.registration.ProfileForm.validate_username">
+<code class="descname">validate_username</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#ProfileForm.validate_username"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.validate_username" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the username is unique.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="accounts.controllers.registration.RegistrationForm">
+<em class="property">class </em><code class="descclassname">accounts.controllers.registration.</code><code class="descname">RegistrationForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#accounts.controllers.registration.ProfileForm" title="accounts.controllers.registration.ProfileForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">accounts.controllers.registration.ProfileForm</span></code></a></p>
+<p>User registration form.</p>
+<dl class="attribute">
+<dt id="accounts.controllers.registration.RegistrationForm.captcha_token">
+<code class="descname">captcha_token</code><em class="property"> = &lt;UnboundField(HiddenField, (), {})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.captcha_token" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.RegistrationForm.captcha_value">
+<code class="descname">captcha_value</code><em class="property"> = &lt;UnboundField(StringField, ('Are you a robot?',), {'validators': [&lt;wtforms.validators.DataRequired object&gt;], 'description': 'Please enter the text that you see in the image above'})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.captcha_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="accounts.controllers.registration.RegistrationForm.configure_captcha">
+<code class="descname">configure_captcha</code><span class="sig-paren">(</span><em>captcha_secret</em>, <em>ip</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm.configure_captcha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.configure_captcha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set configuration details for the stateless_captcha.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.RegistrationForm.password">
+<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('Password',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.RegistrationForm.password2">
+<code class="descname">password2</code><em class="property"> = &lt;UnboundField(PasswordField, ('Re-enter password',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.password2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="accounts.controllers.registration.RegistrationForm.validate_captcha_value">
+<code class="descname">validate_captcha_value</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm.validate_captcha_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.validate_captcha_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the captcha value against the captcha token.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.controllers.registration.RegistrationForm.validate_password">
+<code class="descname">validate_password</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm.validate_password"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.validate_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify that the password is the same in both fields.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="accounts.controllers.registration.edit_profile">
+<code class="descclassname">accounts.controllers.registration.</code><code class="descname">edit_profile</code><span class="sig-paren">(</span><em>method</em>, <em>user_id</em>, <em>session</em>, <em>params=None</em>, <em>ip=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#edit_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.edit_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle requests to update a user’s profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="accounts.controllers.registration.register">
+<code class="descclassname">accounts.controllers.registration.</code><code class="descname">register</code><span class="sig-paren">(</span><em>method</em>, <em>params</em>, <em>captcha_secret</em>, <em>ip</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle requests for the registration view.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="accounts.controllers.registration.view_profile">
+<code class="descclassname">accounts.controllers.registration.</code><code class="descname">view_profile</code><span class="sig-paren">(</span><em>user_id</em>, <em>session</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#view_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.view_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle requests to view a user’s profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/modules.html">arxiv</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">accounts</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="accounts.html">accounts package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app.html">app module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wsgi.html">wsgi module</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">accounts</a><ul>
+  <li><a href="accounts.html">accounts package</a><ul>
+  <li><a href="accounts.controllers.html">accounts.controllers package</a><ul>
+      <li>Previous: <a href="accounts.controllers.captcha_image.html" title="previous chapter">accounts.controllers.captcha_image module</a></li>
+      <li>Next: <a href="accounts.controllers.util.html" title="next chapter">accounts.controllers.util module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/accounts/accounts.controllers.registration.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
