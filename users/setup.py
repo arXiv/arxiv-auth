@@ -13,7 +13,8 @@ setup(
         "mysqlclient",
         "python-dateutil",
         "arxiv-base",
-        "pyjwt"
+        "pyjwt",
+        "redis"
     ],
     zip_safe=False
 )
