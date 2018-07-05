@@ -11,7 +11,6 @@ arxiv-base = "==0.8.1"
 captcha = "*"
 "4010dd8" = {path = "./users"}
 redis = "*"
-arxiv-base = "*"
 celery = "*"
 flask = "*"
 jsonschema = "*"
