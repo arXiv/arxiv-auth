@@ -18,6 +18,7 @@ pyjwt = "*"
 requests = "*"
 sqlalchemy = "*"
 uwsgi = "*"
+wtforms = "*"
 
 [dev-packages]
 mimesis = "*"
