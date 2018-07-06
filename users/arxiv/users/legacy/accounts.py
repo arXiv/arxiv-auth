@@ -246,6 +246,8 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
             flag_group_q_bio=_has_group('grp_q-bio'),
             flag_group_q_fin=_has_group('grp_q-fin'),
             flag_group_stat=_has_group('grp_stat'),
+            flag_group_eess=_has_group('grp_eess'),
+            flag_group_econ=_has_group('grp_econ'),
         )
         session.add(db_profile)
 

@@ -229,7 +229,8 @@ class DBProfile(Base):   # type: ignore
     flag_group_q_bio = Column(Integer, nullable=False, server_default=text("'0'"))
     flag_group_q_fin = Column(Integer, nullable=False, server_default=text("'0'"))
     flag_group_stat = Column(Integer, nullable=False, server_default=text("'0'"))
-    # TODO: where are new categories?
+    flag_group_econ = Column(Integer, nullable=False, server_default=text("'0'"))
+    flag_group_eess = Column(Integer, nullable=False, server_default=text("'0'"))
     user = relationship('DBUser')
 
     GROUP_FLAGS = [
@@ -238,7 +239,9 @@ class DBProfile(Base):   # type: ignore
         ('grp_cs', 'flag_group_cs'),
         ('grp_q-bio', 'flag_group_q_bio'),
         ('grp_q-fin', 'flag_group_q_fin'),
-        ('grp_q-stat', 'flag_group_stat')
+        ('grp_q-stat', 'flag_group_stat'),
+        ('grp_q-econ', 'flag_group_econ'),
+        ('grp_q-eess', 'flag_group_eess'),
     ]
 
     @property
