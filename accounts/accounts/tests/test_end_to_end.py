@@ -2,6 +2,7 @@
 
 from unittest import TestCase, mock
 from datetime import datetime
+from pytz import timezone
 import os
 import subprocess
 import time
@@ -12,6 +13,8 @@ from arxiv import status
 from accounts.factory import create_web_app
 
 from accounts import stateless_captcha
+
+EASTERN = timezone('US/Eastern')
 
 
 def _parse_cookies(cookie_data):
@@ -406,7 +409,7 @@ class TestLoginLogoutRoutes(TestCase):
             cookies[self.app.config['SESSION_COOKIE_NAME']]['Expires'],
             '%a, %d-%b-%Y %H:%M:%S %Z'
         )
-        self.assertGreater(datetime.now(), cookie_expires,
+        self.assertGreater(datetime.now(tz=EASTERN), cookie_expires,
                            "Session cookie is expired")
         self.assertEqual(
             cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value'],
@@ -417,5 +420,5 @@ class TestLoginLogoutRoutes(TestCase):
             cookies[self.app.config['CLASSIC_COOKIE_NAME']]['Expires'],
             '%a, %d-%b-%Y %H:%M:%S %Z'
         )
-        self.assertGreater(datetime.now(), classic_cookie_expires,
+        self.assertGreater(datetime.now(tz=EASTERN), classic_cookie_expires,
                            "Classic session cookie is expired")

@@ -8,7 +8,9 @@ import json
 import time
 import uuid
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
+import dateutil.parser
+from pytz import timezone
 
 from typing import Any, Optional, Union, Tuple
 
@@ -24,6 +26,7 @@ from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
 
 logger = logging.getLogger(__name__)
+EASTERN = timezone('US/Eastern')
 
 
 def _generate_nonce(length: int = 8) -> str:
@@ -39,10 +42,12 @@ class SessionStore(object):
     container for configuration.
     """
 
-    def __init__(self, host: str, port: int, db: int, secret: str) -> None:
+    def __init__(self, host: str, port: int, db: int, secret: str,
+                 duration: int = 7200) -> None:
         """Open the connection to Redis."""
         self.r = redis.StrictRedis(host=host, port=port, db=db)
         self._secret = secret
+        self._duration = duration
 
     def create(self, user: domain.User, authorizations: domain.Authorizations,
                ip_address: str, remote_host: str, tracking_cookie: str = '') \
@@ -60,18 +65,21 @@ class SessionStore(object):
         :class:`.Session`
         """
         session_id = str(uuid.uuid4())
-        start_time = datetime.now()
+        start_time = datetime.now(tz=EASTERN)
+        end_time = start_time + timedelta(seconds=self._duration)
         session = domain.Session(
             session_id=session_id,
             user=user,
             start_time=start_time,
+            end_time=end_time,
             authorizations=authorizations,
             nonce=_generate_nonce()
         )
         cookie = self._pack_cookie({
             'user_id': user.user_id,
             'session_id': session_id,
-            'nonce': session.nonce
+            'nonce': session.nonce,
+            'expires': end_time.isoformat()
         })
 
         try:
@@ -123,7 +131,7 @@ class SessionStore(object):
             if session['nonce'] != cookie_data['nonce'] \
                     or session['user']['user_id'] != cookie_data['user_id']:
                 raise SessionDeletionFailed('Bad session token')
-            session['end_time'] = datetime.now().isoformat()
+            session['end_time'] = datetime.now(tz=EASTERN).isoformat()
             self.r.set(session['session_id'], json.dumps(session))
         except redis.exceptions.ConnectionError as e:
             raise SessionDeletionFailed(f'Connection failed: {e}') from e
@@ -146,7 +154,7 @@ class SessionStore(object):
             logger.debug('Could not load session data: %s', e)
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
-        session_data['end_time'] = datetime.now().isoformat()
+        session_data['end_time'] = datetime.now(tz=EASTERN).isoformat()
         try:
             self.r.set(session_id, json.dumps(session_data))
         except redis.exceptions.ConnectionError as e:
@@ -161,9 +169,13 @@ class SessionStore(object):
             session_id = cookie_data['session_id']
             user_id = cookie_data.get('user_id')
             client_id = cookie_data.get('client_id')
+            expires = dateutil.parser.parse(cookie_data['expires'])
             nonce = cookie_data['nonce']
         except (KeyError, jwt.exceptions.DecodeError) as e:    # type: ignore
             raise InvalidToken('Token payload malformed') from e
+
+        if expires <= datetime.now(tz=EASTERN):
+            raise InvalidToken('Session has expired')
 
         session = self._load(session_id)
         if session.expired:
@@ -209,6 +221,7 @@ def init_app(app: object = None) -> None:
     config.setdefault('REDIS_PORT', '6379')
     config.setdefault('REDIS_DATABASE', '0')
     config.setdefault('JWT_SECRET', 'foosecret')
+    config.setdefault('SESSION_DURATION', '7200')
 
 
 def get_redis_session(app: object = None) -> SessionStore:
@@ -218,7 +231,8 @@ def get_redis_session(app: object = None) -> SessionStore:
     port = int(config.get('REDIS_PORT', '6379'))
     db = int(config.get('REDIS_DATABASE', '0'))
     secret = config['JWT_SECRET']
-    return SessionStore(host, port, db, secret)
+    duration = int(config.get('SESSION_DURATION', '7200'))
+    return SessionStore(host, port, db, secret, duration)
 
 
 def current_session() -> SessionStore:

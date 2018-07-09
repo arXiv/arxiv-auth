@@ -2,6 +2,7 @@
 
 from unittest import TestCase, mock
 from datetime import datetime
+from pytz import timezone
 import tempfile
 import os
 import shutil
@@ -13,6 +14,8 @@ from flask import Flask
 from .. import authenticate, exceptions, models, util
 
 from .util import temporary_db
+
+EASTERN = timezone('US/Eastern')
 
 
 class TestAuthenticateWithPermanentToken(TestCase):
@@ -66,7 +69,7 @@ class TestAuthenticateWithPermanentToken(TestCase):
                 password_storage=2,
                 password_enc=hashed
             )
-            n = (datetime.now() - datetime.utcfromtimestamp(0)).total_seconds()
+            n = util.epoch(datetime.now(tz=EASTERN))
             self.secret = 'foosecret'
             self.db_token = models.DBPermanentToken(
                 user_id=self.user_id,

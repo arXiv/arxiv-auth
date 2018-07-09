@@ -3,17 +3,22 @@ import time
 from typing import Optional
 from unittest import mock, TestCase
 from datetime import datetime
+from pytz import timezone
 
 from .. import exceptions, sessions, util, models, cookies
 
 from .util import temporary_db
 
+EASTERN = timezone('US/Eastern')
+
 
 class TestCreateSession(TestCase):
     """Tests for public function :func:`.`."""
 
-    def test_create(self):
+    @mock.patch(f'{sessions.__name__}.util.get_session_duration')
+    def test_create(self, mock_get_session_duration):
         """Accept a :class:`.User` and returns a :class:`.Session`."""
+        mock_get_session_duration.return_value = 36000
         user = sessions.domain.User(
             user_id="1",
             username='theuser',
@@ -45,23 +50,24 @@ class TestCreateSession(TestCase):
 class TestInvalidateSession(TestCase):
     """Tests for public function :func:`.invalidate`."""
 
-    def test_invalidate(self):
-        """The session is invalidated by settings `end_time`."""
+    @mock.patch(f'{cookies.__name__}.util.get_session_duration')
+    def test_invalidate(self, mock_get_duration):
+        """The session is invalidated by setting `end_time`."""
+        mock_get_duration.return_value = 36000
         session_id = "424242424"
         user_id = "12345"
         ip = "127.0.0.1"
         capabilities = 6
+        start = datetime.now(tz=EASTERN)
 
         with temporary_db() as db_session:
-            cookie = cookies.pack(session_id, user_id, ip, capabilities)
-            start = (datetime.now() - datetime.utcfromtimestamp(0))\
-                .total_seconds()
+            cookie = cookies.pack(session_id, user_id, ip, start, capabilities)
             with util.transaction() as db_session:
                 tapir_session = models.DBSession(
                     session_id=session_id,
                     user_id=12345,
-                    last_reissue=start,
-                    start_time=start,
+                    last_reissue=util.epoch(start),
+                    start_time=util.epoch(start),
                     end_time=0
                 )
                 db_session.add(tapir_session)
@@ -71,8 +77,10 @@ class TestInvalidateSession(TestCase):
             time.sleep(1)
             self.assertGreaterEqual(util.now(), tapir_session.end_time)
 
-    def test_invalidate_nonexistant_session(self):
+    @mock.patch(f'{cookies.__name__}.util.get_session_duration')
+    def test_invalidate_nonexistant_session(self, mock_get_duration):
         """An exception is raised if the session doesn't exist."""
+        mock_get_duration.return_value = 36000
         with temporary_db():
             with self.assertRaises(exceptions.UnknownSession):
-                sessions.invalidate('foosession')
+                sessions.invalidate('1:1:10.10.10.10:1531145500:4')

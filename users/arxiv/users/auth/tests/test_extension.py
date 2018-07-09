@@ -2,7 +2,10 @@
 
 from unittest import TestCase, mock
 from datetime import datetime
+from pytz import timezone
 from ... import auth, domain
+
+EASTERN = timezone('US/Eastern')
 
 
 class TestAuthExtension(TestCase):
@@ -41,7 +44,7 @@ class TestAuthExtension(TestCase):
         mock_legacy.is_configured.return_value = True
         session = domain.Session(
             session_id='fooid',
-            start_time=datetime.now(),
+            start_time=datetime.now(tz=EASTERN),
             user=domain.User(
                 user_id='235678',
                 email='foo@foo.com',

@@ -43,6 +43,11 @@ CLASSIC_TOKEN_RECOVERY_TIMEOUT = os.environ.get(
     '86400'
 )
 CLASSIC_SESSION_HASH = os.environ.get('CLASSIC_SESSION_HASH', 'foosecret')
+CLASSIC_SESSION_TIMEOUT = os.environ.get(
+    'CLASSIC_SESSION_TIMEOUT',
+    'foosecret',
+    '36000'
+)
 
 CLASSIC_DATABASE_URI = os.environ.get('CLASSIC_DATABASE_URI')
 """If not set, legacy database integrations will not be available."""

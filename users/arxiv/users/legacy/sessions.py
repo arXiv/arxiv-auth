@@ -2,7 +2,8 @@
 
 import ipaddress
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+from pytz import timezone
 import hashlib
 from base64 import b64encode, b64decode
 
@@ -27,6 +28,7 @@ from .exceptions import UnknownSession, SessionCreationFailed, \
 from .endorsements import get_endorsements
 
 logger = logging.getLogger(__name__)
+EASTERN = timezone('US/Eastern')
 
 
 def _load(session_id: str) -> DBSession:
@@ -60,9 +62,12 @@ def load(cookie: str) -> domain.Session:
     :class:`.legacy.exceptions.UnknownSession`
 
     """
-    session_id, user_id, ip, _ = cookies.unpack(cookie)
+    session_id, user_id, ip, issued_at, expires_at, _ = cookies.unpack(cookie)
     logger.debug('Load session %s for user %s at %s',
                  session_id, user_id, ip)
+
+    if expires_at <= datetime.now(tz=EASTERN):
+        raise SessionExpired(f'Session {session_id} has expired')
 
     with util.transaction() as session:
         data: Tuple[DBUser, DBSession, DBUserNickname] = (
@@ -102,10 +107,9 @@ def load(cookie: str) -> domain.Session:
             scopes=util.get_scopes(db_user)
         )
 
-    start_time = util.from_epoch(db_session.start_time)
     user_session = domain.Session(str(db_session.session_id),
-                                  start_time=start_time, user=user,
-                                  authorizations=authorizations)
+                                  start_time=issued_at, end_time=expires_at,
+                                  user=user, authorizations=authorizations)
     logger.debug('loaded session %s', user_session.session_id)
     return user_session
 
@@ -132,7 +136,8 @@ def create(user: domain.User, authorizations: domain.Authorizations,
 
     """
     logger.debug('create session for user %s', user.user_id)
-    start = datetime.now()
+    start = datetime.now(tz=EASTERN)
+    end = start + timedelta(seconds=util.get_session_duration())
     try:
         with util.transaction() as session:
             tapir_session = DBSession(
@@ -154,11 +159,11 @@ def create(user: domain.User, authorizations: domain.Authorizations,
 
     user_id = '' if user.user_id is None else user.user_id
     cookie = cookies.pack(str(tapir_session.session_id), user_id, ip,
-                          str(authorizations.classic))
+                          start, str(authorizations.classic))
     logger.debug('generated cookie: %s', cookie)
 
     user_session = domain.Session(str(tapir_session.session_id), user=user,
-                                  start_time=start,
+                                  start_time=start, end_time=end,
                                   authorizations=authorizations)
     logger.debug('created session %s', user_session.session_id)
     return user_session, cookie
@@ -180,7 +185,7 @@ def invalidate(cookie: str) -> None:
 
     """
     try:
-        session_id, user_id, ip, _ = cookies.unpack(cookie)
+        session_id, user_id, ip, _, _, _ = cookies.unpack(cookie)
     except InvalidCookie as e:
         raise UnknownSession('No such session') from e
 
@@ -202,7 +207,8 @@ def invalidate_by_id(session_id: str) -> None:
         The session could not be found, or the cookie was not valid.
 
     """
-    end = (datetime.now() - datetime.utcfromtimestamp(0)).total_seconds()
+    delta = datetime.now(tz=EASTERN) - datetime.fromtimestamp(0, tz=EASTERN)
+    end = (delta).total_seconds()
     try:
         with util.transaction() as session:
             tapir_session = _load(session_id)

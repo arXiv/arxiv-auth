@@ -3,12 +3,14 @@
 from typing import Any, Optional, Type, NamedTuple, List, Callable
 from datetime import datetime
 import dateutil.parser
+from pytz import timezone
 from functools import partial
 from arxiv import taxonomy
 
 from arxiv.base import logging
 
 logger = logging.getLogger(__name__)
+EASTERN = timezone('US/Eastern')
 
 
 class Category(NamedTuple):
@@ -207,7 +209,7 @@ class Session(NamedTuple):
     def expired(self) -> bool:
         """Expired if the current time is later than :attr:`.end_time`."""
         return bool(self.end_time is not None
-                    and datetime.now() >= self.end_time)
+                    and datetime.now(tz=EASTERN) >= self.end_time)
 
     @property
     def expires(self) -> Optional[int]:
@@ -218,7 +220,7 @@ class Session(NamedTuple):
         """
         if self.end_time is None:
             return None
-        return max((self.end_time - datetime.now()).seconds, 0)
+        return max((self.end_time - datetime.now(tz=EASTERN)).seconds, 0)
 
     # Consider for later:
     #  localization (preferred language)
