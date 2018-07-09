@@ -24,18 +24,7 @@
 {% extends "accounts/base.html" %}
 
 {% block inner_content %}
-<style>
-.ul-inline {
-  list-style-type: none;
-}
-.li-inline {
-  display: inline-block;
-}
-.li-inline label {
-  margin-left: 2px;
-  margin-right: 10px;
-}
-</style>
+
 <div class="columns">
   <div class="column">
     <h1>Edit Your User Information</h1>
@@ -70,9 +59,9 @@
         <div class="control">
           {{ form.groups.label }}
           {% if form.groups.errors %}
-            {{ form.groups(class="is-small is-warning", ul_class="ul-inline", li_class="li-inline")|safe }}
+            {{ form.groups(class="is-small is-warning", li_class="is-inline-block")|safe }}
           {% else %}
-            {{ form.groups(class="is-small", ul_class="ul-inline", li_class="li-inline")|safe }}
+            {{ form.groups(class="is-small", li_class="is-inline-block")|safe }}
           {% endif %}
           {% if form.groups.errors %}
             <div class="help is-warning">
