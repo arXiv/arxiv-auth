@@ -53,7 +53,8 @@ def set_cookies(response: Response, data: dict) -> None:
         return None
     for cookie_key, (cookie_value, expires) in cookies.items():
         cookie_name = current_app.config[f'{cookie_key.upper()}_NAME']
-        response.set_cookie(cookie_name, cookie_value, expires=expires)
+        response.set_cookie(cookie_name, cookie_value, expires=expires,
+                            secure=True, httponly=True, samesite='strict')
 
 
 @blueprint.route('/register', methods=['GET', 'POST'])

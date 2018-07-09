@@ -25,7 +25,7 @@ def _parse_cookies(cookie_data):
         key, value = data[:data.index('=')], data[data.index('=') + 1:]
         extra = {
             part[:part.index('=')]: part[part.index('=') + 1:]
-            for part in parts[1:]
+            for part in parts[1:] if '=' in part
         }
         cookies[key] = dict(value=value, **extra)
     return cookies
@@ -81,7 +81,6 @@ class TestRegistration(TestCase):
         """Tear down redis."""
         stop_container(self.container)
         os.remove(self.db)
-
 
     def test_get_registration_form(self):
         """GET request for the registration form."""
@@ -145,8 +144,21 @@ class TestRegistration(TestCase):
             'captcha_value': captcha_value,
             'captcha_token': captcha_token
         }
-        self.client.post('/user/register', data=registration_data,
-                         environ_base=self.environ_base)
+        response = self.client.post('/user/register', data=registration_data,
+                                    environ_base=self.environ_base)
+
+        # We have to set the cookies manually here.
+        cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
+        self.client.set_cookie(
+            'localhost',
+            self.app.config['SESSION_COOKIE_NAME'],
+            cookies[self.app.config['SESSION_COOKIE_NAME']]['value']
+        )
+        self.client.set_cookie(
+            'localhost',
+            self.app.config['CLASSIC_COOKIE_NAME'],
+            cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value']
+        )
 
         # Attempting to access the registration form results in a redirect.
         response = self.client.post('/user/register', data=registration_data,
@@ -408,7 +420,7 @@ class TestLoginLogoutRoutes(TestCase):
         cookie_expires = datetime.strptime(
             cookies[self.app.config['SESSION_COOKIE_NAME']]['Expires'],
             '%a, %d-%b-%Y %H:%M:%S %Z'
-        )
+        ).replace(tzinfo=EASTERN)
         self.assertGreater(datetime.now(tz=EASTERN), cookie_expires,
                            "Session cookie is expired")
         self.assertEqual(
@@ -419,6 +431,6 @@ class TestLoginLogoutRoutes(TestCase):
         classic_cookie_expires = datetime.strptime(
             cookies[self.app.config['CLASSIC_COOKIE_NAME']]['Expires'],
             '%a, %d-%b-%Y %H:%M:%S %Z'
-        )
+        ).replace(tzinfo=EASTERN)
         self.assertGreater(datetime.now(tz=EASTERN), classic_cookie_expires,
                            "Classic session cookie is expired")

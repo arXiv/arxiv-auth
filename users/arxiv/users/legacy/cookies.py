@@ -42,6 +42,9 @@ def unpack(cookie: str) -> Tuple[str, str, str, datetime, str]:
     parts = cookie.split(':')
     payload: Tuple[str, str, str, datetime, str]
 
+    if len(parts) < 5:
+        raise InvalidCookie('Malformed cookie')
+
     session_id = parts[0]
     user_id = parts[1]
     ip = parts[2]
