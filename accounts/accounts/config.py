@@ -45,7 +45,6 @@ CLASSIC_TOKEN_RECOVERY_TIMEOUT = os.environ.get(
 CLASSIC_SESSION_HASH = os.environ.get('CLASSIC_SESSION_HASH', 'foosecret')
 CLASSIC_SESSION_TIMEOUT = os.environ.get(
     'CLASSIC_SESSION_TIMEOUT',
-    'foosecret',
     '36000'
 )
 
