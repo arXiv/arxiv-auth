@@ -75,7 +75,7 @@ class UserProfile(NamedTuple):
     OTHER = ('5', 'Other')  # type: ignore
     RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]  # type: ignore
 
-    organization: str
+    affiliation: str
     """Institutional affiliation."""
 
     country: str

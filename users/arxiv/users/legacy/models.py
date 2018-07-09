@@ -253,7 +253,7 @@ class DBProfile(Base):   # type: ignore
     def to_domain(self) -> domain.UserProfile:
         """Generate a domain representation from this database instance."""
         return domain.UserProfile(  # type: ignore
-            organization=self.affiliation,
+            affiliation=self.affiliation,
             country=self.country,
             rank=self.rank,
             submission_groups=self.groups,

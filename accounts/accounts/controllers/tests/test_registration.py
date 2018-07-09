@@ -38,7 +38,7 @@ class TestRegister(TestCase):
             'password2': 'fdsafdsa',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -60,8 +60,8 @@ class TestRegister(TestCase):
         self.assertEqual(user.name.surname,
                          registration_data['surname'])
 
-        self.assertEqual(user.profile.organization,
-                         registration_data['organization'])
+        self.assertEqual(user.profile.affiliation,
+                         registration_data['affiliation'])
         self.assertEqual(user.profile.country,
                          registration_data['country'])
         self.assertEqual(user.profile.rank,
@@ -83,7 +83,7 @@ class TestRegister(TestCase):
             'password2': 'fdsafdsa',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -109,7 +109,7 @@ class TestRegister(TestCase):
             'password2': 'notthesamepassword',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -141,7 +141,7 @@ class TestRegister(TestCase):
             'password2': 'fdsafdsa',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -174,7 +174,7 @@ class TestRegister(TestCase):
             'password2': 'fdsafdsa',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -210,7 +210,7 @@ class TestRegister(TestCase):
             'password2': 'fdsafdsa',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -246,7 +246,7 @@ class TestRegister(TestCase):
             'password2': 'fdsafdsa',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -290,7 +290,7 @@ class TestEditProfile(TestCase):
             'username': 'foouser',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -311,8 +311,8 @@ class TestEditProfile(TestCase):
         self.assertEqual(user.name.surname,
                          profile_data['surname'])
 
-        self.assertEqual(user.profile.organization,
-                         profile_data['organization'])
+        self.assertEqual(user.profile.affiliation,
+                         profile_data['affiliation'])
         self.assertEqual(user.profile.country,
                          profile_data['country'])
         self.assertEqual(user.profile.rank,
@@ -333,7 +333,7 @@ class TestEditProfile(TestCase):
             'username': 'foouser',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -362,7 +362,7 @@ class TestEditProfile(TestCase):
             'username': 'foouser',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO',
@@ -389,7 +389,7 @@ class TestEditProfile(TestCase):
             'username': 'foouser',
             'forename': 'Bob',
             'surname': 'Bob',
-            'organization': 'Bob Co.',
+            'affiliation': 'Bob Co.',
             'country': 'RU',
             'status': '1',
             'default_category': 'astro-ph.CO'
