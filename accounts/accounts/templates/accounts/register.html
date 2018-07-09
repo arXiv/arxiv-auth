@@ -66,9 +66,9 @@
         <div class="control">
           {{ form.groups.label }}
           {% if form.groups.errors %}
-            {{ form.groups(class="is-small is-warning", li_class="is-line-block")|safe }}
+            {{ form.groups(class="is-small is-warning", li_class="is-inline-block")|safe }}
           {% else %}
-            {{ form.groups(class="is-small", li_class="is-line-block")|safe }}
+            {{ form.groups(class="is-small", li_class="is-inline-block")|safe }}
           {% endif %}
           {% if form.groups.errors %}
             <div class="help is-warning">
