@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = arXivZero
+SPHINXPROJ    = arXiv-AuthNZ
 SOURCEDIR     = source
 BUILDDIR      = build
 

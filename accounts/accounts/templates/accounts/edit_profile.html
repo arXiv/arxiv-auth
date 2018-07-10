@@ -1,0 +1,115 @@
+{% macro render_field(field) %}
+<div class="control">
+  {{ field.label }}
+  {% if field.errors %}
+    {{ field(class="input is-small is-warning")|safe }}
+  {% else %}
+    {{ field(class="input is-small")|safe }}
+  {% endif %}
+  {% if field.errors %}
+    <div class="help is-warning">
+      {% for error in field.errors %}
+          {{ error }}
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if field.description %}
+  <p class="help has-text-grey">
+    {{ field.description|safe }}
+  </p>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% extends "accounts/base.html" %}
+
+{% block inner_content %}
+
+<div class="columns">
+  <div class="column">
+    <h1>Edit Your User Information</h1>
+    <p>
+      It is a violation of our policies to misrepresent your identity or
+      institutional affiliation. Claimed affiliation should be current in the
+      conventional sense: e.g., physical presence, funding, e-mail address,
+      mention on institutional web pages, etc. Misrepresentation of identity or
+      affiliation, for any reason, is possible grounds for immediate and
+      permanent suspension.
+    </p>
+
+    <form action="{{ url_for('ui.edit_profile', user_id=user_id) }}" method="POST">
+      {{ form.csrf_token }}
+      {{ form.user_id }}
+      <div class="field">
+        {{ render_field(form.email) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.username) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.affiliation) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.country) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.status) }}
+      </div>
+      <div class="field">
+        <div class="control">
+          {{ form.groups.label }}
+          {% if form.groups.errors %}
+            {{ form.groups(class="is-small is-warning", li_class="is-inline-block")|safe }}
+          {% else %}
+            {{ form.groups(class="is-small", li_class="is-inline-block")|safe }}
+          {% endif %}
+          {% if form.groups.errors %}
+            <div class="help is-warning">
+              {% for error in form.groups.errors %}
+                  {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if form.groups.description %}
+          <p class="help has-text-grey">
+            {{ form.groups.description|safe }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="field">
+        {{ render_field(form.default_category) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.url) }}
+      </div>
+      <div class="field">
+        {{ form.remember_me.label }}
+        {% if form.remember_me.errors %}
+          {{ form.remember_me(class="is-small is-warning")|safe }}
+        {% else %}
+          {{ form.remember_me(class="is-small")|safe }}
+        {% endif %}
+        {% if form.remember_me.errors %}
+          <div class="help is-warning">
+            {% for error in form.remember_me.errors %}
+                {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if form.remember_me.description %}
+        <p class="help has-text-grey">
+          {{ form.remember_me.description|safe }}
+        </p>
+        {% endif %}
+      </div>
+
+      <div class="control">
+        <input type="submit" class="button is-link is-small"></input>
+        <a class="button is-link is-small is-danger" href="{{ url_for('ui.view_profile', user_id=user_id) }}">Cancel</a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock inner_content %}

@@ -12,8 +12,8 @@ python:
 script:
   - pip install pipenv
   - pipenv install --dev
+  - pipenv install ./users
   - ./lintstats.sh
-  - ./tests/docker_tests.sh
-  - pipenv run nose2
+  - WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov=users/arxiv --cov-report=term-missing accounts users/arxiv
 after_success:
   - coveralls

@@ -1,39 +1,36 @@
 [[source]]
-
-url = "https://pypi.python.org/simple"
+url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
-arxiv-base = "==0.2.2"
+pycountry = "*"
+mysqlclient = "*"
+python-dateutil = "*"
+arxiv-base = "==0.8.1"
+captcha = "*"
+"4010dd8" = {path = "./users"}
+redis = "*"
 celery = "*"
 flask = "*"
-flask-sqlalchemy = "*"
 jsonschema = "*"
 pyjwt = "*"
-redis = "*"
 requests = "*"
 sqlalchemy = "*"
 uwsgi = "*"
-"nose2" = "*"
-coverage = "*"
-coveralls = "*"
-mypy = "*"
-flask-wtf = "*"
-pylint = "*"
-
+wtforms = "*"
 
 [dev-packages]
-
-coverage = "*"
+mimesis = "*"
 mypy = "*"
-"nose2" = "*"
 pydocstyle = "*"
 pylint = "*"
-rope = "*"
+sphinx = "*"
+sphinx-autodoc-typehints = "*"
+coverage = "*"
+coveralls = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [requires]
-
 python_version = "3.6"

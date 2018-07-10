@@ -1,0 +1,46 @@
+{% extends "accounts/base.html" %}
+
+{% block inner_content %}
+
+<div class="columns">
+  <div class="column">
+    <h1>User Profile: {{ user.username }} (<a href="{{ url_for('ui.edit_profile', user_id=user.user_id)}}">edit</a>)</h1>
+    <ul>
+      <li>
+        <strong>Email address:</strong> {{ user.email }}
+      </li>
+      <li>
+        <strong>First/given name:</strong> {{ user.name.forename }}
+      </li>
+      <li>
+        <strong>Last/family name:</strong> {{ user.name.surname }}
+      </li>
+      {% if user.name.suffix %}
+      <li>
+        <strong>Suffix</strong> {{ user.name.suffix}}
+      </li>
+      {% endif %}
+      <li>
+        <strong>Affiliation:</strong> {{ user.profile.affiliation }}
+      </li>
+      <li>
+        <strong>Country:</strong> {{ user.profile.country }}
+      </li>
+      <li>
+        <strong>Status:</strong> {{ user.profile.rank_display }}
+      </li>
+      <li>
+        <strong>Submission groups:</strong> {{ user.profile.groups_display }}
+      </li>
+      <li>
+        <strong>Default category:</strong> {{ user.profile.default_category.display }}
+      </li>
+      <li>
+        <strong>Homepage URL:</strong> {{ user.profile.homepage_url }}
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+{% endblock %}

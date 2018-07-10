@@ -1,0 +1,60 @@
+{% extends "accounts/base.html" %}
+
+{% block inner_content %}
+<div class="columns">
+  <div class="column">
+    <h1>Log in to arXiv.org</h1>
+    <h2>If you're already registered</h2>
+
+    <form action="{{ url_for('ui.login') }}" method="POST">
+      {{ form.csrf_token }}
+      <div class="field">
+        <div class="control">
+
+          {{ form.username.label }}
+          {% if form.username.errors %}
+            {{ form.username(class="input is-medium is-warning")|safe }}
+          {% else %}
+            {{ form.username(class="input is-medium")|safe }}
+          {% endif %}
+          {% if form.username.errors %}
+            <div class="help is-warning">
+              {% for error in form.username.errors %}
+                  {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          {{ form.password.label }}
+          {% if form.password.errors %}
+            {{ form.password(class="input is-medium is-warning")|safe }}
+          {% else %}
+            {{ form.password(class="input is-medium")|safe }}
+          {% endif %}
+          {% if form.password.errors %}
+            <div class="help is-warning">
+              {% for error in form.password.errors %}
+                  {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="control">
+        <input type="submit" class="button is-link is-small"></input>
+      </div>
+    </form>
+
+    <h2>If you've never logged onto arXiv.org</h2>
+      <p><a class="button is-link is-small" href="{{ url_for('ui.register') }}">Register for the first time</a></p>
+      <p>Registration is required to submit or update papers.</p>
+  </div>
+  <div class="column">
+    <!-- Empty column, to bisect page. -->
+  </div>
+</div>
+{% endblock inner_content %}

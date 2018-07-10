@@ -2,137 +2,149 @@
 
 # arXiv Accounts
 
-This is a sample project for a microservice implemented in Flask, as part of
-arXiv-NG. The goal of this project is to demonstrate the layout of a
-microservice project in NG, desired internal architecture, testing and
-documentation strategies, etc.
+The arXiv platform provides both anonymous and authenticated interfaces to
+end-users (including moderators), API clients, and the arXiv operations team.
+This project provides applications and libraries to support authentication and
+authorization, including account creation and login, user sessions, and API
+token management.
 
-A developer working on a new microservice should be able to clone this
-repository and build from there. This should lead to greater consistency
-across microservice projects, and cut down on time spent on project setup.
+There are currently three pieces of software in this repository:
 
-## Quick start
+1. [``users/``](users/) contains the ``arxiv.users`` package, which provides
+   core authentication and authorization functionality and domain classes.
+   This includes integrations with the legacy database for user accounts and
+   sessions.
+2. [``accounts/``](accounts/) contains the user accounts service, which
+   provides the main UIs for registration, login/logout, profile management,
+   etc.
+3. [``authorizer/``](authorizer/) contains the authorizer service, which
+   handles authorization requests from NGINX in a cloud deployment scenario.
+   This is currently not ready for use nor evaluation.
 
-There are multiple ways to run this server:
+TLS is considered an infrastructure concern, and is therefore out of scope
+(albeit critical) for this project.
 
-### Docker
+## TODO
 
-1.  Setup [Docker CE using the instructions for your OS](https://docs.docker.com/engine/installation/)
-2.  Build [arxiv-base](https://github.com/cul-it/arxiv-base) 
-(clone repo, then `docker build -t arxiv-base:latest .`) if not using a registry.
-    Also note, if not using a registry, you may need to create the tag manually in some docker
-    installations or versions: `docker tag built_image_id arxiv-base:latest` (seems to be a docker bug).
-3.  Build the Docker image, which will execute all the commands in the 
-    [`Dockerfile`](https://github.com/cul-it/arxiv-accounts/blob/master/Dockerfile): 
-    `docker build -t arxiv-accounts .`
-4.  `docker run -p 8000:8000 --name container_name arxiv-accounts` (add a `-d` flag
-    to run in daemon mode)
-5.  Test that the container is working: http://localhost:8000/accounts/api/status
-6.  To shut down the container: `docker stop container_name`
-7.  Each time you change a file, you will need to rebuild the Docker image in
-    order to import the updated files. Alternatively, volume-mount selected parts
-    of your home directory such has .ssh and .gitconfig in your `docker run` command
-    if you wish to be able to push modifications to github.
+- Password reset in ``arxiv.users.legacy.accounts`` and in the accounts
+  service.
+- Support for permanent login token.
+- Clean up and document authorizer service.
+- Fuzz testing registration?
 
-#### Clean-up
+## Dependencies
 
-To purge your container run  `docker rmi arxiv-accounts`. If you receive the
-following error, run `docker rm CONTAINER_ID` for each stopped container 
-until it clears:
+We use pipenv to manage dependencies. To install the dependencies for this
+project, run ``pipenv install`` in the root of this repository.
 
-```
-$ docker rmi c196c3ef21c7
-Error response from daemon: conflict: unable to delete c196c3ef21c7 (must be
-forced) - image is being used by stopped container 75bb481b5857
-``` 
-
-### Local Deployment
-
-Sometimes Docker adds more overhead than you want, especially when making quick
-changes. We assume your developer machine already has a version of Python 3.6
-with `pip`.
-
-1.  `pip install pipenv && pipenv install --dev`
-2.  `pipenv shell` 
-3.  `FLASK_APP=app.py python populate_test_database.py`
-4.  `FLASK_APP=app.py FLASK_DEBUG=1 flask run`
-5.  Test that the app is working: http://localhost:5000/accounts/api/status
-
-#### Notes on the development server
-
-Flask provides a single-threaded dev server for your enjoyment.
-
-The entrypoint for this dev server is [``app.py``](app.py) (in the root of the
-project). Flask expects the path to this entrypoint in the environment variable
-``FLASK_APP``. To run the dev server, try (from the project root):
-
-```bash
-$ FLASK_APP=app.py FLASK_DEBUG=1 flask run
-```
-
-``FLASK_DEBUG=1`` enables a slew of lovely development and debugging features.
-For example, the dev server automatically restarts when you make changes to the
-application code.
-
-Note that neither the dev server or the ``app.py`` entrypoint are acceptable
-for use in production.
-
-A convenience script [``populate_test_database.py``](populate_test_database.py)
-is provided to set up an on-disk SQLite database and some sample data. You can
-use this as a starting point for more complex set-up operations (or not). Be
-sure to run this with the ``FLASK_APP`` variable set, e.g.
-
-```bash
-$ FLASK_APP=app.py python populate_test_database.py
-```
+Note that the ``Pipfile`` does not contain a reference to the ``arxiv.users``
+package, which is located in ``users/``. To test against the code in your
+current branch, install the package directly with ``pipenv install ./users``.
+Otherwise, you can install the latest release with
+``pipenv install arxiv-users``.
 
 ## Testing
 
-Some example unit tests are provided in [``tests/``](tests/). They are written
-using the built-in [unit-test](https://docs.python.org/3/library/unittest.html)
-framework. **Be sure to change** [``tests/test_mypy.py``](tests/test_mypy.py) to reference
-your python package by change the line `self.pkgname: str = "accounts"` to have 
-your package name rather than "accounts". 
+Each of the applications/packages in this repository has its own test suite.
 
-We use the [nose2](http://nose2.readthedocs.io/en/latest/) test runner, with
-coverage. For example:
+You can run everything together with:
 
 ```bash
-$ nose2 --with-coverage
-..............
-----------------------------------------------------------------------
-Ran 14 tests in 0.109s
-
-OK
-Name                                Stmts   Miss  Cover
--------------------------------------------------------
-app.py                                  2      2     0%
-populate_test_database.py              14     14     0%
-tests/test_routes_external_api.py      40      4    90%
-tests/test_routes_ui.py                24      0   100%
-tests/test_service_foo.py              68      0   100%
-tests/test_service_things.py           30      0   100%
-wsgi.py                                 7      7     0%
-accounts/__init__.py                        0      0   100%
-accounts/authorization.py                  20      3    85%
-accounts/config.py                         12      0   100%
-accounts/context.py                        16      6    62%
-accounts/controllers/__init__.py            0      0   100%
-accounts/controllers/baz.py                13      4    69%
-accounts/controllers/things.py             13      4    69%
-accounts/encode.py                         12      5    58%
-accounts/factory.py                        16      0   100%
-accounts/logging.py                        16      3    81%
-accounts/routes/__init__.py                 0      0   100%
-accounts/routes/external_api.py            17      1    94%
-accounts/routes/ui.py                      23      4    83%
-accounts/services/__init__.py               1      0   100%
-accounts/services/baz.py                   54     10    81%
-accounts/services/things.py                20      0   100%
-accounts/status.py                         45      0   100%
--------------------------------------------------------
-TOTAL                                 463     67    86%
+pipenv run pytest \
+    --cov=accounts \
+    --cov=users/arxiv \
+    --cov-report=term-missing \
+    accounts users/arxiv
 ```
+
+To enable integration + end-to-end tests with Redis, run:
+
+```bash
+WITH_INTEGRATION=1 pipenv run pytest \
+    --cov=accounts \
+    --cov=users/arxiv \
+    --cov-report=term-missing \
+    accounts users/arxiv
+```
+
+Note that this requires Docker to be running, and port 6379 to be free on your
+machine.
+
+
+### ``arxiv.users``
+
+You can run the tests for the ``arxiv.users`` package with:
+
+```bash
+pipenv run pytest --cov=users/arxiv --cov-report=term-missing users/arxiv
+```
+
+### Accounts service
+
+Note that in order to run the accounts service, you will need to install
+``arxiv.users`` (not included in the Pipfile). See
+[#dependencies](dependencies), above.
+
+You can run tests for the accounts service with:
+
+```bash
+pipenv run pytest --cov=accounts --cov-report=term-missing accounts
+```
+
+To run integration and end-to-end tests with a live Redis, use:
+
+```bash
+WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov-report=term-missing accounts
+```
+
+Note that this requires Docker to be running, and port 6379 to be free on your
+machine.
+
+
+## Local development + manual testing
+
+You can start the accounts service in a manner similar to other Flask apps.
+You will need to run Redis, which is most easily achieved using Docker:
+
+```bash
+docker run -it -p 6379:6379 redis:latest
+```
+
+This will start a local Redis instance, and map your host port 6379 to the
+Redis instance.
+
+To start the application itself, first make sure that all dependencies are
+installed. You'll need to install the ``arxiv.users`` package; see
+[#dependencies](dependencies).
+
+```bash
+pipenv install --dev
+```
+
+You will also need to decide what you want to use for the legacy user and
+session database backend. For local development/testing purposes, it's fine to
+use an on-disk SQLite database. You should also be able to use a local MySQL
+instance with a clone of the legacy database.
+
+To start with SQLAlchemy (tables will be created automatically):
+
+```bash
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+```
+
+To use MySQL/MariaDB:
+
+```bash
+CLASSIC_DATABASE_URI=mysql+mysqldb://[USERNAME]:[PASSWORD]@localhost:3306/[DATABASE] \
+ FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+```
+
+Set the username, password, and database to whatever you're using. If the DB
+structure does not already exist, the user will need to be able to create
+tables. Otherwise conventional read/write access should be sufficient.
+
+You should be able to register a new user at
+http://localhost:5000/user/register.
 
 ## Code style
 
@@ -148,11 +160,14 @@ Use [Pylint](https://www.pylint.org/) to check your code prior to raising a
 pull request. The parameters below will be used when checking code  cleanliness
 on commits, PRs, and tags, with a target score of >= 9/10.
 
-If you're using Atom as your text editor, consider using the [linter-pylama](https://atom.io/packages/linter-pylama)
-package for real-time feedback.
+If you're using Atom as your text editor, consider using the
+[linter-pylama](https://atom.io/packages/linter-pylama) package for real-time
+feedback.
+
+Here's how we use pylint in CI:
 
 ```bash
-$ pylint accounts
+$ pipenv run pylint accounts/accounts users/arxiv/users
 ************* Module accounts.context
 accounts/context.py:10: [W0212(protected-access), get_application_config] Access to a protected member _Environ of a client class
 ************* Module accounts.encode
@@ -169,25 +184,22 @@ accounts/services/things.py:49: [E1101(no-member), get_a_thing] Instance of 'sco
 Your code has been rated at 9.49/10 (previous run: 9.41/10, +0.07)
 ```
 
-To verify the pylintrc matches the current flags:
-
-```bash
-$ diff .pylintrc <(pylint --disable=W0622,W0611,F0401,R0914,W0221,W0222,W0142,F0010,W0703,R0911,C0102,C0103,R0913 -f parseable --generate-rcfile)
-```
-
 ### Docstyle
-To verify the documentation style, use the tool [PyDocStyle](http://www.pydocstyle.org/en/2.1.1/)
+To verify the documentation style, use the tool
+[PyDocStyle](http://www.pydocstyle.org/en/2.1.1/)
+
+Here's how we run pydocstyle in CI:
 
 ```bash
-pydocstyle --convention=numpy --add-ignore=D401
+pipenv run pydocstyle --convention=numpy --add-ignore=D401 accounts users/arxiv
 ```
 
 ## Type hints and static checking
 Use [type hint annotations](https://docs.python.org/3/library/typing.html)
 wherever practicable. Use [mypy](http://mypy-lang.org/) to check your code.
 If you run across typechecking errors in your code and you have a good reason
-for `mypy` to ignore them, you should be able to add `# type: ignore`, 
-ideally along with an actual comment describing why the type checking should be 
+for `mypy` to ignore them, you should be able to add `# type: ignore`,
+ideally along with an actual comment describing why the type checking should be
 ignored on this line. In cases where it is hoped the types can be specified later,
 just simplying adding the `# type: ignore` without further comment is fine.
 
@@ -195,7 +207,7 @@ just simplying adding the `# type: ignore` without further comment is fine.
 Try running mypy with (from project root):
 
 ```bash
-$ mypy -p accounts
+pipenv run mypy accounts users/arxiv | grep -v "test.*" | grep -v "defined here"
 ```
 
 Mypy options are most easily specified by adding them to `mypy.ini` in the repo's
@@ -208,7 +220,6 @@ offending lines using "``# type: ignore``". For example:
 ```python
 >>> g.baz = get_session(app) # type: ignore
 ```
-
 
 See [this issue](https://github.com/python/mypy/issues/500) for more
 information.
@@ -224,16 +235,14 @@ are **not** under version control (per ``.gitignore``).
 To build the full documentation for this project:
 
 ```bash
-$ cd <project_root>/docs
-$ make html
+cd <project_root>/docs
+make html SPHINXBUILD=$(pipenv --venv)/bin/sphinx-build
 ```
 
 Point your browser to: ``file:///path/to/arxiv-accounts/docs/build/html/index.html``.
 
 There are other build targets available. Run ``make`` without any arguments
 for more info.
-
-
 
 ### Architecture
 
@@ -262,7 +271,6 @@ Specifically, we describe the system at three levels:
    case of a Flask application, this might be a module or submodule that has
    specific responsibilities, behaviors, and interactions.
 
-
 ### Code API documentation
 
 Documentation for the (code) API is generated automatically with
@@ -277,13 +285,8 @@ won't need to run sphinx-apidoc unless the structure of the project changes
 To rebuild the API docs, run (from the project root):
 
 ```bash
-$ sphinx-apidoc -M -f -o docs/source/api/ accounts
+rm -rf docs/source/arxiv.users
+sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
+rfm -rf docs/source/accounts
+sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
 ```
-
-
-## TODO
-
-- Add docker image push step to .travis.yml (needs authentication).
-- Incorporate JSON schema into documentation.
-- Add an example e2e test.
-- Add an example controller test.

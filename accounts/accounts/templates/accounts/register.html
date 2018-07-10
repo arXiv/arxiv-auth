@@ -1,0 +1,126 @@
+{% macro render_field(field) %}
+<div class="control">
+  {{ field.label }}
+  {% if field.errors %}
+    {{ field(class="input is-small is-warning")|safe }}
+  {% else %}
+    {{ field(class="input is-small")|safe }}
+  {% endif %}
+  {% if field.errors %}
+    <div class="help is-warning">
+      {% for error in field.errors %}
+          {{ error }}
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if field.description %}
+  <p class="help has-text-grey">
+    {{ field.description|safe }}
+  </p>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% extends "accounts/base.html" %}
+
+{% block inner_content %}
+
+<div class="columns">
+  <div class="column">
+
+    <h1>Register for the first time</h1>
+    <p>
+      You should only register with arXiv once: arXiv associates papers that
+      you have submitted with your user account. If you register twice, this
+      information will be inaccurate, which will cause confusion and wasted
+      time for both you and us.
+    </p>
+
+    <form action="{{ url_for('ui.register') }}" method="POST">
+      {{ form.csrf_token }}
+      <div class="field">
+        {{ render_field(form.email) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.username) }}
+      </div>
+      <div class="field is-grouped">
+        {{ render_field(form.password) }}
+        {{ render_field(form.password2) }}
+      </div>
+      <div class="field is-grouped">
+        {{ render_field(form.forename) }}
+        {{ render_field(form.surname) }}
+        {{ render_field(form.suffix) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.affiliation) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.country) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.status) }}
+      </div>
+      <div class="field">
+        <div class="control">
+          {{ form.groups.label }}
+          {% if form.groups.errors %}
+            {{ form.groups(class="is-small is-warning", li_class="is-inline-block")|safe }}
+          {% else %}
+            {{ form.groups(class="is-small", li_class="is-inline-block")|safe }}
+          {% endif %}
+          {% if form.groups.errors %}
+            <div class="help is-warning">
+              {% for error in form.groups.errors %}
+                  {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if form.groups.description %}
+          <p class="help has-text-grey">
+            {{ form.groups.description|safe }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="field">
+        {{ render_field(form.default_category) }}
+      </div>
+      <div class="field">
+        {{ render_field(form.url) }}
+      </div>
+      <div class="field">
+        {{ form.remember_me.label }}
+        {% if form.remember_me.errors %}
+          {{ form.remember_me(class="is-small is-warning")|safe }}
+        {% else %}
+          {{ form.remember_me(class="is-small")|safe }}
+        {% endif %}
+        {% if form.remember_me.errors %}
+          <div class="help is-warning">
+            {% for error in form.remember_me.errors %}
+                {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if form.remember_me.description %}
+        <p class="help has-text-grey">
+          {{ form.remember_me.description|safe }}
+        </p>
+        {% endif %}
+      </div>
+      <div class="field">
+        {{ form.captcha_token }}
+        <img src="{{ url_for('ui.captcha') }}?token={{ form.captcha_token.data }}" />
+        {{ render_field(form.captcha_value) }}
+      </div>
+
+      <div class="control">
+        <input type="submit" class="button is-link is-small"></input>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock inner_content %}
