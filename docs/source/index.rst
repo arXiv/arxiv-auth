@@ -1,3 +1,5 @@
+.. _index:
+
 arXiv Authorization & Authentication
 ====================================
 
@@ -6,8 +8,10 @@ arXiv Authorization & Authentication
    :caption: Contents:
 
    architecture.rst
-   arxiv.users/modules.rst
-   accounts/modules.rst
+   arxiv.users/arxiv.users.rst
+   accounts/accounts.rst
+   authorizer/authorizer.rst
+   registry/registry.rst
 
 
 

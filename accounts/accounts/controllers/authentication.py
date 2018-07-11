@@ -1,4 +1,14 @@
-"""Controllers for arXiv accounts application."""
+"""
+Controllers for arXiv accounts application.
+
+When a user logs in via the accounts service, they are issued a session key
+that is stored as a cookie in their browser. That session ID is registered in
+the distributed keystore, along with claims about the user's identity and
+privileges in the system (based on their role). In subsequent requests handled
+by the UI ingress, the authorizer service uses that session key to validate
+the authenticated session, and to retrieve corresponding identity and
+authorization information.
+"""
 
 from typing import Dict, Tuple, Any, Optional
 import uuid

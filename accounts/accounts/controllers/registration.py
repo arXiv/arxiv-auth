@@ -1,4 +1,11 @@
-"""Controllers for registration and user profile management."""
+"""
+Controllers for registration and user profile management.
+
+Users are able to create a new arXiv account, and login using their username
+and password. Each user can create a personalized profile with contact and
+affiliation information, and links to external identities such as GitHub and
+ORCID.
+"""
 
 from typing import Dict, Tuple, Any, Optional
 import uuid

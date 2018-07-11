@@ -24,6 +24,8 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.append(os.path.abspath('../..'))
 sys.path.append(os.path.abspath('../../users'))
 sys.path.append(os.path.abspath('../../accounts'))
+sys.path.append(os.path.abspath('../../authorizer'))
+sys.path.append(os.path.abspath('../../registry'))
 
 # -- General configuration ------------------------------------------------
 

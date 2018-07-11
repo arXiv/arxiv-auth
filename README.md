@@ -285,8 +285,6 @@ won't need to run sphinx-apidoc unless the structure of the project changes
 To rebuild the API docs, run (from the project root):
 
 ```bash
-rm -rf docs/source/arxiv.users
 sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
-rfm -rf docs/source/accounts
 sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
 ```
