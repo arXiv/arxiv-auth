@@ -38,9 +38,12 @@
 <span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span>
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
 <span class="kn">import</span> <span class="nn">jwt</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">new</span><span class="p">,</span> <span class="n">unpack</span><span class="p">,</span> <span class="n">render</span><span class="p">,</span> <span class="n">check</span><span class="p">,</span> <span class="n">InvalidCaptchaToken</span><span class="p">,</span> \
     <span class="n">InvalidCaptchaValue</span>
+
+<span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="TestCaptcha"><a class="viewcode-back" href="../../../accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha">[docs]</a><span class="k">class</span> <span class="nc">TestCaptcha</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
@@ -82,7 +85,7 @@
 
         <span class="n">forged_token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">encode</span><span class="p">({</span>
             <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">3600</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+            <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">3600</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
         <span class="p">},</span> <span class="s1">&#39;notthesecret&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
@@ -103,7 +106,7 @@
         <span class="n">ip_address</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
 
         <span class="n">malformed_token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">encode</span><span class="p">({</span>
-            <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">3600</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+            <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">3600</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
         <span class="p">},</span> <span class="n">secret</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidCaptchaToken</span><span class="p">):</span>
@@ -150,8 +153,10 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/modules.html">arxiv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../accounts/modules.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">

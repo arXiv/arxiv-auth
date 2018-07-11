@@ -39,7 +39,7 @@
 <p>Provides functions for working with legacy session cookies.</p>
 <dl class="function">
 <dt id="arxiv.users.legacy.cookies.pack">
-<code class="descclassname">arxiv.users.legacy.cookies.</code><code class="descname">pack</code><span class="sig-paren">(</span><em>session_id</em>, <em>user_id</em>, <em>ip</em>, <em>capabilities</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/cookies.html#pack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.cookies.pack" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">arxiv.users.legacy.cookies.</code><code class="descname">pack</code><span class="sig-paren">(</span><em>session_id</em>, <em>user_id</em>, <em>ip</em>, <em>issued_at</em>, <em>capabilities</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/cookies.html#pack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.cookies.pack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a value for the classic session cookie.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -49,6 +49,7 @@
 <li><strong>session_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The session ID associated with the cookie.</li>
 <li><strong>user_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The user ID of the authenticated account.</li>
 <li><strong>ip</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Client IP address.</li>
+<li><strong>issued_at</strong> (<em>datetime</em>) – The UNIX time at which the session was initiated.</li>
 <li><strong>capabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – This is essentially a user privilege level.</li>
 </ul>
 </td>
@@ -80,13 +81,15 @@
 <li><em>str</em> – The session ID associated with the cookie.</li>
 <li><em>str</em> – The user ID of the authenticated account.</li>
 <li><em>str</em> – The IP address of the client when the session was created.</li>
+<li><em>datetime</em> – The datetime when the session was created.</li>
+<li><em>datetime</em> – The datetime when the session expires.</li>
 <li><em>str</em> – Legacy user privilege level.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">InvalidCookie</span></code> – Raised if the cookie is detectably malformed or tampered with.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -114,23 +117,25 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#quick-start">Quick start</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../accounts/modules.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="modules.html">arxiv</a><ul>
   <li><a href="arxiv.users.html">arxiv.users package</a><ul>
   <li><a href="arxiv.users.legacy.html">arxiv.users.legacy package</a><ul>
       <li>Previous: <a href="arxiv.users.legacy.authenticate.html" title="previous chapter">arxiv.users.legacy.authenticate module</a></li>
       <li>Next: <a href="arxiv.users.legacy.endorsements.html" title="next chapter">arxiv.users.legacy.endorsements module</a></li>
-  </ul></li>
   </ul></li>
   </ul></li>
   </ul></li>

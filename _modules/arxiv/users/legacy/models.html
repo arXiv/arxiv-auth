@@ -264,7 +264,8 @@
     <span class="n">flag_group_q_bio</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;&#39;0&#39;&quot;</span><span class="p">))</span>
     <span class="n">flag_group_q_fin</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;&#39;0&#39;&quot;</span><span class="p">))</span>
     <span class="n">flag_group_stat</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;&#39;0&#39;&quot;</span><span class="p">))</span>
-    <span class="c1"># TODO: where are new categories?</span>
+    <span class="n">flag_group_econ</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;&#39;0&#39;&quot;</span><span class="p">))</span>
+    <span class="n">flag_group_eess</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;&#39;0&#39;&quot;</span><span class="p">))</span>
     <span class="n">user</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;DBUser&#39;</span><span class="p">)</span>
 
     <span class="n">GROUP_FLAGS</span> <span class="o">=</span> <span class="p">[</span>
@@ -273,7 +274,9 @@
         <span class="p">(</span><span class="s1">&#39;grp_cs&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_group_cs&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;grp_q-bio&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_group_q_bio&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="s1">&#39;grp_q-fin&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_group_q_fin&#39;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;grp_q-stat&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_group_stat&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s1">&#39;grp_q-stat&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_group_stat&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;grp_q-econ&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_group_econ&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;grp_q-eess&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_group_eess&#39;</span><span class="p">),</span>
     <span class="p">]</span>
 
     <span class="nd">@property</span>
@@ -285,7 +288,7 @@
 <div class="viewcode-block" id="DBProfile.to_domain"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBProfile.to_domain">[docs]</a>    <span class="k">def</span> <span class="nf">to_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">domain</span><span class="o">.</span><span class="n">UserProfile</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Generate a domain representation from this database instance.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">domain</span><span class="o">.</span><span class="n">UserProfile</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
-            <span class="n">organization</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">affiliation</span><span class="p">,</span>
+            <span class="n">affiliation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">affiliation</span><span class="p">,</span>
             <span class="n">country</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">country</span><span class="p">,</span>
             <span class="n">rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span>
             <span class="n">submission_groups</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span>
@@ -500,8 +503,10 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/modules.html">arxiv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../accounts/modules.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">

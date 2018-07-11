@@ -51,6 +51,24 @@ to specific authorization scopes. Rather than refer to scopes by writing new
 str objects, these constants should be imported and used. This improves the
 semantics of code, and reduces the risk of programming errors. For an example,
 see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-arxiv.users.auth.decorators" title="arxiv.users.auth.decorators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users.auth.decorators</span></code></a>.</p>
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.CREATE_SUBMISSION">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">CREATE_SUBMISSION</code><em class="property"> = 'submission:create'</em><a class="headerlink" href="#arxiv.users.auth.scopes.CREATE_SUBMISSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes creating a submission.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.EDIT_PROFILE">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">EDIT_PROFILE</code><em class="property"> = 'profile:update'</em><a class="headerlink" href="#arxiv.users.auth.scopes.EDIT_PROFILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes editing user profile.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.VIEW_PROFILE">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">VIEW_PROFILE</code><em class="property"> = 'profile:read'</em><a class="headerlink" href="#arxiv.users.auth.scopes.VIEW_PROFILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes viewing user profile.</p>
+</dd></dl>
+
 </div>
 
 
@@ -73,23 +91,25 @@ see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">arxiv</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#quick-start">Quick start</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../accounts/modules.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="modules.html">arxiv</a><ul>
   <li><a href="arxiv.users.html">arxiv.users package</a><ul>
   <li><a href="arxiv.users.auth.html">arxiv.users.auth package</a><ul>
       <li>Previous: <a href="arxiv.users.auth.middleware.html" title="previous chapter">arxiv.users.auth.middleware module</a></li>
       <li>Next: <a href="arxiv.users.auth.tokens.html" title="next chapter">arxiv.users.auth.tokens module</a></li>
-  </ul></li>
   </ul></li>
   </ul></li>
   </ul></li>

@@ -37,7 +37,8 @@
 
 <span class="kn">import</span> <span class="nn">ipaddress</span>
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
 <span class="kn">import</span> <span class="nn">hashlib</span>
 <span class="kn">from</span> <span class="nn">base64</span> <span class="k">import</span> <span class="n">b64encode</span><span class="p">,</span> <span class="n">b64decode</span>
 
@@ -62,6 +63,7 @@
 <span class="kn">from</span> <span class="nn">.endorsements</span> <span class="k">import</span> <span class="n">get_endorsements</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_load</span><span class="p">(</span><span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DBSession</span><span class="p">:</span>
@@ -95,9 +97,12 @@
 <span class="sd">    :class:`.legacy.exceptions.UnknownSession`</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">session_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cookies</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">cookie</span><span class="p">)</span>
+    <span class="n">session_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">issued_at</span><span class="p">,</span> <span class="n">expires_at</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cookies</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">cookie</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Load session </span><span class="si">%s</span><span class="s1"> for user </span><span class="si">%s</span><span class="s1"> at </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
                  <span class="n">session_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">expires_at</span> <span class="o">&lt;=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">SessionExpired</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Session </span><span class="si">{session_id}</span><span class="s1"> has expired&#39;</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">DBUser</span><span class="p">,</span> <span class="n">DBSession</span><span class="p">,</span> <span class="n">DBUserNickname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
@@ -137,10 +142,9 @@
             <span class="n">scopes</span><span class="o">=</span><span class="n">util</span><span class="o">.</span><span class="n">get_scopes</span><span class="p">(</span><span class="n">db_user</span><span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">from_epoch</span><span class="p">(</span><span class="n">db_session</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span>
     <span class="n">user_session</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">db_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">),</span>
-                                  <span class="n">start_time</span><span class="o">=</span><span class="n">start_time</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
-                                  <span class="n">authorizations</span><span class="o">=</span><span class="n">authorizations</span><span class="p">)</span>
+                                  <span class="n">start_time</span><span class="o">=</span><span class="n">issued_at</span><span class="p">,</span> <span class="n">end_time</span><span class="o">=</span><span class="n">expires_at</span><span class="p">,</span>
+                                  <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">authorizations</span><span class="o">=</span><span class="n">authorizations</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;loaded session </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">user_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">user_session</span></div>
 
@@ -167,7 +171,8 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;create session for user </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">util</span><span class="o">.</span><span class="n">get_session_duration</span><span class="p">())</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="n">tapir_session</span> <span class="o">=</span> <span class="n">DBSession</span><span class="p">(</span>
@@ -189,11 +194,11 @@
 
     <span class="n">user_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span>
     <span class="n">cookie</span> <span class="o">=</span> <span class="n">cookies</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tapir_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">),</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span>
-                          <span class="nb">str</span><span class="p">(</span><span class="n">authorizations</span><span class="o">.</span><span class="n">classic</span><span class="p">))</span>
+                          <span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">authorizations</span><span class="o">.</span><span class="n">classic</span><span class="p">))</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;generated cookie: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cookie</span><span class="p">)</span>
 
     <span class="n">user_session</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tapir_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">),</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
-                                  <span class="n">start_time</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                                  <span class="n">start_time</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_time</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
                                   <span class="n">authorizations</span><span class="o">=</span><span class="n">authorizations</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;created session </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">user_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">user_session</span><span class="p">,</span> <span class="n">cookie</span></div>
@@ -215,7 +220,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">session_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cookies</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">cookie</span><span class="p">)</span>
+        <span class="n">session_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cookies</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">cookie</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">InvalidCookie</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">UnknownSession</span><span class="p">(</span><span class="s1">&#39;No such session&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
@@ -237,7 +242,8 @@
 <span class="sd">        The session could not be found, or the cookie was not valid.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="n">tapir_session</span> <span class="o">=</span> <span class="n">_load</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
@@ -268,8 +274,10 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/modules.html">arxiv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../accounts/modules.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">

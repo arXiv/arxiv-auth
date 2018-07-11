@@ -37,6 +37,13 @@
   <div class="section" id="module-accounts.controllers.authentication">
 <span id="accounts-controllers-authentication-module"></span><h1>accounts.controllers.authentication module<a class="headerlink" href="#module-accounts.controllers.authentication" title="Permalink to this headline">¶</a></h1>
 <p>Controllers for arXiv accounts application.</p>
+<p>When a user logs in via the accounts service, they are issued a session key
+that is stored as a cookie in their browser. That session ID is registered in
+the distributed keystore, along with claims about the user’s identity and
+privileges in the system (based on their role). In subsequent requests handled
+by the UI ingress, the authorizer service uses that session key to validate
+the authenticated session, and to retrieve corresponding identity and
+authorization information.</p>
 <dl class="class">
 <dt id="accounts.controllers.authentication.LoginForm">
 <em class="property">class </em><code class="descclassname">accounts.controllers.authentication.</code><code class="descname">LoginForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/authentication.html#LoginForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.authentication.LoginForm" title="Permalink to this definition">¶</a></dt>
@@ -136,25 +143,25 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/modules.html">arxiv</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">accounts</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="accounts.html">accounts package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="app.html">app module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wsgi.html">wsgi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="accounts.html">Accounts Service</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#context">Context</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="accounts.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#submodules">Submodules</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="modules.html">accounts</a><ul>
-  <li><a href="accounts.html">accounts package</a><ul>
+  <li><a href="accounts.html">Accounts Service</a><ul>
   <li><a href="accounts.controllers.html">accounts.controllers package</a><ul>
       <li>Previous: <a href="accounts.controllers.html" title="previous chapter">accounts.controllers package</a></li>
       <li>Next: <a href="accounts.controllers.captcha_image.html" title="next chapter">accounts.controllers.captcha_image module</a></li>
-  </ul></li>
   </ul></li>
   </ul></li>
   </ul></li>

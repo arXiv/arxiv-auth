@@ -61,6 +61,7 @@
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
 <span class="kn">import</span> <span class="nn">dateutil.parser</span>
 <span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">import</span> <span class="nn">jwt</span>
@@ -68,6 +69,7 @@
 
 <span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
 
+<span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
@@ -136,7 +138,8 @@
     <span class="k">except</span> <span class="n">jwt</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">DecodeError</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
         <span class="k">raise</span> <span class="n">InvalidCaptchaToken</span><span class="p">(</span><span class="s1">&#39;Could not decode token&#39;</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">dateutil</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">claims</span><span class="p">[</span><span class="s1">&#39;expires&#39;</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">():</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dateutil</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">claims</span><span class="p">[</span><span class="s1">&#39;expires&#39;</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">now</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;captcha token expired: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">claims</span><span class="p">[</span><span class="s1">&#39;expires&#39;</span><span class="p">])</span>
             <span class="k">raise</span> <span class="n">InvalidCaptchaToken</span><span class="p">(</span><span class="s1">&#39;Expired token&#39;</span><span class="p">)</span>
         <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">claims</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
@@ -168,7 +171,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">claims</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">_generate_random_string</span><span class="p">(),</span>
-        <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">300</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">300</span><span class="p">))</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">jwt</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">claims</span><span class="p">,</span> <span class="n">_secret</span><span class="p">(</span><span class="n">secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span></div>
 
@@ -256,8 +259,10 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../arxiv.users/modules.html">arxiv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../accounts/modules.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">

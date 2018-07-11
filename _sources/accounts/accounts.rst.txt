@@ -1,4 +1,4 @@
-accounts package
+Accounts Service
 ================
 
 .. automodule:: accounts
@@ -23,4 +23,3 @@ Submodules
 
    accounts.config
    accounts.factory
-

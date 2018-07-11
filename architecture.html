@@ -16,7 +16,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="arxiv" href="arxiv.users/modules.html" />
+    <link rel="next" title="arxiv.users package" href="arxiv.users/arxiv.users.html" />
     <link rel="prev" title="arXiv Authorization &amp; Authentication" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -36,20 +36,26 @@
             
   <div class="section" id="architecture">
 <h1>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The accounts and authorization subsystem is responsible for providing user
+accounts and profiles as well as mechanisms for authentication and
+authorization. This subsystem also provides the API client portal, which
+supports generation of application tokens, OAuth2 workflows, and a public
+API client application portal that end-users can use to discover tools and
+services built on top of arXiv APIs.</p>
 <p>The arXiv platform provides both anonymous and authenticated interfaces to
 end-users (including moderators), API clients, and the arXiv operations team.
 This project provides applications and libraries to support authentication and
 authorization, including account creation and login, user sessions, and API
 token management. TLS is considered an infrastructure concern, and is therefore
 out of scope (albeit critical) for this project.</p>
-</div>
 <div class="section" id="objectives-requirements">
 <h2>Objectives &amp; Requirements<a class="headerlink" href="#objectives-requirements" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
 <li>Users must be able to register for and log in to the arXiv site, and
-interact with parts of the platform that require authentication.</li>
+interact with parts of the platform that require authentication, and do
+so securely.</li>
+<li>Once logged in, a user should be able to access services/endpoints for which
+they are authorized regardless of where that service is deployed.</li>
 <li>API clients must be able to authenticate with the arXiv site, and obtain
 secure authorization tokens using OAuth2 protocols.</li>
 <li>Administrators must be able to grant and revoke authorization for specific
@@ -65,105 +71,55 @@ deployed on-premises must integrate with the legacy database so that users
 can seamlessly move between legacy and NG interfaces using the same session.</li>
 </ol>
 </div>
-<div class="section" id="solution-strategy">
-<h2>Solution Strategy<a class="headerlink" href="#solution-strategy" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="services">
+<h2>Services<a class="headerlink" href="#services" title="Permalink to this headline">¶</a></h2>
 <p>The objectives above are separated into four distinct concerns, each addressed
-by a separate piece of software:</p>
-<ul class="simple">
-<li><a class="reference internal" href="#user-accounts-service-containers"><span class="std std-ref">User accounts service</span></a>, which is
-responsible for user registration, authentication, and role management.</li>
-<li><a class="reference internal" href="#api-client-registry-containers"><span class="std std-ref">API client registry</span></a>, which is
-responsible for API client authentication, workflows for obtaining
-authorization tokens, and client access management.</li>
-<li><a class="reference internal" href="#authorizer-service-containers"><span class="std std-ref">Authorizer service</span></a>, which is
-responsible for authorizing user/client requests (cloud only).</li>
-<li>An <a class="reference internal" href="#auth-package"><span class="std std-ref">auth library</span></a>, which provides middleware and other
-components for working with user/client sessions and authorization in arXiv
-services.</li>
-</ul>
+by a separate piece of software.</p>
 <div class="figure" id="id1">
-<span id="figure-authnz-context"></span><img alt="_images/authnz-context.png" src="_images/authnz-context.png" />
+<span id="figure-authnz-context"></span><a class="reference internal image-reference" href="_images/authnz-context.png"><img alt="_images/authnz-context.png" src="_images/authnz-context.png" style="width: 350px;" /></a>
 <p class="caption"><span class="caption-text">System context for authn/z services in arXiv.</span></p>
 </div>
+<dl class="docutils">
+<dt><a class="reference internal" href="arxiv.users/arxiv.users.html#module-arxiv.users" title="arxiv.users"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users</span></code></a> Package</dt>
+<dd>A Python library that provides middleware and other components for working
+with user/client sessions and authorization in arXiv services.</dd>
+<dt><a class="reference internal" href="accounts/accounts.html#module-accounts" title="accounts"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Accounts</span> <span class="pre">Service</span></code></a></dt>
+<dd>Provides user registration and login mechanisms, access control management,
+and user profiles.</dd>
+<dt><a class="reference internal" href="authorizer/authorizer.html#module-authorizer" title="authorizer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Authorization</span> <span class="pre">Service</span></code></a></dt>
+<dd>Handles authorization subrequests from ingress controllers. Validates
+user session keys and API access keys, and generates internal authorization
+tokens.</dd>
+<dt><a class="reference internal" href="registry/registry.html#module-registry" title="registry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">API</span> <span class="pre">Client</span> <span class="pre">Registry</span></code></a></dt>
+<dd>Provides API client/application registration, generation of client keys,
+and a public-facing searchable directory of client projects and services.
+Also provides API documentation.</dd>
+</dl>
+<p>The accounts and authorizer services are underlain by a <strong>distributed
+keystore</strong> (HA Redis cluster) for registration and validation of session and
+access keys.</p>
 </div>
-<div class="section" id="user-accounts-service">
-<span id="user-accounts-service-containers"></span><h2>User accounts service<a class="headerlink" href="#user-accounts-service" title="Permalink to this headline">¶</a></h2>
-<p>The user accounts service is a Flask application that provides user interfaces
-for account registration, profile management, and authentication. It also
-provides administrative interfaces for user management and authorization roles.</p>
-<p>User data encompasses account details, preferences, and authorization roles.
-During the NG project, this will be tables in the legacy database for which
-temporary integration is required. Ultimately, these data will be housed in a
-standalone database.</p>
-<p>Authenticated sessions are stored in a distributed session/token store. When a
-user authenticates, they are issued a session key in the form of a secure
-cookie. That key can be used by the authorizer service to retrieve session
-details on subsequent requests to the accounts service or any other service.</p>
-<p>During the NG project, authenticated sessions must continue to be available to
-legacy web controller components. This means that the accounts service must
-integrate with the relevant sessions-related tables in the legacy database,
-and issue cookies that are compatible with those legacy sessions.</p>
-<div class="figure" id="id2">
-<span id="figure-user-accounts-containers"></span><img alt="_images/user-accounts-containers.png" src="_images/user-accounts-containers.png" />
-<p class="caption"><span class="caption-text">Containers in the user accounts system.</span></p>
+<div class="section" id="cross-cutting-concerns">
+<h2>Cross-Cutting Concerns<a class="headerlink" href="#cross-cutting-concerns" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="role-based-access-control">
+<h3>Role-Based Access Control<a class="headerlink" href="#role-based-access-control" title="Permalink to this headline">¶</a></h3>
+<p>Access control addresses what users are authorized to access and what users are
+authorized to do in the system. The classic arXiv system uses an access control
+mechanism similar to the Discretionary Access Control model, in which an Access
+Control List specifies what individual users can do in specific areas of the
+system and in relation to specific resources. DAC/ACL systems are often
+sufficient for systems with a relatively small number of users, but become
+difficult to manage as the user base grows or the system becomes more complex.</p>
+<p>The NG architecture adopts Role-Based Access Control, in which authorizations
+accrue instead to abstract “roles” to which multiple users belong. For example,
+several users might belong to a “moderator” role, to which specific
+authorizations (e.g. “can propose subject classifications”,
+“can view the moderator interface”) are attached. The main advantage of RBAC
+is ease of administration: policies can be added to and removed from roles
+without consideration of the specific users impacted; users can be granted
+a specific set of authorizations by simply adding them to a role, rather than
+attaching an array of individual policies directly to the user.</p>
 </div>
-<p>For details, see <a class="reference internal" href="accounts/accounts.html#module-accounts" title="accounts"><code class="xref py py-mod docutils literal notranslate"><span class="pre">accounts</span></code></a>.</p>
-</div>
-<div class="section" id="api-client-registry-service">
-<span id="api-client-registry-containers"></span><h2>API client registry service<a class="headerlink" href="#api-client-registry-service" title="Permalink to this headline">¶</a></h2>
-<p>The API client registry is a Flask application that provides user interfaces
-for registering new API clients, and managing API access. Authenticated users
-may register to obtain an API bearer token for public endpoints, and also to
-request additional authorization for protected endpoints such as submission.
-APIs are provided to support OAuth2 workflows for retrieving authorization
-tokens. Finally, administrative interfaces provide visibility and management.</p>
-<p>API client data encompasses details about the client, client tokens, and
-client authorizations. These data are stored in a stand-alone data store.</p>
-<p>Authorization tokens are registered in the distributed
-session/token store upon creation, where they can be retrieved by the
-authorizer service to authorize subsequent API requests.</p>
-<div class="figure" id="id3">
-<span id="figure-client-registry-containers"></span><img alt="_images/client-registry-containers.png" src="_images/client-registry-containers.png" />
-<p class="caption"><span class="caption-text">Containers in the API client registry system.</span></p>
-</div>
-<p>For details, see ___</p>
-</div>
-<div class="section" id="authorizer-service">
-<span id="authorizer-service-containers"></span><h2>Authorizer service<a class="headerlink" href="#authorizer-service" title="Permalink to this headline">¶</a></h2>
-<p>The authorizer service is a Flask application that handles client authorization
-requests from NGINX.</p>
-<p>In a cloud deployment scenario, upon request to the arXiv
-API or an authenticated endpoint, NGINX issues a sub-request to the
-authorization service including any cookies or auth headers. The
-authorization service is responsible for interpreting any auth information on
-the request, and either returns 200 (OK) if the request is authorized, 401
-(Unauthorized) if auth information was not available or invalid, or 403
-(Forbidden) if the request is denied.</p>
-<p>For our purposes, the authorizer service is mainly concerned with ensuring that
-the request has valid authentication information. The authorizer service
-includes in its response an encrypted JWT (see <code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.user.auth.tokens</span></code>)
-that contains information about the user or client session, including its
-authorization scopes (see <code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.user.auth.scopes</span></code>).</p>
-<div class="figure" id="id4">
-<span id="figure-authorizer-service-containers"></span><img alt="_images/authorizer-service-containers.png" src="_images/authorizer-service-containers.png" />
-<p class="caption"><span class="caption-text">Authorizer service containers.</span></p>
-</div>
-<p>The authorizer service uses session keys and API auth tokens to retrieve
-session information from the distributed session/token store.</p>
-<p>For details, see ___.</p>
-</div>
-<div class="section" id="authn-z-package">
-<span id="auth-package"></span><h2>Authn/z package<a class="headerlink" href="#authn-z-package" title="Permalink to this headline">¶</a></h2>
-<p>This package provides core functionality for working with users and sessions
-in arXiv-NG services. Housing these components in a library (separate from
-service implementations) ensures that users and sessions are represented
-and manipulated consistently.</p>
-<p>In addition to NG components, this package also provides integrations with the
-legacy user and session data in the classic database.</p>
-<p>The user accounts, API client registry, and authorizer services all rely on
-this package for domain representations and integration with the legacy
-system.</p>
-<p>See <a class="reference internal" href="arxiv.users/arxiv.users.html#module-arxiv.users" title="arxiv.users"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users</span></code></a>.</p>
 </div>
 </div>
 
@@ -187,17 +143,15 @@ system.</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Architecture</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#objectives-requirements">Objectives &amp; Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#solution-strategy">Solution Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#user-accounts-service">User accounts service</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#api-client-registry-service">API client registry service</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#authorizer-service">Authorizer service</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#authn-z-package">Authn/z package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#services">Services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cross-cutting-concerns">Cross-Cutting Concerns</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="arxiv.users/modules.html">arxiv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="accounts/modules.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">
@@ -205,7 +159,7 @@ system.</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="index.html" title="previous chapter">arXiv Authorization &amp; Authentication</a></li>
-      <li>Next: <a href="arxiv.users/modules.html" title="next chapter">arxiv</a></li>
+      <li>Next: <a href="arxiv.users/arxiv.users.html" title="next chapter">arxiv.users package</a></li>
   </ul></li>
 </ul>
 </div>

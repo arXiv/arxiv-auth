@@ -1,8 +1,11 @@
 Architecture
 ============
-
-Overview
---------
+The accounts and authorization subsystem is responsible for providing user
+accounts and profiles as well as mechanisms for authentication and
+authorization. This subsystem also provides the API client portal, which
+supports generation of application tokens, OAuth2 workflows, and a public
+API client application portal that end-users can use to discover tools and
+services built on top of arXiv APIs.
 
 The arXiv platform provides both anonymous and authenticated interfaces to
 end-users (including moderators), API clients, and the arXiv operations team.
@@ -15,157 +18,74 @@ Objectives & Requirements
 -------------------------
 
 1. Users must be able to register for and log in to the arXiv site, and
-   interact with parts of the platform that require authentication.
-2. API clients must be able to authenticate with the arXiv site, and obtain
+   interact with parts of the platform that require authentication, and do
+   so securely.
+2. Once logged in, a user should be able to access services/endpoints for which
+   they are authorized regardless of where that service is deployed.
+3. API clients must be able to authenticate with the arXiv site, and obtain
    secure authorization tokens using OAuth2 protocols.
-3. Administrators must be able to grant and revoke authorization for specific
+4. Administrators must be able to grant and revoke authorization for specific
    actions and services within the arXiv platform, using a role-based system.
-4. It must be possible to revoke access from a user or client, and have that
+5. It must be possible to revoke access from a user or client, and have that
    revocation take effect immediately.
-5. Accessing authentication and authorization information in an arXiv
+6. Accessing authentication and authorization information in an arXiv
    service/application must not require implementing new integrations; we need
    a single, consistent solution for authn/z concerns in Flask applications.
-6. Services/applications deployed in the cloud must be able to obtain authn/z
+7. Services/applications deployed in the cloud must be able to obtain authn/z
    information without accessing a central database. Services/applications
    deployed on-premises must integrate with the legacy database so that users
    can seamlessly move between legacy and NG interfaces using the same session.
 
-Solution Strategy
------------------
-
+Services
+--------
 The objectives above are separated into four distinct concerns, each addressed
-by a separate piece of software:
-
-- :ref:`User accounts service <user-accounts_service-containers>`, which is
-  responsible for user registration, authentication, and role management.
-- :ref:`API client registry <api-client-registry-containers>`, which is
-  responsible for API client authentication, workflows for obtaining
-  authorization tokens, and client access management.
-- :ref:`Authorizer service <authorizer-service-containers>`, which is
-  responsible for authorizing user/client requests (cloud only).
-- An :ref:`auth library <auth-package>`, which provides middleware and other
-  components for working with user/client sessions and authorization in arXiv
-  services.
-
+by a separate piece of software.
 
 .. _figure-authnz-context:
 
 .. figure:: _static/diagrams/authnz-context.png
+   :width: 350px
 
    System context for authn/z services in arXiv.
 
 
-.. _user-accounts_service-containers:
+:mod:`arxiv.users` Package
+    A Python library that provides middleware and other components for working
+    with user/client sessions and authorization in arXiv services.
+:mod:`Accounts Service <accounts>`
+    Provides user registration and login mechanisms, access control management,
+    and user profiles.
+:mod:`Authorization Service <authorizer>`
+    Handles authorization subrequests from ingress controllers. Validates
+    user session keys and API access keys, and generates internal authorization
+    tokens.
+:mod:`API Client Registry <registry>`
+    Provides API client/application registration, generation of client keys,
+    and a public-facing searchable directory of client projects and services.
+    Also provides API documentation.
 
-User accounts service
----------------------
+The accounts and authorizer services are underlain by a **distributed
+keystore** (HA Redis cluster) for registration and validation of session and
+access keys.
 
-The user accounts service is a Flask application that provides user interfaces
-for account registration, profile management, and authentication. It also
-provides administrative interfaces for user management and authorization roles.
+Cross-Cutting Concerns
+----------------------
+Role-Based Access Control
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Access control addresses what users are authorized to access and what users are
+authorized to do in the system. The classic arXiv system uses an access control
+mechanism similar to the Discretionary Access Control model, in which an Access
+Control List specifies what individual users can do in specific areas of the
+system and in relation to specific resources. DAC/ACL systems are often
+sufficient for systems with a relatively small number of users, but become
+difficult to manage as the user base grows or the system becomes more complex.
 
-User data encompasses account details, preferences, and authorization roles.
-During the NG project, this will be tables in the legacy database for which
-temporary integration is required. Ultimately, these data will be housed in a
-standalone database.
-
-Authenticated sessions are stored in a distributed session/token store. When a
-user authenticates, they are issued a session key in the form of a secure
-cookie. That key can be used by the authorizer service to retrieve session
-details on subsequent requests to the accounts service or any other service.
-
-During the NG project, authenticated sessions must continue to be available to
-legacy web controller components. This means that the accounts service must
-integrate with the relevant sessions-related tables in the legacy database,
-and issue cookies that are compatible with those legacy sessions.
-
-.. _figure-user-accounts-containers:
-
-.. figure:: _static/diagrams/user-accounts-containers.png
-
-   Containers in the user accounts system.
-
-For details, see :py:mod:`accounts`.
-
-.. _api-client-registry-containers:
-
-API client registry service
----------------------------
-
-The API client registry is a Flask application that provides user interfaces
-for registering new API clients, and managing API access. Authenticated users
-may register to obtain an API bearer token for public endpoints, and also to
-request additional authorization for protected endpoints such as submission.
-APIs are provided to support OAuth2 workflows for retrieving authorization
-tokens. Finally, administrative interfaces provide visibility and management.
-
-API client data encompasses details about the client, client tokens, and
-client authorizations. These data are stored in a stand-alone data store.
-
-Authorization tokens are registered in the distributed
-session/token store upon creation, where they can be retrieved by the
-authorizer service to authorize subsequent API requests.
-
-
-.. _figure-client-registry-containers:
-
-.. figure:: _static/diagrams/client-registry-containers.png
-
-   Containers in the API client registry system.
-
-For details, see ___
-
-
-.. _authorizer-service-containers:
-
-Authorizer service
-------------------
-
-The authorizer service is a Flask application that handles client authorization
-requests from NGINX.
-
-In a cloud deployment scenario, upon request to the arXiv
-API or an authenticated endpoint, NGINX issues a sub-request to the
-authorization service including any cookies or auth headers. The
-authorization service is responsible for interpreting any auth information on
-the request, and either returns 200 (OK) if the request is authorized, 401
-(Unauthorized) if auth information was not available or invalid, or 403
-(Forbidden) if the request is denied.
-
-For our purposes, the authorizer service is mainly concerned with ensuring that
-the request has valid authentication information. The authorizer service
-includes in its response an encrypted JWT (see :mod:`arxiv.user.auth.tokens`)
-that contains information about the user or client session, including its
-authorization scopes (see :mod:`arxiv.user.auth.scopes`).
-
-.. _figure-authorizer-service-containers:
-
-.. figure:: _static/diagrams/authorizer-service-containers.png
-
-   Authorizer service containers.
-
-
-The authorizer service uses session keys and API auth tokens to retrieve
-session information from the distributed session/token store.
-
-For details, see ___.
-
-
-.. _auth-package:
-
-Authn/z package
----------------
-
-This package provides core functionality for working with users and sessions
-in arXiv-NG services. Housing these components in a library (separate from
-service implementations) ensures that users and sessions are represented
-and manipulated consistently.
-
-In addition to NG components, this package also provides integrations with the
-legacy user and session data in the classic database.
-
-The user accounts, API client registry, and authorizer services all rely on
-this package for domain representations and integration with the legacy
-system.
-
-See :mod:`arxiv.users`.
+The NG architecture adopts Role-Based Access Control, in which authorizations
+accrue instead to abstract "roles" to which multiple users belong. For example,
+several users might belong to a "moderator" role, to which specific
+authorizations (e.g. "can propose subject classifications",
+"can view the moderator interface") are attached. The main advantage of RBAC
+is ease of administration: policies can be added to and removed from roles
+without consideration of the specific users impacted; users can be granted
+a specific set of authorizations by simply adding them to a role, rather than
+attaching an array of individual policies directly to the user.

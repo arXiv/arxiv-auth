@@ -37,6 +37,10 @@
   <div class="section" id="module-accounts.controllers.registration">
 <span id="accounts-controllers-registration-module"></span><h1>accounts.controllers.registration module<a class="headerlink" href="#module-accounts.controllers.registration" title="Permalink to this headline">¶</a></h1>
 <p>Controllers for registration and user profile management.</p>
+<p>Users are able to create a new arXiv account, and login using their username
+and password. Each user can create a personalized profile with contact and
+affiliation information, and links to external identities such as GitHub and
+ORCID.</p>
 <dl class="class">
 <dt id="accounts.controllers.registration.ProfileForm">
 <em class="property">class </em><code class="descclassname">accounts.controllers.registration.</code><code class="descname">ProfileForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#ProfileForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.ProfileForm" title="Permalink to this definition">¶</a></dt>
@@ -61,6 +65,11 @@
 <dl class="attribute">
 <dt id="accounts.controllers.registration.ProfileForm.RANKS">
 <code class="descname">RANKS</code><em class="property"> = [('', ''), ('1', 'Staff'), ('2', 'Professor'), ('3', 'Post doc'), ('4', 'Grad student'), ('5', 'Other')]</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.RANKS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.ProfileForm.affiliation">
+<code class="descname">affiliation</code><em class="property"> = &lt;UnboundField(StringField, ('Affiliation',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': 'This field accepts &lt;a href=&quot;https://arxiv.org/user/tex_accents&quot;&gt;pidgin TeX (\\\'o)&lt;/a&gt; for foreign characters.'})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.affiliation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -100,11 +109,6 @@
 <dl class="attribute">
 <dt id="accounts.controllers.registration.ProfileForm.groups">
 <code class="descname">groups</code><em class="property"> = &lt;UnboundField(MultiCheckboxField, ('Group(s) to which you would like to submit',), {'choices': [('grp_physics', 'Physics'), ('grp_math', 'Mathematics'), ('grp_q-bio', 'Quantitative Biology'), ('grp_cs', 'Computer Science'), ('grp_q-fin', 'Quantitative Finance'), ('grp_stat', 'Statistics'), ('grp_eess', 'Electrical Engineering and Systems Science'), ('grp_econ', 'Economics')], 'default': ''})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.groups" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="accounts.controllers.registration.ProfileForm.organization">
-<code class="descname">organization</code><em class="property"> = &lt;UnboundField(StringField, ('Organization',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': 'This field accepts &lt;a href=&quot;https://arxiv.org/user/tex_accents&quot;&gt;pidgin TeX (\\\'o)&lt;/a&gt; for foreign characters.'})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.organization" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -319,25 +323,25 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/modules.html">arxiv</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">accounts</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="accounts.html">accounts package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="app.html">app module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wsgi.html">wsgi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="accounts.html">Accounts Service</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#context">Context</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="accounts.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#submodules">Submodules</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="modules.html">accounts</a><ul>
-  <li><a href="accounts.html">accounts package</a><ul>
+  <li><a href="accounts.html">Accounts Service</a><ul>
   <li><a href="accounts.controllers.html">accounts.controllers package</a><ul>
       <li>Previous: <a href="accounts.controllers.captcha_image.html" title="previous chapter">accounts.controllers.captcha_image module</a></li>
       <li>Next: <a href="accounts.controllers.util.html" title="next chapter">accounts.controllers.util module</a></li>
-  </ul></li>
   </ul></li>
   </ul></li>
   </ul></li>

@@ -37,6 +37,7 @@
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
 <span class="kn">import</span> <span class="nn">secrets</span>
 <span class="kn">from</span> <span class="nn">base64</span> <span class="k">import</span> <span class="n">b64encode</span><span class="p">,</span> <span class="n">b64decode</span>
@@ -55,22 +56,23 @@
 <span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="n">Base</span><span class="p">,</span> <span class="n">DBUser</span><span class="p">,</span> <span class="n">DBPolicyClass</span><span class="p">,</span> <span class="n">DBEndorsement</span><span class="p">,</span> <span class="n">DBSession</span>
 <span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">UnknownSession</span><span class="p">,</span> <span class="n">PasswordAuthenticationFailed</span>
 
-<span class="c1"># TODO: timezone!</span>
+<span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="now"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.now">[docs]</a><span class="k">def</span> <span class="nf">now</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Get the current epoch/unix time.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">epoch</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span></div>
+    <span class="k">return</span> <span class="n">epoch</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="epoch"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.epoch">[docs]</a><span class="k">def</span> <span class="nf">epoch</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Convert a :class:`.datetime` to UNIX time.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">t</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()))</span></div>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">delta</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()))</span></div>
 
 
 <div class="viewcode-block" id="from_epoch"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.from_epoch">[docs]</a><span class="k">def</span> <span class="nf">from_epoch</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Get a :class:`datetime` from an UNIX timestamp.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="transaction"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.transaction">[docs]</a><span class="nd">@contextmanager</span>
@@ -179,6 +181,13 @@
     <span class="n">config</span> <span class="o">=</span> <span class="n">get_application_config</span><span class="p">()</span>
     <span class="n">session_hash</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;CLASSIC_SESSION_HASH&#39;</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">session_hash</span></div>
+
+
+<div class="viewcode-block" id="get_session_duration"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.get_session_duration">[docs]</a><span class="k">def</span> <span class="nf">get_session_duration</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get the session duration from the config.&quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">get_application_config</span><span class="p">()</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;CLASSIC_SESSION_TIMEOUT&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span></div>
 </pre></div>
 
           </div>
@@ -200,8 +209,10 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/modules.html">arxiv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../accounts/modules.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authorizer/authorizer.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">API Client Registry</a></li>
 </ul>
 
 <div class="relations">
