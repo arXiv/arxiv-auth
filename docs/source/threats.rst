@@ -162,7 +162,7 @@ cookie itself.
 In the latter case, the cookie is an encrypted JWT that must be decrypted
 successfully using a secret key. In addition, a **pseudo-random nonce** created
 at the start of the authenticated session is stored in both the session store
-and in the token payload for comparison. This means that compromised token
+and in the token payload for comparison. This means that a compromised token
 cannot be used to generate a new valid token.
 
 In both cases, the **IP address** of the client that initiated the
