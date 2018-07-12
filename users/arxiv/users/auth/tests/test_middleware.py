@@ -3,6 +3,7 @@
 import os
 from unittest import TestCase, mock
 from datetime import datetime
+from pytz import timezone
 import json
 
 from flask import Flask, Blueprint
@@ -14,6 +15,8 @@ from arxiv import status
 from ..middleware import AuthMiddleware
 from .. import tokens, scopes
 from ... import domain
+
+EASTERN = timezone('US/Eastern')
 
 
 blueprint = Blueprint('fooprint', __name__, url_prefix='')
@@ -52,7 +55,7 @@ class TestAuthMiddleware(TestCase):
         """A valid user token is passed in the request."""
         session = domain.Session(
             session_id='foo1234',
-            start_time=datetime.now(),
+            start_time=datetime.now(tz=EASTERN),
             user=domain.User(
                 user_id='43219',
                 email='foo@foo.com',
@@ -78,7 +81,7 @@ class TestAuthMiddleware(TestCase):
         """A forged user token is passed in the request."""
         session = domain.Session(
             session_id='foo1234',
-            start_time=datetime.now(),
+            start_time=datetime.now(tz=EASTERN),
             user=domain.User(
                 user_id='43219',
                 email='foo@foo.com',

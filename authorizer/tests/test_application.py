@@ -3,10 +3,13 @@
 from unittest import TestCase, mock
 import json
 from datetime import datetime
+from pytz import timezone
 import jwt
 
 from arxiv import status
 from authorizer.factory import create_app
+
+EASTERN = timezone('US/Eastern')
 
 
 class TestAuthorizeWithCookie(TestCase):
@@ -73,7 +76,9 @@ class TestAuthorizeWithCookie(TestCase):
     @mock.patch('authorizer.services.session_store._get_redis')
     def test_expired_token(self, mock_get_redis):
         """A JWT produced with a different secret is passed."""
-        now = (datetime.now() - datetime.utcfromtimestamp(0)).total_seconds()
+        delta = datetime.now(tz=EASTERN) - \
+            datetime.fromtimestamp(0, tz=EASTERN)
+        now = (delta).total_seconds()
         mock_redis = mock.MagicMock()
         mock_redis.get.return_value = json.dumps({
             'user_id': '1234',
@@ -267,7 +272,9 @@ class TestAuthorizeWithHeader(TestCase):
     @mock.patch('authorizer.services.session_store._get_redis')
     def test_expired_token(self, mock_get_redis):
         """A JWT produced with a different secret is passed."""
-        now = (datetime.now() - datetime.utcfromtimestamp(0)).total_seconds()
+        delta = datetime.now(tz=EASTERN) - \
+            datetime.fromtimestamp(0, tz=EASTERN)
+        now = (delta).total_seconds()
         mock_redis = mock.MagicMock()
         mock_redis.get.return_value = json.dumps({
             'user_id': '1234',

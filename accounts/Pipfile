@@ -19,6 +19,7 @@ requests = "*"
 sqlalchemy = "*"
 uwsgi = "*"
 wtforms = "*"
+"6c2b755" = {path = "./../users"}
 
 [dev-packages]
 mimesis = "*"

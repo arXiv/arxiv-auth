@@ -4,11 +4,14 @@ from unittest import TestCase, mock
 import time
 import jwt
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+from pytz import timezone
 from redis.exceptions import ConnectionError
 
 from .... import domain
 from .. import store
+
+EASTERN = timezone('US/Eastern')
 
 
 class TestDistributedSessionService(TestCase):
@@ -94,9 +97,12 @@ class TestInvalidateSession(TestCase):
             'REDIS_DATABASE': 4
         }
         mock_redis = mock.MagicMock()
+        start_time = datetime.now(tz=EASTERN)
+        end_time = start_time + timedelta(seconds=7200)
         data = {
             'session_id': 'ajx9043jjx00s',
-            'start_time': datetime.now().isoformat(),
+            'start_time': start_time.isoformat(),
+            'end_time': end_time.isoformat(),
             'nonce': '0039299290098',
             'user': {
                 'user_id': '1234',
@@ -118,7 +124,8 @@ class TestInvalidateSession(TestCase):
         claims = {
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
-            'nonce': '0039299290098'
+            'nonce': '0039299290098',
+            'expires': end_time.isoformat()
         }
         token = jwt.encode(claims, secret).decode('ascii')
 
@@ -181,10 +188,13 @@ class TestGetSession(TestCase):
         }
         mock_redis = mock.MagicMock()
         mock_get_redis.return_value = mock_redis
+        start_time = datetime.now(tz=EASTERN)
+        end_time = start_time + timedelta(seconds=7200)
         claims = {
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
-            'nonce': '0039299290099'
+            'nonce': '0039299290099',
+            'expires': end_time.isoformat()
         }
         bad_token = jwt.encode(claims, 'nottherightsecret').decode('ascii')
         with self.assertRaises(store.InvalidToken):
@@ -201,21 +211,21 @@ class TestGetSession(TestCase):
             'REDIS_PORT': '1234',
             'REDIS_DATABASE': 4
         }
-        now = (datetime.now() - datetime.utcfromtimestamp(0)).total_seconds()
         mock_redis = mock.MagicMock()
+        start_time = datetime.now(tz=EASTERN)
         mock_redis.get.return_value = json.dumps({
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099',
-            'start_time': datetime.now().isoformat(),
-            'end_time': datetime.now().isoformat(),
+            'expires': start_time.isoformat(),
         })
         mock_get_redis.return_value = mock_redis
 
         claims = {
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
-            'nonce': '0039299290099'
+            'nonce': '0039299290099',
+            'expires': start_time.isoformat(),
         }
         expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
@@ -225,6 +235,9 @@ class TestGetSession(TestCase):
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
     def test_forged_token(self, mock_get_redis, mock_get_config):
         """A JWT with the wrong nonce is passed."""
+        start_time = datetime.now(tz=EASTERN)
+        end_time = start_time + timedelta(seconds=7200)
+
         secret = 'barsecret'
         mock_get_config.return_value = {
             'JWT_SECRET': secret,
@@ -236,7 +249,8 @@ class TestGetSession(TestCase):
         mock_redis.get.return_value = json.dumps({
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290098',
-            'start_time': datetime.now().isoformat(),
+            'start_time': start_time.isoformat(),
+            'end_time': end_time.isoformat(),
             'user': {
                 'user_id': '1235',
                 'username': 'foouser',
@@ -248,7 +262,8 @@ class TestGetSession(TestCase):
         claims = {
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
-            'nonce': '0039299290099'    # <- Doesn't match!
+            'nonce': '0039299290099',    # <- Doesn't match!
+            'expires': end_time.isoformat(),
         }
         expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
@@ -258,6 +273,9 @@ class TestGetSession(TestCase):
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
     def test_other_forged_token(self, mock_get_redis, mock_get_config):
         """A JWT with the wrong user_id is passed."""
+        start_time = datetime.now(tz=EASTERN)
+        end_time = start_time + timedelta(seconds=7200)
+
         secret = 'barsecret'
         mock_get_config.return_value = {
             'JWT_SECRET': secret,
@@ -269,7 +287,7 @@ class TestGetSession(TestCase):
         mock_redis.get.return_value = json.dumps({
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099',
-            'start_time': datetime.now().isoformat(),
+            'start_time': start_time.isoformat(),
             'user': {
                 'user_id': '1235',
                 'username': 'foouser',
@@ -277,11 +295,11 @@ class TestGetSession(TestCase):
             }
         })
         mock_get_redis.return_value = mock_redis
-
         claims = {
             'user_id': '1234',  # <- Doesn't match!
             'session_id': 'ajx9043jjx00s',
-            'nonce': '0039299290099'
+            'nonce': '0039299290099',
+            'expires': end_time.isoformat(),
         }
         expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
@@ -291,6 +309,9 @@ class TestGetSession(TestCase):
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
     def test_empty_session(self, mock_get_redis, mock_get_config):
         """Session has been removed, or may never have existed."""
+        start_time = datetime.now(tz=EASTERN)
+        end_time = start_time + timedelta(seconds=7200)
+
         secret = 'barsecret'
         mock_get_config.return_value = {
             'JWT_SECRET': secret,
@@ -306,6 +327,7 @@ class TestGetSession(TestCase):
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099',
+            'expires': end_time.isoformat(),
         }
         expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.UnknownSession):
@@ -315,6 +337,9 @@ class TestGetSession(TestCase):
     @mock.patch(f'{store.__name__}.redis.StrictRedis')
     def test_valid_token(self, mock_get_redis, mock_get_config):
         """A valid token is passed."""
+        start_time = datetime.now(tz=EASTERN)
+        end_time = start_time + timedelta(seconds=7200)
+
         secret = 'barsecret'
         mock_get_config.return_value = {
             'JWT_SECRET': secret,
@@ -325,7 +350,7 @@ class TestGetSession(TestCase):
         mock_redis = mock.MagicMock()
         mock_redis.get.return_value = json.dumps({
             'session_id': 'ajx9043jjx00s',
-            'start_time': datetime.now().isoformat(),
+            'start_time': datetime.now(tz=EASTERN).isoformat(),
             'nonce': '0039299290098',
             'user': {
                 'user_id': '1234',
@@ -338,7 +363,8 @@ class TestGetSession(TestCase):
         claims = {
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
-            'nonce': '0039299290098'
+            'nonce': '0039299290098',
+            'expires': end_time.isoformat(),
         }
         valid_token = jwt.encode(claims, secret).decode('ascii')
 

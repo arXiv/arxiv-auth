@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "49ef99e7ee511e34f3002711ab8c31781f1ce6098a1a5a32b2e27db4abde5370"
+            "sha256": "d511b10e1cf511865967443f1ec377d171346cd9bc9a92d7a88ca95913f50230"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -17,6 +17,9 @@
     },
     "default": {
         "4010dd8": {
+            "path": "./../users"
+        },
+        "6c2b755": {
             "path": "./../users"
         },
         "amqp": {
@@ -35,24 +38,23 @@
         },
         "billiard": {
             "hashes": [
-                "sha256:1d7b22bdc47aa52841120fcd22a74ae4fc8c13e9d3935643098184f5788c3ce6",
-                "sha256:abd9ce008c9a71ccde2c816f8daa36246e92a21e6a799831b887d88277187ecd"
+                "sha256:ed65448da5877b5558f19d2f7f11f8355ea76b3e63e1c0a6059f47cfae5f1c84"
             ],
-            "version": "==3.5.0.3"
+            "version": "==3.5.0.4"
         },
         "boto3": {
             "hashes": [
-                "sha256:60c760da488deed3fdec7dca2fb0a37ece72d8b9e80f3f3fc47bd6a396ea11b6",
-                "sha256:e7f52af8a5cb98d976f296d4a4ac1ac43c7b414c3765ca82c92b033cd06710c2"
+                "sha256:43255355cb4ad0fcba178658073120107695a6258259d4a5d387c0cb8354b928",
+                "sha256:d5413b68157d73515839c6b1bbc00c0a9b0722ce8b14475215cf68984003f82b"
             ],
-            "version": "==1.7.50"
+            "version": "==1.7.52"
         },
         "botocore": {
             "hashes": [
-                "sha256:07b572ae6ae3df5ff6d5e8dc5cf9812b9842d5ea96502b54b51867700861ee07",
-                "sha256:585a5df85d2cfef41fbe7ad32bfcf00d9a54eafa75a6e126a07619b692f548ea"
+                "sha256:5e809e326564d1b6422b0c7235300da428601e6694c8e7d7f05e38329fe40e31",
+                "sha256:a4acb24c8ba2fb148e41b385e8acd10c5d96bf576ad22be1364919bed6f74f4e"
             ],
-            "version": "==1.10.50"
+            "version": "==1.10.52"
         },
         "captcha": {
             "hashes": [
@@ -295,10 +297,10 @@
         },
         "uwsgi": {
             "hashes": [
-                "sha256:3dc2e9b48db92b67bfec1badec0d3fdcc0771316486c5efa3217569da3528bf2"
+                "sha256:d2318235c74665a60021a4fc7770e9c2756f9fc07de7b8c22805efe85b5ab277"
             ],
             "index": "pypi",
-            "version": "==2.0.17"
+            "version": "==2.0.17.1"
         },
         "vine": {
             "hashes": [

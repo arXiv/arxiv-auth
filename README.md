@@ -117,13 +117,31 @@ To start the application itself, first make sure that all dependencies are
 installed. You'll need to install the ``arxiv.users`` package; see
 [#dependencies](dependencies).
 
-We assume your developer machine already has a version of Python 3.6
-with `pip`.
-
 ```bash
 pipenv install --dev
-FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
 ```
+
+You will also need to decide what you want to use for the legacy user and
+session database backend. For local development/testing purposes, it's fine to
+use an on-disk SQLite database. You should also be able to use a local MySQL
+instance with a clone of the legacy database.
+
+To start with SQLAlchemy (tables will be created automatically):
+
+```bash
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+```
+
+To use MySQL/MariaDB:
+
+```bash
+CLASSIC_DATABASE_URI=mysql+mysqldb://[USERNAME]:[PASSWORD]@localhost:3306/[DATABASE] \
+ FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+```
+
+Set the username, password, and database to whatever you're using. If the DB
+structure does not already exist, the user will need to be able to create
+tables. Otherwise conventional read/write access should be sufficient.
 
 You should be able to register a new user at
 http://localhost:5000/user/register.
@@ -267,8 +285,6 @@ won't need to run sphinx-apidoc unless the structure of the project changes
 To rebuild the API docs, run (from the project root):
 
 ```bash
-rm -rf docs/source/arxiv.users
 sphinx-apidoc -o docs/source/arxiv.users -e -f -M --implicit-namespaces users/arxiv *test*/*
-rfm -rf docs/source/accounts
 sphinx-apidoc -o docs/source/accounts -e -f -M accounts *test*/*
 ```

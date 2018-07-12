@@ -8,6 +8,10 @@ and manipulated consistently. In addition to NG components, this package
 also provides integrations with the legacy user and session data in the
 classic database.
 
+The user accounts, API client registry, and authorizer services all rely on
+this package for domain representations and integration with the legacy
+system.
+
 Quick start
 -----------
 

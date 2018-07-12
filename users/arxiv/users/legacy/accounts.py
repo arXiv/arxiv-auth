@@ -144,7 +144,7 @@ def update(user: domain.User) -> Tuple[domain.User, domain.Authorizations]:
             _update_field(db_user.last_name, user.name.surname)
             _update_field(db_user.suffix_name, user.name.suffix)
         if user.profile is not None:
-            _update_field(db_profile.origanization, user.profile.organization)
+            _update_field(db_profile.origanization, user.profile.affiliation)
             _update_field(db_profile.country, user.profile.country)
             _update_field(db_profile.rank, user.profile.rank)
             _update_field(db_profile.rank, user.profile.rank)
@@ -234,7 +234,7 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
         db_profile = DBProfile(
             user=db_user,
             country=user.profile.country,
-            affiliation=user.profile.organization,
+            affiliation=user.profile.affiliation,
             url=user.profile.homepage_url,
             rank=user.profile.rank,
             archive=user.profile.default_archive,
@@ -246,6 +246,8 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
             flag_group_q_bio=_has_group('grp_q-bio'),
             flag_group_q_fin=_has_group('grp_q-fin'),
             flag_group_stat=_has_group('grp_stat'),
+            flag_group_eess=_has_group('grp_eess'),
+            flag_group_econ=_has_group('grp_econ'),
         )
         session.add(db_profile)
 

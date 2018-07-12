@@ -3,8 +3,11 @@
 from unittest import TestCase
 from typing import NamedTuple, Optional
 from datetime import datetime
+from pytz import timezone
 
 from ..domain import from_dict, to_dict
+
+EASTERN = timezone('US/Eastern')
 
 
 class TestDictCoercion(TestCase):
@@ -53,6 +56,6 @@ class TestDictCoercion(TestCase):
             bat: Optional[datetime]
             baz: Optional[ChildClass] = None
 
-        parent = ParentClass(bat=datetime.now(),
-                             baz=ChildClass(foo=datetime.now()))
+        parent = ParentClass(bat=datetime.now(tz=EASTERN),
+                             baz=ChildClass(foo=datetime.now(tz=EASTERN)))
         self.assertEqual(parent, from_dict(ParentClass, to_dict(parent)))

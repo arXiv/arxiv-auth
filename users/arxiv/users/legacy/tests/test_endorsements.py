@@ -3,12 +3,15 @@
 import os
 from unittest import TestCase, mock
 from datetime import datetime
+from pytz import timezone
 
 from flask import Flask
 from mimesis import Person, Internet, Datetime
 
 from .. import endorsements, util, models
 from ... import domain
+
+EASTERN = timezone('US/Eastern')
 
 
 class TestAutoEndorsement(TestCase):
@@ -34,6 +37,9 @@ class TestAutoEndorsement(TestCase):
                 first_name = person.name()
                 last_name = person.surname()
                 suffix_name = person.title()
+                joined_date = util.epoch(
+                    Datetime('en').datetime().replace(tzinfo=EASTERN)
+                )
                 db_user = models.DBUser(
                     first_name=first_name,
                     last_name=last_name,
@@ -50,7 +56,7 @@ class TestAutoEndorsement(TestCase):
                     share_email=8,
                     email_bouncing=0,
                     policy_class=2,  # Public user. TODO: consider admin.
-                    joined_date=util.epoch(Datetime('en').datetime()),
+                    joined_date=joined_date,
                     joined_ip_num=ip_addr,
                     joined_remote_host=ip_addr
                 )
@@ -75,6 +81,9 @@ class TestAutoEndorsement(TestCase):
         """The user has two autoendorsements that have been invalidated."""
         with self.app.app_context():
             with util.transaction() as session:
+                issued_when = util.epoch(
+                    Datetime('en').datetime().replace(tzinfo=EASTERN)
+                )
                 session.add(models.DBEndorsement(
                     endorsee_id=self.user.user_id,
                     archive='astro-ph',
@@ -82,7 +91,7 @@ class TestAutoEndorsement(TestCase):
                     flag_valid=0,
                     endorsement_type='auto',
                     point_value=10,
-                    issued_when=util.epoch(Datetime('en').datetime())
+                    issued_when=issued_when
                 ))
                 session.add(models.DBEndorsement(
                     endorsee_id=self.user.user_id,
@@ -91,7 +100,7 @@ class TestAutoEndorsement(TestCase):
                     flag_valid=0,
                     endorsement_type='auto',
                     point_value=10,
-                    issued_when=util.epoch(Datetime('en').datetime())
+                    issued_when=issued_when
                 ))
                 session.add(models.DBEndorsement(
                     endorsee_id=self.user.user_id,
@@ -100,7 +109,7 @@ class TestAutoEndorsement(TestCase):
                     flag_valid=1,
                     endorsement_type='auto',
                     point_value=10,
-                    issued_when=util.epoch(Datetime('en').datetime())
+                    issued_when=issued_when
                 ))
                 session.add(models.DBEndorsement(
                     endorsee_id=self.user.user_id,
@@ -109,7 +118,7 @@ class TestAutoEndorsement(TestCase):
                     flag_valid=1,
                     endorsement_type='user',
                     point_value=10,
-                    issued_when=util.epoch(Datetime('en').datetime())
+                    issued_when=issued_when
                 ))
 
             result = endorsements.invalidated_autoendorsements(self.user)
@@ -156,7 +165,7 @@ class TestAutoEndorsement(TestCase):
                 session.add(models.DBDocuments(
                     document_id=1,
                     paper_id='2101.00123',
-                    dated=util.epoch(datetime.now())
+                    dated=util.epoch(datetime.now(tz=EASTERN))
                 ))
                 session.add(models.DBDocumentInCategory(
                     document_id=1,
@@ -181,7 +190,7 @@ class TestAutoEndorsement(TestCase):
                 session.add(models.DBDocuments(
                     document_id=2,
                     paper_id='2101.00124',
-                    dated=util.epoch(datetime.now())
+                    dated=util.epoch(datetime.now(tz=EASTERN))
                 ))
                 session.add(models.DBDocumentInCategory(
                     document_id=2,
@@ -206,7 +215,7 @@ class TestAutoEndorsement(TestCase):
                 session.add(models.DBDocuments(
                     document_id=3,
                     paper_id='2101.00125',
-                    dated=util.epoch(datetime.now())
+                    dated=util.epoch(datetime.now(tz=EASTERN))
                 ))
                 # It has both a primary and a secondary classification.
                 session.add(models.DBDocumentInCategory(

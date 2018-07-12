@@ -2,6 +2,7 @@
 
 from typing import Generator, Tuple, List
 from datetime import datetime
+from pytz import timezone
 from contextlib import contextmanager
 import secrets
 from base64 import b64encode, b64decode
@@ -20,22 +21,23 @@ from .. import domain
 from .models import Base, DBUser, DBPolicyClass, DBEndorsement, DBSession
 from .exceptions import UnknownSession, PasswordAuthenticationFailed
 
-# TODO: timezone!
+EASTERN = timezone('US/Eastern')
 
 
 def now() -> int:
     """Get the current epoch/unix time."""
-    return epoch(datetime.now())
+    return epoch(datetime.now(tz=EASTERN))
 
 
 def epoch(t: datetime) -> int:
     """Convert a :class:`.datetime` to UNIX time."""
-    return int(round((t - datetime.utcfromtimestamp(0)).total_seconds()))
+    delta = t - datetime.fromtimestamp(0, tz=EASTERN)
+    return int(round((delta).total_seconds()))
 
 
 def from_epoch(t: int) -> datetime:
     """Get a :class:`datetime` from an UNIX timestamp."""
-    return datetime.utcfromtimestamp(t)
+    return datetime.fromtimestamp(t, tz=EASTERN)
 
 
 @contextmanager
@@ -144,3 +146,10 @@ def get_session_hash() -> str:
     config = get_application_config()
     session_hash: str = config['CLASSIC_SESSION_HASH']
     return session_hash
+
+
+def get_session_duration() -> int:
+    """Get the session duration from the config."""
+    config = get_application_config()
+    timeout: str = config['CLASSIC_SESSION_TIMEOUT']
+    return int(timeout)

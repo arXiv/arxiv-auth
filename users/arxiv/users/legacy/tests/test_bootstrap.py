@@ -9,6 +9,7 @@ from flask import Flask
 from typing import List
 import random
 from datetime import datetime
+from pytz import timezone
 from mimesis import Person, Internet, Datetime
 from mimesis import config as mimesis_config
 
@@ -17,6 +18,7 @@ from .. import models, util, sessions, authenticate, exceptions
 from ... import domain
 
 LOCALES = list(mimesis_config.SUPPORTED_LOCALES.keys())
+EASTERN = timezone('US/Eastern')
 
 
 def _random_category() -> Tuple[str, str]:
@@ -44,6 +46,7 @@ class TestBootstrap(TestCase):
         util.init_app(cls.app)
         cls.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         cls.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
+        cls.app.config['CLASSIC_SESSION_TIMEOUT'] = '36000'
 
         with cls.app.app_context():
             util.create_all()
@@ -67,6 +70,9 @@ class TestBootstrap(TestCase):
                     last_name = person.surname()
                     suffix_name = person.title()
                     name = (first_name, last_name, suffix_name)
+                    joined_date = util.epoch(
+                        Datetime(locale).datetime().replace(tzinfo=EASTERN)
+                    )
                     db_user = models.DBUser(
                         first_name=first_name,
                         last_name=last_name,
@@ -83,7 +89,7 @@ class TestBootstrap(TestCase):
                         share_email=8,
                         email_bouncing=0,
                         policy_class=2,  # Public user. TODO: consider admin.
-                        joined_date=util.epoch(Datetime(locale).datetime()),
+                        joined_date=joined_date,
                         joined_ip_num=ip_addr,
                         joined_remote_host=ip_addr
                     )
@@ -137,6 +143,9 @@ class TestBootstrap(TestCase):
                             endorser_id = random.choice(_users).user_id
                         else:
                             endorser_id = None
+                        issued_when = util.epoch(
+                            Datetime(locale).datetime().replace(tzinfo=EASTERN)
+                        )
                         session.add(models.DBEndorsement(
                             endorsee=db_user,
                             endorser_id=endorser_id,
@@ -145,7 +154,7 @@ class TestBootstrap(TestCase):
                             flag_valid=1,
                             endorsement_type=etype,
                             point_value=point_value,
-                            issued_when=util.epoch(Datetime(locale).datetime())
+                            issued_when=issued_when
                         ))
 
                     session.add(db_password)

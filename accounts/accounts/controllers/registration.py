@@ -1,4 +1,11 @@
-"""Controllers for registration and user profile management."""
+"""
+Controllers for registration and user profile management.
+
+Users are able to create a new arXiv account, and login using their username
+and password. Each user can create a personalized profile with contact and
+affiliation information, and links to external identities such as GitHub and
+ORCID.
+"""
 
 from typing import Dict, Tuple, Any, Optional
 import uuid
@@ -185,8 +192,8 @@ class ProfileForm(Form):
     surname = StringField('Last or family name',
                           validators=[Length(min=1, max=50), DataRequired()])
     suffix = StringField('Suffix', validators=[Length(max=50)])
-    organization = StringField(
-        'Organization',
+    affiliation = StringField(
+        'Affiliation',
         validators=[Length(max=255), DataRequired()],
         description='This field accepts '
                     '<a href="https://arxiv.org/user/tex_accents">'
@@ -215,7 +222,7 @@ class ProfileForm(Form):
             'forename': user.name.forename,
             'surname': user.name.surname,
             'suffix': user.name.suffix,
-            'organization': user.profile.organization,
+            'affiliation': user.profile.affiliation,
             'country': user.profile.country.upper(),
             'status': user.profile.rank,
             'groups': user.profile.submission_groups,
@@ -236,7 +243,7 @@ class ProfileForm(Form):
                 suffix=self.suffix.data
             ),
             profile=domain.UserProfile(
-                organization=self.organization.data,
+                affiliation=self.affiliation.data,
                 country=self.country.data,
                 rank=int(self.status.data),     # WTF can't handle int values.
                 submission_groups=self.groups.data,

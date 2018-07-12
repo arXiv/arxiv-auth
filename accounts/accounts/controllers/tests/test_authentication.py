@@ -2,6 +2,7 @@
 
 from unittest import TestCase, mock
 from datetime import datetime
+from pytz import timezone
 
 from werkzeug import MultiDict
 from werkzeug.exceptions import BadRequest
@@ -10,6 +11,9 @@ from arxiv import status
 from arxiv.users import domain
 from accounts.services import legacy, users, sessions
 from accounts.controllers.authentication import login, logout, LoginForm
+
+
+EASTERN = timezone('US/Eastern')
 
 
 def raise_authentication_failed(*args, **kwargs):
@@ -111,7 +115,7 @@ class TestPOSTLogin(TestCase):
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
         ip = '123.45.67.89'
         next_page = '/foo'
-        start_time = datetime.now()
+        start_time = datetime.now(tz=EASTERN)
         user = domain.User(
             user_id=42,
             username='foouser',
