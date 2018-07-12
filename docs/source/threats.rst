@@ -86,6 +86,13 @@ Potential attack vectors and failure scenarios include:
 7. **Code execution (e.g. SQL injection).** Attackers may attempt to cause
    arXiv software to execute code, such as SQL commands, resulting in
    corruption or exfiltration of sensitive data.
+8. **Brute force login attacks.** An attacker may attempt to gain access to
+   another user's account by simply trying a large volume of username/password 
+   combinations.
+9. **Programmatic account creation.** It is important that a human user take
+   overt and specific action to create an account for themselves. A malicious 
+   actor may attempt to generate accounts programmatically, which would 
+   undermine that policy.
 
 
 Prevention & design considerations
@@ -182,6 +189,14 @@ The legacy system supports a "remember me" token that is stored as a secure
 cookie on the user's browser. This permanent login token bypasses password
 authentication, and is valid at any IP address. The permanent login token will
 be discontinued in arXiv-NG.
+
+Captcha
+^^^^^^^
+In parts of the system where we want to prevent programmatic access (e.g.
+account creation, e-mail harvesting), some kind of robot-deterence should be
+used. While not a perfect solution, an image-based Captcha does provide a
+baseline level of confidence that a request has originated from a human 
+user.
 
 Log sanitization
 ^^^^^^^^^^^^^^^^
