@@ -356,4 +356,6 @@ def _get_cast_type(field_type: type, value: Any) -> Optional[Callable]:
         return _get_cast_type_for_dict(field_type)
     if type(value) is str:
         return _get_cast_type_for_str(field_type)
+    if type(value) is list and _is_a_namedtuple(field_type):
+        return partial(from_dict, field_type)
     return None
