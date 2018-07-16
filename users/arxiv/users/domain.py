@@ -142,6 +142,13 @@ class Authorizations(NamedTuple):
     scopes: list = []
     """Authorized scopes. See :mod:`arxiv.users.auth.scopes`."""
 
+    def __post_init__(self):
+        """Make sure that endorsements are :class:`.Category` instances."""
+        # Iterative coercion is hard. It's a lot easier to handle this here
+        # than to implement a general-purpose coercsion.
+        if self.endorsements and type(self.endorsements) is not Category:
+            self.endorsements = [Category(**obj) for obj in self.endorsements]
+
 
 class UserFullName(NamedTuple):
     """Represents a user's full name."""
@@ -350,12 +357,13 @@ def _get_cast_type_for_dict(field_type: type) -> Optional[Callable]:
     return None
 
 
+# Recursive coersion on anything more complicated than these simple cases is
+# pretty hard. It's easier to implement anything else (e.g. a List of
+# something type-ish) on the domain class itself.
 def _get_cast_type(field_type: type, value: Any) -> Optional[Callable]:
     """Get a casting callable for a field type/value."""
     if type(value) is dict:
         return _get_cast_type_for_dict(field_type)
     if type(value) is str:
         return _get_cast_type_for_str(field_type)
-    if type(value) is list and _is_a_namedtuple(field_type):
-        return partial(from_dict, field_type)
     return None
