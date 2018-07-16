@@ -142,12 +142,15 @@ class Authorizations(NamedTuple):
     scopes: list = []
     """Authorized scopes. See :mod:`arxiv.users.auth.scopes`."""
 
-    def __post_init__(self):
+    @classmethod
+    def before_init(cls, data: dict) -> None:
         """Make sure that endorsements are :class:`.Category` instances."""
         # Iterative coercion is hard. It's a lot easier to handle this here
         # than to implement a general-purpose coercsion.
-        if self.endorsements and type(self.endorsements) is not Category:
-            self.endorsements = [Category(**obj) for obj in self.endorsements]
+        # if self.endorsements and type(self.endorsements[0]) is not Category:
+        data['endorsements'] = [
+            Category(*obj) for obj in data.get('endorsements', [])
+        ]
 
 
 class UserFullName(NamedTuple):
@@ -302,6 +305,8 @@ def from_dict(cls: type, data: dict) -> Any:
         if target_type:
             value = target_type(value)
         _data[field] = value
+        if hasattr(cls, 'before_init'):
+            cls.before_init(_data)
     return cls(**_data)
 
 
