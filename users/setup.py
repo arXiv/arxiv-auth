@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='arxiv-users',
+    name='arxiv-auth',
     version='0.0.1',
     packages=[f'arxiv.{package}' for package
               in find_packages('./arxiv', exclude=['*test*'])],
