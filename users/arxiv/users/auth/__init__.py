@@ -64,6 +64,8 @@ class Auth(object):
             logger.debug('No legacy session available')
         except legacy.exceptions.InvalidCookie as e:
             logger.debug('Invalid legacy cookie')
+        except legacy.exceptions.SessionExpired as e:
+            logger.debug('Legacy session is expired')
         return None
 
     def init_app(self, app: Flask) -> None:

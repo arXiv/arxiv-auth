@@ -27,3 +27,7 @@ class UnknownSession(RuntimeError):
 
 class SessionExpired(RuntimeError):
     """User's session has expired."""
+
+
+class ExpiredToken(RuntimeError):
+    """An expired token was passed."""

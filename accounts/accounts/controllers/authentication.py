@@ -144,13 +144,14 @@ def logout(session_cookie: Optional[str],
             sessions.invalidate(session_cookie)
         except sessions.exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
-            raise InternalServerError('Cannot log out') from e  # type: ignore
+
     if classic_session_cookie:
         try:
             legacy.invalidate(classic_session_cookie)
         except legacy.exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
-            raise InternalServerError('Cannot log out') from e  # type: ignore
+        except legacy.exceptions.UnknownSession as e:
+            logger.debug('Unknown session: %s', e)
 
     data = {
         'cookies': {

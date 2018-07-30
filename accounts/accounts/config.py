@@ -17,6 +17,9 @@ LOGLEVEL = os.environ.get('LOGLEVEL', 20)
 REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
 REDIS_DATABASE = os.environ.get('REDIS_DATABASE', '0')
+REDIS_TOKEN = os.environ.get('REDIS_TOKEN', None)
+"""This is the token used in the AUTH procedure."""
+
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
 
@@ -30,6 +33,7 @@ DEFAULT_LOGOUT_REDIRECT_URL = os.environ.get(
 )
 
 SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
+SESSION_COOKIE_SECURE = bool(int(os.environ.get('SESSION_COOKIE_SECURE', '1')))
 
 CLASSIC_COOKIE_NAME = os.environ.get('CLASSIC_COOKIE_NAME', 'tapir_session')
 CLASSIC_PERMANENT_COOKIE_NAME = os.environ.get(
@@ -53,3 +57,9 @@ CLASSIC_DATABASE_URI = os.environ.get('CLASSIC_DATABASE_URI')
 
 CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', 'foocaptcha')
 """Used to encrypt captcha answers, so that we don't need to store them."""
+
+
+BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
+URLS = [
+    ("register", "/user/register", BASE_SERVER),
+]

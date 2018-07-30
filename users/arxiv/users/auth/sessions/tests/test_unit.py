@@ -133,7 +133,7 @@ class TestInvalidateSession(TestCase):
         self.assertIsInstance(session, domain.Session, "Returns a session")
         store.invalidate(token)
 
-        with self.assertRaises(store.InvalidToken):
+        with self.assertRaises(store.ExpiredToken):
             store.load(token)
 
 

@@ -20,7 +20,7 @@ import jwt
 
 from ... import domain
 from ..exceptions import SessionCreationFailed, InvalidToken, \
-    SessionDeletionFailed, UnknownSession
+    SessionDeletionFailed, UnknownSession, ExpiredToken
 
 from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
@@ -43,9 +43,12 @@ class SessionStore(object):
     """
 
     def __init__(self, host: str, port: int, db: int, secret: str,
-                 duration: int = 7200) -> None:
+                 duration: int = 7200, token: str = None) -> None:
         """Open the connection to Redis."""
-        self.r = redis.StrictRedis(host=host, port=port, db=db)
+        params = dict(host=host, port=port, db=db)
+        if token is not None:
+            params.update({'password': token})
+        self.r = redis.StrictRedis(**params)
         self._secret = secret
         self._duration = duration
 
@@ -122,6 +125,10 @@ class SessionStore(object):
         except InvalidToken as e:
             logger.debug('Could not load session data: %s', e)
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
+        except ExpiredToken as e:
+            # This is what we set out to do; our work here is done.
+            logger.debug('Session already expired')
+            return None
         try:
             cookie_data = self._unpack_cookie(cookie)
         except jwt.exceptions.DecodeError as e:   # type: ignore
@@ -153,6 +160,10 @@ class SessionStore(object):
         except InvalidToken as e:
             logger.debug('Could not load session data: %s', e)
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
+        except ExpiredToken as e:
+            # This is what we set out to do; our work here is done.
+            logger.debug('Session already expired')
+            return None
 
         session_data['end_time'] = datetime.now(tz=EASTERN).isoformat()
         try:
@@ -179,7 +190,7 @@ class SessionStore(object):
 
         session = self._load(session_id)
         if session.expired:
-            raise InvalidToken('Session has expired')
+            raise ExpiredToken('Session has expired')
         if nonce != session.nonce:
             raise InvalidToken('Invalid token; likely a forgery')
         if session.user is None and session.client is None:
@@ -220,6 +231,7 @@ def init_app(app: object = None) -> None:
     config.setdefault('REDIS_HOST', 'localhost')
     config.setdefault('REDIS_PORT', '6379')
     config.setdefault('REDIS_DATABASE', '0')
+    config.setdefault('REDIS_TOKEN', None)
     config.setdefault('JWT_SECRET', 'foosecret')
     config.setdefault('SESSION_DURATION', '7200')
 
@@ -230,9 +242,10 @@ def get_redis_session(app: object = None) -> SessionStore:
     host = config.get('REDIS_HOST', 'localhost')
     port = int(config.get('REDIS_PORT', '6379'))
     db = int(config.get('REDIS_DATABASE', '0'))
+    token = config.get('REDIS_TOKEN', None)
     secret = config['JWT_SECRET']
     duration = int(config.get('SESSION_DURATION', '7200'))
-    return SessionStore(host, port, db, secret, duration)
+    return SessionStore(host, port, db, secret, duration, token=token)
 
 
 def current_session() -> SessionStore:

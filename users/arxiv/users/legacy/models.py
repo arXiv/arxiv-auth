@@ -241,7 +241,7 @@ class DBProfile(Base):   # type: ignore
         ('grp_q-fin', 'flag_group_q_fin'),
         ('grp_q-stat', 'flag_group_stat'),
         ('grp_q-econ', 'flag_group_econ'),
-        ('grp_q-eess', 'flag_group_eess'),
+        ('grp_eess', 'flag_group_eess'),
     ]
 
     @property

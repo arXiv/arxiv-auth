@@ -40,255 +40,258 @@ def stop_container(container):
     users.drop_all()
 
 
-class TestRegistration(TestCase):
-    """Test registering new users."""
+# 2018-07-30 : Disabling everything except login and logout routes for accounts
+#  v0.1. - Erick
 
-    __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
-
-    def setUp(self):
-        """Spin up redis."""
-        self.redis = subprocess.run(
-            "docker run -d -p 6379:6379 redis",
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
-        time.sleep(5)    # In case it takes a moment to start.
-        if self.redis.returncode > 0:
-            raise RuntimeError('Could not start redis. Is Docker running?')
-
-        self.container = self.redis.stdout.decode('ascii').strip()
-        self.secret = 'bazsecret'
-        self.db = 'db.sqlite'
-        self.captcha_secret = 'foocaptcha'
-        self.ip_address = '10.10.10.10'
-        self.environ_base = {'REMOTE_ADDR': self.ip_address}
-        try:
-            self.app = create_web_app()
-            self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-            self.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
-            self.app.config['CAPTCHA_SECRET'] = self.captcha_secret
-            self.app.config['JWT_SECRET'] = self.secret
-            self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
-            self.client = self.app.test_client()
-            with self.app.app_context():
-                from accounts.services import legacy, users
-                legacy.create_all()
-                users.create_all()
-        except Exception as e:
-            stop_container(self.container)
-            raise
-
-    def tearDown(self):
-        """Tear down redis."""
-        stop_container(self.container)
-        os.remove(self.db)
-
-    def test_get_registration_form(self):
-        """GET request for the registration form."""
-        response = self.client.get('/user/register')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content_type, 'text/html; charset=utf-8')
-
-    def test_post_minimum(self):
-        """POST request with minimum required data."""
-        captcha_token = stateless_captcha.new(self.captcha_secret,
-                                              self.ip_address)
-        captcha_value = stateless_captcha.unpack(captcha_token,
-                                                 self.captcha_secret,
-                                                 self.ip_address)
-        registration_data = {
-            'email': 'foo@bar.edu',
-            'username': 'foouser',
-            'password': 'fdsafdsa',
-            'password2': 'fdsafdsa',
-            'forename': 'Bob',
-            'surname': 'Bob',
-            'affiliation': 'Bob Co.',
-            'country': 'RU',
-            'status': '1',
-            'default_category': 'astro-ph.CO',
-            'captcha_value': captcha_value,
-            'captcha_token': captcha_token
-        }
-        response = self.client.post('/user/register', data=registration_data,
-                                    environ_base=self.environ_base)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(
-            response.headers['Location'].endswith('/user/1/profile')
-        )
-        cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-
-        self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
-                      "Sets cookie for authn session.")
-        self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
-                      "Sets cookie for classic sessions.")
-
-    def test_cannot_create_twice(self):
-        """After a registration is successful, user cannot access form."""
-        # Create the first user.
-        captcha_token = stateless_captcha.new(self.captcha_secret,
-                                              self.ip_address)
-        captcha_value = stateless_captcha.unpack(captcha_token,
-                                                 self.captcha_secret,
-                                                 self.ip_address)
-        registration_data = {
-            'email': 'foo@bar.edu',
-            'username': 'foouser',
-            'password': 'fdsafdsa',
-            'password2': 'fdsafdsa',
-            'forename': 'Bob',
-            'surname': 'Bob',
-            'affiliation': 'Bob Co.',
-            'country': 'RU',
-            'status': '1',
-            'default_category': 'astro-ph.CO',
-            'captcha_value': captcha_value,
-            'captcha_token': captcha_token
-        }
-        response = self.client.post('/user/register', data=registration_data,
-                                    environ_base=self.environ_base)
-
-        # We have to set the cookies manually here.
-        cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-        self.client.set_cookie(
-            'localhost',
-            self.app.config['SESSION_COOKIE_NAME'],
-            cookies[self.app.config['SESSION_COOKIE_NAME']]['value']
-        )
-        self.client.set_cookie(
-            'localhost',
-            self.app.config['CLASSIC_COOKIE_NAME'],
-            cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value']
-        )
-
-        # Attempting to access the registration form results in a redirect.
-        response = self.client.post('/user/register', data=registration_data,
-                                    environ_base=self.environ_base)
-        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
-        response = self.client.get('/user/register',
-                                   environ_base=self.environ_base)
-        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
-
-        # Clear session cookies. The user is no longer using an authenticated
-        # session.
-        self.client.set_cookie('localhost',
-                               self.app.config['SESSION_COOKIE_NAME'], '')
-        self.client.set_cookie('localhost',
-                               self.app.config['CLASSIC_COOKIE_NAME'], '')
-
-        response = self.client.get('/user/register',
-                                   environ_base=self.environ_base)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_existing_username_email(self):
-        """Valid data, but username or email already exists."""
-        # Create the first user.
-        captcha_token = stateless_captcha.new(self.captcha_secret,
-                                              self.ip_address)
-        captcha_value = stateless_captcha.unpack(captcha_token,
-                                                 self.captcha_secret,
-                                                 self.ip_address)
-        registration_data = {
-            'email': 'foo@bar.edu',
-            'username': 'foouser',
-            'password': 'fdsafdsa',
-            'password2': 'fdsafdsa',
-            'forename': 'Bob',
-            'surname': 'Bob',
-            'affiliation': 'Bob Co.',
-            'country': 'RU',
-            'status': '1',
-            'default_category': 'astro-ph.CO',
-            'captcha_value': captcha_value,
-            'captcha_token': captcha_token
-        }
-        self.client.post('/user/register', data=registration_data,
-                         environ_base=self.environ_base)
-        # Clear session cookies.
-        self.client.set_cookie('localhost',
-                               self.app.config['SESSION_COOKIE_NAME'], '')
-        self.client.set_cookie('localhost',
-                               self.app.config['CLASSIC_COOKIE_NAME'], '')
-
-        # Now we attempt to register the same user.
-        captcha_token = stateless_captcha.new(self.captcha_secret,
-                                              self.ip_address)
-        captcha_value = stateless_captcha.unpack(captcha_token,
-                                                 self.captcha_secret,
-                                                 self.ip_address)
-        registration_data = {
-            'email': 'other@bar.edu',
-            'username': 'foouser',    # <- Same username!
-            'password': 'fdsafdsa',
-            'password2': 'fdsafdsa',
-            'forename': 'Bob',
-            'surname': 'Bob',
-            'affiliation': 'Bob Co.',
-            'country': 'RU',
-            'status': '1',
-            'default_category': 'astro-ph.CO',
-            'captcha_value': captcha_value,
-            'captcha_token': captcha_token
-        }
-        response = self.client.post('/user/register', data=registration_data,
-                                    environ_base=self.environ_base)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
-                         "Returns 400 response")
-
-        # Clear session cookies.
-        self.client.set_cookie('localhost',
-                               self.app.config['SESSION_COOKIE_NAME'], '')
-        self.client.set_cookie('localhost',
-                               self.app.config['CLASSIC_COOKIE_NAME'], '')
-
-        registration_data = {
-            'email': 'foo@bar.edu',    # <- same email!
-            'username': 'otheruser',
-            'password': 'fdsafdsa',
-            'password2': 'fdsafdsa',
-            'forename': 'Bob',
-            'surname': 'Bob',
-            'affiliation': 'Bob Co.',
-            'country': 'RU',
-            'status': '1',
-            'default_category': 'astro-ph.CO',
-            'captcha_value': captcha_value,
-            'captcha_token': captcha_token
-        }
-        response = self.client.post('/user/register', data=registration_data,
-                                    environ_base=self.environ_base)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
-                         "Returns 400 response")
-
-    def test_missing_data(self):
-        """POST request missing a required field."""
-        captcha_token = stateless_captcha.new(self.captcha_secret,
-                                              self.ip_address)
-        captcha_value = stateless_captcha.unpack(captcha_token,
-                                                 self.captcha_secret,
-                                                 self.ip_address)
-
-        registration_data = {
-            'email': 'foo@bar.edu',
-            'username': 'foouser',
-            'password': 'fdsafdsa',
-            'password2': 'fdsafdsa',
-            'forename': 'Bob',
-            'surname': 'Bob',
-            'affiliation': 'Bob Co.',
-            'country': 'RU',
-            'status': '1',
-            'default_category': 'astro-ph.CO',
-            'captcha_value': captcha_value,
-            'captcha_token': captcha_token
-        }
-        for key in registration_data.keys():
-            to_post = dict(registration_data)
-            to_post.pop(key)    # Drop this one.
-            response = self.client.post('/user/register', data=to_post,
-                                        environ_base=self.environ_base)
-
-            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
-                             "Returns 400 response")
+# class TestRegistration(TestCase):
+#     """Test registering new users."""
+#
+#     __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
+#
+#     def setUp(self):
+#         """Spin up redis."""
+#         self.redis = subprocess.run(
+#             "docker run -d -p 6379:6379 redis",
+#             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+#         )
+#         time.sleep(5)    # In case it takes a moment to start.
+#         if self.redis.returncode > 0:
+#             raise RuntimeError('Could not start redis. Is Docker running?')
+#
+#         self.container = self.redis.stdout.decode('ascii').strip()
+#         self.secret = 'bazsecret'
+#         self.db = 'db.sqlite'
+#         self.captcha_secret = 'foocaptcha'
+#         self.ip_address = '10.10.10.10'
+#         self.environ_base = {'REMOTE_ADDR': self.ip_address}
+#         try:
+#             self.app = create_web_app()
+#             self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
+#             self.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
+#             self.app.config['CAPTCHA_SECRET'] = self.captcha_secret
+#             self.app.config['JWT_SECRET'] = self.secret
+#             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+#             self.client = self.app.test_client()
+#             with self.app.app_context():
+#                 from accounts.services import legacy, users
+#                 legacy.create_all()
+#                 users.create_all()
+#         except Exception as e:
+#             stop_container(self.container)
+#             raise
+#
+#     def tearDown(self):
+#         """Tear down redis."""
+#         stop_container(self.container)
+#         os.remove(self.db)
+#
+#     def test_get_registration_form(self):
+#         """GET request for the registration form."""
+#         response = self.client.get('/user/register')
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         self.assertEqual(response.content_type, 'text/html; charset=utf-8')
+#
+#     def test_post_minimum(self):
+#         """POST request with minimum required data."""
+#         captcha_token = stateless_captcha.new(self.captcha_secret,
+#                                               self.ip_address)
+#         captcha_value = stateless_captcha.unpack(captcha_token,
+#                                                  self.captcha_secret,
+#                                                  self.ip_address)
+#         registration_data = {
+#             'email': 'foo@bar.edu',
+#             'username': 'foouser',
+#             'password': 'fdsafdsa',
+#             'password2': 'fdsafdsa',
+#             'forename': 'Bob',
+#             'surname': 'Bob',
+#             'affiliation': 'Bob Co.',
+#             'country': 'RU',
+#             'status': '1',
+#             'default_category': 'astro-ph.CO',
+#             'captcha_value': captcha_value,
+#             'captcha_token': captcha_token
+#         }
+#         response = self.client.post('/user/register', data=registration_data,
+#                                     environ_base=self.environ_base)
+#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+#         self.assertTrue(
+#             response.headers['Location'].endswith('/user/1/profile')
+#         )
+#         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
+#
+#         self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
+#                       "Sets cookie for authn session.")
+#         self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
+#                       "Sets cookie for classic sessions.")
+#
+#     def test_cannot_create_twice(self):
+#         """After a registration is successful, user cannot access form."""
+#         # Create the first user.
+#         captcha_token = stateless_captcha.new(self.captcha_secret,
+#                                               self.ip_address)
+#         captcha_value = stateless_captcha.unpack(captcha_token,
+#                                                  self.captcha_secret,
+#                                                  self.ip_address)
+#         registration_data = {
+#             'email': 'foo@bar.edu',
+#             'username': 'foouser',
+#             'password': 'fdsafdsa',
+#             'password2': 'fdsafdsa',
+#             'forename': 'Bob',
+#             'surname': 'Bob',
+#             'affiliation': 'Bob Co.',
+#             'country': 'RU',
+#             'status': '1',
+#             'default_category': 'astro-ph.CO',
+#             'captcha_value': captcha_value,
+#             'captcha_token': captcha_token
+#         }
+#         response = self.client.post('/user/register', data=registration_data,
+#                                     environ_base=self.environ_base)
+#
+#         # We have to set the cookies manually here.
+#         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
+#         self.client.set_cookie(
+#             'localhost',
+#             self.app.config['SESSION_COOKIE_NAME'],
+#             cookies[self.app.config['SESSION_COOKIE_NAME']]['value']
+#         )
+#         self.client.set_cookie(
+#             'localhost',
+#             self.app.config['CLASSIC_COOKIE_NAME'],
+#             cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value']
+#         )
+#
+#         # Attempting to access the registration form results in a redirect.
+#         response = self.client.post('/user/register', data=registration_data,
+#                                     environ_base=self.environ_base)
+#         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+#         response = self.client.get('/user/register',
+#                                    environ_base=self.environ_base)
+#         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+#
+#         # Clear session cookies. The user is no longer using an authenticated
+#         # session.
+#         self.client.set_cookie('localhost',
+#                                self.app.config['SESSION_COOKIE_NAME'], '')
+#         self.client.set_cookie('localhost',
+#                                self.app.config['CLASSIC_COOKIE_NAME'], '')
+#
+#         response = self.client.get('/user/register',
+#                                    environ_base=self.environ_base)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#
+#     def test_existing_username_email(self):
+#         """Valid data, but username or email already exists."""
+#         # Create the first user.
+#         captcha_token = stateless_captcha.new(self.captcha_secret,
+#                                               self.ip_address)
+#         captcha_value = stateless_captcha.unpack(captcha_token,
+#                                                  self.captcha_secret,
+#                                                  self.ip_address)
+#         registration_data = {
+#             'email': 'foo@bar.edu',
+#             'username': 'foouser',
+#             'password': 'fdsafdsa',
+#             'password2': 'fdsafdsa',
+#             'forename': 'Bob',
+#             'surname': 'Bob',
+#             'affiliation': 'Bob Co.',
+#             'country': 'RU',
+#             'status': '1',
+#             'default_category': 'astro-ph.CO',
+#             'captcha_value': captcha_value,
+#             'captcha_token': captcha_token
+#         }
+#         self.client.post('/user/register', data=registration_data,
+#                          environ_base=self.environ_base)
+#         # Clear session cookies.
+#         self.client.set_cookie('localhost',
+#                                self.app.config['SESSION_COOKIE_NAME'], '')
+#         self.client.set_cookie('localhost',
+#                                self.app.config['CLASSIC_COOKIE_NAME'], '')
+#
+#         # Now we attempt to register the same user.
+#         captcha_token = stateless_captcha.new(self.captcha_secret,
+#                                               self.ip_address)
+#         captcha_value = stateless_captcha.unpack(captcha_token,
+#                                                  self.captcha_secret,
+#                                                  self.ip_address)
+#         registration_data = {
+#             'email': 'other@bar.edu',
+#             'username': 'foouser',    # <- Same username!
+#             'password': 'fdsafdsa',
+#             'password2': 'fdsafdsa',
+#             'forename': 'Bob',
+#             'surname': 'Bob',
+#             'affiliation': 'Bob Co.',
+#             'country': 'RU',
+#             'status': '1',
+#             'default_category': 'astro-ph.CO',
+#             'captcha_value': captcha_value,
+#             'captcha_token': captcha_token
+#         }
+#         response = self.client.post('/user/register', data=registration_data,
+#                                     environ_base=self.environ_base)
+#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+#                          "Returns 400 response")
+#
+#         # Clear session cookies.
+#         self.client.set_cookie('localhost',
+#                                self.app.config['SESSION_COOKIE_NAME'], '')
+#         self.client.set_cookie('localhost',
+#                                self.app.config['CLASSIC_COOKIE_NAME'], '')
+#
+#         registration_data = {
+#             'email': 'foo@bar.edu',    # <- same email!
+#             'username': 'otheruser',
+#             'password': 'fdsafdsa',
+#             'password2': 'fdsafdsa',
+#             'forename': 'Bob',
+#             'surname': 'Bob',
+#             'affiliation': 'Bob Co.',
+#             'country': 'RU',
+#             'status': '1',
+#             'default_category': 'astro-ph.CO',
+#             'captcha_value': captcha_value,
+#             'captcha_token': captcha_token
+#         }
+#         response = self.client.post('/user/register', data=registration_data,
+#                                     environ_base=self.environ_base)
+#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+#                          "Returns 400 response")
+#
+#     def test_missing_data(self):
+#         """POST request missing a required field."""
+#         captcha_token = stateless_captcha.new(self.captcha_secret,
+#                                               self.ip_address)
+#         captcha_value = stateless_captcha.unpack(captcha_token,
+#                                                  self.captcha_secret,
+#                                                  self.ip_address)
+#
+#         registration_data = {
+#             'email': 'foo@bar.edu',
+#             'username': 'foouser',
+#             'password': 'fdsafdsa',
+#             'password2': 'fdsafdsa',
+#             'forename': 'Bob',
+#             'surname': 'Bob',
+#             'affiliation': 'Bob Co.',
+#             'country': 'RU',
+#             'status': '1',
+#             'default_category': 'astro-ph.CO',
+#             'captcha_value': captcha_value,
+#             'captcha_token': captcha_token
+#         }
+#         for key in registration_data.keys():
+#             to_post = dict(registration_data)
+#             to_post.pop(key)    # Drop this one.
+#             response = self.client.post('/user/register', data=to_post,
+#                                         environ_base=self.environ_base)
+#
+#             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+#                              "Returns 400 response")
 
 
 class TestLoginLogoutRoutes(TestCase):
@@ -313,6 +316,7 @@ class TestLoginLogoutRoutes(TestCase):
             self.app = create_web_app()
             self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
             self.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
+            self.app.config['SESSION_COOKIE_SECURE'] = '0'
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.client = self.app.test_client()
@@ -409,28 +413,27 @@ class TestLoginLogoutRoutes(TestCase):
                       "Sets cookie for authn session.")
         self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
                       "Sets cookie for classic sessions.")
-        response = self.client.get('/user/logout')
-        cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
+        response = self.client.get('/user/logout')
+        logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
+        print(logout_cookies)
         self.assertEqual(
-            cookies[self.app.config['SESSION_COOKIE_NAME']]['value'],
+            logout_cookies[self.app.config['SESSION_COOKIE_NAME']]['value'],
             '',
             'Session cookie is unset'
         )
-        cookie_expires = datetime.strptime(
-            cookies[self.app.config['SESSION_COOKIE_NAME']]['Expires'],
-            '%a, %d-%b-%Y %H:%M:%S %Z'
-        ).replace(tzinfo=EASTERN)
-        self.assertGreater(datetime.now(tz=EASTERN), cookie_expires,
-                           "Session cookie is expired")
         self.assertEqual(
-            cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value'],
+            logout_cookies[self.app.config['SESSION_COOKIE_NAME']]['Max-Age'],
+            '0',
+            'Session cookie is expired'
+        )
+        self.assertEqual(
+            logout_cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value'],
             '',
             'Classic cookie is unset'
         )
-        classic_cookie_expires = datetime.strptime(
-            cookies[self.app.config['CLASSIC_COOKIE_NAME']]['Expires'],
-            '%a, %d-%b-%Y %H:%M:%S %Z'
-        ).replace(tzinfo=EASTERN)
-        self.assertGreater(datetime.now(tz=EASTERN), classic_cookie_expires,
-                           "Classic session cookie is expired")
+        self.assertEqual(
+            logout_cookies[self.app.config['CLASSIC_COOKIE_NAME']]['Max-Age'],
+            '0',
+            'Classic session cookie is expired'
+        )

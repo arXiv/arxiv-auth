@@ -4,3 +4,6 @@ omit =
     */wsgi.py
     docs/*
     */tests*
+    */controllers/captcha_image.py
+    */controllers/registration.py
+    */stateless_captcha/*
