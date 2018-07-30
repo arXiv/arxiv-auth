@@ -118,36 +118,48 @@ class SessionStore(object):
         cookie : str
 
         """
-        try:
-            session = domain.to_dict(self.load(cookie))
-        except redis.exceptions.ConnectionError as e:
-            raise SessionDeletionFailed(f'Connection failed: {e}') from e
-        except InvalidToken as e:
-            logger.debug('Could not load session data: %s', e)
-            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
+        try:    # Load the current session data from the session store.
+            session = self.load(cookie)
+            session_data = domain.to_dict(session)
+            self.validate_session_against_cookie(session, cookie)
         except ExpiredToken as e:
             # This is what we set out to do; our work here is done.
             logger.debug('Session already expired')
             return None
-        try:
-            cookie_data = self._unpack_cookie(cookie)
-        except jwt.exceptions.DecodeError as e:   # type: ignore
-            raise SessionDeletionFailed('Bad session token') from e
+        except Exception as e:
+            # Something went terribly wrong.
+            logger.debug('Could not load session data: %s', e)
+            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
         try:
-            if session['nonce'] != cookie_data['nonce'] \
-                    or session['user']['user_id'] != cookie_data['user_id']:
-                raise SessionDeletionFailed('Bad session token')
-            session['end_time'] = datetime.now(tz=EASTERN).isoformat()
-            self.r.set(session['session_id'], json.dumps(session))
-        except redis.exceptions.ConnectionError as e:
-            raise SessionDeletionFailed(f'Connection failed: {e}') from e
+            session_data['end_time'] = datetime.now(tz=EASTERN).isoformat()
+            self.r.set(session_data['session_id'], json.dumps(session_data))
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
+    def validate_session_against_cookie(self, session: domain.Session,
+                                        cookie: str) -> None:
+        """
+        Validate session data against a cookie.
+
+        Parameters
+        ----------
+        session : :class:`Session`
+        cookie : str
+
+        Raises
+        ------
+        :class:`InvalidToken`
+            Raised if the data in the cookie does not match the session data.
+        """
+        cookie_data = self._unpack_cookie(cookie)
+        if cookie_data['nonce'] != session.nonce \
+                or session.user.user_id != cookie_data['user_id']:
+            raise InvalidToken('Invalid token; likely a forgery')
+
     def invalidate_by_id(self, session_id: str) -> None:
         """
-        Invalidate a session in the key-value store by ID.
+        Invalidate a session in the key-value store by session ID.
 
         Parameters
         ----------
@@ -155,21 +167,17 @@ class SessionStore(object):
         """
         try:
             session_data = domain.to_dict(self._load(session_id))
-        except redis.exceptions.ConnectionError as e:
-            raise SessionDeletionFailed(f'Connection failed: {e}') from e
-        except InvalidToken as e:
-            logger.debug('Could not load session data: %s', e)
-            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
         except ExpiredToken as e:
             # This is what we set out to do; our work here is done.
             logger.debug('Session already expired')
             return None
+        except Exception as e:
+            logger.debug('Could not load session data: %s', e)
+            raise SessionDeletionFailed(f'Connection failed: {e}') from e
 
         session_data['end_time'] = datetime.now(tz=EASTERN).isoformat()
         try:
             self.r.set(session_id, json.dumps(session_data))
-        except redis.exceptions.ConnectionError as e:
-            raise SessionDeletionFailed(f'Connection failed: {e}') from e
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
@@ -177,30 +185,20 @@ class SessionStore(object):
         """Load a session using a session cookie."""
         try:
             cookie_data = self._unpack_cookie(cookie)
-            session_id = cookie_data['session_id']
-            user_id = cookie_data.get('user_id')
-            client_id = cookie_data.get('client_id')
             expires = dateutil.parser.parse(cookie_data['expires'])
-            nonce = cookie_data['nonce']
         except (KeyError, jwt.exceptions.DecodeError) as e:    # type: ignore
             raise InvalidToken('Token payload malformed') from e
 
         if expires <= datetime.now(tz=EASTERN):
             raise InvalidToken('Session has expired')
 
-        session = self._load(session_id)
+        session = self._load(cookie_data['session_id'])
         if session.expired:
             raise ExpiredToken('Session has expired')
-        if nonce != session.nonce:
-            raise InvalidToken('Invalid token; likely a forgery')
         if session.user is None and session.client is None:
             raise InvalidToken('Neither user nor client data are present')
-        if user_id and session.user is not None \
-                and user_id != session.user.user_id:
-            raise InvalidToken('Invalid token; likely a forgery')
-        if client_id and session.client is not None \
-                and client_id != session.client.client_id:
-            raise InvalidToken('Invalid token; likely a forgery')
+
+        self.validate_session_against_cookie(session, cookie)
         return session
 
     def _load(self, session_id: str) -> domain.Session:
@@ -218,7 +216,11 @@ class SessionStore(object):
 
     def _unpack_cookie(self, cookie: str) -> dict:
         secret = self._secret
-        return dict(jwt.decode(cookie, secret))
+        try:
+            data = dict(jwt.decode(cookie, secret))
+        except jwt.exceptions.DecodeError as e:   # type: ignore
+            raise InvalidToken('Session cookie is malformed') from e
+        return data
 
     def _pack_cookie(self, cookie_data: dict) -> str:
         secret = self._secret

@@ -7,3 +7,4 @@ omit =
     */controllers/captcha_image.py
     */controllers/registration.py
     */stateless_captcha/*
+    */controllers/util.py
