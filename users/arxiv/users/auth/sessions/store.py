@@ -94,9 +94,20 @@ class SessionStore(object):
 
         return session, cookie
 
-    def delete(self, session_id: str) -> None:
+    def delete(self, cookie: str) -> None:
         """
-        Delete a session in the key-value store.
+        Delete a session.
+
+        Parameters
+        ----------
+        cookie : str
+        """
+        cookie_data = self._unpack_cookie(cookie)
+        self.delete_by_id(cookie_data['session_id'])
+
+    def delete_by_id(self, session_id: str) -> None:
+        """
+        Delete a session in the key-value store by ID.
 
         Parameters
         ----------
@@ -297,15 +308,27 @@ def load(cookie: str) -> domain.Session:
 
 
 @wraps(SessionStore.delete)
-def delete(session_id: str) -> None:
+def delete(cookie: str) -> None:
     """
     Delete a session in the key-value store.
 
     Parameters
     ----------
+    cookie : str
+    """
+    return current_session().delete(cookie)
+
+
+@wraps(SessionStore.delete_by_id)
+def delete_by_id(session_id: str) -> None:
+    """
+    Delete a session in the key-value store by ID.
+
+    Parameters
+    ----------
     session_id : str
     """
-    return current_session().delete(session_id)
+    return current_session().delete_by_id(session_id)
 
 
 @wraps(SessionStore.invalidate)

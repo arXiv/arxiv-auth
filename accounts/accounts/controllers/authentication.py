@@ -65,7 +65,8 @@ def login(method: str, form_data: MultiDict, ip: str,
         # TODO: If a permanent token is provided, attempt to log the user in,
         # and redirect if successful. Otherwise, proceed as normal without
         # complaint.
-        return {'form': LoginForm()}, status.HTTP_200_OK, {}
+        response_data = {'form': LoginForm(), 'next_page': next_page}
+        return response_data, status.HTTP_200_OK, {}
 
     logger.debug('Login form submitted')
     form = LoginForm(form_data)
@@ -141,7 +142,7 @@ def logout(session_cookie: Optional[str],
     logger.debug('Request to log out')
     if session_cookie:
         try:
-            sessions.invalidate(session_cookie)
+            sessions.delete(session_cookie)
         except sessions.exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
 
