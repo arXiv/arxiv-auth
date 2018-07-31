@@ -39,7 +39,7 @@ def anonymous_only(func: Callable) -> Callable:
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.session:
             user = request.session.user
-            target = url_for('ui.view_profile', user_id=user.user_id)
+            target = url_for('account', user_id=user.user_id)
             content = redirect(target, code=status.HTTP_303_SEE_OTHER)
             response = make_response(content)
             return response
@@ -137,7 +137,6 @@ def login() -> Response:
         # Set the session cookie.
         response = make_response(redirect(headers.get('Location'), code=code))
         set_cookies(response, data)
-        print(response)
         return response
 
     # Form is invalid, or login failed.
