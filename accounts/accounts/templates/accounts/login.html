@@ -5,7 +5,7 @@
   <div class="column">
     <h1>Log in to arXiv.org</h1>
 
-    <form action="{{ url_for('ui.login') }}" method="POST" class="breathe-vertical">
+    <form action="{{ url_for('ui.login') }}?next_page={{ next_page }}" method="POST" class="breathe-vertical">
       {{ form.csrf_token }}
       <fieldset class="fieldset {% if error %}is-danger{% endif %}">
         <legend class="title is-4 has-text-weight-semibold">If you're already registered</legend>

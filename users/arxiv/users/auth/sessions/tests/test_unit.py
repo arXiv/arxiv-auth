@@ -53,7 +53,7 @@ class TestDistributedSessionService(TestCase):
         mock_redis_connection = mock.MagicMock()
         mock_redis.StrictRedis.return_value = mock_redis_connection
         r = store.SessionStore('localhost', 6379, 0, 'foosecret')
-        r.delete('fookey')
+        r.delete_by_id('fookey')
         self.assertEqual(mock_redis_connection.delete.call_count, 1)
 
     @mock.patch(f'{store.__name__}.get_application_config')

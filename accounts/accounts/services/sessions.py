@@ -11,4 +11,5 @@ init_app = sessions.store.init_app
 create = sessions.store.create
 invalidate = sessions.store.invalidate
 invalidate_by_id = sessions.store.invalidate_by_id
+delete = sessions.store.delete
 load = sessions.store.load
