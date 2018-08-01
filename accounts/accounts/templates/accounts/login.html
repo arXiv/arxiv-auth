@@ -2,7 +2,7 @@
 
 {% block inner_content %}
 <div class="columns">
-  <div class="column">
+  <div class="column is-half">
     <h1>Log in to arXiv.org</h1>
 
     <form action="{{ url_for('ui.login') }}?next_page={{ next_page }}" method="POST" class="breathe-vertical">
@@ -48,9 +48,6 @@
     <h2>If you've never logged in to arXiv.org</h2>
       <p><a class="button is-link" href="{{ url_for('register') }}">Register for the first time</a></p>
       <p>Registration is required to submit or update papers.</p>
-  </div>
-  <div class="column">
-    <!-- Empty column, to bisect page. -->
   </div>
 </div>
 {% endblock inner_content %}
