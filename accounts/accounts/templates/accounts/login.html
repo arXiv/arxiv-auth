@@ -34,11 +34,13 @@
             {% else %}
               {{ form.password(class="input is-medium")|safe }}
             {% endif %}
+            <p class="help"><a href="{{ url_for('lost_password') }}">Forgot your password?</a></p>
           </div>
         </div>
-
-        <div class="control">
-          <input type="submit" value="Submit" class="button is-link"></input>
+        <div class="field">
+          <div class="control">
+            <input type="submit" value="Submit" class="button is-link"></input>
+          </div>
         </div>
       </fieldset>
     </form>

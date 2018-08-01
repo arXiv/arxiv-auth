@@ -84,7 +84,7 @@ def login(method: str, form_data: MultiDict, ip: str,
     except users.exceptions.AuthenticationFailed as e:
         logger.debug('Authentication failed for %s with %s',
                      form.username.data, form.password.data)
-        data.update({'error': 'Invalid username or password'})
+        data.update({'error': 'Invalid username or password.'})
         return data, status.HTTP_400_BAD_REQUEST, {}
 
     # Create a session in the distributed session store.
