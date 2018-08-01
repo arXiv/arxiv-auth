@@ -2,59 +2,52 @@
 
 {% block inner_content %}
 <div class="columns">
-  <div class="column">
+  <div class="column is-half">
     <h1>Log in to arXiv.org</h1>
-    <h2>If you're already registered</h2>
 
-    <form action="{{ url_for('ui.login') }}?next_page={{ next_page }}" method="POST">
+    <form action="{{ url_for('ui.login') }}?next_page={{ next_page }}" method="POST" class="breathe-vertical">
       {{ form.csrf_token }}
-      <div class="field">
-        <div class="control">
-
-          {{ form.username.label }}
-          {% if form.username.errors %}
-            {{ form.username(class="input is-medium is-warning")|safe }}
-          {% else %}
-            {{ form.username(class="input is-medium")|safe }}
-          {% endif %}
-          {% if form.username.errors %}
-            <div class="help is-warning">
-              {% for error in form.username.errors %}
-                  {{ error }}
-              {% endfor %}
+      <fieldset class="fieldset {% if error %}is-danger{% endif %}">
+        <legend class="title is-4 has-text-weight-semibold">If you're already registered</legend>
+        {% if error %}
+          <div class="message is-danger">
+            <div class="message-body">
+              <p><span class="icon has-text-danger"><i class="fa fa-warning"></i></span> {{ error }}</p>
             </div>
-          {% endif %}
+          </div>
+        {% endif %}
+        <div class="field">
+          <div class="control">
+            {{ form.username.label(class="label") }}
+            {% if error %}
+              {{ form.username(class="input is-medium is-danger")|safe }}
+            {% else %}
+              {{ form.username(class="input is-medium")|safe }}
+            {% endif %}
+          </div>
         </div>
-      </div>
-      <div class="field">
-        <div class="control">
-          {{ form.password.label }}
-          {% if form.password.errors %}
-            {{ form.password(class="input is-medium is-warning")|safe }}
-          {% else %}
-            {{ form.password(class="input is-medium")|safe }}
-          {% endif %}
-          {% if form.password.errors %}
-            <div class="help is-warning">
-              {% for error in form.password.errors %}
-                  {{ error }}
-              {% endfor %}
-            </div>
-          {% endif %}
+        <div class="field">
+          <div class="control">
+            {{ form.password.label(class="label") }}
+            {% if error %}
+              {{ form.password(class="input is-medium is-danger")|safe }}
+            {% else %}
+              {{ form.password(class="input is-medium")|safe }}
+            {% endif %}
+            <p class="help"><a href="{{ url_for('lost_password') }}">Forgot your password?</a></p>
+          </div>
         </div>
-      </div>
-
-      <div class="control">
-        <input type="submit" value="Submit" class="button is-link"></input>
-      </div>
+        <div class="field">
+          <div class="control">
+            <input type="submit" value="Submit" class="button is-link"></input>
+          </div>
+        </div>
+      </fieldset>
     </form>
 
-    <h2>If you've never logged onto arXiv.org</h2>
+    <h2>If you've never logged in to arXiv.org</h2>
       <p><a class="button is-link" href="{{ url_for('register') }}">Register for the first time</a></p>
       <p>Registration is required to submit or update papers.</p>
-  </div>
-  <div class="column">
-    <!-- Empty column, to bisect page. -->
   </div>
 </div>
 {% endblock inner_content %}
