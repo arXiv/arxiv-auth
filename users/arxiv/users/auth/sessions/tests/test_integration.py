@@ -92,4 +92,4 @@ class TestDistributedSessionServiceIntegration(TestCase):
         mock_get_config.return_value = {'JWT_SECRET': self.secret}
         r = redis.StrictRedis(host='localhost', port=6379, db=0)
         r.set('fookey', b'foovalue')
-        store.delete('fookey')
+        store.delete_by_id('fookey')

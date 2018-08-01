@@ -27,12 +27,6 @@ def user_is_owner(session: domain.Session, user_id: str, **kw: Any) -> bool:
     return bool(session.user.user_id == user_id)
 
 
-@blueprint.before_request
-def get_next_page() -> None:
-    """Get the next page; this is where we'll redirect the user on success."""
-    request.next_page = request.args.get('next_page', '')
-
-
 def anonymous_only(func: Callable) -> Callable:
     """Redirect logged-in users to their profile."""
     @wraps(func)
@@ -126,10 +120,11 @@ def login() -> Response:
     """User can log in with username and password, or permanent token."""
     ip_address = request.remote_addr
     form_data = request.form
-
+    next_page = request.args.get('next_page', '')
+    logger.debug('Request to log in, then redirect to %s', next_page)
     data, code, headers = authentication.login(request.method,
                                                form_data, ip_address,
-                                               request.next_page)
+                                               next_page)
 
     # Flask puts cookie-setting methods on the response, so we do that here
     # instead of in the controller.
@@ -146,13 +141,14 @@ def login() -> Response:
 @blueprint.route('/logout', methods=['GET'])
 def logout() -> Response:
     """Log out of arXiv."""
-    logger.debug('Request to log out')
     session_cookie_key = current_app.config['SESSION_COOKIE_NAME']
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_key, None)
     classic_cookie = request.cookies.get(classic_cookie_key, None)
+    next_page = request.args.get('next_page', '')
+    logger.debug('Request to log out, then redirect to %s', next_page)
     data, code, headers = authentication.logout(session_cookie, classic_cookie,
-                                                request.next_page)
+                                                next_page)
 
     # Flask puts cookie-setting methods on the response, so we do that here
     # instead of in the controller.
