@@ -25,9 +25,5 @@ class UnknownSession(RuntimeError):
     """Failed to locate a session in the session store."""
 
 
-class SessionExpired(RuntimeError):
-    """User's session has expired."""
-
-
 class ExpiredToken(RuntimeError):
     """An expired token was passed."""

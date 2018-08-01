@@ -126,7 +126,19 @@ session database backend. For local development/testing purposes, it's fine to
 use an on-disk SQLite database. You should also be able to use a local MySQL
 instance with a clone of the legacy database.
 
-To start with SQLAlchemy (tables will be created automatically):
+If you are starting with SQLite and don't already have a DB with users in it,
+you can use the ``accounts/create_user.py`` script. Note that this is for local
+dev/testing purposes only, and should never be used on a production DB ever
+under any circumstances with no exceptions.
+
+```bash
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 pipenv run python create_user.py
+```
+
+You should be prompted to enter some profile details. Note that this currently
+selects your default category and groups at random.
+
+Then start the Flask dev server with:
 
 ```bash
 CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
