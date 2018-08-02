@@ -120,7 +120,7 @@ def login() -> Response:
     """User can log in with username and password, or permanent token."""
     ip_address = request.remote_addr
     form_data = request.form
-    next_page = request.args.get('next_page', '')
+    next_page = request.args.get('next_page', url_for('account'))
     logger.debug('Request to log in, then redirect to %s', next_page)
     data, code, headers = authentication.login(request.method,
                                                form_data, ip_address,
@@ -145,7 +145,7 @@ def logout() -> Response:
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_key, None)
     classic_cookie = request.cookies.get(classic_cookie_key, None)
-    next_page = request.args.get('next_page', '')
+    next_page = request.args.get('next_page', url_for('account'))
     logger.debug('Request to log out, then redirect to %s', next_page)
     data, code, headers = authentication.logout(session_cookie, classic_cookie,
                                                 next_page)
