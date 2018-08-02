@@ -145,7 +145,7 @@ def logout() -> Response:
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_key, None)
     classic_cookie = request.cookies.get(classic_cookie_key, None)
-    next_page = request.args.get('next_page', url_for('account'))
+    next_page = request.args.get('next_page', url_for('ui.login'))
     logger.debug('Request to log out, then redirect to %s', next_page)
     data, code, headers = authentication.logout(session_cookie, classic_cookie,
                                                 next_page)
