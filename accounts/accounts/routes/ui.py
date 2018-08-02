@@ -19,7 +19,7 @@ EASTERN = timezone('US/Eastern')
 
 logger = logging.getLogger(__name__)
 
-blueprint = Blueprint('ui', __name__, url_prefix='/user')
+blueprint = Blueprint('ui', __name__, url_prefix='')
 
 
 def user_is_owner(session: domain.Session, user_id: str, **kw: Any) -> bool:
