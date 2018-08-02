@@ -61,6 +61,6 @@ CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', 'foocaptcha')
 
 BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 URLS = [
-    ("register", "/user/register", BASE_SERVER),
-    ("lost_password", "/user/lost_password", BASE_SERVER),
+    ("register", "/register", BASE_SERVER),
+    ("lost_password", "/lost_password", BASE_SERVER),
 ]

@@ -196,7 +196,7 @@ class ProfileForm(Form):
         'Affiliation',
         validators=[Length(max=255), DataRequired()],
         description='This field accepts '
-                    '<a href="https://arxiv.org/user/tex_accents">'
+                    '<a href="https://arxiv.org/tex_accents">'
                     'pidgin TeX (\\\'o)</a> for foreign characters.'
     )
     country = SelectField('Country', choices=COUNTRIES,

@@ -156,7 +156,7 @@ structure does not already exist, the user will need to be able to create
 tables. Otherwise conventional read/write access should be sufficient.
 
 You should be able to register a new user at
-http://localhost:5000/user/register.
+http://localhost:5000/register.
 
 ## Code style
 

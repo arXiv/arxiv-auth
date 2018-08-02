@@ -87,7 +87,7 @@ def stop_container(container):
 #
 #     def test_get_registration_form(self):
 #         """GET request for the registration form."""
-#         response = self.client.get('/user/register')
+#         response = self.client.get('/register')
 #         self.assertEqual(response.status_code, status.HTTP_200_OK)
 #         self.assertEqual(response.content_type, 'text/html; charset=utf-8')
 #
@@ -112,11 +112,11 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         response = self.client.post('/user/register', data=registration_data,
+#         response = self.client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 #         self.assertTrue(
-#             response.headers['Location'].endswith('/user/1/profile')
+#             response.headers['Location'].endswith('/1/profile')
 #         )
 #         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 #
@@ -147,7 +147,7 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         response = self.client.post('/user/register', data=registration_data,
+#         response = self.client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #
 #         # We have to set the cookies manually here.
@@ -164,10 +164,10 @@ def stop_container(container):
 #         )
 #
 #         # Attempting to access the registration form results in a redirect.
-#         response = self.client.post('/user/register', data=registration_data,
+#         response = self.client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
-#         response = self.client.get('/user/register',
+#         response = self.client.get('/register',
 #                                    environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
 #
@@ -178,7 +178,7 @@ def stop_container(container):
 #         self.client.set_cookie('localhost',
 #                                self.app.config['CLASSIC_COOKIE_NAME'], '')
 #
-#         response = self.client.get('/user/register',
+#         response = self.client.get('/register',
 #                                    environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_200_OK)
 #
@@ -204,7 +204,7 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         self.client.post('/user/register', data=registration_data,
+#         self.client.post('/register', data=registration_data,
 #                          environ_base=self.environ_base)
 #         # Clear session cookies.
 #         self.client.set_cookie('localhost',
@@ -232,7 +232,7 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         response = self.client.post('/user/register', data=registration_data,
+#         response = self.client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
 #                          "Returns 400 response")
@@ -257,7 +257,7 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         response = self.client.post('/user/register', data=registration_data,
+#         response = self.client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
 #                          "Returns 400 response")
@@ -287,7 +287,7 @@ def stop_container(container):
 #         for key in registration_data.keys():
 #             to_post = dict(registration_data)
 #             to_post.pop(key)    # Drop this one.
-#             response = self.client.post('/user/register', data=to_post,
+#             response = self.client.post('/register', data=to_post,
 #                                         environ_base=self.environ_base)
 #
 #             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
@@ -376,7 +376,7 @@ class TestLoginLogoutRoutes(TestCase):
 
     def test_get_login(self):
         """GET request to /login returns the login form."""
-        response = self.client.get('/user/login')
+        response = self.client.get('/login')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.content_type, 'text/html; charset=utf-8')
 
@@ -384,7 +384,7 @@ class TestLoginLogoutRoutes(TestCase):
         """POST request to /login with valid form data returns redirect."""
         form_data = {'username': 'foouser', 'password': 'thepassword'}
         next_page = '/foo'
-        response = self.client.post(f'/user/login?next_page={next_page}',
+        response = self.client.post(f'/login?next_page={next_page}',
                                     data=form_data)
         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
         self.assertTrue(response.headers['Location'].endswith(next_page),
@@ -399,7 +399,7 @@ class TestLoginLogoutRoutes(TestCase):
     def test_post_login_baddata(self):
         """POST rquest to /login with invalid data returns 400."""
         form_data = {'username': 'foouser', 'password': 'notthepassword'}
-        response = self.client.post('/user/login', data=form_data)
+        response = self.client.post('/login', data=form_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_login_logout(self):
@@ -407,14 +407,14 @@ class TestLoginLogoutRoutes(TestCase):
         form_data = {'username': 'foouser', 'password': 'thepassword'}
 
         # Werkzeug should keep the cookies around for the next request.
-        response = self.client.post('/user/login', data=form_data)
+        response = self.client.post('/login', data=form_data)
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
         self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
                       "Sets cookie for authn session.")
         self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
                       "Sets cookie for classic sessions.")
 
-        response = self.client.get('/user/logout')
+        response = self.client.get('/logout')
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
         print(logout_cookies)
         self.assertEqual(
