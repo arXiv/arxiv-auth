@@ -236,7 +236,7 @@ def _endorse_by_papers(category: domain.Category,
     -------
     bool
     """
-    N_papers = papers[policies[category]['domain']]
+    N_papers = papers.get(policies[category]['domain'], 0)
     min_papers = policies[category]['min_papers']
     return bool(N_papers >= min_papers)
 
