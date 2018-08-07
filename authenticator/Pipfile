@@ -8,8 +8,8 @@ flask = "*"
 redis = "*"
 pyjwt = "*"
 pytz = "*"
+arxiv-auth = "==0.0.8"
 arxiv-base = "*"
-"6c2b755" = {path = "./../users"}
 
 [dev-packages]
 "nose2" = "*"
