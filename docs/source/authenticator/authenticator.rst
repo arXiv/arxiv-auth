@@ -1,7 +1,7 @@
 Authorizer Service
 ==================
 
-.. automodule:: authorizer
+.. automodule:: authenticator
     :members:
     :undoc-members:
     :show-inheritance:
@@ -11,6 +11,6 @@ Submodules
 
 .. toctree::
 
-   authorizer.config
-   authorizer.factory
-   authorizer.routes
+   authenticator.config
+   authenticator.factory
+   authenticator.routes

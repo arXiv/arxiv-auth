@@ -19,7 +19,7 @@ client authorizations. These data are stored in a stand-alone data store.
 
 Authorization tokens are registered in the distributed
 session/token store upon creation, where they can be retrieved by the
-authorizer service to authorize subsequent API requests.
+authenticator service to authorize subsequent API requests.
 
 .. _figure-client-registry-containers:
 

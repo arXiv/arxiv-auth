@@ -17,9 +17,8 @@ There are currently three pieces of software in this repository:
 2. [``accounts/``](accounts/) contains the user accounts service, which
    provides the main UIs for registration, login/logout, profile management,
    etc.
-3. [``authorizer/``](authorizer/) contains the authorizer service, which
-   handles authorization requests from NGINX in a cloud deployment scenario.
-   This is currently not ready for use nor evaluation.
+3. [``authenticator/``](authenticator/) contains the authenticator service.
+   Handles authentication requests from NGINX in a cloud deployment scenario.
 
 TLS is considered an infrastructure concern, and is therefore out of scope
 (albeit critical) for this project.
@@ -29,7 +28,7 @@ TLS is considered an infrastructure concern, and is therefore out of scope
 - Password reset in ``arxiv.users.legacy.accounts`` and in the accounts
   service.
 - Support for permanent login token.
-- Clean up and document authorizer service.
+- Clean up and document authenticator service.
 - Fuzz testing registration?
 
 ## Dependencies

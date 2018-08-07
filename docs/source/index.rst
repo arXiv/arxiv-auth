@@ -10,7 +10,7 @@ arXiv Authorization & Authentication
    architecture.rst
    arxiv.users/arxiv.users.rst
    accounts/accounts.rst
-   authorizer/authorizer.rst
+   authenticator/authenticator.rst
    registry/registry.rst
 
 

@@ -4,11 +4,11 @@ Middleware for interpreting authn/z information on requestsself.
 This module provides :class:`AuthMiddleware`, which unpacks encrypted JSON
 Web Tokens provided via the ``Authorization`` header. This is intended to
 support requests that have been pre-authorized by the web server using the
-authorizer service (see :mod:`authorizer`).
+authenticator service (see :mod:`authenticator`).
 
 The configuration parameter ``JWT_SECRET`` must be set in the WSGI request
 environ (e.g. Apache's SetEnv) or in the runtime environment. This must be
-the same secret that was used by the authorizer service to mint the token.
+the same secret that was used by the authenticator service to mint the token.
 
 To install the middleware, use the pattern described in
 :mod:`arxiv.base.middleware`. For example:

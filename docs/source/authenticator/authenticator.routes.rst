@@ -1,7 +1,7 @@
-authorizer.routes module
+authenticator.routes module
 ========================
 
-.. automodule:: authorizer.routes
+.. automodule:: authenticator.routes
     :members:
     :undoc-members:
     :show-inheritance:
