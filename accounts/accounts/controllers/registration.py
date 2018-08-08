@@ -38,7 +38,8 @@ ResponseData = Tuple[dict, int, dict]
 def _login_classic(user: domain.User, auth: domain.Authorizations,
                    ip: Optional[str]) -> Tuple[domain.Session, str]:
     try:
-        c_session, c_cookie = legacy.create(user, auth, ip, ip)
+        c_session = legacy.create(auth, ip, ip, user)
+        c_cookie = legacy.generate_cookie(c_session)
         logger.debug('Created classic session: %s', c_session.session_id)
     except legacy.exceptions.SessionCreationFailed as e:
         logger.debug('Could not create classic session: %s', e)
@@ -58,7 +59,8 @@ def _logout(session_id: str) -> None:
 def _login(user: domain.User, auth: domain.Authorizations, ip: Optional[str]) \
         -> Tuple[domain.Session, str]:
     try:
-        session, cookie = sessions.create(user, auth, ip, ip)
+        session = sessions.create(auth, ip, ip, user=user)
+        cookie = sessions.generate_cookie(session)
         logger.debug('Created session: %s', session.session_id)
     except legacy.exceptions.SessionCreationFailed as e:
         logger.debug('Could not create session: %s', e)
