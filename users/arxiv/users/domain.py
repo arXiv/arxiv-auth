@@ -179,12 +179,12 @@ class User(NamedTuple):
 
 
 class Client(NamedTuple):
-    """Placeholder for API client."""
+    """API client."""
 
     client_id: str
     """Unique identifier for a :class:`.Client`."""
 
-    owner: User
+    owner_id: str
     """The arXiv user responsible for the client."""
 
     name: Optional[str] = None
@@ -195,6 +195,9 @@ class Client(NamedTuple):
 
     description: Optional[str] = None
     """Brief description of the API client."""
+
+    redirect_uri: Optional[str] = None
+    """The authorized redirect URI for the client."""
 
 
 class Session(NamedTuple):

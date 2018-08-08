@@ -38,3 +38,5 @@ URLS = [
     ("register", "/register", BASE_SERVER),
     ("lost_password", "/lost_password", BASE_SERVER),
 ]
+
+REGISTRY_DATABASE_URI = os.environ.get('REGISTRY_DATABASE_URI', 'sqlite://')
