@@ -1,5 +1,5 @@
 authenticator.routes module
-========================
+===========================
 
 .. automodule:: authenticator.routes
     :members:

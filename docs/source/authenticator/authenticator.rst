@@ -1,10 +1,17 @@
-Authorizer Service
-==================
+authenticator package
+=====================
 
 .. automodule:: authenticator
     :members:
     :undoc-members:
     :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    authenticator.services
 
 Submodules
 ----------
@@ -14,3 +21,4 @@ Submodules
    authenticator.config
    authenticator.factory
    authenticator.routes
+
