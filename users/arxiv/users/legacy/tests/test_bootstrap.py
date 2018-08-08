@@ -233,7 +233,8 @@ class TestBootstrap(TestCase):
                 locale = _get_locale()
                 net = Internet(locale)
                 ip = net.ip_v4()
-                session, cookie = sessions.create(user, auths, ip, ip)
+                session = sessions.create(auths, ip, ip, user=user)
+                cookie = sessions.generate_cookie(session)
 
                 session_loaded = sessions.load(cookie)
                 self.assertEqual(session.user, session_loaded.user,

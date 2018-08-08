@@ -38,7 +38,8 @@ class TestDistributedSessionService(TestCase):
             endorsements=[]
         )
         r = store.SessionStore('localhost', 6379, 0, 'foosecret')
-        session, cookie = r.create(user, auths, ip, remote_host)
+        session = r.create(auths, ip, remote_host, user=user)
+        cookie = r.generate_cookie(session)
         self.assertIsInstance(session, domain.Session)
         self.assertTrue(bool(session.session_id))
         self.assertIsNotNone(cookie)
@@ -79,7 +80,7 @@ class TestDistributedSessionService(TestCase):
         )
         r = store.SessionStore('localhost', 6379, 0, 'foosecret')
         with self.assertRaises(store.SessionCreationFailed):
-            r.create(user, auths, ip, remote_host)
+            r.create(auths, ip, remote_host, user=user)
 
 
 class TestInvalidateSession(TestCase):

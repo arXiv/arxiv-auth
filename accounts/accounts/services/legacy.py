@@ -17,3 +17,4 @@ invalidate_by_id = legacy.sessions.invalidate_by_id
 create = legacy.sessions.create
 invalidate = legacy.sessions.invalidate
 load = legacy.sessions.load
+generate_cookie = legacy.sessions.generate_cookie

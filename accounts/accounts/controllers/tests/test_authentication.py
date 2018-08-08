@@ -133,7 +133,8 @@ class TestPOSTLogin(TestCase):
             authorizations=auths
         )
         c_cookie = 'bardata'
-        mock_legacy.create.return_value = c_session, c_cookie
+        mock_legacy.create.return_value = c_session
+        mock_legacy.generate_cookie.return_value = c_cookie
         session = domain.Session(
             session_id='foosession',
             user=user,
@@ -143,7 +144,8 @@ class TestPOSTLogin(TestCase):
             )
         )
         cookie = 'foodata'
-        mock_sessions.create.return_value = session, cookie
+        mock_sessions.create.return_value = session
+        mock_sessions.generate_cookie.return_value = cookie
 
         data, status_code, header = login('POST', form_data, ip, next_page)
         self.assertEqual(status_code, status.HTTP_303_SEE_OTHER,

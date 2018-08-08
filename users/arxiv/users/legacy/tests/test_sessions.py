@@ -29,9 +29,8 @@ class TestCreateSession(TestCase):
         remote_host = 'foo-host.foo.com'
         tracking = "1.foo"
         with temporary_db():
-            user_session, cookie = sessions.create(user, auths, ip_address,
-                                                   remote_host, tracking)
-
+            user_session = sessions.create(auths, ip_address, remote_host,
+                                           tracking, user=user)
             self.assertIsInstance(user_session, sessions.domain.Session)
             tapir_session = sessions._load(user_session.session_id)
             self.assertIsNotNone(user_session, 'verifying we have a session')

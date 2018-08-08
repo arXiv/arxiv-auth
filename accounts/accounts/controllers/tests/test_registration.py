@@ -18,18 +18,15 @@ class TestRegister(TestCase):
                          "Returns 400 response")
 
     @mock.patch('accounts.controllers.registration.users')
-    @mock.patch('accounts.controllers.registration.legacy.create')
-    @mock.patch('accounts.controllers.registration.sessions.create')
+    @mock.patch('accounts.controllers.registration.legacy')
+    @mock.patch('accounts.controllers.registration.sessions')
     @mock.patch('accounts.controllers.registration.stateless_captcha.check')
-    def test_post_minimum(self, captcha, sessions_create, legacy_create,
-                          users):
+    def test_post_minimum(self, captcha, sessions, legacy, users):
         """POST request with minimum required data."""
         captcha.return_value = None     # No exception -> OK.
         users.username_exists.return_value = False
         users.email_exists.return_value = False
         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
-        legacy_create.return_value = (mock.MagicMock(), mock.MagicMock())
-        sessions_create.return_value = (mock.MagicMock(), mock.MagicMock())
 
         registration_data = {
             'email': 'foo@bar.edu',
@@ -121,18 +118,15 @@ class TestRegister(TestCase):
                          "Returns 400 response")
 
     @mock.patch('accounts.controllers.registration.users')
-    @mock.patch('accounts.controllers.registration.legacy.create')
-    @mock.patch('accounts.controllers.registration.sessions.create')
+    @mock.patch('accounts.controllers.registration.legacy')
+    @mock.patch('accounts.controllers.registration.sessions')
     @mock.patch('accounts.controllers.registration.stateless_captcha.check')
-    def test_existing_username(self, captcha, sessions_create, legacy_create,
-                               users):
+    def test_existing_username(self, captcha, sessions, legacy, users):
         """POST valid data, but username already exists."""
         captcha.return_value = None     # No exception -> OK.
         users.username_exists.return_value = True
         users.email_exists.return_value = False
         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
-        legacy_create.return_value = (mock.MagicMock(), mock.MagicMock())
-        sessions_create.return_value = (mock.MagicMock(), mock.MagicMock())
 
         registration_data = {
             'email': 'foo@bar.edu',
@@ -154,18 +148,17 @@ class TestRegister(TestCase):
                          "Returns 400 response")
 
     @mock.patch('accounts.controllers.registration.users')
-    @mock.patch('accounts.controllers.registration.legacy.create')
-    @mock.patch('accounts.controllers.registration.sessions.create')
+    @mock.patch('accounts.controllers.registration.legacy')
+    @mock.patch('accounts.controllers.registration.sessions')
     @mock.patch('accounts.controllers.registration.stateless_captcha.check')
-    def test_existing_email(self, captcha, sessions_create, legacy_create,
-                            users):
+    def test_existing_email(self, captcha, sessions, legacy, users):
         """POST valid data, but email already exists."""
         captcha.return_value = None     # No exception -> OK.
         users.username_exists.return_value = False
         users.email_exists.return_value = True
         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
-        legacy_create.return_value = (mock.MagicMock(), mock.MagicMock())
-        sessions_create.return_value = (mock.MagicMock(), mock.MagicMock())
+        legacy.return_value = (mock.MagicMock(), mock.MagicMock())
+        sessions.return_value = (mock.MagicMock(), mock.MagicMock())
 
         registration_data = {
             'email': 'foo@bar.edu',
@@ -187,11 +180,10 @@ class TestRegister(TestCase):
                          "Returns 400 response")
 
     @mock.patch('accounts.controllers.registration.users')
-    @mock.patch('accounts.controllers.registration.legacy.create')
-    @mock.patch('accounts.controllers.registration.sessions.create')
+    @mock.patch('accounts.controllers.registration.legacy')
+    @mock.patch('accounts.controllers.registration.sessions')
     @mock.patch('accounts.controllers.registration.stateless_captcha.check')
-    def test_captcha_mismatch(self, captcha, sessions_create, legacy_create,
-                              users):
+    def test_captcha_mismatch(self, captcha, sessions, legacy, users):
         """POST valid data, but captcha value is incorrect."""
         def raise_invalid_value(*args, **kwargs):
             raise InvalidCaptchaValue('Nope')
@@ -200,8 +192,8 @@ class TestRegister(TestCase):
         users.username_exists.return_value = False
         users.email_exists.return_value = False
         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
-        legacy_create.return_value = (mock.MagicMock(), mock.MagicMock())
-        sessions_create.return_value = (mock.MagicMock(), mock.MagicMock())
+        legacy.return_value = (mock.MagicMock(), mock.MagicMock())
+        sessions.return_value = (mock.MagicMock(), mock.MagicMock())
 
         registration_data = {
             'email': 'foo@bar.edu',
@@ -223,11 +215,10 @@ class TestRegister(TestCase):
                          "Returns 400 response")
 
     @mock.patch('accounts.controllers.registration.users')
-    @mock.patch('accounts.controllers.registration.legacy.create')
-    @mock.patch('accounts.controllers.registration.sessions.create')
+    @mock.patch('accounts.controllers.registration.legacy')
+    @mock.patch('accounts.controllers.registration.sessions')
     @mock.patch('accounts.controllers.registration.stateless_captcha.check')
-    def test_captcha_expired(self, captcha, sessions_create, legacy_create,
-                             users):
+    def test_captcha_expired(self, captcha, sessions, legacy, users):
         """POST valid data, but captcha token has expired."""
         def raise_invalid_token(*args, **kwargs):
             raise InvalidCaptchaToken('Nope')
@@ -236,8 +227,6 @@ class TestRegister(TestCase):
         users.username_exists.return_value = False
         users.email_exists.return_value = False
         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
-        legacy_create.return_value = (mock.MagicMock(), mock.MagicMock())
-        sessions_create.return_value = (mock.MagicMock(), mock.MagicMock())
 
         registration_data = {
             'email': 'foo@bar.edu',
@@ -273,7 +262,7 @@ class TestEditProfile(TestCase):
                          "Returns 400 response")
 
     @mock.patch('accounts.controllers.registration.sessions.invalidate_by_id')
-    @mock.patch('accounts.controllers.registration.sessions.create')
+    @mock.patch('accounts.controllers.registration.sessions')
     @mock.patch('accounts.controllers.registration.users')
     def test_post_minimum(self, users, create, invalidate):
         """POST request with minimum required data."""
@@ -281,7 +270,6 @@ class TestEditProfile(TestCase):
         users.username_exists.return_value = False
         users.email_exists.return_value = False
         users.update.return_value = (mock.MagicMock(), mock.MagicMock())
-        create.return_value = (mock.MagicMock(), mock.MagicMock())
         current_session = mock.MagicMock(session_id='52')
 
         profile_data = {

@@ -114,9 +114,9 @@ def load(cookie: str) -> domain.Session:
     return user_session
 
 
-def create(user: domain.User, authorizations: domain.Authorizations,
-           ip: str, remote_host: str, tracking_cookie: str = '') \
-        -> Tuple[domain.Session, str]:
+def create(authorizations: domain.Authorizations,
+           ip: str, remote_host: str, tracking_cookie: str = '',
+           user: Optional[domain.User] = None) -> domain.Session:
     """
     Create a new legacy session for an authenticated user.
 
@@ -135,6 +135,9 @@ def create(user: domain.User, authorizations: domain.Authorizations,
     :class:`.Session`
 
     """
+    if user is None:
+        raise SessionCreationFailed('Legacy sessions require a user')
+
     logger.debug('create session for user %s', user.user_id)
     start = datetime.now(tz=EASTERN)
     end = start + timedelta(seconds=util.get_session_duration())
@@ -157,16 +160,28 @@ def create(user: domain.User, authorizations: domain.Authorizations,
     except Exception as e:  # TODO: be more specific.
         raise SessionCreationFailed(f'Failed to create: {e}') from e
 
-    user_id = '' if user.user_id is None else user.user_id
-    cookie = cookies.pack(str(tapir_session.session_id), user_id, ip,
-                          start, str(authorizations.classic))
-    logger.debug('generated cookie: %s', cookie)
-
     user_session = domain.Session(str(tapir_session.session_id), user=user,
                                   start_time=start, end_time=end,
                                   authorizations=authorizations)
     logger.debug('created session %s', user_session.session_id)
-    return user_session, cookie
+    return user_session
+
+
+def generate_cookie(session: domain.Session) -> str:
+    """
+    Generate a cookie from a :class:`domain.Session`.
+
+    Parameters
+    ----------
+    session : :class:`domain.Session`
+
+    Returns
+    -------
+    str
+    """
+    return cookies.pack(str(session.session_id), session.user.user_id,
+                        session.ip_address, session.start_time,
+                        str(session.authorizations.classic))
 
 
 def invalidate(cookie: str) -> None:
