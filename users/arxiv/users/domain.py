@@ -58,13 +58,6 @@ class Category(NamedTuple):
         return name
 
 
-class Client(NamedTuple):
-    """Placeholder for API client."""
-
-    client_id: str
-    """Unique identifier for a :class:`.Client`."""
-
-
 class UserProfile(NamedTuple):
     """User profile data."""
 
@@ -183,6 +176,25 @@ class User(NamedTuple):
 
     profile: Optional[UserProfile] = None
     """The user's account profile (if available)."""
+
+
+class Client(NamedTuple):
+    """Placeholder for API client."""
+
+    client_id: str
+    """Unique identifier for a :class:`.Client`."""
+
+    owner: User
+    """The arXiv user responsible for the client."""
+
+    name: Optional[str] = None
+    """Human-friendly name of the API client."""
+
+    url: Optional[str] = None
+    """Homepage or other resource describing the API client."""
+
+    description: Optional[str] = None
+    """Brief description of the API client."""
 
 
 class Session(NamedTuple):
