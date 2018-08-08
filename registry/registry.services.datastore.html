@@ -1,0 +1,147 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>registry.services.datastore package &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="registry.services.datastore.models module" href="registry.services.datastore.models.html" />
+    <link rel="prev" title="registry.services package" href="registry.services.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-registry.services.datastore">
+<span id="registry-services-datastore-package"></span><h1>registry.services.datastore package<a class="headerlink" href="#module-registry.services.datastore" title="Permalink to this headline">¶</a></h1>
+<p>Database integration for persisting API client information.</p>
+<dl class="exception">
+<dt id="registry.services.datastore.NoSuchClient">
+<em class="property">exception </em><code class="descclassname">registry.services.datastore.</code><code class="descname">NoSuchClient</code><a class="reference internal" href="../_modules/registry/services/datastore.html#NoSuchClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.NoSuchClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>A client was requested that does not exist.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.load_client">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">load_client</code><span class="sig-paren">(</span><em>client_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#load_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.load_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a <a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client" title="arxiv.users.domain.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a> from the datastore.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client" title="arxiv.users.domain.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a>, <a class="reference internal" href="registry.domain.html#registry.domain.ClientCredential" title="registry.domain.ClientCredential"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientCredential</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="registry.domain.html#registry.domain.ClientAuthorization" title="registry.domain.ClientAuthorization"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientAuthorization</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="registry.domain.html#registry.domain.ClientGrantType" title="registry.domain.ClientGrantType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientGrantType</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="registry.services.datastore.models.html">registry.services.datastore.models module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registry.services.datastore.util.html">registry.services.datastore.util module</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="registry.html">registry package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="registry.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="registry.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="registry.html">registry package</a><ul>
+  <li><a href="registry.services.html">registry.services package</a><ul>
+      <li>Previous: <a href="registry.services.html" title="previous chapter">registry.services package</a></li>
+      <li>Next: <a href="registry.services.datastore.models.html" title="next chapter">registry.services.datastore.models module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/registry/registry.services.datastore.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -149,9 +149,9 @@
     <span class="k">return</span> <span class="n">user_session</span></div>
 
 
-<div class="viewcode-block" id="create"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.sessions.html#arxiv.users.legacy.sessions.create">[docs]</a><span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">,</span> <span class="n">authorizations</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Authorizations</span><span class="p">,</span>
-           <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">remote_host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tracking_cookie</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> \
-        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<div class="viewcode-block" id="create"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.sessions.html#arxiv.users.legacy.sessions.create">[docs]</a><span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">authorizations</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Authorizations</span><span class="p">,</span>
+           <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">remote_host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tracking_cookie</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+           <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new legacy session for an authenticated user.</span>
 
@@ -170,6 +170,9 @@
 <span class="sd">    :class:`.Session`</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SessionCreationFailed</span><span class="p">(</span><span class="s1">&#39;Legacy sessions require a user&#39;</span><span class="p">)</span>
+
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;create session for user </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span>
     <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">util</span><span class="o">.</span><span class="n">get_session_duration</span><span class="p">())</span>
@@ -192,16 +195,28 @@
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># TODO: be more specific.</span>
         <span class="k">raise</span> <span class="n">SessionCreationFailed</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Failed to create: </span><span class="si">{e}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
-    <span class="n">user_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span>
-    <span class="n">cookie</span> <span class="o">=</span> <span class="n">cookies</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tapir_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">),</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span>
-                          <span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">authorizations</span><span class="o">.</span><span class="n">classic</span><span class="p">))</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;generated cookie: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cookie</span><span class="p">)</span>
-
     <span class="n">user_session</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tapir_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">),</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
                                   <span class="n">start_time</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end_time</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
                                   <span class="n">authorizations</span><span class="o">=</span><span class="n">authorizations</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;created session </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">user_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">user_session</span><span class="p">,</span> <span class="n">cookie</span></div>
+    <span class="k">return</span> <span class="n">user_session</span></div>
+
+
+<div class="viewcode-block" id="generate_cookie"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.sessions.html#arxiv.users.legacy.sessions.generate_cookie">[docs]</a><span class="k">def</span> <span class="nf">generate_cookie</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a cookie from a :class:`domain.Session`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    session : :class:`domain.Session`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">cookies</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">session_id</span><span class="p">),</span> <span class="n">session</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+                        <span class="n">session</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">authorizations</span><span class="o">.</span><span class="n">classic</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="invalidate"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.legacy.sessions.html#arxiv.users.legacy.sessions.invalidate">[docs]</a><span class="k">def</span> <span class="nf">invalidate</span><span class="p">(</span><span class="n">cookie</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -276,8 +291,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

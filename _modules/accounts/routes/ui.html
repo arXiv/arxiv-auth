@@ -36,29 +36,30 @@
 <span></span><span class="sd">&quot;&quot;&quot;Provides Flask integration for the external user interface.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">abort</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> \
     <span class="n">make_response</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">send_file</span><span class="p">,</span> <span class="n">Response</span>
 <span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
 <span class="kn">from</span> <span class="nn">arxiv.users.auth.decorators</span> <span class="k">import</span> <span class="n">scoped</span>
 <span class="kn">from</span> <span class="nn">arxiv.users.auth</span> <span class="k">import</span> <span class="n">scopes</span>
 <span class="kn">from</span> <span class="nn">arxiv.users</span> <span class="k">import</span> <span class="n">domain</span>
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
 <span class="kn">from</span> <span class="nn">accounts.controllers</span> <span class="k">import</span> <span class="n">captcha_image</span><span class="p">,</span> <span class="n">registration</span><span class="p">,</span> <span class="n">authentication</span>
 
 <span class="kn">from</span> <span class="nn">werkzeug.exceptions</span> <span class="k">import</span> <span class="n">BadRequest</span>
 
-<span class="n">blueprint</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;ui&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="s1">&#39;/user&#39;</span><span class="p">)</span>
+<span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">blueprint</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;ui&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="user_is_owner"><a class="viewcode-back" href="../../../accounts/accounts.routes.ui.html#accounts.routes.ui.user_is_owner">[docs]</a><span class="k">def</span> <span class="nf">user_is_owner</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Determine whether the authenticated user matches the requested user.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">user_id</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="get_next_page"><a class="viewcode-back" href="../../../accounts/accounts.routes.ui.html#accounts.routes.ui.get_next_page">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">before_request</span>
-<span class="k">def</span> <span class="nf">get_next_page</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Get the next page; this is where we&#39;ll redirect the user on success.&quot;&quot;&quot;</span>
-    <span class="n">request</span><span class="o">.</span><span class="n">next_page</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;next_page&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="anonymous_only"><a class="viewcode-back" href="../../../accounts/accounts.routes.ui.html#accounts.routes.ui.anonymous_only">[docs]</a><span class="k">def</span> <span class="nf">anonymous_only</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
@@ -67,7 +68,7 @@
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">:</span>
             <span class="n">user</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">user</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;ui.view_profile&#39;</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;account&#39;</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">redirect</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_303_SEE_OTHER</span><span class="p">)</span>
             <span class="n">response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">response</span>
@@ -88,55 +89,64 @@
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">cookie_key</span><span class="p">,</span> <span class="p">(</span><span class="n">cookie_value</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cookies</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">cookie_name</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">f</span><span class="s1">&#39;{cookie_key.upper()}_NAME&#39;</span><span class="p">]</span>
-        <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="n">cookie_name</span><span class="p">,</span> <span class="n">cookie_value</span><span class="p">,</span> <span class="n">expires</span><span class="o">=</span><span class="n">expires</span><span class="p">,</span>
-                            <span class="n">secure</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">httponly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">samesite</span><span class="o">=</span><span class="s1">&#39;strict&#39;</span><span class="p">)</span></div>
+        <span class="n">max_age</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">expires</span><span class="p">)</span>
+        <span class="c1"># expires_date = expires_date.replace(tzinfo=EASTERN)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Set cookie </span><span class="si">%s</span><span class="s1"> with </span><span class="si">%s</span><span class="s1">, max_age </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">cookie_name</span><span class="p">,</span> <span class="n">cookie_value</span><span class="p">,</span> <span class="n">max_age</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">samesite</span><span class="o">=</span><span class="s1">&#39;strict&#39;</span><span class="p">,</span> <span class="n">httponly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;SESSION_COOKIE_SECURE&#39;</span><span class="p">]:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;secure&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="n">cookie_name</span><span class="p">,</span> <span class="n">cookie_value</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">params</span><span class="p">)</span></div>
+
+<span class="c1"># 2018-07-30 : Disabling everything except login and logout routes for accounts</span>
+<span class="c1">#  v0.1. - Erick</span>
+
+<span class="c1"># @blueprint.route(&#39;/register&#39;, methods=[&#39;GET&#39;, &#39;POST&#39;])</span>
+<span class="c1"># @anonymous_only</span>
+<span class="c1"># def register() -&gt; Response:</span>
+<span class="c1">#     &quot;&quot;&quot;Interface for creating new accounts.&quot;&quot;&quot;</span>
+<span class="c1">#     captcha_secret = current_app.config[&#39;CAPTCHA_SECRET&#39;]</span>
+<span class="c1">#     ip_address = request.remote_addr</span>
+<span class="c1">#     data, code, headers = registration.register(request.method, request.form,</span>
+<span class="c1">#                                                 captcha_secret, ip_address)</span>
+<span class="c1">#</span>
+<span class="c1">#     # Flask puts cookie-setting methods on the response, so we do that here</span>
+<span class="c1">#     # instead of in the controller.</span>
+<span class="c1">#     if code is status.HTTP_201_CREATED:</span>
+<span class="c1">#         target = url_for(&#39;ui.view_profile&#39;, user_id=data[&#39;user_id&#39;])</span>
+<span class="c1">#         response = make_response(redirect(target, code=code))</span>
+<span class="c1">#         set_cookies(response, data)</span>
+<span class="c1">#         return response</span>
+<span class="c1">#     content = render_template(&quot;accounts/register.html&quot;, **data)</span>
+<span class="c1">#     response = make_response(content, code, headers)</span>
+<span class="c1">#     return response</span>
 
 
-<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../../accounts/accounts.routes.ui.html#accounts.routes.ui.register">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/register&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="nd">@anonymous_only</span>
-<span class="k">def</span> <span class="nf">register</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Interface for creating new accounts.&quot;&quot;&quot;</span>
-    <span class="n">captcha_secret</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;CAPTCHA_SECRET&#39;</span><span class="p">]</span>
-    <span class="n">ip_address</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span>
-    <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">registration</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">,</span>
-                                                <span class="n">captcha_secret</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span>
-
-    <span class="c1"># Flask puts cookie-setting methods on the response, so we do that here</span>
-    <span class="c1"># instead of in the controller.</span>
-    <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">:</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;ui.view_profile&#39;</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">])</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="n">redirect</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">))</span>
-        <span class="n">set_cookies</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">response</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;accounts/register.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">response</span></div>
+<span class="c1"># @blueprint.route(&#39;/&lt;string:user_id&gt;/profile&#39;, methods=[&#39;GET&#39;])</span>
+<span class="c1"># @scoped(scopes.VIEW_PROFILE, authorizer=user_is_owner)</span>
+<span class="c1"># def view_profile(user_id: str) -&gt; Response:</span>
+<span class="c1">#     &quot;&quot;&quot;User can view their account information.&quot;&quot;&quot;</span>
+<span class="c1">#     data, code, headers = registration.view_profile(user_id, request.session)</span>
+<span class="c1">#     return render_template(&quot;accounts/profile.html&quot;, **data)</span>
 
 
-<div class="viewcode-block" id="view_profile"><a class="viewcode-back" href="../../../accounts/accounts.routes.ui.html#accounts.routes.ui.view_profile">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;string:user_id&gt;/profile&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
-<span class="nd">@scoped</span><span class="p">(</span><span class="n">scopes</span><span class="o">.</span><span class="n">VIEW_PROFILE</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">user_is_owner</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">view_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;User can view their account information.&quot;&quot;&quot;</span>
-    <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">registration</span><span class="o">.</span><span class="n">view_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;accounts/profile.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="edit_profile"><a class="viewcode-back" href="../../../accounts/accounts.routes.ui.html#accounts.routes.ui.edit_profile">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;string:user_id&gt;/profile/edit&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="nd">@scoped</span><span class="p">(</span><span class="n">scopes</span><span class="o">.</span><span class="n">EDIT_PROFILE</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">user_is_owner</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;User can update their account information.&quot;&quot;&quot;</span>
-    <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">registration</span><span class="o">.</span><span class="n">edit_profile</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span>
-                                                    <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">,</span>
-                                                    <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">,</span>
-                                                    <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_303_SEE_OTHER</span><span class="p">:</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;ui.view_profile&#39;</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">user_id</span><span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="n">redirect</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">))</span>
-        <span class="n">set_cookies</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">response</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;accounts/edit_profile.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">response</span></div>
+<span class="c1"># @blueprint.route(&#39;/&lt;string:user_id&gt;/profile/edit&#39;, methods=[&#39;GET&#39;, &#39;POST&#39;])</span>
+<span class="c1"># @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)</span>
+<span class="c1"># def edit_profile(user_id: str) -&gt; Response:</span>
+<span class="c1">#     &quot;&quot;&quot;User can update their account information.&quot;&quot;&quot;</span>
+<span class="c1">#     data, code, headers = registration.edit_profile(request.method, user_id,</span>
+<span class="c1">#                                                     request.session,</span>
+<span class="c1">#                                                     request.form,</span>
+<span class="c1">#                                                     request.remote_addr)</span>
+<span class="c1">#     if code is status.HTTP_303_SEE_OTHER:</span>
+<span class="c1">#         target = url_for(&#39;ui.view_profile&#39;, user_id=user_id)</span>
+<span class="c1">#         response = make_response(redirect(target, code=code))</span>
+<span class="c1">#         set_cookies(response, data)</span>
+<span class="c1">#         return response</span>
+<span class="c1">#     content = render_template(&quot;accounts/edit_profile.html&quot;, **data)</span>
+<span class="c1">#     response = make_response(content, code, headers)</span>
+<span class="c1">#     return response</span>
 
 
 <div class="viewcode-block" id="login"><a class="viewcode-back" href="../../../accounts/accounts.routes.ui.html#accounts.routes.ui.login">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/login&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
@@ -145,10 +155,11 @@
     <span class="sd">&quot;&quot;&quot;User can log in with username and password, or permanent token.&quot;&quot;&quot;</span>
     <span class="n">ip_address</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span>
     <span class="n">form_data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span>
-
+    <span class="n">next_page</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;next_page&#39;</span><span class="p">,</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;account&#39;</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Request to log in, then redirect to </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">next_page</span><span class="p">)</span>
     <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">authentication</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
                                                <span class="n">form_data</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span>
-                                               <span class="n">request</span><span class="o">.</span><span class="n">next_page</span><span class="p">)</span>
+                                               <span class="n">next_page</span><span class="p">)</span>
 
     <span class="c1"># Flask puts cookie-setting methods on the response, so we do that here</span>
     <span class="c1"># instead of in the controller.</span>
@@ -169,26 +180,29 @@
     <span class="n">classic_cookie_key</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;CLASSIC_COOKIE_NAME&#39;</span><span class="p">]</span>
     <span class="n">session_cookie</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">session_cookie_key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">classic_cookie</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">classic_cookie_key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">next_page</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;next_page&#39;</span><span class="p">,</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;ui.login&#39;</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Request to log out, then redirect to </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">next_page</span><span class="p">)</span>
     <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">authentication</span><span class="o">.</span><span class="n">logout</span><span class="p">(</span><span class="n">session_cookie</span><span class="p">,</span> <span class="n">classic_cookie</span><span class="p">,</span>
-                                                <span class="n">request</span><span class="o">.</span><span class="n">next_page</span><span class="p">)</span>
+                                                <span class="n">next_page</span><span class="p">)</span>
 
     <span class="c1"># Flask puts cookie-setting methods on the response, so we do that here</span>
     <span class="c1"># instead of in the controller.</span>
     <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_303_SEE_OTHER</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Redirecting to </span><span class="si">%s</span><span class="s1">: </span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Location&#39;</span><span class="p">),</span> <span class="n">code</span><span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="n">redirect</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Location&#39;</span><span class="p">),</span> <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">))</span>
         <span class="n">set_cookies</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">response</span>
     <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;get_login&#39;</span><span class="p">),</span> <span class="n">code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_302_FOUND</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="captcha"><a class="viewcode-back" href="../../../accounts/accounts.routes.ui.html#accounts.routes.ui.captcha">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/captcha&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
-<span class="nd">@anonymous_only</span>
-<span class="k">def</span> <span class="nf">captcha</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Provide the image for stateless stateless_captcha.&quot;&quot;&quot;</span>
-    <span class="n">secret</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;CAPTCHA_SECRET&#39;</span><span class="p">]</span>
-    <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
-    <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">captcha_image</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">send_file</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">],</span> <span class="n">mimetype</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;mimetype&#39;</span><span class="p">]),</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span></div>
+<span class="c1"># @blueprint.route(&#39;/captcha&#39;, methods=[&#39;GET&#39;])</span>
+<span class="c1"># @anonymous_only</span>
+<span class="c1"># def captcha() -&gt; Response:</span>
+<span class="c1">#     &quot;&quot;&quot;Provide the image for stateless stateless_captcha.&quot;&quot;&quot;</span>
+<span class="c1">#     secret = current_app.config[&#39;CAPTCHA_SECRET&#39;]</span>
+<span class="c1">#     token = request.args.get(&#39;token&#39;)</span>
+<span class="c1">#     data, code, headers = captcha_image.get(token, secret, request.remote_addr)</span>
+<span class="c1">#     return send_file(data[&#39;image&#39;], mimetype=data[&#39;mimetype&#39;]), code, headers</span>
 </pre></div>
 
           </div>
@@ -212,8 +226,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

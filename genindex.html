@@ -99,6 +99,8 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBPolicyClass.ADMIN">ADMIN (arxiv.users.legacy.models.DBPolicyClass attribute)</a>
 </li>
+      <li><a href="arxiv.users/arxiv.users.auth.scopes.html#arxiv.users.auth.scopes.ADMIN_UPLOAD">ADMIN_UPLOAD (in module arxiv.users.auth.scopes)</a>
+</li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.affiliation">affiliation (accounts.controllers.registration.ProfileForm attribute)</a>
 
       <ul>
@@ -108,6 +110,10 @@
 </li>
       </ul></li>
       <li><a href="accounts/accounts.routes.ui.html#accounts.routes.ui.anonymous_only">anonymous_only() (in module accounts.routes.ui)</a>
+</li>
+      <li><a href="registry/app.html#module-app">app (module)</a>
+</li>
+      <li><a href="authenticator/wsgi.html#wsgi.application">application() (in module wsgi)</a>, <a href="registry/wsgi.html#wsgi.application">[1]</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Category.archive">archive (arxiv.users.domain.Category attribute)</a>
 
@@ -121,8 +127,6 @@
         <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBProfile.archive">(arxiv.users.legacy.models.DBProfile attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.html#module-arxiv.users">arxiv.users (module)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.html#module-arxiv.users.auth">arxiv.users.auth (module)</a>
@@ -131,6 +135,8 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.exceptions.html#module-arxiv.users.auth.exceptions">arxiv.users.auth.exceptions (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.auth.middleware.html#module-arxiv.users.auth.middleware">arxiv.users.auth.middleware (module)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.scopes.html#module-arxiv.users.auth.scopes">arxiv.users.auth.scopes (module)</a>
@@ -167,16 +173,42 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.exceptions.html#arxiv.users.legacy.exceptions.AuthenticationFailed">AuthenticationFailed</a>
 </li>
+      <li><a href="authenticator/authenticator.html#module-authenticator">authenticator (module)</a>
+</li>
+      <li><a href="authenticator/authenticator.config.html#module-authenticator.config">authenticator.config (module)</a>
+</li>
+      <li><a href="authenticator/authenticator.factory.html#module-authenticator.factory">authenticator.factory (module)</a>
+</li>
+      <li><a href="authenticator/authenticator.routes.html#module-authenticator.routes">authenticator.routes (module)</a>
+</li>
+      <li><a href="authenticator/authenticator.services.html#module-authenticator.services">authenticator.services (module)</a>
+</li>
+      <li><a href="authenticator/authenticator.services.sessions.html#module-authenticator.services.sessions">authenticator.services.sessions (module)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.auth.middleware.html#arxiv.users.auth.middleware.AuthMiddleware">AuthMiddleware (class in arxiv.users.auth.middleware)</a>
+</li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.AUTHORIZATION_CODE">AUTHORIZATION_CODE (registry.domain.ClientGrantType attribute)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientAuthorization.authorization_id">authorization_id (registry.services.datastore.models.DBClientAuthorization attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Session.authorizations">authorizations (arxiv.users.domain.Session attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Authorizations">Authorizations (class in arxiv.users.domain)</a>
 </li>
-      <li><a href="authorizer/authorizer.html#module-authorizer">authorizer (module)</a>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.authorizations">authorizations (registry.services.datastore.models.DBClient attribute)</a>
 </li>
-      <li><a href="authorizer/authorizer.config.html#module-authorizer.config">authorizer.config (module)</a>
+      <li><a href="authenticator/authenticator.routes.html#authenticator.routes.authorize">authorize() (in module authenticator.routes)</a>
 </li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientAuthorization.authorized">authorized (registry.domain.ClientAuthorization attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.authorized">(registry.domain.ClientGrantType attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientAuthorization.authorized">(registry.services.datastore.models.DBClientAuthorization attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientGrantType.authorized">(registry.services.datastore.models.DBClientGrantType attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -186,13 +218,15 @@
       <li><a href="arxiv.users/arxiv.users.auth.middleware.html#arxiv.users.auth.middleware.AuthMiddleware.before">before() (arxiv.users.auth.middleware.AuthMiddleware method)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Authorizations.before_init">before_init() (arxiv.users.domain.Authorizations class method)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="accounts/accounts.routes.ui.html#accounts.routes.ui.captcha">captcha() (in module accounts.routes.ui)</a>
-</li>
       <li><a href="accounts/accounts.config.html#accounts.config.CAPTCHA_SECRET">CAPTCHA_SECRET (in module accounts.config)</a>
 </li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.captcha_token">captcha_token (accounts.controllers.registration.RegistrationForm attribute)</a>
@@ -207,7 +241,19 @@
 </li>
       <li><a href="accounts/accounts.stateless_captcha.html#accounts.stateless_captcha.check">check() (in module accounts.stateless_captcha)</a>
 </li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_client_secret">check_client_secret() (registry.oauth2.OAuth2Client method)</a>
+</li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_grant_type">check_grant_type() (registry.oauth2.OAuth2Client method)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.check_password">check_password() (in module arxiv.users.legacy.util)</a>
+</li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_redirect_uri">check_redirect_uri() (registry.oauth2.OAuth2Client method)</a>
+</li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_requested_scopes">check_requested_scopes() (registry.oauth2.OAuth2Client method)</a>
+</li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_response_type">check_response_type() (registry.oauth2.OAuth2Client method)</a>
+</li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_token_endpoint_auth_method">check_token_endpoint_auth_method() (registry.oauth2.OAuth2Client method)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBPolicyClass.class_id">class_id (arxiv.users.legacy.models.DBPolicyClass attribute)</a>
 </li>
@@ -219,12 +265,52 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client">Client (class in arxiv.users.domain)</a>
 </li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientAuthorization.client">client (registry.services.datastore.models.DBClientAuthorization attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientCredential.client">(registry.services.datastore.models.DBClientCredential attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientGrantType.client">(registry.services.datastore.models.DBClientGrantType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.CLIENT_CREDENTIALS">CLIENT_CREDENTIALS (registry.domain.ClientGrantType attribute)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client.client_id">client_id (arxiv.users.domain.Client attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.domain.html#registry.domain.ClientAuthorization.client_id">(registry.domain.ClientAuthorization attribute)</a>
+</li>
+        <li><a href="registry/registry.domain.html#registry.domain.ClientCredential.client_id">(registry.domain.ClientCredential attribute)</a>
+</li>
+        <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.client_id">(registry.domain.ClientGrantType attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.client_id">(registry.services.datastore.models.DBClient attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientAuthorization.client_id">(registry.services.datastore.models.DBClientAuthorization attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientCredential.client_id">(registry.services.datastore.models.DBClientCredential attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientGrantType.client_id">(registry.services.datastore.models.DBClientGrantType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientCredential.client_secret">client_secret (registry.domain.ClientCredential attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientCredential.client_secret">(registry.services.datastore.models.DBClientCredential attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientAuthorization">ClientAuthorization (class in registry.domain)</a>
+</li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientCredential">ClientCredential (class in registry.domain)</a>
+</li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.ClientCredentialsGrant">ClientCredentialsGrant (class in registry.oauth2)</a>
+</li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType">ClientGrantType (class in registry.domain)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Category.compound">compound (arxiv.users.domain.Category attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.compute_capabilities">compute_capabilities() (in module arxiv.users.legacy.util)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.exceptions.html#arxiv.users.auth.exceptions.ConfigurationError">ConfigurationError</a>
@@ -254,15 +340,39 @@
       <ul>
         <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.create_all">(in module arxiv.users.legacy.util)</a>
 </li>
+        <li><a href="registry/registry.services.datastore.util.html#registry.services.datastore.util.create_all">(in module registry.services.datastore.util)</a>
+</li>
       </ul></li>
+      <li><a href="authenticator/authenticator.factory.html#authenticator.factory.create_app">create_app() (in module authenticator.factory)</a>
+</li>
+      <li><a href="registry/create_client.html#module-create_client">create_client (module)</a>
+</li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.create_server">create_server() (in module registry.oauth2)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.auth.scopes.html#arxiv.users.auth.scopes.CREATE_SUBMISSION">CREATE_SUBMISSION (in module arxiv.users.auth.scopes)</a>
 </li>
       <li><a href="accounts/accounts.factory.html#accounts.factory.create_web_app">create_web_app() (in module accounts.factory)</a>
+
+      <ul>
+        <li><a href="registry/registry.factory.html#registry.factory.create_web_app">(in module registry.factory)</a>
+</li>
+      </ul></li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.created">created (registry.services.datastore.models.DBClient attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientCredential.created">(registry.services.datastore.models.DBClientCredential attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.credential">credential (registry.services.datastore.models.DBClient attribute)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientCredential.credential_id">credential_id (registry.services.datastore.models.DBClientCredential attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.current_session">current_session() (in module arxiv.users.auth.sessions.store)</a>
 
       <ul>
         <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.current_session">(in module arxiv.users.legacy.util)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.util.html#registry.services.datastore.util.current_session">(in module registry.services.datastore.util)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -276,6 +386,14 @@
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBDocuments.dated">dated (arxiv.users.legacy.models.DBDocuments attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBCategory">DBCategory (class in arxiv.users.legacy.models)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient">DBClient (class in registry.services.datastore.models)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientAuthorization">DBClientAuthorization (class in registry.services.datastore.models)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientCredential">DBClientCredential (class in registry.services.datastore.models)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientGrantType">DBClientGrantType (class in registry.services.datastore.models)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBDocumentInCategory">DBDocumentInCategory (class in arxiv.users.legacy.models)</a>
 </li>
@@ -303,10 +421,10 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUser">DBUser (class in arxiv.users.legacy.models)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUserNickname">DBUserNickname (class in arxiv.users.legacy.models)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUserPassword">DBUserPassword (class in arxiv.users.legacy.models)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.tokens.html#arxiv.users.auth.tokens.decode">decode() (in module arxiv.users.auth.tokens)</a>
@@ -329,8 +447,20 @@
         <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.delete">(in module arxiv.users.auth.sessions.store)</a>
 </li>
       </ul></li>
-      <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBPolicyClass.description">description (arxiv.users.legacy.models.DBPolicyClass attribute)</a>
+      <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.SessionStore.delete_by_id">delete_by_id() (arxiv.users.auth.sessions.store.SessionStore method)</a>
+
+      <ul>
+        <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.delete_by_id">(in module arxiv.users.auth.sessions.store)</a>
 </li>
+      </ul></li>
+      <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client.description">description (arxiv.users.domain.Client attribute)</a>
+
+      <ul>
+        <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBPolicyClass.description">(arxiv.users.legacy.models.DBPolicyClass attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.description">(registry.services.datastore.models.DBClient attribute)</a>
+</li>
+      </ul></li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Category.display">display (arxiv.users.domain.Category attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBDocumentInCategory.document_id">document_id (arxiv.users.legacy.models.DBDocumentInCategory attribute)</a>
@@ -344,7 +474,11 @@
       <li><a href="arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.domain_papers">domain_papers() (in module arxiv.users.legacy.endorsements)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.drop_all">drop_all() (in module arxiv.users.legacy.util)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.util.html#registry.services.datastore.util.drop_all">(in module registry.services.datastore.util)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -354,11 +488,7 @@
       <li><a href="arxiv.users/arxiv.users.auth.scopes.html#arxiv.users.auth.scopes.EDIT_PROFILE">EDIT_PROFILE (in module arxiv.users.auth.scopes)</a>
 </li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.edit_profile">edit_profile() (in module accounts.controllers.registration)</a>
-
-      <ul>
-        <li><a href="accounts/accounts.routes.ui.html#accounts.routes.ui.edit_profile">(in module accounts.routes.ui)</a>
 </li>
-      </ul></li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.email">email (accounts.controllers.registration.ProfileForm attribute)</a>
 
       <ul>
@@ -381,10 +511,10 @@
       </ul></li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBEndorsementDomain.endorse_all">endorse_all (arxiv.users.legacy.models.DBEndorsementDomain attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBEndorsementDomain.endorse_email">endorse_email (arxiv.users.legacy.models.DBEndorsementDomain attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBEndorsement.endorsee">endorsee (arxiv.users.legacy.models.DBEndorsement attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBEndorsement.endorsee_id">endorsee_id (arxiv.users.legacy.models.DBEndorsement attribute)</a>
@@ -406,6 +536,8 @@
       <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.epoch">epoch() (in module arxiv.users.legacy.util)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Session.expired">expired (arxiv.users.domain.Session attribute)</a>
+</li>
+      <li><a href="arxiv.users/arxiv.users.auth.exceptions.html#arxiv.users.auth.exceptions.ExpiredToken">ExpiredToken</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Session.expires">expires (arxiv.users.domain.Session attribute)</a>
 </li>
@@ -489,13 +621,23 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.SessionStore.generate_cookie">generate_cookie() (arxiv.users.auth.sessions.store.SessionStore method)</a>
+
+      <ul>
+        <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.generate_cookie">(in module arxiv.users.auth.sessions.store)</a>
+</li>
+        <li><a href="arxiv.users/arxiv.users.legacy.sessions.html#arxiv.users.legacy.sessions.generate_cookie">(in module arxiv.users.legacy.sessions)</a>
+</li>
+      </ul></li>
       <li><a href="accounts/accounts.controllers.html#accounts.controllers.generate_tracking_cookie">generate_tracking_cookie() (in module accounts.controllers)</a>
 </li>
       <li><a href="accounts/accounts.controllers.captcha_image.html#accounts.controllers.captcha_image.get">get() (in module accounts.controllers.captcha_image)</a>
 </li>
-      <li><a href="arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.get_endorsements">get_endorsements() (in module arxiv.users.legacy.endorsements)</a>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.get_client">get_client() (in module registry.oauth2)</a>
 </li>
-      <li><a href="accounts/accounts.routes.ui.html#accounts.routes.ui.get_next_page">get_next_page() (in module accounts.routes.ui)</a>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.get_default_redirect_uri">get_default_redirect_uri() (registry.oauth2.OAuth2Client method)</a>
+</li>
+      <li><a href="arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.get_endorsements">get_endorsements() (in module arxiv.users.legacy.endorsements)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.get_redis_session">get_redis_session() (in module arxiv.users.auth.sessions.store)</a>
 </li>
@@ -503,13 +645,25 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.get_session_duration">get_session_duration() (in module arxiv.users.legacy.util)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.get_session_hash">get_session_hash() (in module arxiv.users.legacy.util)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.accounts.html#arxiv.users.legacy.accounts.get_user_by_id">get_user_by_id() (in module arxiv.users.legacy.accounts)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserProfile.GRAD_STUDENT">GRAD_STUDENT (arxiv.users.domain.UserProfile attribute)</a>
+</li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.grant_type">grant_type (registry.domain.ClientGrantType attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientGrantType.grant_type">(registry.services.datastore.models.DBClientGrantType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientGrantType.grant_type_id">grant_type_id (registry.services.datastore.models.DBClientGrantType attribute)</a>
+</li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.GRANT_TYPES">GRANT_TYPES (registry.domain.ClientGrantType attribute)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.grant_types">grant_types (registry.services.datastore.models.DBClient attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBProfile.GROUP_FLAGS">GROUP_FLAGS (arxiv.users.legacy.models.DBProfile attribute)</a>
 </li>
@@ -529,10 +683,12 @@
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.hash_password">hash_password() (in module arxiv.users.legacy.util)</a>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.has_client_secret">has_client_secret() (registry.oauth2.OAuth2Client method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.hash_password">hash_password() (in module arxiv.users.legacy.util)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserProfile.homepage_url">homepage_url (arxiv.users.domain.UserProfile attribute)</a>
 </li>
   </ul></td>
@@ -541,6 +697,8 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.IMPLICIT">IMPLICIT (registry.domain.ClientGrantType attribute)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.implicit_endorsements">implicit_endorsements() (in module arxiv.users.legacy.endorsements)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.html#arxiv.users.auth.Auth.init_app">init_app() (arxiv.users.auth.Auth method)</a>
@@ -549,6 +707,10 @@
         <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.init_app">(in module arxiv.users.auth.sessions.store)</a>
 </li>
         <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.init_app">(in module arxiv.users.legacy.util)</a>
+</li>
+        <li><a href="registry/registry.oauth2.html#registry.oauth2.init_app">(in module registry.oauth2)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.util.html#registry.services.datastore.util.init_app">(in module registry.services.datastore.util)</a>
 </li>
       </ul></li>
       <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.SessionStore.invalidate">invalidate() (arxiv.users.auth.sessions.store.SessionStore method)</a>
@@ -567,10 +729,10 @@
         <li><a href="arxiv.users/arxiv.users.legacy.sessions.html#arxiv.users.legacy.sessions.invalidate_by_id">(in module arxiv.users.legacy.sessions)</a>
 </li>
       </ul></li>
-      <li><a href="arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.invalidated_autoendorsements">invalidated_autoendorsements() (in module arxiv.users.legacy.endorsements)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="arxiv.users/arxiv.users.legacy.endorsements.html#arxiv.users.legacy.endorsements.invalidated_autoendorsements">invalidated_autoendorsements() (in module arxiv.users.legacy.endorsements)</a>
+</li>
       <li><a href="accounts/accounts.stateless_captcha.html#accounts.stateless_captcha.InvalidCaptchaToken">InvalidCaptchaToken</a>
 </li>
       <li><a href="accounts/accounts.stateless_captcha.html#accounts.stateless_captcha.InvalidCaptchaValue">InvalidCaptchaValue</a>
@@ -589,6 +751,8 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBDocumentInCategory.is_primary">is_primary (arxiv.users.legacy.models.DBDocumentInCategory attribute)</a>
 </li>
+      <li><a href="registry/registry.routes.html#registry.routes.issue_token">issue_token() (in module registry.routes)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBPermanentToken.issued_to">issued_to (arxiv.users.legacy.models.DBPermanentToken attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBEndorsement.issued_when">issued_when (arxiv.users.legacy.models.DBEndorsement attribute)</a>
@@ -605,11 +769,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUser.joined_date">joined_date (arxiv.users.legacy.models.DBUser attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUser.joined_ip_num">joined_ip_num (arxiv.users.legacy.models.DBUser attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUser.joined_remote_host">joined_remote_host (arxiv.users.legacy.models.DBUser attribute)</a>
+</li>
+      <li><a href="authenticator/authenticator.factory.html#authenticator.factory.jsonify_exception">jsonify_exception() (in module authenticator.factory)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -631,8 +797,16 @@
         <li><a href="arxiv.users/arxiv.users.legacy.sessions.html#arxiv.users.legacy.sessions.load">(in module arxiv.users.legacy.sessions)</a>
 </li>
       </ul></li>
+      <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.SessionStore.load_by_id">load_by_id() (arxiv.users.auth.sessions.store.SessionStore method)</a>
+
+      <ul>
+        <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.load_by_id">(in module arxiv.users.auth.sessions.store)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="registry/registry.services.datastore.html#registry.services.datastore.load_client">load_client() (in module registry.services.datastore)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.auth.html#arxiv.users.auth.Auth.load_session">load_session() (arxiv.users.auth.Auth method)</a>
 </li>
       <li><a href="accounts/accounts.controllers.authentication.html#accounts.controllers.authentication.login">login() (in module accounts.controllers.authentication)</a>
@@ -669,21 +843,27 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.User.name">name (arxiv.users.domain.User attribute)</a>
+      <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client.name">name (arxiv.users.domain.Client attribute)</a>
 
       <ul>
+        <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.User.name">(arxiv.users.domain.User attribute)</a>
+</li>
         <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBPolicyClass.name">(arxiv.users.legacy.models.DBPolicyClass attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.name">(registry.services.datastore.models.DBClient attribute)</a>
 </li>
       </ul></li>
       <li><a href="accounts/accounts.stateless_captcha.html#accounts.stateless_captcha.new">new() (in module accounts.stateless_captcha)</a>
 </li>
-      <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUserNickname.nick_id">nick_id (arxiv.users.legacy.models.DBUserNickname attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUserNickname.nick_id">nick_id (arxiv.users.legacy.models.DBUserNickname attribute)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUserNickname.nickname">nickname (arxiv.users.legacy.models.DBUserNickname attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Session.nonce">nonce (arxiv.users.domain.Session attribute)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.html#registry.services.datastore.NoSuchClient">NoSuchClient</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.exceptions.html#arxiv.users.legacy.exceptions.NoSuchUser">NoSuchUser</a>
 </li>
@@ -695,18 +875,26 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client">OAuth2Client (class in registry.oauth2)</a>
+</li>
       <li><a href="accounts/accounts.controllers.util.html#accounts.controllers.util.OptGroupSelectField">OptGroupSelectField (class in accounts.controllers.util)</a>
 </li>
       <li><a href="accounts/accounts.controllers.util.html#accounts.controllers.util.OptGroupSelectWidget">OptGroupSelectWidget (class in accounts.controllers.util)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="accounts/accounts.controllers.util.html#accounts.controllers.util.MultiCheckboxField.option_widget">option_widget (accounts.controllers.util.MultiCheckboxField attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBProfile.original_subject_classes">original_subject_classes (arxiv.users.legacy.models.DBProfile attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserProfile.OTHER">OTHER (arxiv.users.domain.UserProfile attribute)</a>
 </li>
+      <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client.owner_id">owner_id (arxiv.users.domain.Client attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.owner_id">(registry.services.datastore.models.DBClient attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -725,6 +913,8 @@
         <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.password">(accounts.controllers.registration.RegistrationForm attribute)</a>
 </li>
       </ul></li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.PASSWORD">PASSWORD (registry.domain.ClientGrantType attribute)</a>
+</li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.password2">password2 (accounts.controllers.registration.RegistrationForm attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUserPassword.password_enc">password_enc (arxiv.users.legacy.models.DBUserPassword attribute)</a>
@@ -789,21 +979,51 @@
       </ul></li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBPolicyClass.recovery_policy">recovery_policy (arxiv.users.legacy.models.DBPolicyClass attribute)</a>
 </li>
+      <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client.redirect_uri">redirect_uri (arxiv.users.domain.Client attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.redirect_uri">(registry.services.datastore.models.DBClient attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="accounts/accounts.config.html#accounts.config.REDIS_TOKEN">REDIS_TOKEN (in module accounts.config)</a>
+
+      <ul>
+        <li><a href="registry/registry.config.html#registry.config.REDIS_TOKEN">(in module registry.config)</a>
+</li>
+      </ul></li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.register">register() (in module accounts.controllers.registration)</a>
 
       <ul>
-        <li><a href="accounts/accounts.routes.ui.html#accounts.routes.ui.register">(in module accounts.routes.ui)</a>
-</li>
         <li><a href="arxiv.users/arxiv.users.legacy.accounts.html#arxiv.users.legacy.accounts.register">(in module arxiv.users.legacy.accounts)</a>
 </li>
       </ul></li>
       <li><a href="arxiv.users/arxiv.users.legacy.exceptions.html#arxiv.users.legacy.exceptions.RegistrationFailed">RegistrationFailed</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm">RegistrationForm (class in accounts.controllers.registration)</a>
 </li>
       <li><a href="registry/registry.html#module-registry">registry (module)</a>
+</li>
+      <li><a href="registry/registry.config.html#module-registry.config">registry.config (module)</a>
+</li>
+      <li><a href="registry/registry.domain.html#module-registry.domain">registry.domain (module)</a>
+</li>
+      <li><a href="registry/registry.factory.html#module-registry.factory">registry.factory (module)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="registry/registry.oauth2.html#module-registry.oauth2">registry.oauth2 (module)</a>
+</li>
+      <li><a href="registry/registry.routes.html#module-registry.routes">registry.routes (module)</a>
+</li>
+      <li><a href="registry/registry.services.html#module-registry.services">registry.services (module)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.html#module-registry.services.datastore">registry.services.datastore (module)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.models.html#module-registry.services.datastore.models">registry.services.datastore.models (module)</a>
+</li>
+      <li><a href="registry/registry.services.datastore.util.html#module-registry.services.datastore.util">registry.services.datastore.util (module)</a>
+</li>
+      <li><a href="registry/registry.services.sessions.html#module-registry.services.sessions">registry.services.sessions (module)</a>
 </li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.remember_me">remember_me (accounts.controllers.registration.ProfileForm attribute)</a>
 
@@ -823,6 +1043,16 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBEndorsement.request_id">request_id (arxiv.users.legacy.models.DBEndorsement attribute)</a>
 </li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientAuthorization.requested">requested (registry.domain.ClientAuthorization attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.domain.html#registry.domain.ClientGrantType.requested">(registry.domain.ClientGrantType attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientAuthorization.requested">(registry.services.datastore.models.DBClientAuthorization attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientGrantType.requested">(registry.services.datastore.models.DBClientGrantType attribute)</a>
+</li>
+      </ul></li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUserNickname.role">role (arxiv.users.legacy.models.DBUserNickname attribute)</a>
 </li>
   </ul></td>
@@ -831,10 +1061,22 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.save_token">save_token() (in module registry.oauth2)</a>
+</li>
+      <li><a href="registry/registry.domain.html#registry.domain.ClientAuthorization.scope">scope (registry.domain.ClientAuthorization attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClientAuthorization.scope">(registry.services.datastore.models.DBClientAuthorization attribute)</a>
+</li>
+      </ul></li>
       <li><a href="arxiv.users/arxiv.users.auth.decorators.html#arxiv.users.auth.decorators.scoped">scoped() (in module arxiv.users.auth.decorators)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Authorizations.scopes">scopes (arxiv.users.domain.Authorizations attribute)</a>
+
+      <ul>
+        <li><a href="registry/registry.oauth2.html#registry.oauth2.OAuth2Client.scopes">(registry.oauth2.OAuth2Client attribute)</a>
 </li>
+      </ul></li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBPermanentToken.secret">secret (arxiv.users.legacy.models.DBPermanentToken attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBSessionsAudit.session">session (arxiv.users.legacy.models.DBSessionsAudit attribute)</a>
@@ -855,18 +1097,18 @@
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.exceptions.html#arxiv.users.auth.exceptions.SessionDeletionFailed">SessionDeletionFailed</a>, <a href="arxiv.users/arxiv.users.legacy.exceptions.html#arxiv.users.legacy.exceptions.SessionDeletionFailed">[1]</a>
 </li>
-      <li><a href="arxiv.users/arxiv.users.auth.exceptions.html#arxiv.users.auth.exceptions.SessionExpired">SessionExpired</a>, <a href="arxiv.users/arxiv.users.legacy.exceptions.html#arxiv.users.legacy.exceptions.SessionExpired">[1]</a>
+      <li><a href="arxiv.users/arxiv.users.legacy.exceptions.html#arxiv.users.legacy.exceptions.SessionExpired">SessionExpired</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.SessionStore">SessionStore (class in arxiv.users.auth.sessions.store)</a>
 </li>
       <li><a href="accounts/accounts.routes.ui.html#accounts.routes.ui.set_cookies">set_cookies() (in module accounts.routes.ui)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUser.share_email">share_email (arxiv.users.legacy.models.DBUser attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUser.share_first_name">share_first_name (arxiv.users.legacy.models.DBUser attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBUser.share_last_name">share_last_name (arxiv.users.legacy.models.DBUser attribute)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserProfile.STAFF">STAFF (arxiv.users.domain.UserProfile attribute)</a>
@@ -927,10 +1169,10 @@
 </li>
       <li><a href="accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha.test_not_a_token">test_not_a_token() (accounts.stateless_captcha.tests.TestCaptcha method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="accounts/accounts.stateless_captcha.tests.html#accounts.stateless_captcha.tests.TestCaptcha">TestCaptcha (class in accounts.stateless_captcha.tests)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.to_dict">to_dict() (in module arxiv.users.domain)</a>
 </li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.to_domain">to_domain() (accounts.controllers.registration.ProfileForm method)</a>
@@ -939,6 +1181,8 @@
         <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBProfile.to_domain">(arxiv.users.legacy.models.DBProfile method)</a>
 </li>
       </ul></li>
+      <li><a href="registry/registry.oauth2.html#registry.oauth2.ClientCredentialsGrant.TOKEN_ENDPOINT_AUTH_METHODS">TOKEN_ENDPOINT_AUTH_METHODS (registry.oauth2.ClientCredentialsGrant attribute)</a>
+</li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBSessionsAudit.tracking_cookie">tracking_cookie (arxiv.users.legacy.models.DBSessionsAudit attribute)</a>
 
       <ul>
@@ -946,7 +1190,11 @@
 </li>
       </ul></li>
       <li><a href="arxiv.users/arxiv.users.legacy.util.html#arxiv.users.legacy.util.transaction">transaction() (in module arxiv.users.legacy.util)</a>
+
+      <ul>
+        <li><a href="registry/registry.services.datastore.util.html#registry.services.datastore.util.transaction">(in module registry.services.datastore.util)</a>
 </li>
+      </ul></li>
       <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBProfile.TYPE_CHOICES">TYPE_CHOICES (arxiv.users.legacy.models.DBProfile attribute)</a>
 </li>
   </ul></td>
@@ -968,7 +1216,11 @@
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.url">url (accounts.controllers.registration.ProfileForm attribute)</a>
 
       <ul>
+        <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client.url">(arxiv.users.domain.Client attribute)</a>
+</li>
         <li><a href="arxiv.users/arxiv.users.legacy.models.html#arxiv.users.legacy.models.DBProfile.url">(arxiv.users.legacy.models.DBProfile attribute)</a>
+</li>
+        <li><a href="registry/registry.services.datastore.models.html#registry.services.datastore.models.DBClient.url">(registry.services.datastore.models.DBClient attribute)</a>
 </li>
       </ul></li>
       <li><a href="arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Session.user">user (arxiv.users.domain.Session attribute)</a>
@@ -1045,16 +1297,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.validate_password">validate_password() (accounts.controllers.registration.RegistrationForm method)</a>
 </li>
+      <li><a href="arxiv.users/arxiv.users.auth.sessions.store.html#arxiv.users.auth.sessions.store.SessionStore.validate_session_against_cookie">validate_session_against_cookie() (arxiv.users.auth.sessions.store.SessionStore method)</a>
+</li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.validate_username">validate_username() (accounts.controllers.registration.ProfileForm method)</a>
 </li>
       <li><a href="arxiv.users/arxiv.users.auth.scopes.html#arxiv.users.auth.scopes.VIEW_PROFILE">VIEW_PROFILE (in module arxiv.users.auth.scopes)</a>
 </li>
       <li><a href="accounts/accounts.controllers.registration.html#accounts.controllers.registration.view_profile">view_profile() (in module accounts.controllers.registration)</a>
-
-      <ul>
-        <li><a href="accounts/accounts.routes.ui.html#accounts.routes.ui.view_profile">(in module accounts.routes.ui)</a>
 </li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -1067,6 +1317,12 @@
         <li><a href="accounts/accounts.controllers.util.html#accounts.controllers.util.OptGroupSelectField.widget">(accounts.controllers.util.OptGroupSelectField attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="arxiv.users/arxiv.users.auth.scopes.html#arxiv.users.auth.scopes.WRITE_UPLOAD">WRITE_UPLOAD (in module arxiv.users.auth.scopes)</a>
+</li>
+      <li><a href="authenticator/wsgi.html#module-wsgi">wsgi (module)</a>, <a href="registry/wsgi.html#module-wsgi">[1]</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1093,8 +1349,8 @@
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

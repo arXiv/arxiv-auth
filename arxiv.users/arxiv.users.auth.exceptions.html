@@ -45,6 +45,13 @@
 </dd></dl>
 
 <dl class="exception">
+<dt id="arxiv.users.auth.exceptions.ExpiredToken">
+<em class="property">exception </em><code class="descclassname">arxiv.users.auth.exceptions.</code><code class="descname">ExpiredToken</code><a class="reference internal" href="../_modules/arxiv/users/auth/exceptions.html#ExpiredToken"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.exceptions.ExpiredToken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>An expired token was passed.</p>
+</dd></dl>
+
+<dl class="exception">
 <dt id="arxiv.users.auth.exceptions.InvalidToken">
 <em class="property">exception </em><code class="descclassname">arxiv.users.auth.exceptions.</code><code class="descname">InvalidToken</code><a class="reference internal" href="../_modules/arxiv/users/auth/exceptions.html#InvalidToken"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.exceptions.InvalidToken" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
@@ -70,13 +77,6 @@
 <em class="property">exception </em><code class="descclassname">arxiv.users.auth.exceptions.</code><code class="descname">SessionDeletionFailed</code><a class="reference internal" href="../_modules/arxiv/users/auth/exceptions.html#SessionDeletionFailed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.exceptions.SessionDeletionFailed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
 <p>Failed to delete a session in the session store.</p>
-</dd></dl>
-
-<dl class="exception">
-<dt id="arxiv.users.auth.exceptions.SessionExpired">
-<em class="property">exception </em><code class="descclassname">arxiv.users.auth.exceptions.</code><code class="descname">SessionExpired</code><a class="reference internal" href="../_modules/arxiv/users/auth/exceptions.html#SessionExpired"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.exceptions.SessionExpired" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
-<p>User’s session has expired.</p>
 </dd></dl>
 
 <dl class="exception">
@@ -115,8 +115,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

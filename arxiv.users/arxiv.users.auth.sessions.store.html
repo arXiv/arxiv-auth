@@ -40,23 +40,27 @@
 <p>Used to create, delete, and verify user and client session.</p>
 <dl class="class">
 <dt id="arxiv.users.auth.sessions.store.SessionStore">
-<em class="property">class </em><code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">SessionStore</code><span class="sig-paren">(</span><em>host</em>, <em>port</em>, <em>db</em>, <em>secret</em>, <em>duration=7200</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">SessionStore</code><span class="sig-paren">(</span><em>host</em>, <em>port</em>, <em>db</em>, <em>secret</em>, <em>duration=7200</em>, <em>token=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Manages a connection to Redis.</p>
-<p>In reality, the StrictRedis instance is thread safe, and connections are
+<p>In fact, the StrictRedis instance is thread safe and connections are
 attached at the time a command is executed. This class simply provides a
 container for configuration.</p>
 <dl class="method">
 <dt id="arxiv.users.auth.sessions.store.SessionStore.create">
-<code class="descname">create</code><span class="sig-paren">(</span><em>user</em>, <em>authorizations</em>, <em>ip_address</em>, <em>remote_host</em>, <em>tracking_cookie=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">create</code><span class="sig-paren">(</span><em>authorizations</em>, <em>ip_address</em>, <em>remote_host</em>, <em>tracking_cookie=''</em>, <em>user=None</em>, <em>client=None</em>, <em>session_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new session.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>user</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code>) – </li>
 <li><strong>authorizations</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Authorizations</span></code>) – </li>
+<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </li>
+<li><strong>remote_host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </li>
+<li><strong>tracking_cookie</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </li>
+<li><strong>user</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code>) – </li>
+<li><strong>client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Client</span></code>) – </li>
 </ul>
 </td>
 </tr>
@@ -66,7 +70,7 @@ container for configuration.</p>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -75,8 +79,24 @@ container for configuration.</p>
 
 <dl class="method">
 <dt id="arxiv.users.auth.sessions.store.SessionStore.delete">
-<code class="descname">delete</code><span class="sig-paren">(</span><em>session_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.delete" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete a session in the key-value store.</p>
+<code class="descname">delete</code><span class="sig-paren">(</span><em>cookie</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cookie</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.users.auth.sessions.store.SessionStore.delete_by_id">
+<code class="descname">delete_by_id</code><span class="sig-paren">(</span><em>session_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.delete_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.delete_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a session in the key-value store by ID.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -84,6 +104,20 @@ container for configuration.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.users.auth.sessions.store.SessionStore.generate_cookie">
+<code class="descname">generate_cookie</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.generate_cookie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.generate_cookie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a cookie from a <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Session</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -108,7 +142,7 @@ container for configuration.</p>
 <dl class="method">
 <dt id="arxiv.users.auth.sessions.store.SessionStore.invalidate_by_id">
 <code class="descname">invalidate_by_id</code><span class="sig-paren">(</span><em>session_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.invalidate_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.invalidate_by_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Invalidate a session in the key-value store by ID.</p>
+<dd><p>Invalidate a session in the key-value store by session ID.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -135,19 +169,61 @@ container for configuration.</p>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="arxiv.users.auth.sessions.store.SessionStore.load_by_id">
+<code class="descname">load_by_id</code><span class="sig-paren">(</span><em>session_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.load_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.load_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get session data by session ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="arxiv.users.auth.sessions.store.SessionStore.validate_session_against_cookie">
+<code class="descname">validate_session_against_cookie</code><span class="sig-paren">(</span><em>session</em>, <em>cookie</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#SessionStore.validate_session_against_cookie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.SessionStore.validate_session_against_cookie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate session data against a cookie.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>session</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>) – </li>
+<li><strong>cookie</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">InvalidToken</span></code> – Raised if the data in the cookie does not match the session data.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
 <dt id="arxiv.users.auth.sessions.store.create">
-<code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">create</code><span class="sig-paren">(</span><em>self</em>, <em>user</em>, <em>authorizations</em>, <em>ip_address</em>, <em>remote_host</em>, <em>tracking_cookie=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.create" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">create</code><span class="sig-paren">(</span><em>self</em>, <em>authorizations</em>, <em>ip_address</em>, <em>remote_host</em>, <em>tracking_cookie=''</em>, <em>user=None</em>, <em>client=None</em>, <em>session_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new session.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>user</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code>) – </li>
 <li><strong>authorizations</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Authorizations</span></code>) – </li>
+<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </li>
+<li><strong>remote_host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </li>
+<li><strong>tracking_cookie</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </li>
+<li><strong>user</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code>) – </li>
+<li><strong>client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Client</span></code>) – </li>
 </ul>
 </td>
 </tr>
@@ -157,7 +233,7 @@ container for configuration.</p>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -180,8 +256,24 @@ container for configuration.</p>
 
 <dl class="function">
 <dt id="arxiv.users.auth.sessions.store.delete">
-<code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">delete</code><span class="sig-paren">(</span><em>self</em>, <em>session_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.delete" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete a session in the key-value store.</p>
+<code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">delete</code><span class="sig-paren">(</span><em>self</em>, <em>cookie</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cookie</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.auth.sessions.store.delete_by_id">
+<code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">delete_by_id</code><span class="sig-paren">(</span><em>self</em>, <em>session_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#delete_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.delete_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a session in the key-value store by ID.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -189,6 +281,20 @@ container for configuration.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.auth.sessions.store.generate_cookie">
+<code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">generate_cookie</code><span class="sig-paren">(</span><em>self</em>, <em>session</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#generate_cookie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.generate_cookie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a cookie from a <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Session</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -241,7 +347,7 @@ container for configuration.</p>
 <dl class="function">
 <dt id="arxiv.users.auth.sessions.store.invalidate_by_id">
 <code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">invalidate_by_id</code><span class="sig-paren">(</span><em>self</em>, <em>session_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#invalidate_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.invalidate_by_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Invalidate a session in the key-value store by ID.</p>
+<dd><p>Invalidate a session in the key-value store by session ID.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -257,6 +363,20 @@ container for configuration.</p>
 <dl class="function">
 <dt id="arxiv.users.auth.sessions.store.load">
 <code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">load</code><span class="sig-paren">(</span><em>self</em>, <em>cookie</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a session using a session cookie.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.Session" title="arxiv.users.domain.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.auth.sessions.store.load_by_id">
+<code class="descclassname">arxiv.users.auth.sessions.store.</code><code class="descname">load_by_id</code><span class="sig-paren">(</span><em>self</em>, <em>cookie</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/sessions/store.html#load_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.sessions.store.load_by_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a session using a session cookie.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -297,8 +417,8 @@ container for configuration.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

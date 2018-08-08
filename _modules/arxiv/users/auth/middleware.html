@@ -39,11 +39,11 @@
 <span class="sd">This module provides :class:`AuthMiddleware`, which unpacks encrypted JSON</span>
 <span class="sd">Web Tokens provided via the ``Authorization`` header. This is intended to</span>
 <span class="sd">support requests that have been pre-authorized by the web server using the</span>
-<span class="sd">authorizer service (see :mod:`authorizer`).</span>
+<span class="sd">authenticator service (see :mod:`authenticator`).</span>
 
 <span class="sd">The configuration parameter ``JWT_SECRET`` must be set in the WSGI request</span>
 <span class="sd">environ (e.g. Apache&#39;s SetEnv) or in the runtime environment. This must be</span>
-<span class="sd">the same secret that was used by the authorizer service to mint the token.</span>
+<span class="sd">the same secret that was used by the authenticator service to mint the token.</span>
 
 <span class="sd">To install the middleware, use the pattern described in</span>
 <span class="sd">:mod:`arxiv.base.middleware`. For example:</span>
@@ -161,8 +161,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

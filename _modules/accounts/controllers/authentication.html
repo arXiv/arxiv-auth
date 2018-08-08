@@ -40,7 +40,7 @@
 <span class="sd">that is stored as a cookie in their browser. That session ID is registered in</span>
 <span class="sd">the distributed keystore, along with claims about the user&#39;s identity and</span>
 <span class="sd">privileges in the system (based on their role). In subsequent requests handled</span>
-<span class="sd">by the UI ingress, the authorizer service uses that session key to validate</span>
+<span class="sd">by the UI ingress, the authenticator service uses that session key to validate</span>
 <span class="sd">the authenticated session, and to retrieve corresponding identity and</span>
 <span class="sd">authorization information.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -100,7 +100,8 @@
         <span class="c1"># TODO: If a permanent token is provided, attempt to log the user in,</span>
         <span class="c1"># and redirect if successful. Otherwise, proceed as normal without</span>
         <span class="c1"># complaint.</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">LoginForm</span><span class="p">()},</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span>
+        <span class="n">response_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">LoginForm</span><span class="p">(),</span> <span class="s1">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">next_page</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">response_data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Login form submitted&#39;</span><span class="p">)</span>
     <span class="n">form</span> <span class="o">=</span> <span class="n">LoginForm</span><span class="p">(</span><span class="n">form_data</span><span class="p">)</span>
@@ -119,12 +120,13 @@
     <span class="k">except</span> <span class="n">users</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">AuthenticationFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Authentication failed for </span><span class="si">%s</span><span class="s1"> with </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
                      <span class="n">form</span><span class="o">.</span><span class="n">username</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">form</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid username or password&#39;</span><span class="p">})</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid username or password.&#39;</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">,</span> <span class="p">{}</span>
 
     <span class="c1"># Create a session in the distributed session store.</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">session</span><span class="p">,</span> <span class="n">cookie</span> <span class="o">=</span> <span class="n">sessions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">userdata</span><span class="p">,</span> <span class="n">auths</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">track</span><span class="p">)</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">sessions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">auths</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">track</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">userdata</span><span class="p">)</span>
+        <span class="n">cookie</span> <span class="o">=</span> <span class="n">sessions</span><span class="o">.</span><span class="n">generate_cookie</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">sessions</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionCreationFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Could not create session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
@@ -132,7 +134,8 @@
 
     <span class="c1"># Create a session in the legacy session store.</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">c_session</span><span class="p">,</span> <span class="n">c_cookie</span> <span class="o">=</span> <span class="n">legacy</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">userdata</span><span class="p">,</span> <span class="n">auths</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">track</span><span class="p">)</span>
+        <span class="n">c_session</span> <span class="o">=</span> <span class="n">legacy</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">auths</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">track</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">userdata</span><span class="p">)</span>
+        <span class="n">c_cookie</span> <span class="o">=</span> <span class="n">legacy</span><span class="o">.</span><span class="n">generate_cookie</span><span class="p">(</span><span class="n">c_session</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created classic session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">c_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">legacy</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionCreationFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Could not create legacy session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
@@ -176,16 +179,17 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Request to log out&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">session_cookie</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">sessions</span><span class="o">.</span><span class="n">invalidate</span><span class="p">(</span><span class="n">session_cookie</span><span class="p">)</span>
+            <span class="n">sessions</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">session_cookie</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">sessions</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionDeletionFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Logout failed: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span><span class="s1">&#39;Cannot log out&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>  <span class="c1"># type: ignore</span>
+
     <span class="k">if</span> <span class="n">classic_session_cookie</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">legacy</span><span class="o">.</span><span class="n">invalidate</span><span class="p">(</span><span class="n">classic_session_cookie</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">legacy</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionDeletionFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Logout failed: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span><span class="s1">&#39;Cannot log out&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="n">legacy</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">UnknownSession</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Unknown session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
 
     <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;cookies&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -224,8 +228,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

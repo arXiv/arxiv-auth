@@ -1,0 +1,158 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>authenticator package &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="authenticator.services package" href="authenticator.services.html" />
+    <link rel="prev" title="accounts.factory module" href="../accounts/accounts.factory.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-authenticator">
+<span id="authenticator-package"></span><h1>authenticator package<a class="headerlink" href="#module-authenticator" title="Permalink to this headline">¶</a></h1>
+<p>Lightweight service for authorizing requests.</p>
+<p>The authenticator service is a Flask application that handles client
+authorization requests from NGINX.</p>
+<p>In a cloud deployment scenario, upon request to the arXiv API or an
+authenticated endpoint, NGINX issues a sub-request (via the
+<cite>ngx_http_auth_request_module</cite>) to the authorization service including any
+cookies or auth headers. The authenticator service is responsible for
+interpreting any auth information on the request, and either returns 200 (OK)
+if the request is authorized, 401 (Unauthorized) if auth information was not
+available or invalid, or 403 (Forbidden) if the request is denied.</p>
+<p>For our purposes, the authenticator service is mainly concerned with ensuring
+that the request has valid authentication information. The authenticator
+service includes in its response an encrypted JWT (see
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.user.auth.tokens</span></code>) that contains information about the user or
+client session, including its authorization scopes (see
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.user.auth.scopes</span></code>).</p>
+<div class="figure" id="id1">
+<span id="figure-authenticator-service-containers"></span><img alt="authenticator/../_static/diagrams/authenticator-service-containers.png" src="authenticator/../_static/diagrams/authenticator-service-containers.png" />
+<p class="caption"><span class="caption-text">Authorizer service containers.</span></p>
+</div>
+<p>The authenticator service uses session keys and API auth tokens to retrieve
+session information from the distributed session/token store.</p>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authenticator.services.html">authenticator.services package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="authenticator.services.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="authenticator.services.sessions.html">authenticator.services.sessions module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authenticator.config.html">authenticator.config module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authenticator.factory.html">authenticator.factory module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authenticator.routes.html">authenticator.routes module</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">authenticator package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../accounts/accounts.factory.html" title="previous chapter">accounts.factory module</a></li>
+      <li>Next: <a href="authenticator.services.html" title="next chapter">authenticator.services package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/authenticator/authenticator.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

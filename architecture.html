@@ -86,8 +86,8 @@ with user/client sessions and authorization in arXiv services.</dd>
 <dt><a class="reference internal" href="accounts/accounts.html#module-accounts" title="accounts"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Accounts</span> <span class="pre">Service</span></code></a></dt>
 <dd>Provides user registration and login mechanisms, access control management,
 and user profiles.</dd>
-<dt><a class="reference internal" href="authorizer/authorizer.html#module-authorizer" title="authorizer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Authorization</span> <span class="pre">Service</span></code></a></dt>
-<dd>Handles authorization subrequests from ingress controllers. Validates
+<dt><a class="reference internal" href="authenticator/authenticator.html#module-authenticator" title="authenticator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Authentication</span> <span class="pre">Service</span></code></a></dt>
+<dd>Handles authentication subrequests from ingress controllers. Validates
 user session keys and API access keys, and generates internal authorization
 tokens.</dd>
 <dt><a class="reference internal" href="registry/registry.html#module-registry" title="registry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">API</span> <span class="pre">Client</span> <span class="pre">Registry</span></code></a></dt>
@@ -95,7 +95,7 @@ tokens.</dd>
 and a public-facing searchable directory of client projects and services.
 Also provides API documentation.</dd>
 </dl>
-<p>The accounts and authorizer services are underlain by a <strong>distributed
+<p>The accounts and authenticator services are underlain by a <strong>distributed
 keystore</strong> (HA Redis cluster) for registration and validation of session and
 access keys.</p>
 </div>
@@ -150,8 +150,8 @@ attaching an array of individual policies directly to the user.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authenticator/authenticator.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

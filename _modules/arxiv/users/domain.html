@@ -93,13 +93,6 @@
         <span class="k">return</span> <span class="n">name</span></div>
 
 
-<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Placeholder for API client.&quot;&quot;&quot;</span>
-
-    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="sd">&quot;&quot;&quot;Unique identifier for a :class:`.Client`.&quot;&quot;&quot;</span></div>
-
-
 <div class="viewcode-block" id="UserProfile"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserProfile">[docs]</a><span class="k">class</span> <span class="nc">UserProfile</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;User profile data.&quot;&quot;&quot;</span>
 
@@ -175,7 +168,17 @@
     <span class="sd">&quot;&quot;&quot;Categories to which the user is permitted to submit.&quot;&quot;&quot;</span>
 
     <span class="n">scopes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="sd">&quot;&quot;&quot;Authorized scopes. See :mod:`arxiv.users.auth.scopes`.&quot;&quot;&quot;</span></div>
+    <span class="sd">&quot;&quot;&quot;Authorized scopes. See :mod:`arxiv.users.auth.scopes`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Authorizations.before_init"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Authorizations.before_init">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">before_init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Make sure that endorsements are :class:`.Category` instances.&quot;&quot;&quot;</span>
+        <span class="c1"># Iterative coercion is hard. It&#39;s a lot easier to handle this here</span>
+        <span class="c1"># than to implement a general-purpose coercsion.</span>
+        <span class="c1"># if self.endorsements and type(self.endorsements[0]) is not Category:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;endorsements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Category</span><span class="p">(</span><span class="o">*</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;endorsements&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="p">]</span></div></div>
 
 
 <div class="viewcode-block" id="UserFullName"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserFullName">[docs]</a><span class="k">class</span> <span class="nc">UserFullName</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
@@ -208,6 +211,28 @@
 
     <span class="n">profile</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UserProfile</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="sd">&quot;&quot;&quot;The user&#39;s account profile (if available).&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API client.&quot;&quot;&quot;</span>
+
+    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;Unique identifier for a :class:`.Client`.&quot;&quot;&quot;</span>
+
+    <span class="n">owner_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The arXiv user responsible for the client.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Human-friendly name of the API client.&quot;&quot;&quot;</span>
+
+    <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Homepage or other resource describing the API client.&quot;&quot;&quot;</span>
+
+    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Brief description of the API client.&quot;&quot;&quot;</span>
+
+    <span class="n">redirect_uri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The authorized redirect URI for the client.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="Session"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Session">[docs]</a><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
@@ -330,6 +355,8 @@
         <span class="k">if</span> <span class="n">target_type</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">target_type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="n">_data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;before_init&#39;</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">before_init</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">_data</span><span class="p">)</span></div>
 
 
@@ -385,6 +412,9 @@
     <span class="k">return</span> <span class="kc">None</span>
 
 
+<span class="c1"># Recursive coersion on anything more complicated than these simple cases is</span>
+<span class="c1"># pretty hard. It&#39;s easier to implement anything else (e.g. a List of</span>
+<span class="c1"># something type-ish) on the domain class itself.</span>
 <span class="k">def</span> <span class="nf">_get_cast_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Get a casting callable for a field type/value.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
@@ -415,8 +445,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

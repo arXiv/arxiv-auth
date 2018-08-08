@@ -67,7 +67,7 @@ be migrated to a standalone database.</p>
 <p>The accounts service also creates new sessions a distributed session/token
 store, which allows applications <a class="reference external" href="https://cul-it.github.io/arxiv-arxitecture/crosscutting/infrastructure.html#orchestration-kubernetes" title="(in arXiv arXitecture v0.8)"><span class="xref std std-ref">deployed in the cloud</span></a> to leverage authorized sessions. When a user
 authenticates, they are issued a session key in the form of a secure
-cookie. That key can be used by the authorizer service to retrieve session
+cookie. That key can be used by the authenticator service to retrieve session
 details on subsequent requests to the accounts service or any other service.</p>
 <div class="figure" id="id1">
 <span id="figure-user-accounts-containers"></span><img alt="../_images/user-accounts-containers.png" src="../_images/user-accounts-containers.png" />
@@ -152,8 +152,8 @@ details on subsequent requests to the accounts service or any other service.</p>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">

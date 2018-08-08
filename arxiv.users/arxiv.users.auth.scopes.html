@@ -52,6 +52,12 @@ str objects, these constants should be imported and used. This improves the
 semantics of code, and reduces the risk of programming errors. For an example,
 see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-arxiv.users.auth.decorators" title="arxiv.users.auth.decorators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users.auth.decorators</span></code></a>.</p>
 <dl class="data">
+<dt id="arxiv.users.auth.scopes.ADMIN_UPLOAD">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">ADMIN_UPLOAD</code><em class="property"> = 'upload:admin'</em><a class="headerlink" href="#arxiv.users.auth.scopes.ADMIN_UPLOAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access to administrative functionality and resources related to uploads.</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="arxiv.users.auth.scopes.CREATE_SUBMISSION">
 <code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">CREATE_SUBMISSION</code><em class="property"> = 'submission:create'</em><a class="headerlink" href="#arxiv.users.auth.scopes.CREATE_SUBMISSION" title="Permalink to this definition">¶</a></dt>
 <dd><p>Authorizes creating a submission.</p>
@@ -67,6 +73,12 @@ see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-
 <dt id="arxiv.users.auth.scopes.VIEW_PROFILE">
 <code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">VIEW_PROFILE</code><em class="property"> = 'profile:read'</em><a class="headerlink" href="#arxiv.users.auth.scopes.VIEW_PROFILE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Authorizes viewing user profile.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.WRITE_UPLOAD">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">WRITE_UPLOAD</code><em class="property"> = 'upload:write'</em><a class="headerlink" href="#arxiv.users.auth.scopes.WRITE_UPLOAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required to create new uploads.</p>
 </dd></dl>
 
 </div>
@@ -98,8 +110,8 @@ see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
 </ul>
 
 <div class="relations">
