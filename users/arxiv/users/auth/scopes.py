@@ -34,6 +34,12 @@ EDIT_SUBMISSION = 'submission:update'
 VIEW_SUBMISSION = 'submission:read'
 PROXY_SUBMISSION = 'submission:proxy'
 
+READ_UPLOAD = 'upload:read'
+WRITE_UPLOAD = 'upload:write'
+RELEASE_UPLOAD = 'upload:release'
+ADMIN_UPLOAD = 'upload:admin'
+"""Access to administrative functionality and resources related to uploads."""
+
 GENERAL_USER = [
     EDIT_PROFILE,
     VIEW_PROFILE,
