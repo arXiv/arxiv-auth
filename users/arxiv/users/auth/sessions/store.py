@@ -177,7 +177,7 @@ class SessionStore(object):
         session_id : str
         """
         try:
-            session_data = domain.to_dict(self._load(session_id))
+            session_data = domain.to_dict(self.load_by_id(session_id))
         except ExpiredToken as e:
             # This is what we set out to do; our work here is done.
             logger.debug('Session already expired')
@@ -203,7 +203,7 @@ class SessionStore(object):
         if expires <= datetime.now(tz=EASTERN):
             raise InvalidToken('Session has expired')
 
-        session = self._load(cookie_data['session_id'])
+        session = self.load_by_id(cookie_data['session_id'])
         if session.expired:
             raise ExpiredToken('Session has expired')
         if session.user is None and session.client is None:
@@ -212,7 +212,7 @@ class SessionStore(object):
         self.validate_session_against_cookie(session, cookie)
         return session
 
-    def _load(self, session_id: str) -> domain.Session:
+    def load_by_id(self, session_id: str) -> domain.Session:
         """Get session data by session ID."""
         user_session: Union[str, bytes, bytearray] = self.r.get(session_id)
         if not user_session:
@@ -305,6 +305,22 @@ def load(cookie: str) -> domain.Session:
     dict
     """
     return current_session().load(cookie)
+
+
+@wraps(SessionStore.load)
+def load_by_id(session_id: str) -> domain.Session:
+    """
+    Load a session by session ID.
+
+    Parameters
+    ----------
+    session_id : str
+
+    Returns
+    -------
+    dict
+    """
+    return current_session().load_by_id(session_id)
 
 
 @wraps(SessionStore.delete)

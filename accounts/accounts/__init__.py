@@ -38,7 +38,7 @@ The accounts service also creates new sessions a distributed session/token
 store, which allows applications :ref:`deployed in the cloud
 <orchestration-kubernetes>` to leverage authorized sessions. When a user
 authenticates, they are issued a session key in the form of a secure
-cookie. That key can be used by the authorizer service to retrieve session
+cookie. That key can be used by the authenticator service to retrieve session
 details on subsequent requests to the accounts service or any other service.
 
 .. _figure-user-accounts-containers:

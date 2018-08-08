@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, make_response
-from werkzeug.exceptions import BadRequest, NotFound, BadRequest
+from werkzeug.exceptions import BadRequest, NotFound, BadRequest, Forbidden, \
+    Unauthorized
+from arxiv.base import Base
 from . import routes
 
 
@@ -11,12 +13,13 @@ def jsonify_exception(error):
 
 
 def create_app() -> Flask:
-    """Initialize an instance of the extractor backend service."""
-    app = Flask('authorizer')
+    """Initialize an instance of the authenticator service."""
+    app = Flask('authenticator')
     app.config.from_pyfile('config.py')
 
     app.register_blueprint(routes.blueprint)
     app.errorhandler(NotFound)(jsonify_exception)
     app.errorhandler(BadRequest)(jsonify_exception)
-    app.errorhandler(BadRequest)(jsonify_exception)
+    app.errorhandler(Unauthorized)(jsonify_exception)
+    app.errorhandler(Forbidden)(jsonify_exception)
     return app

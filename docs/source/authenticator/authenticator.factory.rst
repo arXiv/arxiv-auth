@@ -1,7 +1,7 @@
-authorizer.factory module
+authenticator.factory module
 =========================
 
-.. automodule:: authorizer.factory
+.. automodule:: authenticator.factory
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,4 +1,4 @@
-"""Flask configuration for authorizer service."""
+"""Flask configuration for authenticator service."""
 
 import os
 

@@ -55,8 +55,8 @@ by a separate piece of software.
 :mod:`Accounts Service <accounts>`
     Provides user registration and login mechanisms, access control management,
     and user profiles.
-:mod:`Authorization Service <authorizer>`
-    Handles authorization subrequests from ingress controllers. Validates
+:mod:`Authentication Service <authenticator>`
+    Handles authentication subrequests from ingress controllers. Validates
     user session keys and API access keys, and generates internal authorization
     tokens.
 :mod:`API Client Registry <registry>`
@@ -64,7 +64,7 @@ by a separate piece of software.
     and a public-facing searchable directory of client projects and services.
     Also provides API documentation.
 
-The accounts and authorizer services are underlain by a **distributed
+The accounts and authenticator services are underlain by a **distributed
 keystore** (HA Redis cluster) for registration and validation of session and
 access keys.
 

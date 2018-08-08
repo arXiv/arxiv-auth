@@ -1,7 +1,7 @@
-authorizer.config module
+authenticator.config module
 ========================
 
-.. automodule:: authorizer.config
+.. automodule:: authenticator.config
     :members:
     :undoc-members:
     :show-inheritance:
