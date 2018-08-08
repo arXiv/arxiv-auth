@@ -37,7 +37,7 @@ class SessionStore(object):
     """
     Manages a connection to Redis.
 
-    In reality, the StrictRedis instance is thread safe, and connections are
+    In fact, the StrictRedis instance is thread safe and connections are
     attached at the time a command is executed. This class simply provides a
     container for configuration.
     """
@@ -52,16 +52,21 @@ class SessionStore(object):
         self._secret = secret
         self._duration = duration
 
-    def create(self, user: domain.User, authorizations: domain.Authorizations,
-               ip_address: str, remote_host: str, tracking_cookie: str = '') \
-            -> Tuple[domain.Session, str]:
+    def create(self, authorizations: domain.Authorizations,
+               ip_address: str, remote_host: str, tracking_cookie: str = '',
+               user: Optional[domain.User] = None,
+               client: Optional[domain.Client] = None) -> domain.Session:
         """
         Create a new session.
 
         Parameters
         ----------
-        user : :class:`domain.User`
         authorizations : :class:`domain.Authorizations`
+        ip_address : str
+        remote_host : str
+        tracking_cookie : str
+        user : :class:`domain.User`
+        client : :class:`domain.Client`
 
         Returns
         -------
@@ -73,17 +78,12 @@ class SessionStore(object):
         session = domain.Session(
             session_id=session_id,
             user=user,
+            client=client,
             start_time=start_time,
             end_time=end_time,
             authorizations=authorizations,
             nonce=_generate_nonce()
         )
-        cookie = self._pack_cookie({
-            'user_id': user.user_id,
-            'session_id': session_id,
-            'nonce': session.nonce,
-            'expires': end_time.isoformat()
-        })
 
         try:
             self.r.set(session_id, json.dumps(domain.to_dict(session)))
@@ -92,7 +92,16 @@ class SessionStore(object):
         except Exception as e:
             raise SessionCreationFailed(f'Failed to create: {e}') from e
 
-        return session, cookie
+        return session
+
+    def generate_cookie(self, session: domain.Session) -> str:
+        """Generate a cookie from a :class:`domain.Session`."""
+        return self._pack_cookie({
+            'user_id': session.user.user_id,
+            'session_id': session.session_id,
+            'nonce': session.nonce,
+            'expires': session.end_time.isoformat()
+        })
 
     def delete(self, cookie: str) -> None:
         """
@@ -272,102 +281,53 @@ def current_session() -> SessionStore:
 
 
 @wraps(SessionStore.create)
-def create(user: domain.User, authorizations: domain.Authorizations,
-           ip_address: str, remote_host: str, tracking_cookie: str = '') \
-        -> Tuple[domain.Session, str]:
-    """
-    Create a new session.
-
-    Parameters
-    ----------
-    user : :class:`domain.User`
-    authorizations : :class:`domain.Authorizations`
-
-    Returns
-    -------
-    :class:`.Session`
-    """
-    return current_session().create(user, authorizations, ip_address,
-                                    remote_host, tracking_cookie)
+def create(authorizations: domain.Authorizations,
+           ip_address: str, remote_host: str, tracking_cookie: str = '',
+           user: Optional[domain.User] = None,
+           client: Optional[domain.Client] = None) -> domain.Session:
+    """Create a new session."""
+    return current_session().create(authorizations, ip_address,
+                                    remote_host, tracking_cookie,
+                                    user=user, client=client)
 
 
 @wraps(SessionStore.load)
 def load(cookie: str) -> domain.Session:
-    """
-    Load a session by cookie value.
-
-    Parameters
-    ----------
-    cookie : str
-
-    Returns
-    -------
-    dict
-    """
+    """Load a session by cookie value."""
     return current_session().load(cookie)
 
 
 @wraps(SessionStore.load)
 def load_by_id(session_id: str) -> domain.Session:
-    """
-    Load a session by session ID.
-
-    Parameters
-    ----------
-    session_id : str
-
-    Returns
-    -------
-    dict
-    """
+    """Load a session by session ID."""
     return current_session().load_by_id(session_id)
 
 
 @wraps(SessionStore.delete)
 def delete(cookie: str) -> None:
-    """
-    Delete a session in the key-value store.
-
-    Parameters
-    ----------
-    cookie : str
-    """
+    """Delete a session in the key-value store."""
     return current_session().delete(cookie)
 
 
 @wraps(SessionStore.delete_by_id)
 def delete_by_id(session_id: str) -> None:
-    """
-    Delete a session in the key-value store by ID.
-
-    Parameters
-    ----------
-    session_id : str
-    """
+    """Delete a session in the key-value store by ID."""
     return current_session().delete_by_id(session_id)
 
 
 @wraps(SessionStore.invalidate)
 def invalidate(cookie: str) -> None:
-    """
-    Invalidate a session in the key-value store.
-
-    Parameters
-    ----------
-    cookie : str
-
-    """
+    """Invalidate a session in the key-value store."""
     return current_session().invalidate(cookie)
 
 
 @wraps(SessionStore.invalidate_by_id)
 def invalidate_by_id(session_id: str) -> None:
-    """
-    Invalidate a session in the key-value store by identifier.
-
-    Parameters
-    ----------
-    session_id : str
-
-    """
+    """Invalidate a session in the key-value store by identifier."""
     return current_session().invalidate_by_id(session_id)
+
+
+@wraps(SessionStore.generate_cookie)
+def generate_cookie(session: domain.Session) -> str:
+    """Generate a cookie from a :class:`domain.Session`."""
+    return current_session().generate_cookie(session)

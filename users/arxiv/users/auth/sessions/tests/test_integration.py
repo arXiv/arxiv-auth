@@ -52,7 +52,8 @@ class TestDistributedSessionServiceIntegration(TestCase):
             scopes=['foo:write'],
             endorsements=[]
         )
-        session, cookie = store.create(user, authorizations, ip, remote_host)
+        session = store.create(authorizations, ip, remote_host, user=user)
+        cookie = store.generate_cookie(session)
 
         # API still works as expected.
         self.assertIsInstance(session, domain.Session)

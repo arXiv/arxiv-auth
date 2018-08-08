@@ -90,7 +90,8 @@ def login(method: str, form_data: MultiDict, ip: str,
 
     # Create a session in the distributed session store.
     try:
-        session, cookie = sessions.create(userdata, auths, ip, ip, track)
+        session = sessions.create(auths, ip, ip, track, user=userdata)
+        cookie = sessions.generate_cookie(session)
         logger.debug('Created session: %s', session.session_id)
     except sessions.exceptions.SessionCreationFailed as e:
         logger.debug('Could not create session: %s', e)
@@ -98,7 +99,8 @@ def login(method: str, form_data: MultiDict, ip: str,
 
     # Create a session in the legacy session store.
     try:
-        c_session, c_cookie = legacy.create(userdata, auths, ip, ip, track)
+        c_session = legacy.create(auths, ip, ip, track, user=userdata)
+        c_cookie = legacy.generate_cookie(c_session)
         logger.debug('Created classic session: %s', c_session.session_id)
     except legacy.exceptions.SessionCreationFailed as e:
         logger.debug('Could not create legacy session: %s', e)
