@@ -1,0 +1,167 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>accounts.stateless_captcha.tests module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="accounts.config module" href="accounts.config.html" />
+    <link rel="prev" title="accounts.stateless_captcha package" href="accounts.stateless_captcha.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-accounts.stateless_captcha.tests">
+<span id="accounts-stateless-captcha-tests-module"></span><h1>accounts.stateless_captcha.tests module<a class="headerlink" href="#module-accounts.stateless_captcha.tests" title="Permalink to this headline">¶</a></h1>
+<p>Tests for <code class="xref py py-mod docutils literal notranslate"><span class="pre">accounts.captcha</span></code>.</p>
+<dl class="class">
+<dt id="accounts.stateless_captcha.tests.TestCaptcha">
+<em class="property">class </em><code class="descclassname">accounts.stateless_captcha.tests.</code><code class="descname">TestCaptcha</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha/tests.html#TestCaptcha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.tests.TestCaptcha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for <code class="xref py py-mod docutils literal notranslate"><span class="pre">accounts.captcha</span></code>.</p>
+<dl class="method">
+<dt id="accounts.stateless_captcha.tests.TestCaptcha.test_check_invalid">
+<code class="descname">test_check_invalid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha/tests.html#TestCaptcha.test_check_invalid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.tests.TestCaptcha.test_check_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>An incorrect value is passed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.stateless_captcha.tests.TestCaptcha.test_check_valid">
+<code class="descname">test_check_valid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha/tests.html#TestCaptcha.test_check_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.tests.TestCaptcha.test_check_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>The correct value is passed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.stateless_captcha.tests.TestCaptcha.test_forged_captcha">
+<code class="descname">test_forged_captcha</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha/tests.html#TestCaptcha.test_forged_captcha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.tests.TestCaptcha.test_forged_captcha" title="Permalink to this definition">¶</a></dt>
+<dd><p>The captcha token cannot be decrypted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.stateless_captcha.tests.TestCaptcha.test_ip_address_changed">
+<code class="descname">test_ip_address_changed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha/tests.html#TestCaptcha.test_ip_address_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.tests.TestCaptcha.test_ip_address_changed" title="Permalink to this definition">¶</a></dt>
+<dd><p>The captcha token cannot be decrypted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.stateless_captcha.tests.TestCaptcha.test_malformed_captcha">
+<code class="descname">test_malformed_captcha</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha/tests.html#TestCaptcha.test_malformed_captcha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.tests.TestCaptcha.test_malformed_captcha" title="Permalink to this definition">¶</a></dt>
+<dd><p>The captcha token cannot be decrypted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.stateless_captcha.tests.TestCaptcha.test_new_captcha">
+<code class="descname">test_new_captcha</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha/tests.html#TestCaptcha.test_new_captcha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.tests.TestCaptcha.test_new_captcha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate and render a new captcha token.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.stateless_captcha.tests.TestCaptcha.test_not_a_token">
+<code class="descname">test_not_a_token</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha/tests.html#TestCaptcha.test_not_a_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.tests.TestCaptcha.test_not_a_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Something other than a captcha token is passed.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="accounts.html">Accounts Service</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#context">Context</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="accounts.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accounts.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="accounts.html">Accounts Service</a><ul>
+  <li><a href="accounts.stateless_captcha.html">accounts.stateless_captcha package</a><ul>
+      <li>Previous: <a href="accounts.stateless_captcha.html" title="previous chapter">accounts.stateless_captcha package</a></li>
+      <li>Next: <a href="accounts.config.html" title="next chapter">accounts.config module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/accounts/accounts.stateless_captcha.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

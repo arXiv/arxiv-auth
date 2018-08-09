@@ -1,0 +1,1312 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.legacy.models module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.users.legacy.sessions module" href="arxiv.users.legacy.sessions.html" />
+    <link rel="prev" title="arxiv.users.legacy.exceptions module" href="arxiv.users.legacy.exceptions.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.users.legacy.models">
+<span id="arxiv-users-legacy-models-module"></span><h1>arxiv.users.legacy.models module<a class="headerlink" href="#module-arxiv.users.legacy.models" title="Permalink to this headline">¶</a></h1>
+<p>ORM models for legacy user and session tables.</p>
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBCategory">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBCategory</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBCategory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBCategory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Metadata about arXiv categories.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="35%" />
+<col width="10%" />
+<col width="8%" />
+<col width="15%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+</tr>
+<tr class="row-even"><td>archive
+subject_class
+definitive
+active
+category_name
+endorse_all
+endorse_email
+papers_to_endorse
+endorsement_domain</td>
+<td>varchar(16)
+varchar(16)
+int(1)
+int(1)
+varchar(255)
+enum(‘y’,’n’,’d’)
+enum(‘y’,’n’,’d’)
+smallint(5) unsigned
+varchar(32)</td>
+<td>NO
+NO
+NO
+NO
+YES
+NO
+NO
+NO
+YES</td>
+<td><p class="first">PRI
+PRI</p>
+<p class="last">MUL</p>
+</td>
+<td>0
+0
+NULL
+d
+d
+0
+NULL</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBCategory.active">
+<code class="descname">active</code><a class="headerlink" href="#arxiv.users.legacy.models.DBCategory.active" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBCategory.archive">
+<code class="descname">archive</code><a class="headerlink" href="#arxiv.users.legacy.models.DBCategory.archive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBCategory.definitive">
+<code class="descname">definitive</code><a class="headerlink" href="#arxiv.users.legacy.models.DBCategory.definitive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBCategory.endorsement_domain">
+<code class="descname">endorsement_domain</code><a class="headerlink" href="#arxiv.users.legacy.models.DBCategory.endorsement_domain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBCategory.subject_class">
+<code class="descname">subject_class</code><a class="headerlink" href="#arxiv.users.legacy.models.DBCategory.subject_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBDocumentInCategory">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBDocumentInCategory</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBDocumentInCategory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBDocumentInCategory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>M2M intermediate table for documents and their categories.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="35%" />
+<col width="9%" />
+<col width="8%" />
+<col width="14%" />
+<col width="11%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+<td>Extra</td>
+</tr>
+<tr class="row-even"><td>document_id
+archive
+subject_class
+is_primary</td>
+<td>mediumint(8) unsigned
+varchar(16)
+varchar(16)
+tinyint(1)</td>
+<td>NO
+NO
+NO
+NO</td>
+<td>PRI
+PRI
+PRI</td>
+<td><p class="first">0</p>
+<p class="last">0</p>
+</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBDocumentInCategory.archive">
+<code class="descname">archive</code><a class="headerlink" href="#arxiv.users.legacy.models.DBDocumentInCategory.archive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBDocumentInCategory.document_id">
+<code class="descname">document_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBDocumentInCategory.document_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBDocumentInCategory.is_primary">
+<code class="descname">is_primary</code><a class="headerlink" href="#arxiv.users.legacy.models.DBDocumentInCategory.is_primary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBDocumentInCategory.subject_class">
+<code class="descname">subject_class</code><a class="headerlink" href="#arxiv.users.legacy.models.DBDocumentInCategory.subject_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBDocuments">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBDocuments</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBDocuments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBDocuments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Represents an arXiv paper.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="35%" />
+<col width="35%" />
+<col width="9%" />
+<col width="8%" />
+<col width="14%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+</tr>
+<tr class="row-even"><td>document_id
+paper_id
+title
+authors
+submitter_email
+submitter_id
+dated
+primary_subject_class
+created</td>
+<td>mediumint(8) unsigned
+varchar(20)
+varchar(255)
+text
+varchar(64)
+int(10) unsigned
+int(10) unsigned
+varchar(16)
+datetime</td>
+<td>NO
+NO
+NO
+YES
+NO
+YES
+NO
+YES
+YES</td>
+<td><p class="first">PRI
+UNI
+MUL</p>
+<p class="last">MUL
+MUL
+MUL</p>
+</td>
+<td><p class="first">NULL</p>
+<p>NULL</p>
+<p class="last">NULL
+0
+NULL
+NULL</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBDocuments.dated">
+<code class="descname">dated</code><a class="headerlink" href="#arxiv.users.legacy.models.DBDocuments.dated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBDocuments.document_id">
+<code class="descname">document_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBDocuments.document_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBDocuments.paper_id">
+<code class="descname">paper_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBDocuments.paper_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBEmailBlacklist">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBEmailBlacklist</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBEmailBlacklist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBEmailBlacklist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Patterns for identifying non-academic addresses.</p>
+<p>pattern | varchar(64) | YES  |     | NULL    |</p>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEmailBlacklist.pattern">
+<code class="descname">pattern</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEmailBlacklist.pattern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBEmailWhitelist">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBEmailWhitelist</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBEmailWhitelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBEmailWhitelist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Patterns for identifying academic addresses.</p>
+<p>pattern | varchar(64) | YES  |     | NULL    |</p>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEmailWhitelist.pattern">
+<code class="descname">pattern</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEmailWhitelist.pattern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBEndorsement">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBEndorsement</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBEndorsement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Category endorsements for arXiv users.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="45%" />
+<col width="9%" />
+<col width="8%" />
+<col width="14%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+</tr>
+<tr class="row-even"><td>endorsement_id
+endorser_id
+endorsee_id
+archive
+subject_class
+flag_valid
+type
+point_value
+issued_when
+request_id</td>
+<td>int(10) unsigned
+int(10) unsigned
+int(10) unsigned
+varchar(16)
+varchar(16)
+int(1) unsigned
+enum(‘user’,’admin’,’auto’)
+int(1) unsigned
+int(10) unsigned
+int(10) unsigned</td>
+<td>NO
+YES
+NO
+NO
+NO
+NO
+YES
+NO
+NO
+YES</td>
+<td><p class="first">PRI
+MUL
+MUL
+MUL</p>
+<p class="last">MUL</p>
+</td>
+<td><p class="first">NULL
+NULL
+0</p>
+<p class="last">0
+NULL
+0
+0
+NULL</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.archive">
+<code class="descname">archive</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.archive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.endorsee">
+<code class="descname">endorsee</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.endorsee" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.endorsee_id">
+<code class="descname">endorsee_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.endorsee_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.endorsement_id">
+<code class="descname">endorsement_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.endorsement_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.endorsement_type">
+<code class="descname">endorsement_type</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.endorsement_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.endorser_id">
+<code class="descname">endorser_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.endorser_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.flag_valid">
+<code class="descname">flag_valid</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.flag_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.issued_when">
+<code class="descname">issued_when</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.issued_when" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.point_value">
+<code class="descname">point_value</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.point_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.request_id">
+<code class="descname">request_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.request_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsement.subject_class">
+<code class="descname">subject_class</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsement.subject_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBEndorsementDomain">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBEndorsementDomain</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBEndorsementDomain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsementDomain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Encodes some policies about endorsement.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="35%" />
+<col width="10%" />
+<col width="8%" />
+<col width="15%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+</tr>
+<tr class="row-even"><td>endorsement_domain
+endorse_all
+mods_endorse_all
+endorse_email
+papers_to_endorse</td>
+<td>varchar(32)
+enum(‘y’,’n’)
+enum(‘y’,’n’)
+enum(‘y’,’n’)
+smallint(5) unsigned</td>
+<td>NO
+NO
+NO
+NO
+NO</td>
+<td>PRI</td>
+<td>n
+n
+y
+4</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsementDomain.endorse_all">
+<code class="descname">endorse_all</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsementDomain.endorse_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsementDomain.endorse_email">
+<code class="descname">endorse_email</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsementDomain.endorse_email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsementDomain.endorsement_domain">
+<code class="descname">endorsement_domain</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsementDomain.endorsement_domain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsementDomain.mods_endorse_all">
+<code class="descname">mods_endorse_all</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsementDomain.mods_endorse_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBEndorsementDomain.papers_to_endorse">
+<code class="descname">papers_to_endorse</code><a class="headerlink" href="#arxiv.users.legacy.models.DBEndorsementDomain.papers_to_endorse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBPaperOwners">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBPaperOwners</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBPaperOwners"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBPaperOwners" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Relates arXiv users to their owned papers.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="34%" />
+<col width="9%" />
+<col width="7%" />
+<col width="13%" />
+<col width="10%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+<td>Extra</td>
+</tr>
+<tr class="row-even"><td>document_id
+user_id
+date
+valid
+flag_author</td>
+<td>mediumint(8) unsigned
+int(10) unsigned
+int(10) unsigned
+int(1) unsigned
+int(1) unsigned</td>
+<td>NO
+NO
+NO
+NO
+NO</td>
+<td>PRI
+PRI</td>
+<td>0
+0
+0
+0
+0</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPaperOwners.date">
+<code class="descname">date</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPaperOwners.date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPaperOwners.document_id">
+<code class="descname">document_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPaperOwners.document_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPaperOwners.flag_author">
+<code class="descname">flag_author</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPaperOwners.flag_author" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPaperOwners.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPaperOwners.user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPaperOwners.valid">
+<code class="descname">valid</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPaperOwners.valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBPermanentToken">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBPermanentToken</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBPermanentToken"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBPermanentToken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Bearer token for user authentication.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="30%" />
+<col width="11%" />
+<col width="9%" />
+<col width="16%" />
+<col width="12%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+<td>Extra</td>
+</tr>
+<tr class="row-even"><td>user_id
+secret
+valid
+issued_when
+issued_to
+remote_host
+session_id</td>
+<td>int(4) unsigned
+varchar(32)
+int(1)
+int(4) unsigned
+varchar(16)
+varchar(255)
+int(4) unsigned</td>
+<td>NO
+NO
+NO
+NO
+NO
+NO
+NO</td>
+<td><p class="first">PRI
+PRI</p>
+<p class="last">MUL</p>
+</td>
+<td><p class="first">0</p>
+<p>1
+0</p>
+<p class="last">0</p>
+</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPermanentToken.issued_to">
+<code class="descname">issued_to</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPermanentToken.issued_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>IP address of client.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPermanentToken.issued_when">
+<code class="descname">issued_when</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPermanentToken.issued_when" title="Permalink to this definition">¶</a></dt>
+<dd><p>Epoch time.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPermanentToken.remote_host">
+<code class="descname">remote_host</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPermanentToken.remote_host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPermanentToken.secret">
+<code class="descname">secret</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPermanentToken.secret" title="Permalink to this definition">¶</a></dt>
+<dd><p>Token.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPermanentToken.session_id">
+<code class="descname">session_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPermanentToken.session_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPermanentToken.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPermanentToken.user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPermanentToken.valid">
+<code class="descname">valid</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPermanentToken.valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBPolicyClass">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBPolicyClass</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBPolicyClass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Legacy authorization table.</p>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.ADMIN">
+<code class="descname">ADMIN</code><em class="property"> = 1</em><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.ADMIN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.LEGACY_USER">
+<code class="descname">LEGACY_USER</code><em class="property"> = 3</em><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.LEGACY_USER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.POLICY_CLASSES">
+<code class="descname">POLICY_CLASSES</code><em class="property"> = [{'name': 'Administrator', 'class_id': 1, 'description': ''}, {'name': 'Public user', 'class_id': 2, 'description': ''}, {'name': 'Legacy user', 'class_id': 3, 'description': ''}]</em><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.POLICY_CLASSES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.PUBLIC_USER">
+<code class="descname">PUBLIC_USER</code><em class="property"> = 2</em><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.PUBLIC_USER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.class_id">
+<code class="descname">class_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.class_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.description">
+<code class="descname">description</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.name">
+<code class="descname">name</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.password_storage">
+<code class="descname">password_storage</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.password_storage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.permanent_login">
+<code class="descname">permanent_login</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.permanent_login" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBPolicyClass.recovery_policy">
+<code class="descname">recovery_policy</code><a class="headerlink" href="#arxiv.users.legacy.models.DBPolicyClass.recovery_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBProfile">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBProfile</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBProfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Legacy user profiles.</p>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.GROUP_FLAGS">
+<code class="descname">GROUP_FLAGS</code><em class="property"> = [('grp_physics', 'flag_group_physics'), ('grp_math', 'flag_group_math'), ('grp_cs', 'flag_group_cs'), ('grp_q-bio', 'flag_group_q_bio'), ('grp_q-fin', 'flag_group_q_fin'), ('grp_q-stat', 'flag_group_stat'), ('grp_q-econ', 'flag_group_econ'), ('grp_eess', 'flag_group_eess')]</em><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.GROUP_FLAGS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.TYPE_CHOICES">
+<code class="descname">TYPE_CHOICES</code><em class="property"> = [(1, 'Staff'), (2, 'Professor'), (3, 'Post Doc'), (4, 'Grad Student'), (5, 'Other')]</em><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.TYPE_CHOICES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Legacy ranks in arXiv user profiles.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.affiliation">
+<code class="descname">affiliation</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.affiliation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.archive">
+<code class="descname">archive</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.archive" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.country">
+<code class="descname">country</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.country" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_cs">
+<code class="descname">flag_group_cs</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_cs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_econ">
+<code class="descname">flag_group_econ</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_econ" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_eess">
+<code class="descname">flag_group_eess</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_eess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_math">
+<code class="descname">flag_group_math</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_math" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_nlin">
+<code class="descname">flag_group_nlin</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_nlin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_physics">
+<code class="descname">flag_group_physics</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_physics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_q_bio">
+<code class="descname">flag_group_q_bio</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_q_bio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_q_fin">
+<code class="descname">flag_group_q_fin</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_q_fin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.flag_group_stat">
+<code class="descname">flag_group_stat</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.flag_group_stat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.groups">
+<code class="descname">groups</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Active groups for this user profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.original_subject_classes">
+<code class="descname">original_subject_classes</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.original_subject_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.rank">
+<code class="descname">rank</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.subject_class">
+<code class="descname">subject_class</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.subject_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="arxiv.users.legacy.models.DBProfile.to_domain">
+<code class="descname">to_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBProfile.to_domain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.to_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a domain representation from this database instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="arxiv.users.domain.html#arxiv.users.domain.UserProfile" title="arxiv.users.domain.UserProfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserProfile</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.url">
+<code class="descname">url</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.user">
+<code class="descname">user</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBProfile.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBProfile.user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBSession">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBSession</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBSession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBSession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Legacy arXiv session table.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="2%" />
+<col width="31%" />
+<col width="11%" />
+<col width="13%" />
+<col width="17%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2">Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+</tr>
+<tr class="row-even"><td colspan="3">session_id     | int(4) unsigned
+user_id        | int(4) unsigned
+last_reissue   | int(11)
+start_time     | int(11)
+end_time       | int(11)</td>
+<td>NO
+NO
+NO
+NO
+NO</td>
+<td><p class="first">PRI
+MUL</p>
+<p class="last">MUL
+MUL</p>
+</td>
+<td>NULL
+0
+0
+0
+0</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSession.end_time">
+<code class="descname">end_time</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSession.end_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSession.last_reissue">
+<code class="descname">last_reissue</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSession.last_reissue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSession.session_id">
+<code class="descname">session_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSession.session_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSession.start_time">
+<code class="descname">start_time</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSession.start_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSession.user">
+<code class="descname">user</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSession.user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSession.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSession.user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBSessionsAudit">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBSessionsAudit</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBSessionsAudit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBSessionsAudit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Legacy arXiv session audit table. Notably has a tracking cookie.</p>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSessionsAudit.ip_addr">
+<code class="descname">ip_addr</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSessionsAudit.ip_addr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSessionsAudit.remote_host">
+<code class="descname">remote_host</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSessionsAudit.remote_host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSessionsAudit.session">
+<code class="descname">session</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSessionsAudit.session" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSessionsAudit.session_id">
+<code class="descname">session_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSessionsAudit.session_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBSessionsAudit.tracking_cookie">
+<code class="descname">tracking_cookie</code><a class="headerlink" href="#arxiv.users.legacy.models.DBSessionsAudit.tracking_cookie" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBUser">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBUser</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBUser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBUser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Legacy user data table.</p>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.email">
+<code class="descname">email</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.email_bouncing">
+<code class="descname">email_bouncing</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.email_bouncing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.first_name">
+<code class="descname">first_name</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.first_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_allow_tex_produced">
+<code class="descname">flag_allow_tex_produced</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_allow_tex_produced" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_approved">
+<code class="descname">flag_approved</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_approved" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_banned">
+<code class="descname">flag_banned</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_banned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_deleted">
+<code class="descname">flag_deleted</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_deleted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_edit_system">
+<code class="descname">flag_edit_system</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_edit_system" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_edit_users">
+<code class="descname">flag_edit_users</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_edit_users" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_email_verified">
+<code class="descname">flag_email_verified</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_email_verified" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_html_email">
+<code class="descname">flag_html_email</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_html_email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_internal">
+<code class="descname">flag_internal</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_internal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.flag_wants_email">
+<code class="descname">flag_wants_email</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.flag_wants_email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.joined_date">
+<code class="descname">joined_date</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.joined_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.joined_ip_num">
+<code class="descname">joined_ip_num</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.joined_ip_num" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.joined_remote_host">
+<code class="descname">joined_remote_host</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.joined_remote_host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.last_name">
+<code class="descname">last_name</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.last_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.policy_class">
+<code class="descname">policy_class</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.policy_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.share_email">
+<code class="descname">share_email</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.share_email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.share_first_name">
+<code class="descname">share_first_name</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.share_first_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.share_last_name">
+<code class="descname">share_last_name</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.share_last_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.suffix_name">
+<code class="descname">suffix_name</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.suffix_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.tracking_cookie">
+<code class="descname">tracking_cookie</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.tracking_cookie" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUser.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUser.user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBUserNickname">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBUserNickname</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBUserNickname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Users’ usernames (because why not have a separate table).</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="26%" />
+<col width="9%" />
+<col width="7%" />
+<col width="13%" />
+<col width="24%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Field</td>
+<td>Type</td>
+<td>Null</td>
+<td>Key</td>
+<td>Default</td>
+<td>Extra</td>
+</tr>
+<tr class="row-even"><td>nick_id
+nickname
+user_id
+user_seq
+flag_valid
+role
+policy
+flag_primary</td>
+<td>int(10) unsigned
+varchar(20)
+int(4) unsigned
+int(1) unsigned
+int(1) unsigned
+int(10) unsigned
+int(10) unsigned
+int(1) unsigned</td>
+<td>NO
+NO
+NO
+NO
+NO
+NO
+NO
+NO</td>
+<td><p class="first">PRI
+UNI
+MUL</p>
+<p class="last">MUL
+MUL
+MUL</p>
+</td>
+<td><p class="first">NULL</p>
+<p class="last">0
+0
+0
+0
+0
+0</p>
+</td>
+<td>autoincrement</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.flag_primary">
+<code class="descname">flag_primary</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.flag_primary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.flag_valid">
+<code class="descname">flag_valid</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.flag_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.nick_id">
+<code class="descname">nick_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.nick_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.nickname">
+<code class="descname">nickname</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.nickname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.policy">
+<code class="descname">policy</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.role">
+<code class="descname">role</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.role" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.user">
+<code class="descname">user</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserNickname.user_seq">
+<code class="descname">user_seq</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserNickname.user_seq" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="arxiv.users.legacy.models.DBUserPassword">
+<em class="property">class </em><code class="descclassname">arxiv.users.legacy.models.</code><code class="descname">DBUserPassword</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/models.html#DBUserPassword"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.models.DBUserPassword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Legacy password table.</p>
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserPassword.password_enc">
+<code class="descname">password_enc</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserPassword.password_enc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserPassword.password_storage">
+<code class="descname">password_storage</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserPassword.password_storage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserPassword.user">
+<code class="descname">user</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserPassword.user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="arxiv.users.legacy.models.DBUserPassword.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#arxiv.users.legacy.models.DBUserPassword.user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#quick-start">Quick start</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="arxiv.users.html">arxiv.users package</a><ul>
+  <li><a href="arxiv.users.legacy.html">arxiv.users.legacy package</a><ul>
+      <li>Previous: <a href="arxiv.users.legacy.exceptions.html" title="previous chapter">arxiv.users.legacy.exceptions module</a></li>
+      <li>Next: <a href="arxiv.users.legacy.sessions.html" title="next chapter">arxiv.users.legacy.sessions module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/arxiv.users/arxiv.users.legacy.models.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

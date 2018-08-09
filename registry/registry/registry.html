@@ -1,0 +1,169 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>API client registry service &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="registry.services package" href="registry.services.html" />
+    <link rel="prev" title="authenticator.routes module" href="../authenticator/authenticator.routes.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-registry">
+<span id="api-client-registry-service"></span><h1>API client registry service<a class="headerlink" href="#module-registry" title="Permalink to this headline">¶</a></h1>
+<p>API client registry service</p>
+<p>The API client registry is a Flask application that provides user interfaces
+for registering new API clients, and managing API access. Authenticated users
+may register to obtain an API bearer token for public endpoints, and also to
+request additional authorization for protected endpoints such as submission.</p>
+<p>The system provides endpoints to support OAuth2 flows for external API
+consumers that provide services to users, as well as an endpoint to retrieve a
+bearer token for non-user-specific requests. Those endpoints are proxied by the
+API Gateway.</p>
+<p>End users (e.g. readers) can find useful applications and services, or
+interesting research projects, registered with the application system.</p>
+<p>API client data encompasses details about the client, client tokens, and
+client authorizations. These data are stored in a stand-alone data store.</p>
+<p>Authorization tokens are registered in the distributed
+session/token store upon creation, where they can be retrieved by the
+authenticator service to authorize subsequent API requests.</p>
+<div class="figure" id="id1">
+<span id="figure-client-registry-containers"></span><img alt="../_images/client-registry-containers.png" src="../_images/client-registry-containers.png" />
+<p class="caption"><span class="caption-text">Containers in the API client registry system.</span></p>
+</div>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="registry.services.html">registry.services package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="registry.services.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="registry.services.datastore.html">registry.services.datastore package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="registry.services.datastore.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="registry.services.datastore.models.html">registry.services.datastore.models module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="registry.services.datastore.util.html">registry.services.datastore.util module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="registry.services.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="registry.services.sessions.html">registry.services.sessions module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="registry.config.html">registry.config module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registry.domain.html">registry.domain module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registry.factory.html">registry.factory module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registry.oauth2.html">registry.oauth2 module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registry.routes.html">registry.routes module</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API client registry service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../authenticator/authenticator.routes.html" title="previous chapter">authenticator.routes module</a></li>
+      <li>Next: <a href="registry.services.html" title="next chapter">registry.services package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/registry/registry.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

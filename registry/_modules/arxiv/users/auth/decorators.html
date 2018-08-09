@@ -1,0 +1,237 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.auth.decorators &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for arxiv.users.auth.decorators</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Scope-based authorization of user/client requests.</span>
+
+<span class="sd">This module provides :func:`scoped`, a decorator factory used to protect Flask</span>
+<span class="sd">routes for which authorization is required. This is done by specifying a</span>
+<span class="sd">required authorization scope (see :mod:`arxiv.users.auth.scopes`) and/or by</span>
+<span class="sd">providing a custom authorizer function.</span>
+
+<span class="sd">Using :func:`scoped` with an authorizer function allows you to define</span>
+<span class="sd">application-specific authorization logic on a per-request basis without adding</span>
+<span class="sd">complexity to request controllers. The call signature of the authorizer</span>
+<span class="sd">function should be: ``(session: domain.Session, *args, **kwargs) -&gt; bool``,</span>
+<span class="sd">where `*args` and `**kwargs` are the positional and keyword arguments,</span>
+<span class="sd">respectively, passed by Flask to the decorated route function (e.g. the</span>
+<span class="sd">URL parameters).</span>
+
+<span class="sd">Here&#39;s an example of how you might use this in a Flask application:</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">   from arxiv.users.auth.decorators import scoped</span>
+<span class="sd">   from arxiv.users.auth import scopes</span>
+<span class="sd">   from arxiv.users import domain</span>
+
+
+<span class="sd">   def is_owner(session: domain.Session, user_id: str, **kwargs) -&gt; bool:</span>
+<span class="sd">       &#39;&#39;&#39;Check whether the authenticated user matches the requested user.&#39;&#39;&#39;</span>
+<span class="sd">       return session.user.user_id == user_id</span>
+
+
+<span class="sd">   @blueprint.route(&#39;/&lt;string:user_id&gt;/profile&#39;, methods=[&#39;GET&#39;])</span>
+<span class="sd">   @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)</span>
+<span class="sd">   def edit_profile(user_id: str):</span>
+<span class="sd">       &#39;&#39;&#39;User can update their account information.&#39;&#39;&#39;</span>
+<span class="sd">       data, code, headers = profile.get_profile(user_id)</span>
+<span class="sd">       return render_template(&#39;accounts/profile.html&#39;, **data)</span>
+
+
+<span class="sd">When the decorated route function is called...</span>
+
+<span class="sd">- If no session is available from either the middleware or the legacy database,</span>
+<span class="sd">  an :class:`Unauthorized` exception is raised.</span>
+<span class="sd">- If a required scope was provided, the session is checked for the presence of</span>
+<span class="sd">  that scope.</span>
+<span class="sd">- If an authorization function was provided, the function is called.</span>
+<span class="sd">- Session data is added directly to the Flask request object as</span>
+<span class="sd">  ``request.session``, for ease of access elsewhere in the application.</span>
+<span class="sd">- Finally, if no exceptions have been raised, the route is called with the</span>
+<span class="sd">  original parameters.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">werkzeug.exceptions</span> <span class="k">import</span> <span class="n">BadRequest</span><span class="p">,</span> <span class="n">Unauthorized</span><span class="p">,</span> <span class="n">Forbidden</span>
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">domain</span>
+
+<span class="n">INVALID_TOKEN</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid authorization token&#39;</span><span class="p">}</span>
+<span class="n">INVALID_SCOPE</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="s1">&#39;Token not authorized for this action&#39;</span><span class="p">}</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="scoped"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.auth.decorators.html#arxiv.users.auth.decorators.scoped">[docs]</a><span class="k">def</span> <span class="nf">scoped</span><span class="p">(</span><span class="n">required</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+           <span class="n">authorizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a decorator to enforce authorization requirements.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    required : str</span>
+<span class="sd">        The scope required on a user or client session in order use the</span>
+<span class="sd">        decorated route. See :mod:`arxiv.users.auth.scopes`. If not provided,</span>
+<span class="sd">        no scope will be enforced.</span>
+<span class="sd">    authorizer : function</span>
+<span class="sd">        In addition, an authorizer function may be passed to provide more</span>
+<span class="sd">        specific authorization checks. For example, this function may check</span>
+<span class="sd">        that the requesting user is the owner of a resource. Should have the</span>
+<span class="sd">        signature: ``(session: domain.Session, *args, **kwargs) -&gt; bool``.</span>
+<span class="sd">        ``*args`` and ``**kwargs`` are the parameters passed to the decorated</span>
+<span class="sd">        function. If the authorizer returns ``False``, an :class:`.`</span>
+<span class="sd">        exception is raised.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    function</span>
+<span class="sd">        A decorator that enforces the required scope and calls the (optionally)</span>
+<span class="sd">        provided authorizer.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">protector</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Decorator that provides scope enforcement.&quot;&quot;&quot;</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Check the authorization token before executing the method.</span>
+
+<span class="sd">            Will also raise exceptions passed by the auth middleware.</span>
+
+<span class="sd">            Raises</span>
+<span class="sd">            ------</span>
+<span class="sd">            :class:`.Unauthorized`</span>
+<span class="sd">                Raised when session data is not available.</span>
+<span class="sd">            :class:`.`</span>
+<span class="sd">                Raised when the session has insufficient auth scope, or the</span>
+<span class="sd">                provided authorizer returns ``False``.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">session</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span>
+            <span class="c1"># Use of the decorator implies that an auth session ought to be</span>
+            <span class="c1"># present. So we&#39;ll complain here if it&#39;s not.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">user</span> <span class="ow">or</span> <span class="n">session</span><span class="o">.</span><span class="n">client</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;No valid session; aborting&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">Unauthorized</span><span class="p">(</span><span class="s1">&#39;Not a valid session&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+            <span class="c1"># Check the required scopes.</span>
+            <span class="k">if</span> <span class="n">required</span> <span class="ow">and</span> <span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">authorizations</span> <span class="ow">is</span> <span class="kc">None</span>
+                             <span class="ow">or</span> <span class="n">required</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">session</span><span class="o">.</span><span class="n">authorizations</span><span class="o">.</span><span class="n">scopes</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Session is not authorized for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">required</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">Forbidden</span><span class="p">(</span><span class="s1">&#39;Access denied&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+            <span class="c1"># Call the provided authorizer function.</span>
+            <span class="k">if</span> <span class="n">authorizer</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">authorizer</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Authorizer retured negative result&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">Forbidden</span><span class="p">(</span><span class="s1">&#39;Access denied&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Request is authorized, proceeding&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">protector</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">API client registry service</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../auth.html">arxiv.users.auth</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

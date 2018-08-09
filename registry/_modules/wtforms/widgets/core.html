@@ -1,0 +1,449 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>wtforms.widgets.core &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for wtforms.widgets.core</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">html</span> <span class="k">import</span> <span class="n">escape</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cgi</span> <span class="k">import</span> <span class="n">escape</span>
+
+<span class="kn">from</span> <span class="nn">wtforms.compat</span> <span class="k">import</span> <span class="n">text_type</span><span class="p">,</span> <span class="n">iteritems</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;CheckboxInput&#39;</span><span class="p">,</span> <span class="s1">&#39;FileInput&#39;</span><span class="p">,</span> <span class="s1">&#39;HiddenInput&#39;</span><span class="p">,</span> <span class="s1">&#39;ListWidget&#39;</span><span class="p">,</span> <span class="s1">&#39;PasswordInput&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RadioInput&#39;</span><span class="p">,</span> <span class="s1">&#39;Select&#39;</span><span class="p">,</span> <span class="s1">&#39;SubmitInput&#39;</span><span class="p">,</span> <span class="s1">&#39;TableWidget&#39;</span><span class="p">,</span> <span class="s1">&#39;TextArea&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TextInput&#39;</span><span class="p">,</span> <span class="s1">&#39;Option&#39;</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">escape_html</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">quote</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace special characters &quot;&amp;&quot;, &quot;&lt;&quot; and &quot;&gt;&quot; to HTML-safe sequences.</span>
+
+<span class="sd">    If the optional flag quote is true (the default), the quotation mark</span>
+<span class="sd">    characters, both double quote (&quot;) and single quote (&#39;) characters are also</span>
+<span class="sd">    translated.</span>
+
+<span class="sd">    If a `HTMLString` is provied, it&#39;s assumed that whatever you give to</span>
+<span class="sd">    escape_html is a string with any unsafe values already escaped.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">&#39;__html__&#39;</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">__html__</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">text_type</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">quote</span><span class="o">=</span><span class="n">quote</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">s</span>
+
+
+<span class="k">def</span> <span class="nf">html_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate HTML attribute syntax from inputted keyword arguments.</span>
+
+<span class="sd">    The output value is sorted by the passed keys, to provide consistent output</span>
+<span class="sd">    each time this function is called with the same parameters. Because of the</span>
+<span class="sd">    frequent use of the normally reserved keywords `class` and `for`, suffixing</span>
+<span class="sd">    these with an underscore will allow them to be used.</span>
+
+<span class="sd">    In order to facilitate the use of ``data-`` attributes, the first underscore</span>
+<span class="sd">    behind the ``data``-element is replaced with a hyphen.</span>
+
+<span class="sd">    &gt;&gt;&gt; html_params(data_any_attribute=&#39;something&#39;)</span>
+<span class="sd">    &#39;data-any_attribute=&quot;something&quot;&#39;</span>
+
+<span class="sd">    In addition, the values ``True`` and ``False`` are special:</span>
+<span class="sd">      * ``attr=True`` generates the HTML compact output of a boolean attribute,</span>
+<span class="sd">        e.g. ``checked=True`` will generate simply ``checked``</span>
+<span class="sd">      * ``attr=False`` will be ignored and generate no output.</span>
+
+<span class="sd">    &gt;&gt;&gt; html_params(name=&#39;text1&#39;, id=&#39;f&#39;, class_=&#39;text&#39;)</span>
+<span class="sd">    &#39;class=&quot;text&quot; id=&quot;f&quot; name=&quot;text1&quot;&#39;</span>
+<span class="sd">    &gt;&gt;&gt; html_params(checked=True, readonly=False, name=&quot;text1&quot;, abc=&quot;hello&quot;)</span>
+<span class="sd">    &#39;abc=&quot;hello&quot; checked name=&quot;text1&quot;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">iteritems</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;class_&#39;</span><span class="p">,</span> <span class="s1">&#39;class__&#39;</span><span class="p">,</span> <span class="s1">&#39;for_&#39;</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;data_&#39;</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text_type</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">escape</span><span class="p">(</span><span class="n">text_type</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">quote</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">HTMLString</span><span class="p">(</span><span class="n">text_type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is an &quot;HTML safe string&quot; class that is returned by WTForms widgets.</span>
+
+<span class="sd">    For the most part, HTMLString acts like a normal unicode string, except</span>
+<span class="sd">    in that it has a `__html__` method. This method is invoked by a compatible</span>
+<span class="sd">    auto-escaping HTML framework to get the HTML-safe version of a string.</span>
+
+<span class="sd">    Usage::</span>
+
+<span class="sd">        HTMLString(&#39;&lt;input type=&quot;text&quot; value=&quot;hello&quot;&gt;&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__html__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Give an HTML-safe string.</span>
+
+<span class="sd">        This method actually returns itself, because it&#39;s assumed that</span>
+<span class="sd">        whatever you give to HTMLString is a string with any unsafe values</span>
+<span class="sd">        already escaped. This lets auto-escaping template frameworks</span>
+<span class="sd">        know that this string is safe for HTML rendering.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+<span class="k">class</span> <span class="nc">ListWidget</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renders a list of fields as a `ul` or `ol` list.</span>
+
+<span class="sd">    This is used for fields which encapsulate many inner fields as subfields.</span>
+<span class="sd">    The widget will try to iterate the field to get access to the subfields and</span>
+<span class="sd">    call them to render them.</span>
+
+<span class="sd">    If `prefix_label` is set, the subfield&#39;s label is printed before the field,</span>
+<span class="sd">    otherwise afterwards. The latter is useful for iterating radios or</span>
+<span class="sd">    checkboxes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">html_tag</span><span class="o">=</span><span class="s1">&#39;ul&#39;</span><span class="p">,</span> <span class="n">prefix_label</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">html_tag</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ol&#39;</span><span class="p">,</span> <span class="s1">&#39;ul&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">html_tag</span> <span class="o">=</span> <span class="n">html_tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix_label</span> <span class="o">=</span> <span class="n">prefix_label</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">html_tag</span><span class="p">,</span> <span class="n">html_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">subfield</span> <span class="ow">in</span> <span class="n">field</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix_label</span><span class="p">:</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;li&gt;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&lt;/li&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">subfield</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">subfield</span><span class="p">()))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;li&gt;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&lt;/li&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">subfield</span><span class="p">(),</span> <span class="n">subfield</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;/</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">html_tag</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">HTMLString</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">html</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">TableWidget</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renders a list of fields as a set of table rows with th/td pairs.</span>
+
+<span class="sd">    If `with_table_tag` is True, then an enclosing &lt;table&gt; is placed around the</span>
+<span class="sd">    rows.</span>
+
+<span class="sd">    Hidden fields will not be displayed with a row, instead the field will be</span>
+<span class="sd">    pushed into a subsequent table row to ensure XHTML validity. Hidden fields</span>
+<span class="sd">    at the end of the field list will appear outside the table.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_table_tag</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_table_tag</span> <span class="o">=</span> <span class="n">with_table_tag</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_table_tag</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;table </span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="n">html_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="n">hidden</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">subfield</span> <span class="ow">in</span> <span class="n">field</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">subfield</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;HiddenField&#39;</span><span class="p">,</span> <span class="s1">&#39;CSRFTokenField&#39;</span><span class="p">):</span>
+                <span class="n">hidden</span> <span class="o">+=</span> <span class="n">text_type</span><span class="p">(</span><span class="n">subfield</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;tr&gt;&lt;th&gt;</span><span class="si">%s</span><span class="s1">&lt;/th&gt;&lt;td&gt;</span><span class="si">%s%s</span><span class="s1">&lt;/td&gt;&lt;/tr&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text_type</span><span class="p">(</span><span class="n">subfield</span><span class="o">.</span><span class="n">label</span><span class="p">),</span> <span class="n">hidden</span><span class="p">,</span> <span class="n">text_type</span><span class="p">(</span><span class="n">subfield</span><span class="p">)))</span>
+                <span class="n">hidden</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_table_tag</span><span class="p">:</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;/table&gt;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hidden</span><span class="p">:</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hidden</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">HTMLString</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">html</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">Input</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a basic ``&lt;input&gt;`` field.</span>
+
+<span class="sd">    This is used as the basis for most of the other input fields.</span>
+
+<span class="sd">    By default, the `_value()` method will be called upon the associated field</span>
+<span class="sd">    to provide the ``value=`` HTML attribute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">html_params</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">html_params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">input_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_type</span> <span class="o">=</span> <span class="n">input_type</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;value&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">_value</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;required&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="s1">&#39;required&#39;</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;flags&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">HTMLString</span><span class="p">(</span><span class="s1">&#39;&lt;input </span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">html_params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">TextInput</span><span class="p">(</span><span class="n">Input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a single-line text input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_type</span> <span class="o">=</span> <span class="s1">&#39;text&#39;</span>
+
+
+<span class="k">class</span> <span class="nc">PasswordInput</span><span class="p">(</span><span class="n">Input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a password input.</span>
+
+<span class="sd">    For security purposes, this field will not reproduce the value on a form</span>
+<span class="sd">    submit by default. To have the value filled in, set `hide_value` to</span>
+<span class="sd">    `False`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_type</span> <span class="o">=</span> <span class="s1">&#39;password&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hide_value</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hide_value</span> <span class="o">=</span> <span class="n">hide_value</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hide_value</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">PasswordInput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">HiddenInput</span><span class="p">(</span><span class="n">Input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a hidden input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">field_flags</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;hidden&#39;</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">input_type</span> <span class="o">=</span> <span class="s1">&#39;hidden&#39;</span>
+
+
+<span class="k">class</span> <span class="nc">CheckboxInput</span><span class="p">(</span><span class="n">Input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a checkbox.</span>
+
+<span class="sd">    The ``checked`` HTML attribute is set if the field&#39;s data is a non-false value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_type</span> <span class="o">=</span> <span class="s1">&#39;checkbox&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;checked&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;checked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">CheckboxInput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">RadioInput</span><span class="p">(</span><span class="n">Input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a single radio button.</span>
+
+<span class="sd">    This widget is most commonly used in conjunction with ListWidget or some</span>
+<span class="sd">    other listing, as singular radio buttons are not very useful.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_type</span> <span class="o">=</span> <span class="s1">&#39;radio&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">checked</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;checked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">RadioInput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">FileInput</span><span class="p">(</span><span class="n">Input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Render a file chooser input.</span>
+
+<span class="sd">    :param multiple: allow choosing multiple files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">input_type</span> <span class="o">=</span> <span class="s1">&#39;file&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FileInput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiple</span> <span class="o">=</span> <span class="n">multiple</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># browser ignores value of file input for security</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiple</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;multiple&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">FileInput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">SubmitInput</span><span class="p">(</span><span class="n">Input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renders a submit button.</span>
+
+<span class="sd">    The field&#39;s label is used as the text of the submit button instead of the</span>
+<span class="sd">    data on the field.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_type</span> <span class="o">=</span> <span class="s1">&#39;submit&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SubmitInput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">TextArea</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renders a multi-line text area.</span>
+
+<span class="sd">    `rows` and `cols` ought to be passed as keyword args when rendering.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;required&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="s1">&#39;required&#39;</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;flags&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">HTMLString</span><span class="p">(</span><span class="s1">&#39;&lt;textarea </span><span class="si">%s</span><span class="s1">&gt;</span><span class="si">%s</span><span class="s1">&lt;/textarea&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">html_params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+            <span class="n">escape</span><span class="p">(</span><span class="n">text_type</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">_value</span><span class="p">()),</span> <span class="n">quote</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">Select</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renders a select field.</span>
+
+<span class="sd">    If `multiple` is True, then the `size` property should be specified on</span>
+<span class="sd">    rendering to make the field useful.</span>
+
+<span class="sd">    The field must provide an `iter_choices()` method which the widget will</span>
+<span class="sd">    call on rendering; this method must yield tuples of</span>
+<span class="sd">    `(value, label, selected)`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiple</span> <span class="o">=</span> <span class="n">multiple</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiple</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;multiple&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="s1">&#39;required&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="s1">&#39;required&#39;</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;flags&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&lt;select </span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="n">html_params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">val</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">selected</span> <span class="ow">in</span> <span class="n">field</span><span class="o">.</span><span class="n">iter_choices</span><span class="p">():</span>
+            <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render_option</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">selected</span><span class="p">))</span>
+        <span class="n">html</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;/select&gt;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">HTMLString</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">html</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">render_option</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">selected</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Handle the special case of a &#39;True&#39; value.</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">text_type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="n">options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">selected</span><span class="p">:</span>
+            <span class="n">options</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">HTMLString</span><span class="p">(</span><span class="s1">&#39;&lt;option </span><span class="si">%s</span><span class="s1">&gt;</span><span class="si">%s</span><span class="s1">&lt;/option&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">html_params</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">),</span> <span class="n">escape_html</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">quote</span><span class="o">=</span><span class="kc">False</span><span class="p">)))</span>
+
+
+<span class="k">class</span> <span class="nc">Option</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renders the individual option from a select field.</span>
+
+<span class="sd">    This is just a convenience for various custom rendering situations, and an</span>
+<span class="sd">    option by itself does not constitute an entire field.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Select</span><span class="o">.</span><span class="n">render_option</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">_value</span><span class="p">(),</span> <span class="n">field</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">checked</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API client registry service</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

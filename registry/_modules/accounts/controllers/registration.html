@@ -1,0 +1,415 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>accounts.controllers.registration &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for accounts.controllers.registration</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Controllers for registration and user profile management.</span>
+
+<span class="sd">Users are able to create a new arXiv account, and login using their username</span>
+<span class="sd">and password. Each user can create a personalized profile with contact and</span>
+<span class="sd">affiliation information, and links to external identities such as GitHub and</span>
+<span class="sd">ORCID.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">werkzeug</span> <span class="k">import</span> <span class="n">MultiDict</span><span class="p">,</span> <span class="n">ImmutableMultiDict</span>
+<span class="kn">from</span> <span class="nn">werkzeug.exceptions</span> <span class="k">import</span> <span class="n">BadRequest</span><span class="p">,</span> <span class="n">InternalServerError</span>
+
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
+<span class="kn">from</span> <span class="nn">arxiv.users</span> <span class="k">import</span> <span class="n">domain</span>
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">accounts.services</span> <span class="k">import</span> <span class="n">legacy</span><span class="p">,</span> <span class="n">sessions</span><span class="p">,</span> <span class="n">users</span>
+
+<span class="kn">from</span> <span class="nn">wtforms</span> <span class="k">import</span> <span class="n">StringField</span><span class="p">,</span> <span class="n">PasswordField</span><span class="p">,</span> <span class="n">SelectField</span><span class="p">,</span> \
+    <span class="n">SelectMultipleField</span><span class="p">,</span> <span class="n">BooleanField</span><span class="p">,</span> <span class="n">Form</span><span class="p">,</span> <span class="n">HiddenField</span>
+<span class="kn">from</span> <span class="nn">wtforms.validators</span> <span class="k">import</span> <span class="n">DataRequired</span><span class="p">,</span> <span class="n">Email</span><span class="p">,</span> <span class="n">Length</span><span class="p">,</span> <span class="n">URL</span><span class="p">,</span> <span class="n">optional</span><span class="p">,</span> \
+    <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">wtforms.widgets</span> <span class="k">import</span> <span class="n">ListWidget</span><span class="p">,</span> <span class="n">CheckboxInput</span><span class="p">,</span> <span class="n">Select</span>
+<span class="kn">import</span> <span class="nn">pycountry</span>
+
+<span class="c1"># from .. import domain</span>
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">taxonomy</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">MultiCheckboxField</span><span class="p">,</span> <span class="n">OptGroupSelectField</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">stateless_captcha</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">ResponseData</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_login_classic</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">,</span> <span class="n">auth</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Authorizations</span><span class="p">,</span>
+                   <span class="n">ip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c_session</span> <span class="o">=</span> <span class="n">legacy</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+        <span class="n">c_cookie</span> <span class="o">=</span> <span class="n">legacy</span><span class="o">.</span><span class="n">generate_cookie</span><span class="p">(</span><span class="n">c_session</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created classic session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">c_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">legacy</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionCreationFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Could not create classic session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span><span class="s1">&#39;Cannot log in&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>  <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="n">c_session</span><span class="p">,</span> <span class="n">c_cookie</span>
+
+
+<span class="k">def</span> <span class="nf">_logout</span><span class="p">(</span><span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">sessions</span><span class="o">.</span><span class="n">invalidate_by_id</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">sessions</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionDeletionFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Could not delete session </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">session_id</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span><span class="s1">&#39;Cannot logout&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>  <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_login</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">,</span> <span class="n">auth</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Authorizations</span><span class="p">,</span> <span class="n">ip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">sessions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">cookie</span> <span class="o">=</span> <span class="n">sessions</span><span class="o">.</span><span class="n">generate_cookie</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">legacy</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionCreationFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Could not create session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span><span class="s1">&#39;Cannot log in&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>  <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="n">session</span><span class="p">,</span> <span class="n">cookie</span>
+
+
+<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.register">[docs]</a><span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">,</span> <span class="n">captcha_secret</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">ResponseData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Handle requests for the registration view.&quot;&quot;&quot;</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
+        <span class="n">captcha_token</span> <span class="o">=</span> <span class="n">stateless_captcha</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">captcha_secret</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+        <span class="n">_params</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span><span class="s1">&#39;captcha_token&#39;</span><span class="p">:</span> <span class="n">captcha_token</span><span class="p">})</span>  <span class="c1"># type: ignore</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">RegistrationForm</span><span class="p">(</span><span class="n">_params</span><span class="p">)</span>
+        <span class="n">form</span><span class="o">.</span><span class="n">configure_captcha</span><span class="p">(</span><span class="n">captcha_secret</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Registration form submitted&#39;</span><span class="p">)</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">RegistrationForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">}</span>
+        <span class="n">form</span><span class="o">.</span><span class="n">configure_captcha</span><span class="p">(</span><span class="n">captcha_secret</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Registration form not valid&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">,</span> <span class="p">{}</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Registration form is valid&#39;</span><span class="p">)</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="c1"># Perform the actual registration.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">user</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="n">users</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">to_domain</span><span class="p">(),</span> <span class="n">password</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">users</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RegistrationFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Registration failed&#39;</span>
+            <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>  <span class="c1"># type: ignore</span>
+
+        <span class="c1"># Log the user in.</span>
+        <span class="n">session</span><span class="p">,</span> <span class="n">cookie</span> <span class="o">=</span> <span class="n">_login</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">auth</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+        <span class="n">c_session</span><span class="p">,</span> <span class="n">c_cookie</span> <span class="o">=</span> <span class="n">_login_classic</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">auth</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s1">&#39;cookies&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;session_cookie&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">cookie</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">expires</span><span class="p">),</span>
+                <span class="s1">&#39;classic_cookie&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">c_cookie</span><span class="p">,</span> <span class="n">c_session</span><span class="o">.</span><span class="n">expires</span><span class="p">)</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span>
+        <span class="p">})</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">,</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="view_profile"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.view_profile">[docs]</a><span class="k">def</span> <span class="nf">view_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResponseData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Handle requests to view a user&#39;s profile.&quot;&quot;&quot;</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">users</span><span class="o">.</span><span class="n">get_user_by_id</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="n">user</span><span class="p">},</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="edit_profile"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.edit_profile">[docs]</a><span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span>
+                 <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MultiDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResponseData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Handle requests to update a user&#39;s profile.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">users</span><span class="o">.</span><span class="n">get_user_by_id</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">ProfileForm</span><span class="o">.</span><span class="n">from_domain</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span> <span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="n">user_id</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">ProfileForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span> <span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="n">user_id</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">,</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">user_id</span><span class="o">.</span><span class="n">data</span> <span class="o">!=</span> <span class="n">user_id</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;User ID in request does not match&#39;</span>
+            <span class="k">raise</span> <span class="n">BadRequest</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="n">user</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">to_domain</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">user</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="n">users</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Could not save user profile; please try again&#39;</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">,</span> <span class="p">{}</span>
+
+        <span class="c1"># We need a new session, to update user&#39;s data.</span>
+        <span class="n">_logout</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="n">new_session</span><span class="p">,</span> <span class="n">new_cookie</span> <span class="o">=</span> <span class="n">_login</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">auth</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;cookies&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;session_cookie&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">new_cookie</span><span class="p">,</span> <span class="n">new_session</span><span class="o">.</span><span class="n">expires</span><span class="p">)</span>
+        <span class="p">}})</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_303_SEE_OTHER</span><span class="p">,</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="ProfileForm"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm">[docs]</a><span class="k">class</span> <span class="nc">ProfileForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;User registration form.&quot;&quot;&quot;</span>
+
+    <span class="n">COUNTRIES</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span> <span class="o">+</span> \
+        <span class="p">[(</span><span class="n">country</span><span class="o">.</span><span class="n">alpha_2</span><span class="p">,</span> <span class="n">country</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">country</span> <span class="ow">in</span> <span class="n">pycountry</span><span class="o">.</span><span class="n">countries</span><span class="p">]</span>
+    <span class="n">RANKS</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="n">domain</span><span class="o">.</span><span class="n">UserProfile</span><span class="o">.</span><span class="n">RANKS</span>
+    <span class="n">GROUPS</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">GROUPS</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_test&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">CATEGORIES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">archive</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">category_id</span><span class="p">,</span> <span class="n">category</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">category_id</span><span class="p">,</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">CATEGORIES_ACTIVE</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">category</span><span class="p">[</span><span class="s1">&#39;in_archive&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">archive_id</span>
+        <span class="p">])</span>
+        <span class="k">for</span> <span class="n">archive_id</span><span class="p">,</span> <span class="n">archive</span> <span class="ow">in</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">ARCHIVES_ACTIVE</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;Categories grouped by archive.&quot;&quot;&quot;</span>
+
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">HiddenField</span><span class="p">(</span><span class="s1">&#39;User ID&#39;</span><span class="p">)</span>
+
+    <span class="n">email</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span>
+        <span class="s1">&#39;Email address&#39;</span><span class="p">,</span>
+        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Email</span><span class="p">(),</span> <span class="n">Length</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">255</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()],</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;You must be able to receive mail at this address.&quot;</span>
+        <span class="s2">&quot; We take &lt;a href=&#39;https://arxiv.org/help/email-protection&#39;&gt;&quot;</span>
+        <span class="s2">&quot; strong measures&lt;/a&gt; to protect your email address from viruses and&quot;</span>
+        <span class="s2">&quot; spam. Do not enter an e-mail address that belongs to someone&quot;</span>
+        <span class="s2">&quot; else: if we discover that you&#39;ve done so, we will suspend your&quot;</span>
+        <span class="s2">&quot; account.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">username</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Username&#39;</span><span class="p">,</span>
+                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">forename</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;First or given name&#39;</span><span class="p">,</span>
+                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">surname</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Last or family name&#39;</span><span class="p">,</span>
+                          <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Suffix&#39;</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">50</span><span class="p">)])</span>
+    <span class="n">affiliation</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span>
+        <span class="s1">&#39;Affiliation&#39;</span><span class="p">,</span>
+        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">255</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()],</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;This field accepts &#39;</span>
+                    <span class="s1">&#39;&lt;a href=&quot;https://arxiv.org/tex_accents&quot;&gt;&#39;</span>
+                    <span class="s1">&#39;pidgin TeX (</span><span class="se">\\\&#39;</span><span class="s1">o)&lt;/a&gt; for foreign characters.&#39;</span>
+    <span class="p">)</span>
+    <span class="n">country</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">&#39;Country&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">COUNTRIES</span><span class="p">,</span>
+                          <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">&#39;Status&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">RANKS</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()])</span>
+
+    <span class="n">groups</span> <span class="o">=</span> <span class="n">MultiCheckboxField</span><span class="p">(</span><span class="s1">&#39;Group(s) to which you would like to submit&#39;</span><span class="p">,</span>
+                                <span class="n">choices</span><span class="o">=</span><span class="n">GROUPS</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">default_category</span> <span class="o">=</span> <span class="n">OptGroupSelectField</span><span class="p">(</span><span class="s1">&#39;Your default category&#39;</span><span class="p">,</span>
+                                           <span class="n">choices</span><span class="o">=</span><span class="n">CATEGORIES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Your homepage URL&#39;</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">optional</span><span class="p">(),</span>
+                      <span class="n">Length</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">255</span><span class="p">),</span> <span class="n">URL</span><span class="p">()])</span>
+    <span class="n">remember_me</span> <span class="o">=</span> <span class="n">BooleanField</span><span class="p">(</span><span class="s1">&#39;Have your browser remember who you are?&#39;</span><span class="p">,</span>
+                               <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ProfileForm.from_domain"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.from_domain">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_domain</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;ProfileForm&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate this form with data from a domain object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">MultiDict</span><span class="p">({</span>  <span class="c1"># type: ignore</span>
+            <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+            <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+            <span class="s1">&#39;forename&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">forename</span><span class="p">,</span>
+            <span class="s1">&#39;surname&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">surname</span><span class="p">,</span>
+            <span class="s1">&#39;suffix&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span>
+            <span class="s1">&#39;affiliation&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">affiliation</span><span class="p">,</span>
+            <span class="s1">&#39;country&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">country</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span>
+            <span class="s1">&#39;groups&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">submission_groups</span><span class="p">,</span>
+            <span class="s1">&#39;default_category&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">default_category</span><span class="o">.</span><span class="n">compound</span><span class="p">,</span>
+            <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">homepage_url</span><span class="p">,</span>
+            <span class="s1">&#39;remember_me&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">remember_me</span>
+        <span class="p">}))</span></div>
+
+<div class="viewcode-block" id="ProfileForm.to_domain"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.to_domain">[docs]</a>    <span class="k">def</span> <span class="nf">to_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate a :class:`.User` from this form&#39;s data.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">(</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="o">.</span><span class="n">data</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">username</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">email</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">email</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">UserFullName</span><span class="p">(</span>
+                <span class="n">forename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forename</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">surname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">surname</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">suffix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">data</span>
+            <span class="p">),</span>
+            <span class="n">profile</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">UserProfile</span><span class="p">(</span>
+                <span class="n">affiliation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">affiliation</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">country</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">country</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">rank</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>     <span class="c1"># WTF can&#39;t handle int values.</span>
+                <span class="n">submission_groups</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">default_category</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">Category</span><span class="p">(</span>
+                    <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">default_category</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+                <span class="p">),</span>
+                <span class="n">homepage_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">remember_me</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remember_me</span><span class="o">.</span><span class="n">data</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileForm.validate_username"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.validate_username">[docs]</a>    <span class="k">def</span> <span class="nf">validate_username</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that the username is unique.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">users</span><span class="o">.</span><span class="n">username_exists</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;An account with that username already&#39;</span>
+                                  <span class="s1">&#39; exists&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileForm.validate_email"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.validate_email">[docs]</a>    <span class="k">def</span> <span class="nf">validate_email</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that the email address is unique.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">users</span><span class="o">.</span><span class="n">email_exists</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;An account with that email address&#39;</span>
+                                  <span class="s1">&#39; already exists&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RegistrationForm"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm">[docs]</a><span class="k">class</span> <span class="nc">RegistrationForm</span><span class="p">(</span><span class="n">ProfileForm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;User registration form.&quot;&quot;&quot;</span>
+
+    <span class="n">password</span> <span class="o">=</span> <span class="n">PasswordField</span><span class="p">(</span><span class="s1">&#39;Password&#39;</span><span class="p">,</span>
+                             <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">password2</span> <span class="o">=</span> <span class="n">PasswordField</span><span class="p">(</span><span class="s1">&#39;Re-enter password&#39;</span><span class="p">,</span>
+                              <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
+
+    <span class="n">captcha_value</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Are you a robot?&#39;</span><span class="p">,</span>
+                                <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()],</span>
+                                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Please enter the text that you&quot;</span>
+                                            <span class="s2">&quot; see in the image above&quot;</span><span class="p">)</span>
+    <span class="n">captcha_token</span> <span class="o">=</span> <span class="n">HiddenField</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RegistrationForm.configure_captcha"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.configure_captcha">[docs]</a>    <span class="k">def</span> <span class="nf">configure_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">captcha_secret</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Set configuration details for the stateless_captcha.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">captcha_secret</span> <span class="o">=</span> <span class="n">captcha_secret</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span></div>
+
+<div class="viewcode-block" id="RegistrationForm.validate_captcha_value"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.validate_captcha_value">[docs]</a>    <span class="k">def</span> <span class="nf">validate_captcha_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check the captcha value against the captcha token.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stateless_captcha</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">captcha_token</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">captcha_secret</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">stateless_captcha</span><span class="o">.</span><span class="n">InvalidCaptchaValue</span><span class="p">,</span>
+                <span class="n">stateless_captcha</span><span class="o">.</span><span class="n">InvalidCaptchaToken</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Get a fresh captcha challenge. More than likely the user is</span>
+            <span class="c1"># having trouble interpreting the challenge,</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">stateless_captcha</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">captcha_secret</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">captcha_token</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">token</span>
+
+            <span class="c1"># It is convenient to provide feedback to the user via the</span>
+            <span class="c1"># form, so we&#39;ll do that here if the captcha doesn&#39;t check out.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">captcha_value</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>    <span class="c1"># Clear the field.</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Please try again&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegistrationForm.validate_password"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.validate_password">[docs]</a>    <span class="k">def</span> <span class="nf">validate_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Verify that the password is the same in both fields.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">data</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">password2</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Passwords must match&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API client registry service</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../controllers.html">accounts.controllers</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

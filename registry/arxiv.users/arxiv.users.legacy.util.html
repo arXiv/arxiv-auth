@@ -1,0 +1,328 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.legacy.util module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.users.domain module" href="arxiv.users.domain.html" />
+    <link rel="prev" title="arxiv.users.legacy.sessions module" href="arxiv.users.legacy.sessions.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.users.legacy.util">
+<span id="arxiv-users-legacy-util-module"></span><h1>arxiv.users.legacy.util module<a class="headerlink" href="#module-arxiv.users.legacy.util" title="Permalink to this headline">¶</a></h1>
+<p>Helpers and Flask application integration.</p>
+<dl class="function">
+<dt id="arxiv.users.legacy.util.check_password">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">check_password</code><span class="sig-paren">(</span><em>password</em>, <em>encrypted</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#check_password"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.check_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check a password against an encrypted hash.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.compute_capabilities">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">compute_capabilities</code><span class="sig-paren">(</span><em>tapir_user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#compute_capabilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.compute_capabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the privilege level code for a user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.create_all">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">create_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#create_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.create_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create all tables in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.current_session">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">current_session</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#current_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.current_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get/create database session for this context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.drop_all">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">drop_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#drop_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.drop_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop all tables in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.epoch">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">epoch</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a <code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code> to UNIX time.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.from_epoch">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">from_epoch</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#from_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.from_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a <code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code> from an UNIX timestamp.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.get_scopes">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">get_scopes</code><span class="sig-paren">(</span><em>db_user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#get_scopes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.get_scopes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a list of authz scopes for a legacy user based on class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.get_session_duration">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">get_session_duration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#get_session_duration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.get_session_duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the session duration from the config.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.get_session_hash">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">get_session_hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#get_session_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.get_session_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the legacy hash secret.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.hash_password">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">hash_password</code><span class="sig-paren">(</span><em>password</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#hash_password"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.hash_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a secure hash of a password.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.init_app">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">init_app</code><span class="sig-paren">(</span><em>app=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#init_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.init_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set default configuration parameters for an application instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.is_configured">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">is_configured</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#is_configured"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.is_configured" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether or not the legacy database is configured.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.now">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">now</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#now"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.now" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current epoch/unix time.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.legacy.util.transaction">
+<code class="descclassname">arxiv.users.legacy.util.</code><code class="descname">transaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/legacy/util.html#transaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.legacy.util.transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager for database transaction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>[+T_co, -T_contra, +V_co]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#quick-start">Quick start</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="arxiv.users.html">arxiv.users package</a><ul>
+  <li><a href="arxiv.users.legacy.html">arxiv.users.legacy package</a><ul>
+      <li>Previous: <a href="arxiv.users.legacy.sessions.html" title="previous chapter">arxiv.users.legacy.sessions module</a></li>
+      <li>Next: <a href="arxiv.users.domain.html" title="next chapter">arxiv.users.domain module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/arxiv.users/arxiv.users.legacy.util.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

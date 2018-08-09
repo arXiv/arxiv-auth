@@ -1,0 +1,490 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.domain &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for arxiv.users.domain</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Defines user concepts for use in arXiv-NG services.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">dateutil.parser</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">taxonomy</span>
+
+<span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Category"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Category">[docs]</a><span class="k">class</span> <span class="nc">Category</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reprents a classification category.&quot;&quot;&quot;</span>
+
+    <span class="n">archive</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;Archives group together related subjects in a domain.&quot;&quot;&quot;</span>
+
+    <span class="n">subject</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Leaf-level classification in the arXiv taxonomy.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Category.from_compound"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Category.from_compound">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_compound</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Category&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a :class:`.Category` from a compound classification slug.</span>
+
+<span class="sd">        E.g. &quot;astro-ph.CO&quot; -&gt; Category(archive=&quot;astro-ph&quot;, subject=&quot;CO&quot;)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        category : str</span>
+<span class="sd">            A dot-delimited compound category slug.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`.Category`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">compound</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Compound category name.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subject</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.archive}</span><span class="s2">.</span><span class="si">{self.subject}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">archive</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Display name for this category.&quot;&quot;&quot;</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">taxonomy</span><span class="o">.</span><span class="n">CATEGORIES</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">compound</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">name</span></div>
+
+
+<div class="viewcode-block" id="UserProfile"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserProfile">[docs]</a><span class="k">class</span> <span class="nc">UserProfile</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;User profile data.&quot;&quot;&quot;</span>
+
+    <span class="c1"># mypy (oddly) does not support class attributes:</span>
+    <span class="c1">#  https://github.com/python/mypy/issues/3959</span>
+    <span class="n">STAFF</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;Staff&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">PROFESSOR</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;Professor&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">POST_DOC</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;Post doc&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">GRAD_STUDENT</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;Grad student&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">OTHER</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;Other&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">RANKS</span> <span class="o">=</span> <span class="p">[</span><span class="n">STAFF</span><span class="p">,</span> <span class="n">PROFESSOR</span><span class="p">,</span> <span class="n">POST_DOC</span><span class="p">,</span> <span class="n">GRAD_STUDENT</span><span class="p">,</span> <span class="n">OTHER</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+
+    <span class="n">affiliation</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;Institutional affiliation.&quot;&quot;&quot;</span>
+
+    <span class="n">country</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;Should be an ISO 3166-1 alpha-2 country code.&quot;&quot;&quot;</span>
+
+    <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;Academic rank. Must be one of :attr:`UserProfile.RANKS`.&quot;&quot;&quot;</span>
+
+    <span class="n">submission_groups</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Groups to which the user prefers to submit.</span>
+
+<span class="sd">    Items should be one of :ref:`arxiv.taxonomy.GROUPS`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">default_category</span><span class="p">:</span> <span class="n">Category</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default submission category.</span>
+
+<span class="sd">    Should be one of :ref:`arxiv.taxonomy.CATEGORIES`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">homepage_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;User&#39;s homepage or external profile URL.&quot;&quot;&quot;</span>
+
+    <span class="n">remember_me</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="sd">&quot;&quot;&quot;Indicates whether the user prefers permanent session cookies.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rank_display</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The display name of the user&#39;s rank.&quot;&quot;&quot;</span>
+        <span class="n">_rank</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RANKS</span><span class="p">)[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">_rank</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">default_archive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The archive of the default category.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_category</span><span class="o">.</span><span class="n">archive</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">default_subject</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;The subject of the default category.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_category</span><span class="o">.</span><span class="n">subject</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">groups_display</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Display-ready representation of active groups for this profile.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+            <span class="n">taxonomy</span><span class="o">.</span><span class="n">GROUPS</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">submission_groups</span>
+        <span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="Authorizations"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Authorizations">[docs]</a><span class="k">class</span> <span class="nc">Authorizations</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Authorization information, e.g. associated with a :class:`.Session`.&quot;&quot;&quot;</span>
+
+    <span class="n">classic</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="sd">&quot;&quot;&quot;Capability code associated with a user&#39;s session.&quot;&quot;&quot;</span>
+
+    <span class="n">endorsements</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Categories to which the user is permitted to submit.&quot;&quot;&quot;</span>
+
+    <span class="n">scopes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Authorized scopes. See :mod:`arxiv.users.auth.scopes`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Authorizations.before_init"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Authorizations.before_init">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">before_init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Make sure that endorsements are :class:`.Category` instances.&quot;&quot;&quot;</span>
+        <span class="c1"># Iterative coercion is hard. It&#39;s a lot easier to handle this here</span>
+        <span class="c1"># than to implement a general-purpose coercsion.</span>
+        <span class="c1"># if self.endorsements and type(self.endorsements[0]) is not Category:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;endorsements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Category</span><span class="p">(</span><span class="o">*</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;endorsements&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="UserFullName"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserFullName">[docs]</a><span class="k">class</span> <span class="nc">UserFullName</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a user&#39;s full name.&quot;&quot;&quot;</span>
+
+    <span class="n">forename</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;First name or given name.&quot;&quot;&quot;</span>
+
+    <span class="n">surname</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;Last name or family name.&quot;&quot;&quot;</span>
+
+    <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;Any title or qualifier used as a suffix/postfix.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="User"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents an arXiv user and their authorizations.&quot;&quot;&quot;</span>
+
+    <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;Slug-like username.&quot;&quot;&quot;</span>
+
+    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The user&#39;s primary e-mail address.&quot;&quot;&quot;</span>
+
+    <span class="n">user_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Unique identifier for the user. If ``None``, the user does not exist.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UserFullName</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The user&#39;s full name (if available).&quot;&quot;&quot;</span>
+
+    <span class="n">profile</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UserProfile</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The user&#39;s account profile (if available).&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API client.&quot;&quot;&quot;</span>
+
+    <span class="n">owner_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The arXiv user responsible for the client.&quot;&quot;&quot;</span>
+
+    <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Unique identifier for a :class:`.Client`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Human-friendly name of the API client.&quot;&quot;&quot;</span>
+
+    <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Homepage or other resource describing the API client.&quot;&quot;&quot;</span>
+
+    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Brief description of the API client.&quot;&quot;&quot;</span>
+
+    <span class="n">redirect_uri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The authorized redirect URI for the client.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Session"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Session">[docs]</a><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents an authenticated session in the arXiv system.&quot;&quot;&quot;</span>
+
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;Unique identifier for the session.&quot;&quot;&quot;</span>
+
+    <span class="n">start_time</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="sd">&quot;&quot;&quot;The ISO-8601 datetime when the session was created.&quot;&quot;&quot;</span>
+
+    <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">User</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The user for which the session was created.&quot;&quot;&quot;</span>
+
+    <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Client</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The client for which the session was created.&quot;&quot;&quot;</span>
+
+    <span class="n">end_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The ISO-8601 datetime when the session ended.&quot;&quot;&quot;</span>
+
+    <span class="n">authorizations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Authorizations</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Authorizations for the current session.&quot;&quot;&quot;</span>
+
+    <span class="n">ip_address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The IP address of the client for which the session was created.&quot;&quot;&quot;</span>
+
+    <span class="n">remote_host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The hostname of the client for which the session was created.&quot;&quot;&quot;</span>
+
+    <span class="n">nonce</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;A pseudo-random nonce generated when the session was created.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">expired</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Expired if the current time is later than :attr:`.end_time`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="ow">and</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_time</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">expires</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Number of seconds until the session expires.</span>
+
+<span class="sd">        If the session is already expired, returns 0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">end_time</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">))</span><span class="o">.</span><span class="n">seconds</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+
+    <span class="c1"># Consider for later:</span>
+    <span class="c1">#  localization (preferred language)</span>
+    <span class="c1">#  preferences for sharing contact info</span>
+
+
+<span class="c1"># Helpers and private functions.</span>
+
+
+<div class="viewcode-block" id="to_dict"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.to_dict">[docs]</a><span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a dict representation of a NamedTuple instance.</span>
+
+<span class="sd">    This just uses the built-in ``_asdict`` method on the intance, but also</span>
+<span class="sd">    calls this on any child NamedTuple instances (recursively) so that the</span>
+<span class="sd">    entire tree is cast to ``dict``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : tuple</span>
+<span class="sd">        A NamedTuple instance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;_asdict&#39;</span><span class="p">):</span>  <span class="c1"># NamedTuple-generated classes have this.</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+    <span class="n">_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;_asdict&#39;</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="n">_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">_data</span></div>
+
+
+<div class="viewcode-block" id="from_dict"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.from_dict">[docs]</a><span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a NamedTuple instance from a dict, with recursion.</span>
+
+<span class="sd">    This is the inverse of :func:`to_dict`.</span>
+
+<span class="sd">    It&#39;s easy to instantiate NamedTuples from dicts, but it&#39;s not so easy if</span>
+<span class="sd">    a NamedTuple field is typed with another NamedTuple. This function</span>
+<span class="sd">    instantiates a NamedTuple class ``cls`` with the data in dict ``data``,</span>
+<span class="sd">    and also instantiates any referenced NamedTuple classes expected by</span>
+<span class="sd">    ``cls``&#39;s fields with the appropriate data in ``data``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cls: type</span>
+<span class="sd">        Any NamedTuple class.</span>
+
+<span class="sd">    data: dict</span>
+<span class="sd">        Data with which to instantiate ``cls`` and its children.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    NamedTuple</span>
+<span class="sd">        An instance of ``cls``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">field_type</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_field_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+        <span class="n">target_type</span> <span class="o">=</span> <span class="n">_get_cast_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target_type</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">target_type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">_data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;before_init&#39;</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">before_init</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">_data</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_is_a_namedtuple</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Determine whether or not a field type is a NamedTuple class.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="s1">&#39;_fields&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_is_typing_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Determine whether a type is a typing class.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="s1">&#39;_subs_tree&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_is_nested_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Determine whether a typing class is nested (e.g. Union[str, int]).&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">field_type</span><span class="o">.</span><span class="n">_subs_tree</span><span class="p">())</span> <span class="ow">is</span> <span class="nb">tuple</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="k">def</span> <span class="nf">_get_cast_type_for_str</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the target type for a ``str`` value.</span>
+
+<span class="sd">    Returns ``None`` if a suitable target cannot be determined.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">field_type</span> <span class="ow">is</span> <span class="n">datetime</span> <span class="ow">or</span>
+        <span class="p">(</span><span class="n">_is_typing_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">)</span> <span class="ow">and</span>
+         <span class="n">_is_nested_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">)</span> <span class="ow">and</span>
+         <span class="n">datetime</span> <span class="ow">in</span> <span class="n">field_type</span><span class="o">.</span><span class="n">_subs_tree</span><span class="p">())):</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">dateutil</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_get_cast_type_for_dict</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the NamedTuple target type for a ``dict`` value.</span>
+
+<span class="sd">    Returns ``None`` if a suitable target cannot be determined.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Is the expected type for the field a NamedTuple class?</span>
+    <span class="k">if</span> <span class="n">_is_a_namedtuple</span><span class="p">(</span><span class="n">field_type</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">from_dict</span><span class="p">,</span> <span class="n">field_type</span><span class="p">)</span>
+
+    <span class="c1"># Is the expected type a nested Type? There may be a NamedTuple hiding</span>
+    <span class="c1"># in there...</span>
+    <span class="k">if</span> <span class="n">_is_typing_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_is_nested_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">):</span>
+
+        <span class="c1"># Look for either a NamedTuple class, or dict type.</span>
+        <span class="k">for</span> <span class="n">s_type</span> <span class="ow">in</span> <span class="n">field_type</span><span class="o">.</span><span class="n">_subs_tree</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">s_type</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>    <span class="c1"># We already have one of these, nothing to do.</span>
+            <span class="k">if</span> <span class="n">_is_a_namedtuple</span><span class="p">(</span><span class="n">s_type</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">from_dict</span><span class="p">,</span> <span class="n">s_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="c1"># Recursive coersion on anything more complicated than these simple cases is</span>
+<span class="c1"># pretty hard. It&#39;s easier to implement anything else (e.g. a List of</span>
+<span class="c1"># something type-ish) on the domain class itself.</span>
+<span class="k">def</span> <span class="nf">_get_cast_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get a casting callable for a field type/value.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_get_cast_type_for_dict</span><span class="p">(</span><span class="n">field_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_get_cast_type_for_str</span><span class="p">(</span><span class="n">field_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API client registry service</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

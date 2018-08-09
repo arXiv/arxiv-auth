@@ -1,0 +1,162 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.auth.scopes module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.users.auth.tokens module" href="arxiv.users.auth.tokens.html" />
+    <link rel="prev" title="arxiv.users.auth.middleware module" href="arxiv.users.auth.middleware.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.users.auth.scopes">
+<span id="arxiv-users-auth-scopes-module"></span><h1>arxiv.users.auth.scopes module<a class="headerlink" href="#module-arxiv.users.auth.scopes" title="Permalink to this headline">¶</a></h1>
+<p>Authorization scopes for arXiv users and clients.</p>
+<p>The concept of authorization scope comes from OAuth 2.0 (<a class="reference external" href="https://tools.ietf.org/html/rfc6749#section-3.3">RFC 6749 §3.3</a>). For a nice primer, see
+<a class="reference external" href="https://brandur.org/oauth-scope">this blog post</a>. The basic idea is that
+the authorization associated with an access token can be limited, e.g. to
+limit what actions an API client can take on behalf of a user.</p>
+<p>In this package, the scope concept is applied to both API client and end-user
+sessions. When the session is created, we consult the relevant bits of data in
+our system (e.g. what roles the user has, what privileges are associated with
+those roles) to determine what the user is authorized to do. Those privileges
+are attached to the user’s session as authorization scopes.</p>
+<p>This module simply defines a set of constants (str) that can be used to refer
+to specific authorization scopes. Rather than refer to scopes by writing new
+str objects, these constants should be imported and used. This improves the
+semantics of code, and reduces the risk of programming errors. For an example,
+see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-arxiv.users.auth.decorators" title="arxiv.users.auth.decorators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users.auth.decorators</span></code></a>.</p>
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.ADMIN_UPLOAD">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">ADMIN_UPLOAD</code><em class="property"> = 'upload:admin'</em><a class="headerlink" href="#arxiv.users.auth.scopes.ADMIN_UPLOAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access to administrative functionality and resources related to uploads.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.CREATE_SUBMISSION">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">CREATE_SUBMISSION</code><em class="property"> = 'submission:create'</em><a class="headerlink" href="#arxiv.users.auth.scopes.CREATE_SUBMISSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes creating a submission.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.EDIT_PROFILE">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">EDIT_PROFILE</code><em class="property"> = 'profile:update'</em><a class="headerlink" href="#arxiv.users.auth.scopes.EDIT_PROFILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes editing user profile.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.VIEW_PROFILE">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">VIEW_PROFILE</code><em class="property"> = 'profile:read'</em><a class="headerlink" href="#arxiv.users.auth.scopes.VIEW_PROFILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes viewing user profile.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.WRITE_UPLOAD">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">WRITE_UPLOAD</code><em class="property"> = 'upload:write'</em><a class="headerlink" href="#arxiv.users.auth.scopes.WRITE_UPLOAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required to create new uploads.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#quick-start">Quick start</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="arxiv.users.html">arxiv.users package</a><ul>
+  <li><a href="arxiv.users.auth.html">arxiv.users.auth package</a><ul>
+      <li>Previous: <a href="arxiv.users.auth.middleware.html" title="previous chapter">arxiv.users.auth.middleware module</a></li>
+      <li>Next: <a href="arxiv.users.auth.tokens.html" title="next chapter">arxiv.users.auth.tokens module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/arxiv.users/arxiv.users.auth.scopes.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

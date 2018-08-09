@@ -1,0 +1,196 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arxiv.users.auth.decorators module &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arxiv.users.auth.exceptions module" href="arxiv.users.auth.exceptions.html" />
+    <link rel="prev" title="arxiv.users.auth.sessions.store module" href="arxiv.users.auth.sessions.store.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-arxiv.users.auth.decorators">
+<span id="arxiv-users-auth-decorators-module"></span><h1>arxiv.users.auth.decorators module<a class="headerlink" href="#module-arxiv.users.auth.decorators" title="Permalink to this headline">¶</a></h1>
+<p>Scope-based authorization of user/client requests.</p>
+<p>This module provides <a class="reference internal" href="#arxiv.users.auth.decorators.scoped" title="arxiv.users.auth.decorators.scoped"><code class="xref py py-func docutils literal notranslate"><span class="pre">scoped()</span></code></a>, a decorator factory used to protect Flask
+routes for which authorization is required. This is done by specifying a
+required authorization scope (see <a class="reference internal" href="arxiv.users.auth.scopes.html#module-arxiv.users.auth.scopes" title="arxiv.users.auth.scopes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users.auth.scopes</span></code></a>) and/or by
+providing a custom authorizer function.</p>
+<p>Using <a class="reference internal" href="#arxiv.users.auth.decorators.scoped" title="arxiv.users.auth.decorators.scoped"><code class="xref py py-func docutils literal notranslate"><span class="pre">scoped()</span></code></a> with an authorizer function allows you to define
+application-specific authorization logic on a per-request basis without adding
+complexity to request controllers. The call signature of the authorizer
+function should be: <code class="docutils literal notranslate"><span class="pre">(session:</span> <span class="pre">domain.Session,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code>,
+where <cite>*args</cite> and <cite>**kwargs</cite> are the positional and keyword arguments,
+respectively, passed by Flask to the decorated route function (e.g. the
+URL parameters).</p>
+<p>Here’s an example of how you might use this in a Flask application:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arxiv.users.auth.decorators</span> <span class="kn">import</span> <span class="n">scoped</span>
+<span class="kn">from</span> <span class="nn">arxiv.users.auth</span> <span class="kn">import</span> <span class="n">scopes</span>
+<span class="kn">from</span> <span class="nn">arxiv.users</span> <span class="kn">import</span> <span class="n">domain</span>
+
+
+<span class="k">def</span> <span class="nf">is_owner</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Check whether the authenticated user matches the requested user.&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">user_id</span>
+
+
+<span class="nd">@blueprint.route</span><span class="p">(</span><span class="s1">&#39;/&lt;string:user_id&gt;/profile&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@scoped</span><span class="p">(</span><span class="n">scopes</span><span class="o">.</span><span class="n">EDIT_PROFILE</span><span class="p">,</span> <span class="n">authorizer</span><span class="o">=</span><span class="n">user_is_owner</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;User can update their account information.&#39;&#39;&#39;</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;accounts/profile.html&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When the decorated route function is called…</p>
+<ul class="simple">
+<li>If no session is available from either the middleware or the legacy database,
+an <code class="xref py py-class docutils literal notranslate"><span class="pre">Unauthorized</span></code> exception is raised.</li>
+<li>If a required scope was provided, the session is checked for the presence of
+that scope.</li>
+<li>If an authorization function was provided, the function is called.</li>
+<li>Session data is added directly to the Flask request object as
+<code class="docutils literal notranslate"><span class="pre">request.session</span></code>, for ease of access elsewhere in the application.</li>
+<li>Finally, if no exceptions have been raised, the route is called with the
+original parameters.</li>
+</ul>
+<dl class="function">
+<dt id="arxiv.users.auth.decorators.scoped">
+<code class="descclassname">arxiv.users.auth.decorators.</code><code class="descname">scoped</code><span class="sig-paren">(</span><em>required=None</em>, <em>authorizer=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/decorators.html#scoped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.decorators.scoped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a decorator to enforce authorization requirements.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>required</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The scope required on a user or client session in order use the
+decorated route. See <a class="reference internal" href="arxiv.users.auth.scopes.html#module-arxiv.users.auth.scopes" title="arxiv.users.auth.scopes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users.auth.scopes</span></code></a>. If not provided,
+no scope will be enforced.</li>
+<li><strong>authorizer</strong> (<em>function</em>) – In addition, an authorizer function may be passed to provide more
+specific authorization checks. For example, this function may check
+that the requesting user is the owner of a resource. Should have the
+signature: <code class="docutils literal notranslate"><span class="pre">(session:</span> <span class="pre">domain.Session,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code>.
+<code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> are the parameters passed to the decorated
+function. If the authorizer returns <code class="docutils literal notranslate"><span class="pre">False</span></code>, an <code class="xref py py-class docutils literal notranslate"></code>
+exception is raised.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A decorator that enforces the required scope and calls the (optionally)
+provided authorizer.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">function</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">arXiv AuthN/Z</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="arxiv.users.html">arxiv.users package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#quick-start">Quick start</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="arxiv.users.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arxiv.users.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">authenticator package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="arxiv.users.html">arxiv.users package</a><ul>
+  <li><a href="arxiv.users.auth.html">arxiv.users.auth package</a><ul>
+      <li>Previous: <a href="arxiv.users.auth.sessions.store.html" title="previous chapter">arxiv.users.auth.sessions.store module</a></li>
+      <li>Next: <a href="arxiv.users.auth.exceptions.html" title="next chapter">arxiv.users.auth.exceptions module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, arXiv.org.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/arxiv.users/arxiv.users.auth.decorators.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
