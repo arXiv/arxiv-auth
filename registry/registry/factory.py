@@ -27,6 +27,5 @@ def create_web_app() -> Flask:
     oauth2.init_app(app)
     app.register_blueprint(blueprint)
     wrap(app, [auth.middleware.AuthMiddleware])
-    print(app.url_map)
     datastore.create_all()
     return app

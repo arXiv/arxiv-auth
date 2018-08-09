@@ -20,8 +20,8 @@ from authlib.specs.rfc6749 import ClientMixin, grants, OAuth2Request
 
 from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
-from .services import datastore, sessions
-from . import domain
+from ..services import datastore, sessions
+from .. import domain
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ def save_token(token: dict, oauth_request: OAuth2Request) -> None:
 
 
 def create_server() -> AuthorizationServer:
-    """Instantiate and configure an :class:`AuthoriationServer`."""
+    """Instantiate and configure an :class:`AuthorizationServer`."""
     server = AuthorizationServer(query_client=get_client,
                                  save_token=save_token)
     server.register_grant(ClientCredentialsGrant)
