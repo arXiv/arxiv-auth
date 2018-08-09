@@ -19,6 +19,7 @@ uwsgi = "*"
 wtforms = "*"
 arxiv-base = "==0.9.2"
 authlib = "*"
+"4010dd8" = {path = "./users"}
 
 [dev-packages]
 mimesis = "*"
@@ -31,6 +32,7 @@ coverage = "*"
 coveralls = "*"
 pytest = "*"
 pytest-cov = "*"
+"nose2" = "*"
 
 [requires]
 python_version = "3.6"

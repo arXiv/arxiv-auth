@@ -12,24 +12,27 @@ from arxiv.users.domain import Session, Client, User, Authorizations
 class ClientCredential(NamedTuple):
     """Key-pair for API client authentication."""
 
-    client_id: str
-    """Public identifier for the API client."""
-
     client_secret: str
-    """Secret key for API client authentication."""
+    """Hashed secret key for API client authentication."""
+
+    client_id: Optional[str] = None
+    """Public identifier for the API client."""
 
 
 class ClientAuthorization(NamedTuple):
     """A specific authorization for a :class:`Client`."""
-
-    client_id: str
-    """The client to which this authorization applies."""
 
     scope: str
     """The specific scope being granted."""
 
     requested: datetime
     """The date/time when the scope was requsted."""
+
+    authorization_id: Optional[str] = None
+    """Unique identifier for the scope authorization."""
+
+    client_id: Optional[str] = None
+    """The client to which this authorization applies."""
 
     authorized: Optional[datetime] = None
     """The date/time when the scope was authorized."""
@@ -49,14 +52,17 @@ class ClientGrantType(NamedTuple):
         PASSWORD
     )
 
-    client_id: str
-    """The client to which this authorization applies."""
-
     grant_type: str
     """Must be one of :attr:`.GRANT_TYPES`."""
 
     requested: datetime
     """The date/time when the grant type was requsted."""
+
+    grant_type_id: Optional[str] = None
+    """Unique identifier for grant type authorization."""
+
+    client_id: Optional[str] = None
+    """The client to which this authorization applies."""
 
     authorized: Optional[datetime] = None
     """The date/time when the grant type was authorized."""

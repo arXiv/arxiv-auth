@@ -10,6 +10,7 @@ import sys
 from typing import Tuple
 from unittest import TestCase
 from flask import Flask
+import hashlib
 
 from typing import List
 import random
@@ -45,8 +46,9 @@ def create_client(name: str, url: str, description: str, secret: str,
             url=url,
             description=description
         )
+        hashed = hashlib.sha256(secret.encode('utf-8')).hexdigest()
         db_cred = datastore.models.DBClientCredential(client=db_client,
-                                                      client_secret=secret)
+                                                      client_secret=hashed)
         db_scopes = [
             datastore.models.DBClientAuthorization(
                 client=db_client, authorized=datetime.now(), scope=scope

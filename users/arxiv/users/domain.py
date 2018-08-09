@@ -181,11 +181,11 @@ class User(NamedTuple):
 class Client(NamedTuple):
     """API client."""
 
-    client_id: str
-    """Unique identifier for a :class:`.Client`."""
-
     owner_id: str
     """The arXiv user responsible for the client."""
+
+    client_id: Optional[str] = None
+    """Unique identifier for a :class:`.Client`."""
 
     name: Optional[str] = None
     """Human-friendly name of the API client."""

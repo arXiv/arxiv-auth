@@ -14,13 +14,13 @@ from .models import Base
 
 
 @contextmanager
-def transaction() -> Generator:
+def transaction(commit: bool = True) -> Generator:
     """Context manager for database transaction."""
     session = current_session()
-    print('current session', session)
     try:
         yield session
-        session.commit()
+        if commit:
+            session.commit()
     except Exception as e:
         # logger.debug('Commit failed, rolling back: %s', str(e))
         session.rollback()

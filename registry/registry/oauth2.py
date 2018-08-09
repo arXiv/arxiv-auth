@@ -13,7 +13,7 @@ The current implementation supports only the `client_credentials` grant.
 """
 
 from typing import List, Optional
-
+import hashlib
 from flask import Request, Flask, current_app, request
 from authlib.flask.oauth2 import AuthorizationServer
 from authlib.specs.rfc6749 import ClientMixin, grants, OAuth2Request
@@ -55,7 +55,8 @@ class OAuth2Client(ClientMixin):
     def check_client_secret(self, client_secret: str) -> bool:
         """Check that the provided client secret is correct."""
         logger.debug('Check client secret %s', client_secret)
-        return self._credential.client_secret == client_secret
+        hashed = hashlib.sha256(client_secret.encode('utf-8')).hexdigest()
+        return self._credential.client_secret == hashed
 
     def check_grant_type(self, grant_type: str) -> bool:
         """Check that the client is authorized for the proposed grant type."""
