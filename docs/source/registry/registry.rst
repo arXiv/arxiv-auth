@@ -1,5 +1,5 @@
-registry package
-================
+API client registry service
+===========================
 
 .. automodule:: registry
     :members:
@@ -23,4 +23,3 @@ Submodules
    registry.factory
    registry.oauth2
    registry.routes
-
