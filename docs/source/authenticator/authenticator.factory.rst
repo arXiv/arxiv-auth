@@ -1,5 +1,5 @@
 authenticator.factory module
-=========================
+============================
 
 .. automodule:: authenticator.factory
     :members:

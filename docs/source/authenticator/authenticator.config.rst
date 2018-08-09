@@ -1,5 +1,5 @@
 authenticator.config module
-========================
+===========================
 
 .. automodule:: authenticator.config
     :members:

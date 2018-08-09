@@ -2,6 +2,7 @@
 omit =
     */app.py
     */wsgi.py
+    */config.py
     docs/*
     */tests*
     */controllers/captcha_image.py

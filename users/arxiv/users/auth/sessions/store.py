@@ -55,7 +55,8 @@ class SessionStore(object):
     def create(self, authorizations: domain.Authorizations,
                ip_address: str, remote_host: str, tracking_cookie: str = '',
                user: Optional[domain.User] = None,
-               client: Optional[domain.Client] = None) -> domain.Session:
+               client: Optional[domain.Client] = None,
+               session_id: Optional[str] = None) -> domain.Session:
         """
         Create a new session.
 
@@ -72,7 +73,8 @@ class SessionStore(object):
         -------
         :class:`.Session`
         """
-        session_id = str(uuid.uuid4())
+        if session_id is None:
+            session_id = str(uuid.uuid4())
         start_time = datetime.now(tz=EASTERN)
         end_time = start_time + timedelta(seconds=self._duration)
         session = domain.Session(
@@ -284,11 +286,13 @@ def current_session() -> SessionStore:
 def create(authorizations: domain.Authorizations,
            ip_address: str, remote_host: str, tracking_cookie: str = '',
            user: Optional[domain.User] = None,
-           client: Optional[domain.Client] = None) -> domain.Session:
+           client: Optional[domain.Client] = None,
+           session_id: Optional[str] = None) -> domain.Session:
     """Create a new session."""
     return current_session().create(authorizations, ip_address,
                                     remote_host, tracking_cookie,
-                                    user=user, client=client)
+                                    user=user, client=client,
+                                    session_id=session_id)
 
 
 @wraps(SessionStore.load)

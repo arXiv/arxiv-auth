@@ -19,6 +19,9 @@ There are currently three pieces of software in this repository:
    etc.
 3. [``authenticator/``](authenticator/) contains the authenticator service.
    Handles authentication requests from NGINX in a cloud deployment scenario.
+4. [``registry/``](registry/) contains the API client registry application.
+   This implements OAuth2 workflows, client registration, and the root API
+   landing page.
 
 TLS is considered an infrastructure concern, and is therefore out of scope
 (albeit critical) for this project.
