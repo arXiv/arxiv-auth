@@ -160,6 +160,49 @@ tables. Otherwise conventional read/write access should be sufficient.
 You should be able to register a new user at
 http://localhost:5000/register.
 
+## Generating auth tokens
+
+Use the helper script ``generate_token.py`` to generate auth tokens for
+dev/testing purposes.
+
+Be sure that you are using the same secret when running this script as when you
+run the app. Set ``JWT_SECRET=somesecret`` in your environment to ensure that
+the same secret is always used.
+
+
+```bash
+$ JWT_SECRET=foosecret pipenv run python generate_token.py
+Numeric user ID: 4
+Email address: joe@bloggs.com
+Username: jbloggs1
+First name [Jane]: Joe
+Last name [Doe]: Bloggs
+Name suffix [IV]:
+Affiliation [Cornell University]:
+Numeric rank [3]:
+Alpha-2 country code [us]:
+Default category [astro-ph.GA]:
+Submission groups (comma delim) [grp_physics]:
+Endorsement categories (comma delim) [astro-ph.CO,astro-ph.GA]:
+Authorization scope (comma delim) [upload:read,upload:write,upload:admin]:
+
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiZTljMGQwMDUtMTk1My00YWRiLWE0YzEtYzdmNWY1OGM5YTk4Iiwic3RhcnRfdGltZSI6IjIwMTgtMDgtMDlUMTQ6NDg6MDguNzY2NjUzLTA0OjAwIiwidXNlciI6eyJ1c2VybmFtZSI6ImVyaWNrIiwiZW1haWwiOiJlcmlja0Bmb28uY29tIiwidXNlcl9pZCI6IjQiLCJuYW1lIjp7ImZvcmVuYW1lIjoiSmFuZSIsInN1cm5hbWUiOiJEb2UiLCJzdWZmaXgiOiJJViJ9LCJwcm9maWxlIjp7ImFmZmlsaWF0aW9uIjoiQ29ybmVsbCBVbml2ZXJzaXR5IiwiY291bnRyeSI6InVzIiwicmFuayI6Mywic3VibWlzc2lvbl9ncm91cHMiOlsiZ3JwX3BoeXNpY3MiXSwiZGVmYXVsdF9jYXRlZ29yeSI6eyJhcmNoaXZlIjoiYXN0cm8tcGgiLCJzdWJqZWN0IjoiR0EifSwiaG9tZXBhZ2VfdXJsIjoiIiwicmVtZW1iZXJfbWUiOnRydWV9fSwiY2xpZW50IjpudWxsLCJlbmRfdGltZSI6IjIwMTgtMDgtMTBUMDA6NDg6MDguNzY2NjUzLTA0OjAwIiwiYXV0aG9yaXphdGlvbnMiOnsiY2xhc3NpYyI6MCwiZW5kb3JzZW1lbnRzIjpbW1siYXN0cm8tcGgiLCJDTyJdLG51bGxdLFtbImFzdHJvLXBoIiwiR0EiXSxudWxsXV0sInNjb3BlcyI6W1sidXBsb2FkOnJlYWQiLCJ1cGxvYWQ6d3JpdGUiLCJ1cGxvYWQ6YWRtaW4iXV19LCJpcF9hZGRyZXNzIjpudWxsLCJyZW1vdGVfaG9zdCI6bnVsbCwibm9uY2UiOm51bGx9.aOgRj73TT-zsRvF7gnPPjplJzcnXkKzYzEvMB61jEsY
+```
+
+
+Start the dev server with:
+
+```bash
+$ JWT_SECRET=foosecret FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+```
+
+
+Use the (rather long) token in your requests to authorized endpoints. Set the
+header ``Authorization: [token]``.  There are apps that will do this for you.
+For Chrome, try [Requestly](https://chrome.google.com/webstore/detail/requestly-redirect-url-mo/mdnleldcmiljblolnjhpnblkcekpdkpa?hl=en>)
+or
+[ModHeader](https://chrome.google.com/webstore/detail/modheader/idgpnmonknjnojddfkpgkljpfnnfcklj?hl=en)
+
 ## Code style
 
 All new code should adhere as closely as possible to

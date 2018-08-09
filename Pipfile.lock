@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ae7faa42eb710f6c09194d272aaa4861a0e5548e12c9cfeea338018bfe2f4593"
+            "sha256": "4edb4a92a8275c6b2fdf552bc8e4443c54ec79c3330ebf659114f4b37aa64969"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,8 +16,8 @@
         ]
     },
     "default": {
-        "4010dd8": {
-            "path": "./users"
+        "17e504d": {
+            "path": "./../arxiv-base-ui"
         },
         "amqp": {
             "hashes": [

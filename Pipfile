@@ -19,6 +19,7 @@ uwsgi = "*"
 wtforms = "*"
 arxiv-base = "==0.9.2"
 authlib = "*"
+"17e504d" = {path = "./../arxiv-base-ui"}
 
 [dev-packages]
 mimesis = "*"
