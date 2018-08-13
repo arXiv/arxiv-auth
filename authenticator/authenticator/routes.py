@@ -37,8 +37,8 @@ def authorize():
         logger.debug('Got auth cookie: %s', auth_cookie)
         claims = _authorize_from_cookie(auth_cookie)
     else:
-        logger.error('Authorization token missing')
-        raise Unauthorized('No authorization token available')
+        logger.error('Authorization token not found')
+        return jsonify({}), status.HTTP_200_OK, {}
 
     jwt_secret = current_app.config['JWT_SECRET']
     headers = {'Token': jwt.encode(claims, jwt_secret)}

@@ -95,7 +95,7 @@ class AuthMiddleware(BaseMiddleware):
             # Attach the encrypted token so that we can use it in subrequests.
             environ['token'] = token
         except InvalidToken as e:   # Let the application decide what to do.
-            logger.error('Auth token not valid')
+            logger.error(f'Auth token not valid: {token}')
             exception = Unauthorized('Invalid auth token')  # type: ignore
             environ['session'] = exception
         except Exception as e:

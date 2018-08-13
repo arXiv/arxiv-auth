@@ -1,25 +1,27 @@
-# arxiv/accounts
+# arxiv/registry
 
 FROM arxiv/base:latest
 
 WORKDIR /opt/arxiv/
 
 RUN yum install -y which mysql mysql-devel
-ADD Pipfile Pipfile.lock /opt/arxiv/
 RUN pip install -U pip pipenv
 ENV LC_ALL en_US.utf-8
 ENV LANG en_US.utf-8
+
+ADD Pipfile /opt/arxiv/
 RUN pipenv install
 
 ENV PATH "/opt/arxiv:${PATH}"
 
 ADD wsgi.py /opt/arxiv/
-ADD accounts/ /opt/arxiv/accounts/
+ADD registry/ /opt/arxiv/registry/
+ADD create_client.py /opt/arxiv/
 
 EXPOSE 8000
 
-ENTRYPOINT ["pipenv", "run", "uwsgi"]
-CMD ["--http-socket", ":8000", \
+ENTRYPOINT ["pipenv", "run"]
+CMD ["uwsgi", "--http-socket", ":8000", \
      "-M", \
      "-t 3000", \
      "--manage-script-name", \
@@ -27,5 +29,5 @@ CMD ["--http-socket", ":8000", \
      "--threads", "1", \
      "--async", "100", \
      "--ugreen", \
-     "--mount", "/accounts=wsgi.py", \
+     "--mount", "/registry=wsgi.py", \
      "--logformat", "%(addr) %(addr) - %(user_id)|%(session_id) [%(rtime)] [%(uagent)] \"%(method) %(uri) %(proto)\" %(status) %(size) %(micros) %(ttfb)"]

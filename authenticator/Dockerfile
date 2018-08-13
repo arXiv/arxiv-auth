@@ -1,4 +1,4 @@
-# arxiv/accounts
+# arxiv/authenticator
 
 FROM arxiv/base:latest
 
@@ -14,7 +14,7 @@ RUN pipenv install
 ENV PATH "/opt/arxiv:${PATH}"
 
 ADD wsgi.py /opt/arxiv/
-ADD accounts/ /opt/arxiv/accounts/
+ADD authenticator/ /opt/arxiv/authenticator/
 
 EXPOSE 8000
 
@@ -27,5 +27,5 @@ CMD ["--http-socket", ":8000", \
      "--threads", "1", \
      "--async", "100", \
      "--ugreen", \
-     "--mount", "/accounts=wsgi.py", \
+     "--mount", "/authenticator=wsgi.py", \
      "--logformat", "%(addr) %(addr) - %(user_id)|%(session_id) [%(rtime)] [%(uagent)] \"%(method) %(uri) %(proto)\" %(status) %(size) %(micros) %(ttfb)"]

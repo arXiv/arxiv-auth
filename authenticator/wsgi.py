@@ -1,6 +1,6 @@
 """Web Server Gateway Interface entry-point."""
 
-from .factory import create_app
+from authenticator.factory import create_app
 import os
 
 

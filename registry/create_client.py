@@ -67,6 +67,8 @@ def create_client(name: str, url: str, description: str, secret: str,
             session.add(db_scope)
 
         session.commit()
+    click.echo(f'Created client {name} with ID {db_client.client_id}'
+               f' and secret {secret}')
 
 
 if __name__ == '__main__':
