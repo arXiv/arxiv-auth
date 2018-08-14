@@ -132,7 +132,7 @@ class Authorizations(NamedTuple):
     endorsements: List[Category] = []
     """Categories to which the user is permitted to submit."""
 
-    scopes: list = []
+    scopes: List[str] = []
     """Authorized scopes. See :mod:`arxiv.users.auth.scopes`."""
 
     @classmethod
@@ -142,7 +142,8 @@ class Authorizations(NamedTuple):
         # than to implement a general-purpose coercsion.
         # if self.endorsements and type(self.endorsements[0]) is not Category:
         data['endorsements'] = [
-            Category(*obj) for obj in data.get('endorsements', [])
+            Category(*obj) if isinstance(obj, tuple) else Category(**obj)
+            for obj in data.get('endorsements', [])
         ]
 
 
@@ -277,12 +278,19 @@ def to_dict(obj: tuple) -> dict:
         return {}
     data = obj._asdict()  # type: ignore
     _data = {}
+
+    def _cast(obj: Any) -> Any:
+        if hasattr(obj, '_asdict'):
+            obj = to_dict(obj)
+        elif isinstance(obj, datetime):
+            obj = obj.isoformat()
+        elif isinstance(obj, list):
+            obj = [_cast(o) for o in obj]
+        return obj
+
     for key, value in data.items():
-        if hasattr(value, '_asdict'):
-            value = to_dict(value)
-        elif isinstance(value, datetime):
-            value = value.isoformat()
-        _data[key] = value
+
+        _data[key] = _cast(value)
     return _data
 
 
@@ -320,8 +328,8 @@ def from_dict(cls: type, data: dict) -> Any:
         if target_type:
             value = target_type(value)
         _data[field] = value
-        if hasattr(cls, 'before_init'):
-            cls.before_init(_data)
+    if hasattr(cls, 'before_init'):
+        cls.before_init(_data)
     return cls(**_data)
 
 

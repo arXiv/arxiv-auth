@@ -32,3 +32,30 @@ def issue_token() -> Response:
     response = server.create_token_response()
     logger.debug('Generated response %s', response)
     return response
+
+
+@blueprint.route('/authorize', methods=['GET'])
+def authorize():
+    server = current_app.server
+    try:
+        grant_user = oauth2.OAuth2User(request.session.user)
+        grant = server.validate_consent_request(end_user=grant_user)
+        return render_template(
+            'registry/authorize.html',
+            grant=grant,
+            user=request.session.user
+        )
+    except oauth2.OAuth2Error as e:
+        raise BadRequest(str(e)) from e
+
+
+@blueprint.route('/authorize', methods=['POST'])
+def confirm_authorize():
+    server = current_app.server
+    if request.form['confirm'] == 'ok':
+        logger.debug('User authorizes client')
+        grant_user = oauth2.OAuth2User(request.session.user)
+    else:
+        logger.debug('Request to authorize client')
+        grant_user = None
+    return server.create_authorization_response(grant_user=grant_user)

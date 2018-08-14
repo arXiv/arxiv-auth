@@ -33,6 +33,9 @@ class DBClient(Base):
                               back_populates='client', lazy='joined')
     grant_types = relationship('DBClientGrantType', back_populates='client',
                                lazy='joined')
+    authorization_codes = relationship('DBAuthorizationCode',
+                                       back_populates='client',
+                                       lazy='joined')
 
 
 class DBClientCredential(Base):
@@ -73,3 +76,38 @@ class DBClientGrantType(Base):
     authorized = Column(DateTime, nullable=True)
     grant_type = Column(Enum(*domain.ClientGrantType.GRANT_TYPES))
     client = relationship('DBClient', back_populates='grant_types')
+
+
+class DBAuthorizationCode(Base):
+    """Persistence for :class:`domain.AuthorizationCode`."""
+
+    __tablename__ = 'authorization_code'
+
+    user_id = Column(String(255))
+    """The unique identifier of the arXiv user granting the authorization."""
+
+    username = Column(String(255))
+    """The username of the arXiv user granting the authorization."""
+
+    user_email = Column(String(255))
+    """The email address of the arXiv user granting the authorization."""
+
+    client_id = Column(ForeignKey('client.client_id'), primary_key=True)
+    """The unique identifier of the API client."""
+
+    redirect_uri = Column(String(2056))
+    """The URI to which the user should be redirected."""
+
+    scope = Column(String(2056))
+    """The scope authorized by the user."""
+
+    code = Column(String(48), primary_key=True)
+    """The authorization code itself."""
+
+    created = Column(DateTime, default=datetime.now)
+    """The time when the auth code was generated."""
+
+    expires = Column(DateTime, default=datetime.now)
+    """The time when the auth code expires."""
+
+    client = relationship('DBClient', back_populates='authorization_codes')

@@ -5,7 +5,7 @@ from typing import NamedTuple, Optional
 from datetime import datetime
 from pytz import timezone
 
-from ..domain import from_dict, to_dict
+from .. import domain
 
 EASTERN = timezone('US/Eastern')
 
@@ -19,7 +19,8 @@ class TestDictCoercion(TestCase):
             foo: str
 
         simple = Simple(foo='bar')
-        self.assertEqual(simple, from_dict(Simple, to_dict(simple)))
+        self.assertEqual(simple,
+                         domain.from_dict(Simple, domain.to_dict(simple)))
 
     def test_class_with_children(self):
         """A NamedTuple class is used that has fields expecting NamedTuples."""
@@ -30,7 +31,8 @@ class TestDictCoercion(TestCase):
             baz: ChildClass
 
         parent = ParentClass(baz=ChildClass(foo='bar'))
-        self.assertEqual(parent, from_dict(ParentClass, to_dict(parent)))
+        self.assertEqual(parent,
+                         domain.from_dict(ParentClass, domain.to_dict(parent)))
 
     def test_class_with_nested_children(self):
         """Child NamedTuple classes are combined with nested Types."""
@@ -42,10 +44,12 @@ class TestDictCoercion(TestCase):
             baz: Optional[ChildClass] = None
 
         parent = ParentClass(baz=ChildClass(foo='bar', bat={'qw': 'er'}))
-        self.assertEqual(parent, from_dict(ParentClass, to_dict(parent)))
+        self.assertEqual(parent,
+                         domain.from_dict(ParentClass, domain.to_dict(parent)))
 
         parent = ParentClass(baz=None)
-        self.assertEqual(parent, from_dict(ParentClass, to_dict(parent)))
+        self.assertEqual(parent,
+                         domain.from_dict(ParentClass, domain.to_dict(parent)))
 
     def test_class_with_datetime(self):
         """The NamedTuple class also includes datetime fields."""
@@ -58,4 +62,53 @@ class TestDictCoercion(TestCase):
 
         parent = ParentClass(bat=datetime.now(tz=EASTERN),
                              baz=ChildClass(foo=datetime.now(tz=EASTERN)))
-        self.assertEqual(parent, from_dict(ParentClass, to_dict(parent)))
+        self.assertEqual(parent,
+                         domain.from_dict(ParentClass, domain.to_dict(parent)))
+
+    def test_with_session(self):
+        session = domain.Session(
+            session_id='asdf1234',
+            start_time=datetime.now(), end_time=datetime.now(),
+            user=domain.User(
+                user_id='12345',
+                email='foo@bar.com',
+                username='emanresu',
+                name=domain.UserFullName('First', 'Last', 'Lastest'),
+                profile=domain.UserProfile(
+                    affiliation='FSU',
+                    rank=3,
+                    country='us',
+                    default_category=domain.Category('astro-ph', 'CO'),
+                    submission_groups=['grp_physics']
+                )
+            ),
+            authorizations=domain.Authorizations(
+                scopes=['submission:read', 'submission:create'],
+                endorsements=[domain.Category('astro-ph', 'CO')]
+            )
+        )
+        session_data = domain.to_dict(session)
+        self.assertEqual(session_data['authorizations']['scopes'],
+                         ['submission:read', 'submission:create'])
+        self.assertEqual(session_data['authorizations']['endorsements'],
+                         [{'archive': 'astro-ph', 'subject': 'CO'}])
+
+        self.assertEqual(
+            session_data['user']['profile'],
+            {
+                'affiliation': 'FSU',
+                'country': 'us',
+                'rank': 3,
+                'submission_groups': ['grp_physics'],
+                'default_category': {'archive': 'astro-ph', 'subject': 'CO'},
+                'homepage_url': '',
+                'remember_me': True
+            }
+        )
+        self.assertEqual(
+            session_data['user']['name'],
+            {'forename': 'First', 'surname': 'Last', 'suffix': 'Lastest'}
+        )
+
+        as_session = domain.from_dict(domain.Session, session_data)
+        self.assertEqual(session, as_session)

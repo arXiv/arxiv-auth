@@ -33,8 +33,9 @@ EASTERN = timezone('US/Eastern')
 @click.option('--description', prompt='What is it')
 @click.option('--secret', prompt='Client secret')
 @click.option('--scopes', prompt='Comma-delimited authorized scopes')
+@click.option('--redirect_uri', prompt='Redirect URI')
 def create_client(name: str, url: str, description: str, secret: str,
-                  scopes: str) -> None:
+                  scopes: str, redirect_uri: str) -> None:
     """Create a new client. For dev/test purposes only."""
     app = create_web_app()
     with app.app_context():
@@ -44,7 +45,8 @@ def create_client(name: str, url: str, description: str, secret: str,
         db_client = datastore.models.DBClient(
             name=name,
             url=url,
-            description=description
+            description=description,
+            redirect_uri=redirect_uri
         )
         hashed = hashlib.sha256(secret.encode('utf-8')).hexdigest()
         db_cred = datastore.models.DBClientCredential(client=db_client,

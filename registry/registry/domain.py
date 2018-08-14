@@ -6,7 +6,7 @@ See also :mod:`arxiv.users.domain`.
 
 from datetime import datetime
 from typing import NamedTuple, Optional, List
-from arxiv.users.domain import Session, Client, User, Authorizations
+from arxiv.users.domain import Session, Client, User, Authorizations, User
 
 
 class ClientCredential(NamedTuple):
@@ -66,3 +66,38 @@ class ClientGrantType(NamedTuple):
 
     authorized: Optional[datetime] = None
     """The date/time when the grant type was authorized."""
+
+
+class AuthorizationCode(NamedTuple):
+    """An authorization code granted by a user to an API client."""
+
+    user_id: str
+    """The unique identifier of the arXiv user granting the authorization."""
+
+    username: str
+    """The username of the arXiv user granting the authorization."""
+
+    user_email: str
+    """The email address of the arXiv user granting the authorization."""
+
+    client_id: str
+    """The unique identifier of the API client."""
+
+    redirect_uri: str
+    """The URI to which the user should be redirected."""
+
+    scope: str
+    """The scope authorized by the user."""
+
+    code: str
+    """The authorization code itself."""
+
+    created: datetime
+    """The time when the auth code was generated."""
+
+    expires: datetime
+    """The time when the auth code expires."""
+
+    def is_expired(self) -> bool:
+        """Indicate whether the code is expired."""
+        return self.expires <= datetime.now()

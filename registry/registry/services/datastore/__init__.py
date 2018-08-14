@@ -17,6 +17,10 @@ class NoSuchGrantType(RuntimeError):
     """A non-existant :class:`domain.ClientGrantType` was requested."""
 
 
+class NoSuchAuthCode(RuntimeError):
+    """A non-existant :class:`domain.AuthorizationCode` was requested."""
+
+
 init_app = util.init_app
 create_all = util.create_all
 drop_all = util.drop_all
@@ -202,6 +206,85 @@ def load_client(client_id: str) -> Tuple[domain.Client,
             authorized=grant_type.authorized
         ) for grant_type in db_client.grant_types]
         return client, cred, auths, grant_types
+
+
+def save_auth_code(code: domain.AuthorizationCode) -> None:
+    """Save a new authorization code."""
+    with util.transaction() as dbsession:
+        db_code = models.DBAuthorizationCode(
+            code=code.code,
+            user_id=code.user_id,
+            user_email=code.user_email,
+            username=code.username,
+            client_id=code.client_id,
+            redirect_uri=code.redirect_uri,
+            scope=code.scope,
+            created=code.created,
+            expires=code.expires
+        )
+        dbsession.add(db_code)
+
+
+def delete_auth_code(code: str, client_id: int) -> None:
+    """Delete an auth code from the database."""
+    with util.transaction() as dbsession:
+        db_code = _load_dbauthcode(code, client_id, dbsession)
+        dbsession.delete(db_code)
+
+
+def load_auth_code(code: str, client_id: int) -> domain.AuthorizationCode:
+    """Load an authorization code for an API client."""
+    with util.transaction() as dbsession:
+        db_code = _load_dbauthcode(code, client_id, dbsession)
+
+    return domain.AuthorizationCode(
+        code=code.code,
+        user_id=code.user_id,
+        user_email=code.user_email,
+        username=code.username,
+        client_id=db_code.client_id,
+        redirect_uri=db_code.redirect_uri,
+        scope=db_code.scope,
+        created=db_code.created,
+        expires=db_code.expires
+    )
+
+
+def load_auth_code_by_user(code: str, user_id: str) \
+        -> domain.AuthorizationCode:
+    """Load an authorization code for an API client."""
+    with util.transaction() as dbsession:
+        db_code = dbsession.query(models.DBAuthorizationCode)\
+            .filter(models.DBAuthorizationCode.code == code) \
+            .filter(models.DBAuthorizationCode.user_id == user_id) \
+            .first()
+        if db_code is None:
+            raise NoSuchAuthCode(f'Auth code {code} does not exist'
+                                 f' for user {user_id}')
+
+    return domain.AuthorizationCode(
+        code=code.code,
+        user_id=code.user_id,
+        user_email=code.user_email,
+        username=code.username,
+        client_id=db_code.client_id,
+        redirect_uri=db_code.redirect_uri,
+        scope=db_code.scope,
+        created=db_code.created,
+        expires=db_code.expires
+    )
+
+
+def _load_dbauthcode(code: str, client_id: int, dbsession: util.Session) \
+        -> None:
+    db_code = dbsession.query(models.DBAuthorizationCode)\
+        .filter(models.DBAuthorizationCode.code == code) \
+        .filter(models.DBAuthorizationCode.client_id == client_id) \
+        .first()
+    if db_code is None:
+        raise NoSuchAuthCode(f'Auth code {code} does not exist'
+                             f' for client {client_id}')
+    return db_code
 
 
 def _load_dbclient(client_id: str, dbsession: util.Session) -> models.DBClient:

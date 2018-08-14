@@ -22,24 +22,48 @@ see :mod:`arxiv.users.auth.decorators`.
 """
 
 EDIT_PROFILE = 'profile:update'
-"""Authorizes editing user profile."""
+"""
+Authorizes editing user profile.
+
+This includes things like affiliation, full name, and e-mail address.
+"""
 
 VIEW_PROFILE = 'profile:read'
-"""Authorizes viewing user profile."""
+"""
+Authorizes viewing the content of a user profile.
+
+This includes things like affiliation, full name, and e-mail address.
+"""
 
 CREATE_SUBMISSION = 'submission:create'
-"""Authorizes creating a submission."""
+"""Authorizes creating a new submission."""
 
 EDIT_SUBMISSION = 'submission:update'
+"""Authorizes updating a submission that has not yet been announced."""
+
 VIEW_SUBMISSION = 'submission:read'
+"""Authorizes viewing a submission."""
+
 PROXY_SUBMISSION = 'submission:proxy'
+"""
+Authorizes creating a submission on behalf of another user.
+
+This authorization is specifically for human users submitting on behalf of
+other human users. For client authorization to submit on behalf of a user,
+<code>submission:create</code> should be used instead.
+"""
 
 READ_UPLOAD = 'upload:read'
+"""Authorizes viewing the content of an upload workspace."""
+
 WRITE_UPLOAD = 'upload:write'
-"""Required to create new uploads."""
+"""Authorizes uploading files to to a workspace."""
+
 RELEASE_UPLOAD = 'upload:release'
+"""Authorizes releasing an upload workspace."""
+
 ADMIN_UPLOAD = 'upload:admin'
-"""Access to administrative functionality and resources related to uploads."""
+"""Authorizes administrative powers related to uploads."""
 
 GENERAL_USER = [
     EDIT_PROFILE,

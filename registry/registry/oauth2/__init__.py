@@ -14,9 +14,12 @@ The current implementation supports only the `client_credentials` grant.
 
 from typing import List, Optional
 import hashlib
+from datetime import timedelta, datetime
 from flask import Request, Flask, current_app, request
 from authlib.flask.oauth2 import AuthorizationServer
-from authlib.specs.rfc6749 import ClientMixin, grants, OAuth2Request
+from authlib.specs.rfc6749 import ClientMixin, grants, OAuth2Request, \
+    OAuth2Error
+from authlib.common.security import generate_token
 
 from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
@@ -24,6 +27,30 @@ from ..services import datastore, sessions
 from .. import domain
 
 logger = logging.getLogger(__name__)
+
+
+class OAuth2User(object):
+    """
+    Represents the resource owner in OAuth2 workflows.
+
+    Authlib requires user objects to have a `get_user_id` instance method.
+    """
+
+    def __init__(self, user: domain.User) -> None:
+        """Initialize with a :class:`domain.User`."""
+        self._user = user
+
+    def get_user_id(self) -> str:
+        """Get the ID of the user."""
+        return self._user.user_id
+
+    def get_user_email(self) -> str:
+        """Get the email address of the user."""
+        return self._user.email
+
+    def get_username(self) -> str:
+        """Get the username of the user."""
+        return self._user.username
 
 
 class OAuth2Client(ClientMixin):
@@ -48,6 +75,16 @@ class OAuth2Client(ClientMixin):
         self._grant_types = [gtype.grant_type for gtype in grant_types]
 
     @property
+    def name(self) -> str:
+        """Get the client name."""
+        return self._client.name
+
+    @property
+    def description(self) -> str:
+        """Get the client description."""
+        return self._client.description
+
+    @property
     def scopes(self) -> List[str]:
         """Authorized scopes as a list."""
         return list(self._scopes)
@@ -67,9 +104,15 @@ class OAuth2Client(ClientMixin):
         """Check that the provided redirect URI is authorized."""
         return redirect_uri == self._client.redirect_uri
 
-    def check_requested_scopes(self, scopes: List[str]) -> bool:
+    def check_requested_scopes(self, scopes: set) -> bool:
         """Check that the requested scopes are authorized for this client."""
-        return set(self._scopes).issuperset(scopes)
+        # If there is an active user on the session, ensure that we are not
+        # granting scopes for which the user themself is not authorized.
+        if request.session and request.session.user:
+            print(request.session.authorizations.scopes)
+            return self._scopes.issuperset(scopes) and \
+                set(request.session.authorizations.scopes).issuperset(scopes)
+        return self._scopes.issuperset(scopes)
 
     def check_response_type(self, response_type: str) -> bool:
         """Check the proposed response type."""
@@ -86,6 +129,80 @@ class OAuth2Client(ClientMixin):
     def has_client_secret(self) -> bool:
         """Check that the client has a secret."""
         return self._credential.client_secret is not None
+
+
+class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
+    """Authorization code grant for arXiv users."""
+
+    EXPIRES = 3600
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_post']
+
+    def create_authorization_code(self, client: OAuth2Client,
+                                  grant_user: OAuth2User,
+                                  request: OAuth2Request) -> str:
+        """
+        Generate and store a new authorization code.
+
+        Parameters
+        ----------
+        client : :class:`OAuth2Client`
+            The client requesting authorization.
+        grant_user : :class:`OAuth2User`
+            The resource owner who has granted authorization to the client.
+        request : :class:`OAuth2Request`
+            The request wrapper containing request details.
+
+        Returns
+        -------
+        str
+            An authorization code that the client can exchange for an access
+            token.
+
+        """
+        code = generate_token(48)
+        created = datetime.now()
+        datastore.save_auth_code(domain.AuthorizationCode(
+            code=code,
+            user_id=grant_user.get_user_id(),
+            username=grant_user.get_username(),
+            user_email=grant_user.get_user_email(),
+            redirect_uri=request.redirect_uri,
+            scope=request.scope,
+            client_id=client.client_id,
+            created=created,
+            expires=created + timedelta(seconds=self.EXPIRES)
+
+        ))
+        return code
+
+    def parse_authorization_code(self, code: str, client: OAuth2Client) \
+            -> Optional[domain.AuthorizationCode]:
+        """Attempt to retrieve an auth code for an API client."""
+        try:
+            code_grant = datastore.load_auth_code(code, client.client_id)
+        except datastore.NoSuchAuthCode as e:
+            logger.debug(f'No such auth code: {code}')
+            return
+
+        if code_grant.is_expired():
+            return
+        return code_grant
+
+    def delete_authorization_code(self, auth_code: domain.AuthorizationCode) \
+            -> None:
+        """Delete an auth code."""
+        datastore.delete_auth_code(auth_code.code)
+
+    def authenticate_user(self, auth_code: domain.AuthorizationCode) \
+            -> OAuth2User:
+        """Authenticate the user implicated in the auth code."""
+        code_grant = datastore.load_auth_code_by_user(auth_code.code,
+                                                      auth_code.user_id)
+        return OAuth2User(domain.User(
+            user_id=code_grant.user_id,
+            email=code_grant.user_email,
+            username=code_grant.username
+        ))
 
 
 class ClientCredentialsGrant(grants.ClientCredentialsGrant):
@@ -151,6 +268,7 @@ def create_server() -> AuthorizationServer:
     server = AuthorizationServer(query_client=get_client,
                                  save_token=save_token)
     server.register_grant(ClientCredentialsGrant)
+    server.register_grant(AuthorizationCodeGrant)
     logger.debug('Created server %s', id(server))
     return server
 
