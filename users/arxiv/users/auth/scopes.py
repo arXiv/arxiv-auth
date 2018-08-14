@@ -20,12 +20,14 @@ semantics of code, and reduces the risk of programming errors. For an example,
 see :mod:`arxiv.users.auth.decorators`.
 
 """
+from typing import Optional
+
 
 EDIT_PROFILE = 'profile:update'
 """
 Authorizes editing user profile.
 
-This includes things like affiliation, full name, and e-mail address.
+This includes things like affiliation, full name, etc..
 """
 
 VIEW_PROFILE = 'profile:read'
@@ -72,3 +74,25 @@ GENERAL_USER = [
     EDIT_SUBMISSION,
     VIEW_SUBMISSION
 ]
+
+_HUMAN_LABELS = {
+    EDIT_PROFILE: "Grants authorization to change the contents of your user"
+                  " profile. This includes your affiliation, preferred name,"
+                  " default submission category, etc.",
+    VIEW_PROFILE: "Grants authorization to view the contents of your user"
+                  " profile. This includes your affiliation, preferred name,"
+                  " default submission category, etc.",
+    CREATE_SUBMISSION: "Grants authorization to submit papers on your behalf.",
+    EDIT_SUBMISSION: "Grants authorization to make changes to your submissions"
+                     " that have not yet been announced. For example, to"
+                     " update the DOI or journal reference field on your"
+                     " behalf. Note that this affects only the metadata of"
+                     " your submission, and not the content.",
+    READ_UPLOAD: "Grants authorization to view the contents of your uploads.",
+    WRITE_UPLOAD: "Grants authorization to add and delete files on your"
+                  " behalf.",
+}
+
+def get_human_label(scope: str) -> Optional[str]:
+    """The the human-readable label for a scope, for display to end users."""
+    return _HUMAN_LABELS.get(scope)

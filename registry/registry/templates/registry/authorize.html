@@ -19,7 +19,7 @@
         {% for scope in  grant.request.scope.split() %}
         <tr>
           <td>
-            <span class="has-text-weight-semibold">{{ scope }}</span>  What is it
+            <span class="has-text-weight-semibold">{{ scope }}</span>  {{ scope.__doc__ }}
           </td>
         </tr>
         {% endfor %}

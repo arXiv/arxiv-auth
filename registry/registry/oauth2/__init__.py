@@ -109,7 +109,7 @@ class OAuth2Client(ClientMixin):
         # If there is an active user on the session, ensure that we are not
         # granting scopes for which the user themself is not authorized.
         if request.session and request.session.user:
-            print(request.session.authorizations.scopes)
+            print(request.session.authorizations.scopes, scopes, self._scopes)
             return self._scopes.issuperset(scopes) and \
                 set(request.session.authorizations.scopes).issuperset(scopes)
         return self._scopes.issuperset(scopes)
