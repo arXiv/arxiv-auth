@@ -5,14 +5,11 @@ This module extends the :mod:`authlib.flask` implementation, leveraging client
 data stored in :mod:`registry.services.datastore` and instantiating authorized
 sessions in :mod:`registry.services.sessions`.
 
-The current implementation supports only the `client_credentials` grant.
-
-.. todo:: Implement the `authorization_code` and `password` grants.
-
-
+The current implementation supports the `client_credentials` and
+`authorization_code` grants.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Any
 import hashlib
 from datetime import timedelta, datetime
 from flask import Request, Flask, current_app, request
@@ -33,7 +30,8 @@ class OAuth2User(object):
     """
     Represents the resource owner in OAuth2 workflows.
 
-    Authlib requires user objects to have a `get_user_id` instance method.
+    This is a thin wrapper around :class:`domain.User` to support Authlib
+    integration.
     """
 
     def __init__(self, user: domain.User) -> None:
@@ -53,6 +51,35 @@ class OAuth2User(object):
         return self._user.username
 
 
+class OAuth2AuthorizationCode(object):
+    """Wraps :class:`domain.AuthorizationCode` for use in OAuth2 workflows."""
+
+    _fields = ['user_id', 'username', 'user_email', 'client_id',
+               'redirect_uri', 'scope', 'code', 'created', 'expires']
+
+    def __init__(self, auth_code: domain.AuthorizationCode) -> None:
+        """Initialize with the wrapped :class:`domain.AuthorizationCode`."""
+        self._code = auth_code
+
+    def __getattr__(self, key: str) -> Any:
+        """Get an attribute from the wrapped :class:`.AuthorizationCode`."""
+        if key in self._fields:
+            return getattr(self._code, key)
+        raise AttributeError(f'No attribute {key}')
+
+    def is_expired(self) -> bool:
+        """Indicate whether the code is expired."""
+        return self._code.expires <= datetime.now()
+
+    def get_redirect_uri(self) -> str:
+        """Get the authorization code's redirect URI."""
+        return self._code.redirect_uri
+
+    def get_scope(self) -> str:
+        """Get the scope for the authorization code."""
+        return self._code.scope
+
+
 class OAuth2Client(ClientMixin):
     """
     Implementation of an OAuth2 client as described in RFC6749.
@@ -60,7 +87,6 @@ class OAuth2Client(ClientMixin):
     This class essentially wraps an aggregate of registry domain objects for a
     particular client, and implements methods expected by the
     :class:`AuthorizationServer`.
-
     """
 
     def __init__(self, client: domain.Client,
@@ -89,6 +115,16 @@ class OAuth2Client(ClientMixin):
         """Authorized scopes as a list."""
         return list(self._scopes)
 
+    @property
+    def url(self) -> str:
+        """Get the client URL."""
+        return self._client.url
+
+    @property
+    def client_id(self) -> str:
+        """Get the client ID."""
+        return self._client.client_id
+
     def check_client_secret(self, client_secret: str) -> bool:
         """Check that the provided client secret is correct."""
         logger.debug('Check client secret %s', client_secret)
@@ -109,7 +145,6 @@ class OAuth2Client(ClientMixin):
         # If there is an active user on the session, ensure that we are not
         # granting scopes for which the user themself is not authorized.
         if request.session and request.session.user:
-            print(request.session.authorizations.scopes, scopes, self._scopes)
             return self._scopes.issuperset(scopes) and \
                 set(request.session.authorizations.scopes).issuperset(scopes)
         return self._scopes.issuperset(scopes)
@@ -179,7 +214,9 @@ class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
             -> Optional[domain.AuthorizationCode]:
         """Attempt to retrieve an auth code for an API client."""
         try:
-            code_grant = datastore.load_auth_code(code, client.client_id)
+            code_grant = OAuth2AuthorizationCode(
+                datastore.load_auth_code(code, client.client_id)
+            )
         except datastore.NoSuchAuthCode as e:
             logger.debug(f'No such auth code: {code}')
             return
@@ -188,16 +225,17 @@ class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
             return
         return code_grant
 
-    def delete_authorization_code(self, auth_code: domain.AuthorizationCode) \
+    def delete_authorization_code(self, auth_code: OAuth2AuthorizationCode) \
             -> None:
         """Delete an auth code."""
-        datastore.delete_auth_code(auth_code.code)
+        datastore.delete_auth_code(auth_code.code, auth_code.client_id)
 
-    def authenticate_user(self, auth_code: domain.AuthorizationCode) \
+    def authenticate_user(self, auth_code: OAuth2AuthorizationCode) \
             -> OAuth2User:
         """Authenticate the user implicated in the auth code."""
-        code_grant = datastore.load_auth_code_by_user(auth_code.code,
-                                                      auth_code.user_id)
+        code_grant = OAuth2AuthorizationCode(
+            datastore.load_auth_code_by_user(auth_code.code, auth_code.user_id)
+        )
         return OAuth2User(domain.User(
             user_id=code_grant.user_id,
             email=code_grant.user_email,
@@ -258,7 +296,7 @@ def save_token(token: dict, oauth_request: OAuth2Request) -> None:
     user = oauth_request.user if oauth_request.user else None
     authorizations = domain.Authorizations(scopes=client.scopes)
     session = sessions.create(authorizations, request.remote_addr,
-                              request.remote_addr, user=user,
+                              request.remote_addr, user=user._user,
                               client=client._client, session_id=session_id)
     logger.debug('Created session %s', session.session_id)
 

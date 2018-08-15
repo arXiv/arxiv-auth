@@ -114,3 +114,5 @@ default.nix
 *#*
 *.#*
 .pytest*
+
+*.ttf

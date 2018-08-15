@@ -3,9 +3,9 @@
 {% block inner_content %}
 <div class="columns">
   <div class="column is-half">
-    <h1>Authorization requested</h1>
+    <h1><i class="fa fa-question-circle-o" aria-hidden="true"></i> Authorization requested</h1>
     <p>
-      The application <span class="has-text-weight-semibold">{{  grant.request.client.name }}</span> is
+      The application <a href="{{ grant.request.client.url }}" class="has-text-weight-semibold" target="_blank">{{  grant.request.client.name }}</a> is
       requesting access to your account.
     <p>
 
@@ -18,21 +18,20 @@
       <tbody>
         {% for scope in  grant.request.scope.split() %}
         <tr>
-          <td>
-            <span class="has-text-weight-semibold">{{ scope }}</span>  {{ scope.__doc__ }}
+          <td class="is-size-6">
+            <span class="has-text-weight-semibold">{{ scope }}</span>  {{ scope|scope_label }}
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-    <div class="box">
-      'redirect_uri', 'response_type', 'state', 'client_id', 'grant_type', 'scope', 'code'
-      what
-    </div>
 
     <form class="form" method="post">
-      {{ grant }}
-
+      <input type="hidden" name="confirm" value="ok" />
+      <div class="buttons submit-nav">
+        <button name="action" type="submit" class="button is-success" value="submit" aria-label="Authorize">Authorize</button>
+        <button name="cancel" class="button is-danger" value="cancel" aria-label="Cancel">Cancel</button>
+      </div>
     </form>
   </div>
 </div>

@@ -38,7 +38,7 @@ ResponseData = Tuple[dict, int, dict]
 def _login_classic(user: domain.User, auth: domain.Authorizations,
                    ip: Optional[str]) -> Tuple[domain.Session, str]:
     try:
-        c_session = legacy.create(auth, ip, ip, user)
+        c_session = legacy.create(auth, ip, ip, user=user)
         c_cookie = legacy.generate_cookie(c_session)
         logger.debug('Created classic session: %s', c_session.session_id)
     except legacy.exceptions.SessionCreationFailed as e:
@@ -68,8 +68,8 @@ def _login(user: domain.User, auth: domain.Authorizations, ip: Optional[str]) \
     return session, cookie
 
 
-def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
-        -> ResponseData:
+def register(method: str, params: MultiDict, captcha_secret: str, ip: str,
+             next_page: str) -> ResponseData:
     """Handle requests for the registration view."""
     data: Dict[str, Any]
     if method == 'GET':
@@ -77,11 +77,11 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
         _params = MultiDict({'captcha_token': captcha_token})  # type: ignore
         form = RegistrationForm(_params)
         form.configure_captcha(captcha_secret, ip)
-        data = {'form': form}
+        data = {'form': form, 'next_page': next_page}
     elif method == 'POST':
         logger.debug('Registration form submitted')
         form = RegistrationForm(params)
-        data = {'form': form}
+        data = {'form': form, 'next_page': next_page}
         form.configure_captcha(captcha_secret, ip)
 
         if not form.validate():
@@ -108,7 +108,7 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str) \
             },
             'user_id': user.user_id
         })
-        return data, status.HTTP_201_CREATED, {}
+        return data, status.HTTP_201_CREATED, {'Location': next_page}
     return data, status.HTTP_200_OK, {}
 
 
@@ -188,7 +188,9 @@ class ProfileForm(Form):
     )
 
     username = StringField('Username',
-                           validators=[Length(min=5, max=20), DataRequired()])
+                           validators=[Length(min=5, max=20), DataRequired()],
+                           description='Please choose a username between 5 and'
+                                       ' 20 characters in length.')
     forename = StringField('First or given name',
                            validators=[Length(min=1, max=50), DataRequired()])
     surname = StringField('Last or family name',

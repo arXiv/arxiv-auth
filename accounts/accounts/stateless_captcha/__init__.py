@@ -24,7 +24,7 @@ for use elsewhere.
 
 import random
 import io
-from typing import Dict, Mapping, Any
+from typing import Dict, Mapping, Any, Optional
 from datetime import datetime, timedelta
 from pytz import timezone
 import dateutil.parser
@@ -62,7 +62,7 @@ def _generate_random_string(N: int = 6) -> str:
         characters in length.
 
     """
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=N))
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
 
 
 def _secret(secret: str, ip_address: str) -> str:
@@ -141,7 +141,8 @@ def new(secret: str, ip_address: str, expires: int = 300) -> str:
     return jwt.encode(claims, _secret(secret, ip_address)).decode('ascii')
 
 
-def render(token: str, secret: str, ip_address: str) -> io.BytesIO:
+def render(token: str, secret: str, ip_address: str,
+           font: Optional[str] = None) -> io.BytesIO:
     """
     Render a captcha image using the value in a captcha token.
 
@@ -167,7 +168,10 @@ def render(token: str, secret: str, ip_address: str) -> io.BytesIO:
 
     """
     value = unpack(token, secret, ip_address)
-    image = ImageCaptcha()  # TODO: look at font options.
+    if font is not None:
+        image = ImageCaptcha(fonts=[font], width=400)
+    else:
+        image = ImageCaptcha()
     data: io.BytesIO = image.generate(value)
     return data
 

@@ -238,10 +238,10 @@ def load_auth_code(code: str, client_id: int) -> domain.AuthorizationCode:
         db_code = _load_dbauthcode(code, client_id, dbsession)
 
     return domain.AuthorizationCode(
-        code=code.code,
-        user_id=code.user_id,
-        user_email=code.user_email,
-        username=code.username,
+        code=code,
+        user_id=db_code.user_id,
+        user_email=db_code.user_email,
+        username=db_code.username,
         client_id=db_code.client_id,
         redirect_uri=db_code.redirect_uri,
         scope=db_code.scope,
@@ -263,10 +263,10 @@ def load_auth_code_by_user(code: str, user_id: str) \
                                  f' for user {user_id}')
 
     return domain.AuthorizationCode(
-        code=code.code,
-        user_id=code.user_id,
-        user_email=code.user_email,
-        username=code.username,
+        code=code,
+        user_id=db_code.user_id,
+        user_email=db_code.user_email,
+        username=db_code.username,
         client_id=db_code.client_id,
         redirect_uri=db_code.redirect_uri,
         scope=db_code.scope,

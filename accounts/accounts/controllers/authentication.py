@@ -70,7 +70,7 @@ def login(method: str, form_data: MultiDict, ip: str,
 
     logger.debug('Login form submitted')
     form = LoginForm(form_data)
-    data: Dict[str, Any] = {'form': form}
+    data: Dict[str, Any] = {'form': form, 'next_page': next_page}
     if not form.validate():
         logger.debug('Form data is not valid')
         return data, status.HTTP_400_BAD_REQUEST, {}

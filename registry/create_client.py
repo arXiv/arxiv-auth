@@ -61,6 +61,11 @@ def create_client(name: str, url: str, description: str, secret: str,
             grant_type='client_credentials',
             authorized=datetime.now()
         )
+        db_grant_type = datastore.models.DBClientGrantType(
+            client=db_client,
+            grant_type='authorization_code',
+            authorized=datetime.now()
+        )
 
         session.add(db_client)
         session.add(db_cred)

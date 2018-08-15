@@ -33,6 +33,7 @@ DEFAULT_LOGOUT_REDIRECT_URL = os.environ.get(
 SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
 SESSION_COOKIE_SECURE = bool(int(os.environ.get('SESSION_COOKIE_SECURE', '1')))
 
+EXTERNAL_URL_SCHEME = os.environ.get('EXTERNAL_URL_SCHEME', 'https')
 BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 URLS = [
     ("register", "/register", BASE_SERVER),

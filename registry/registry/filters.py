@@ -1,6 +1,9 @@
 """Jinja2 template filters."""
 
+from arxiv.users import auth
+from flask import Markup
 
-def scope_definition(scope: str) -> str:
+
+def scope_label(scope: str) -> str:
     """Get the description of an auth scope from the docstring."""
-    return scope.__doc__
+    return Markup(auth.scopes.get_human_label(scope))

@@ -66,7 +66,8 @@ logger = logging.getLogger(__name__)
 
 
 def scoped(required: Optional[str] = None,
-           authorizer: Optional[Callable] = None) -> Callable:
+           authorizer: Optional[Callable] = None,
+           unauthorized: Optional[Callable] = None) -> Callable:
     """
     Generate a decorator to enforce authorization requirements.
 
@@ -84,6 +85,14 @@ def scoped(required: Optional[str] = None,
         ``*args`` and ``**kwargs`` are the parameters passed to the decorated
         function. If the authorizer returns ``False``, an :class:`.`
         exception is raised.
+    unauthorized : function
+        A callback may be passed to handle cases in which the request is
+        unauthorized. This function will be passed the same arguments as the
+        original route function. If the callback returns anything other than
+        ``None``, the return value will be treated as a response and execution
+        will stop. Otherwise, an ``Unauthorized`` exception will be raised.
+        If a callback is not provided (default) an ``Unauthorized`` exception
+        will be raised.
 
     Returns
     -------
@@ -115,6 +124,10 @@ def scoped(required: Optional[str] = None,
             # present. So we'll complain here if it's not.
             if not session or not (session.user or session.client):
                 logger.debug('No valid session; aborting')
+                if unauthorized is not None:
+                    response = unauthorized(*args, **kwargs)
+                    if response is not None:
+                        return response
                 raise Unauthorized('Not a valid session')  # type: ignore
 
             # Check the required scopes.

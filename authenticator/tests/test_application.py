@@ -22,7 +22,7 @@ class TestAuthorizeWithCookie(TestCase):
     def test_no_auth_data(self):
         """Neither an authorization token nor cookie are passed."""
         response = self.client.get('/auth')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @mock.patch('authenticator.services.sessions')
     def test_not_a_token(self, mock_sessions):

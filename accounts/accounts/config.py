@@ -58,6 +58,7 @@ CLASSIC_DATABASE_URI = os.environ.get('CLASSIC_DATABASE_URI')
 CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', 'foocaptcha')
 """Used to encrypt captcha answers, so that we don't need to store them."""
 
+CAPTCHA_FONT = os.environ.get('CAPTCHA_FONT', None)
 
 BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 URLS = [

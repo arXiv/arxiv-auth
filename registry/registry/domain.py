@@ -97,7 +97,3 @@ class AuthorizationCode(NamedTuple):
 
     expires: datetime
     """The time when the auth code expires."""
-
-    def is_expired(self) -> bool:
-        """Indicate whether the code is expired."""
-        return self.expires <= datetime.now()

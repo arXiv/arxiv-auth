@@ -88,6 +88,10 @@ _HUMAN_LABELS = {
                      " update the DOI or journal reference field on your"
                      " behalf. Note that this affects only the metadata of"
                      " your submission, and not the content.",
+    VIEW_SUBMISSION: "Grants authorization to view your submissions, including"
+                     " those that have not yet been announced. Note that this"
+                     " only applies to the submission metadata, and not to the"
+                     " uploaded submission content.",
     READ_UPLOAD: "Grants authorization to view the contents of your uploads.",
     WRITE_UPLOAD: "Grants authorization to add and delete files on your"
                   " behalf.",

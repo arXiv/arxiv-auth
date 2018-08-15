@@ -7,6 +7,7 @@ from arxiv.base.middleware import wrap
 from arxiv.users import auth
 
 # from registry.routes import ui
+from registry import filters
 from registry.services import datastore, sessions
 from registry.routes import blueprint
 from . import oauth2
@@ -27,5 +28,8 @@ def create_web_app() -> Flask:
     oauth2.init_app(app)
     app.register_blueprint(blueprint)
     wrap(app, [auth.middleware.AuthMiddleware])
+
+    app.jinja_env.filters['scope_label'] = filters.scope_label
+
     datastore.create_all()
     return app
