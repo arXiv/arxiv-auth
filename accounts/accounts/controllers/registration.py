@@ -205,7 +205,8 @@ class ProfileForm(Form):
     )
     country = SelectField('Country', choices=COUNTRIES,
                           validators=[DataRequired()])
-    status = SelectField('Status', choices=RANKS, validators=[DataRequired()])
+    status = SelectField('Academic Status', choices=RANKS,
+                         validators=[DataRequired()])
 
     groups = MultiCheckboxField('Group(s) to which you would like to submit',
                                 choices=GROUPS, default='')
@@ -275,10 +276,17 @@ class ProfileForm(Form):
 class RegistrationForm(ProfileForm):
     """User registration form."""
 
-    password = PasswordField('Password',
-                             validators=[Length(min=6), DataRequired()])
-    password2 = PasswordField('Re-enter password',
-                              validators=[Length(min=6), DataRequired()])
+    password = PasswordField(
+        'Password',
+        validators=[Length(min=8, max=20), DataRequired()],
+        description="Please choose a password that is between 8 and 20"
+                    " characters in length. Longer passwords are more secure."
+                    " You may use alphanumeric characters, as well as"
+                    " <code>* @ # $ ! ? %</code>.")
+    password2 = PasswordField(
+        'Re-enter password',
+        validators=[Length(min=8), DataRequired()],
+        description="Your passwords must match.")
 
     captcha_value = StringField('Are you a robot?',
                                 validators=[DataRequired()],

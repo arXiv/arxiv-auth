@@ -8,51 +8,227 @@
   <div class="column">
 
     <h1>Register for the first time</h1>
-
-
-
       <div class="columns">
         <div class="column is-half">
           <p>
             We associate papers that you have submitted with your user account.
             Please take care to only register with arXiv once.
           </p>
+        </div>
+      </div>
+      <form action="{{ url_for('ui.register') }}?next_page={{ next_page|urlencode }}" method="POST">
+        {{ form.csrf_token }}
 
-          <form action="{{ url_for('ui.register') }}?next_page={{ next_page|urlencode }}" method="POST">
-            {{ form.csrf_token }}
+        {% with field = form.email %}
+        {{ field.label(class="label") }}
+        <div class="columns">
+          <div class="column">
 
-            <div class="field is-horizontal">
-              {% with field = form.email %}
-              <div class="control">
-                {{ field.label }}
-                {% if field.errors %}
-                  {{ field(class="input is-small is-warning field-body")|safe }}
-                {% else %}
-                  {{ field(class="input is-small field-body")|safe }}
-                {% endif %}
-                {% if field.errors %}
-                  <div class="help is-warning">
-                    {% for error in field.errors %}
-                        {{ error }}
-                    {% endfor %}
-                  </div>
-                {% endif %}
-                {% if field.description %}
-                <p class="help has-text-grey">
-                  {{ field.description|safe }}
-                </p>
-                {% endif %}
-              </div>
-              {% endwith %}
-            </div>
             <div class="field">
-              {% with field = form.username %}
+
               <div class="control">
-                {{ field.label }}
+
                 {% if field.errors %}
-                  {{ field(class="input is-small is-warning field-body")|safe }}
+                  {{ field(class="input is-warning field-body")|safe }}
                 {% else %}
-                  {{ field(class="input is-small field-body")|safe }}
+                  {{ field(class="input field-body")|safe }}
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+              </div>
+
+            </div>
+          </div>
+          <div class="column">
+            {% if field.description %}
+            <p class="is-marginless help has-text-grey">
+              {{ field.description|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+        {% endwith %}
+
+
+        {% with field = form.username %}
+        {{ field.label(class="label") }}
+        <div class="columns">
+          <div class="column">
+
+            <div class="field">
+
+              <div class="control">
+
+                {% if field.errors %}
+                  {{ field(class="input is-warning field-body")|safe }}
+                {% else %}
+                  {{ field(class="input field-body")|safe }}
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+              </div>
+
+            </div>
+          </div>
+          <div class="column">
+            {% if field.description %}
+            <p class="is-marginless help has-text-grey">
+              {{ field.description|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+        {% endwith %}
+
+        {% with field = form.password %}
+        {{ field.label(class="label") }}
+        <div class="columns">
+          <div class="column">
+
+            <div class="field">
+
+              <div class="control">
+
+                {% if field.errors %}
+                  {{ field(class="input is-warning field-body")|safe }}
+                {% else %}
+                  {{ field(class="input field-body")|safe }}
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+              </div>
+
+            </div>
+          </div>
+          <div class="column">
+            {% if field.description %}
+            <p class="is-marginless help has-text-grey">
+              {{ field.description|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+        {% endwith %}
+
+        {% with field = form.password2 %}
+        {{ field.label(class="label") }}
+        <div class="columns">
+          <div class="column">
+
+            <div class="field">
+
+              <div class="control">
+
+                {% if field.errors %}
+                  {{ field(class="input is-warning field-body")|safe }}
+                {% else %}
+                  {{ field(class="input field-body")|safe }}
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+              </div>
+
+            </div>
+          </div>
+          <div class="column">
+            {% if field.description %}
+            <p class="is-marginless help has-text-grey">
+              {{ field.description|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+        {% endwith %}
+
+
+        <div class="control">
+          <input type="submit" class="button is-success" value="Register"></input>
+        </div>
+
+        <hr />
+
+
+
+        <div class="columns">
+          <div class="column">
+            <fieldset class="fieldset">
+              <legend class="legend">Your Name</legend>
+            <div class="field is-grouped is-grouped-multiline">
+              {% with field = form.forename %}
+              <div class="control">
+                {{ field.label(class="label") }}
+                {% if field.errors %}
+                  {{ field(class="input is-warning")|safe }}
+                {% else %}
+                  {{ field(class="input")|safe }}
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                {% if field.description %}
+                <p class="help has-text-grey">
+                  {{ field.description|safe }}
+                </p>
+                {% endif %}
+              </div>
+              {% endwith %}
+              {% with field = form.surname %}
+              <div class="control">
+                {{ field.label(class="label") }}
+                {% if field.errors %}
+                  {{ field(class="input is-warning")|safe }}
+                {% else %}
+                  {{ field(class="input")|safe }}
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                {% if field.description %}
+                <p class="help has-text-grey">
+                  {{ field.description|safe }}
+                </p>
+                {% endif %}
+              </div>
+              {% endwith %}
+              {% with field = form.suffix %}
+              <div class="control">
+                {{ field.label(class="label") }}
+                {% if field.errors %}
+                  {{ field(class="input is-warning", size=10)|safe }}
+                {% else %}
+                  {{ field(class="input", size=10)|safe }}
                 {% endif %}
                 {% if field.errors %}
                   <div class="help is-warning">
@@ -69,85 +245,27 @@
               </div>
               {% endwith %}
             </div>
+          </fieldset>
+          </div>
+          <div class="column">
+          </div>
+        </div>
 
-            <div class="box">
-              <div class="field">
-                {% with field = form.forename %}
-                <div class="control">
-                  {{ field.label }}
-                  {% if field.errors %}
-                    {{ field(class="input is-small is-warning")|safe }}
-                  {% else %}
-                    {{ field(class="input is-small")|safe }}
-                  {% endif %}
-                  {% if field.errors %}
-                    <div class="help is-warning">
-                      {% for error in field.errors %}
-                          {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  {% if field.description %}
-                  <p class="help has-text-grey">
-                    {{ field.description|safe }}
-                  </p>
-                  {% endif %}
-                </div>
-                {% endwith %}
-                {% with field = form.surname %}
-                <div class="control">
-                  {{ field.label }}
-                  {% if field.errors %}
-                    {{ field(class="input is-small is-warning")|safe }}
-                  {% else %}
-                    {{ field(class="input is-small")|safe }}
-                  {% endif %}
-                  {% if field.errors %}
-                    <div class="help is-warning">
-                      {% for error in field.errors %}
-                          {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  {% if field.description %}
-                  <p class="help has-text-grey">
-                    {{ field.description|safe }}
-                  </p>
-                  {% endif %}
-                </div>
-                {% endwith %}
-                {% with field = form.suffix %}
-                <div class="control">
-                  {{ field.label }}
-                  {% if field.errors %}
-                    {{ field(class="input is-small is-warning", size=10)|safe }}
-                  {% else %}
-                    {{ field(class="input is-small", size=10)|safe }}
-                  {% endif %}
-                  {% if field.errors %}
-                    <div class="help is-warning">
-                      {% for error in field.errors %}
-                          {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  {% if field.description %}
-                  <p class="help has-text-grey">
-                    {{ field.description|safe }}
-                  </p>
-                  {% endif %}
-                </div>
-                {% endwith %}
-              </div>
-            </div>
+        <div class="columns">
+          <div class="column is-half">
+
+
+
+
+
               <div class="field">
                 {% with field = form.affiliation %}
                 <div class="control">
-                  {{ field.label }}
+                  {{ field.label(class="label") }}
                   {% if field.errors %}
-                    {{ field(class="input is-small is-warning field-body")|safe }}
+                    {{ field(class="input is-warning field-body")|safe }}
                   {% else %}
-                    {{ field(class="input is-small field-body")|safe }}
+                    {{ field(class="input field-body")|safe }}
                   {% endif %}
                   {% if field.errors %}
                     <div class="help is-warning">
@@ -166,12 +284,12 @@
               </div>
               <div class="field">
                 {% with field = form.country %}
-                <div class="control">
-                  {{ field.label }}
+                <div class="control is-expanded">
+                  {{ field.label(class="label") }}
                   {% if field.errors %}
-                    {{ field(class="input is-small is-warning field-body")|safe }}
+                    <span class="select">{{ field(class="is-warning field-body")|safe }}</span>
                   {% else %}
-                    {{ field(class="input is-small field-body")|safe }}
+                    <span class="select">{{ field(class="is-fullwidth field-body")|safe }}</span>
                   {% endif %}
                   {% if field.errors %}
                     <div class="help is-warning">
@@ -191,11 +309,11 @@
               <div class="field">
                 {% with field = form.status %}
                 <div class="control">
-                  {{ field.label }}
+                  {{ field.label(class="label") }}
                   {% if field.errors %}
-                    {{ field(class="input is-small is-warning field-body")|safe }}
+                    {{ field(class="input is-warning field-body")|safe }}
                   {% else %}
-                    {{ field(class="input is-small field-body")|safe }}
+                    {{ field(class="input field-body")|safe }}
                   {% endif %}
                   {% if field.errors %}
                     <div class="help is-warning">
@@ -217,7 +335,7 @@
               <div class="control">
                 {{ form.groups.label }}
                 {% if form.groups.errors %}
-                  {{ form.groups(class="is-small is-warning", li_class="is-inline-block breathe")|safe }}
+                  {{ form.groups(class="is-small is-warning", li_class="is-inline-block")|safe }}
                 {% else %}
                   {{ form.groups(class="is-small", li_class="is-inline-block")|safe }}
                 {% endif %}
@@ -238,11 +356,11 @@
             <div class="field">
               {% with field = form.default_category %}
               <div class="control">
-                {{ field.label }}
+                {{ field.label(class="label") }}
                 {% if field.errors %}
-                  {{ field(class="input is-small is-warning field-body")|safe }}
+                  {{ field(class="input is-warning field-body")|safe }}
                 {% else %}
-                  {{ field(class="input is-small field-body")|safe }}
+                  {{ field(class="input field-body")|safe }}
                 {% endif %}
                 {% if field.errors %}
                   <div class="help is-warning">
@@ -262,11 +380,11 @@
             <div class="field">
               {% with field = form.url %}
               <div class="control">
-                {{ field.label }}
+                {{ field.label(class="label") }}
                 {% if field.errors %}
-                  {{ field(class="input is-small is-warning field-body")|safe }}
+                  {{ field(class="input is-warning field-body")|safe }}
                 {% else %}
-                  {{ field(class="input is-small field-body")|safe }}
+                  {{ field(class="input field-body")|safe }}
                 {% endif %}
                 {% if field.errors %}
                   <div class="help is-warning">
@@ -283,55 +401,7 @@
               </div>
               {% endwith %}
             </div>
-            <div class="box">
-              <div class="field">
-                {% with field = form.password %}
-                <div class="control">
-                  {{ field.label }}
-                  {% if field.errors %}
-                    {{ field(class="input is-small is-warning field-body")|safe }}
-                  {% else %}
-                    {{ field(class="input is-small field-body")|safe }}
-                  {% endif %}
-                  {% if field.errors %}
-                    <div class="help is-warning">
-                      {% for error in field.errors %}
-                          {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  {% if field.description %}
-                  <p class="help has-text-grey">
-                    {{ field.description|safe }}
-                  </p>
-                  {% endif %}
-                </div>
-                {% endwith %}
 
-                {% with field = form.password2 %}
-                <div class="control">
-                  {{ field.label }}
-                  {% if field.errors %}
-                    {{ field(class="input is-small is-warning field-body")|safe }}
-                  {% else %}
-                    {{ field(class="input is-small field-body")|safe }}
-                  {% endif %}
-                  {% if field.errors %}
-                    <div class="help is-warning">
-                      {% for error in field.errors %}
-                          {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                  {% if field.description %}
-                  <p class="help has-text-grey">
-                    {{ field.description|safe }}
-                  </p>
-                  {% endif %}
-                </div>
-                {% endwith %}
-              </div>
-            </div>
 
             <div class="field">
               {{ form.remember_me.label }}
@@ -359,11 +429,11 @@
                 <img src="{{ url_for('ui.captcha') }}?token={{ form.captcha_token.data }}" />
                 {% with field = form.captcha_value %}
                 <div class="control">
-                  {{ field.label }}
+                  {{ field.label(class="label") }}
                   {% if field.errors %}
-                    {{ field(class="input is-small is-warning field-body")|safe }}
+                    {{ field(class="input is-warning field-body")|safe }}
                   {% else %}
-                    {{ field(class="input is-small field-body")|safe }}
+                    {{ field(class="input field-body")|safe }}
                   {% endif %}
                   {% if field.errors %}
                     <div class="help is-warning">
@@ -385,10 +455,10 @@
             <div class="control">
               <input type="submit" class="button is-success" value="Register"></input>
             </div>
-          </form>
+
         </div>
       </div>
-
+    </form>
   </div>
 </div>
 {% endblock inner_content %}

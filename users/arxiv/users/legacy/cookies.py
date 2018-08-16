@@ -87,5 +87,5 @@ def pack(session_id: str, user_id: str, ip: str, issued_at: datetime,
     value = ':'.join(map(str, [session_id, user_id, ip, util.epoch(issued_at),
                                capabilities]))
     to_sign = f'{value}-{session_hash}'.encode('utf-8')
-    cookie_hash = b64encode(hashlib.sha256(to_sign).digest())
+    cookie_hash = b64encode(hashlib.sha1(to_sign).digest())
     return value + ':' + cookie_hash.decode('utf-8')

@@ -21,9 +21,9 @@ see :mod:`arxiv.users.auth.decorators`.
 
 """
 from typing import Optional
+from ..domain import Scope
 
-
-EDIT_PROFILE = 'profile:update'
+EDIT_PROFILE = Scope('profile', 'update')
 """
 Authorizes editing user profile.
 

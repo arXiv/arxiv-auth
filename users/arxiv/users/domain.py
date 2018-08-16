@@ -123,6 +123,31 @@ class UserProfile(NamedTuple):
         ])
 
 
+class Scope(NamedTuple):
+    """Represents an authorization policy."""
+
+    domain: str
+    """
+    The domain to which the scope applies.
+
+    This will generally refer to a specific service.
+    """
+
+    action: str
+    """An action within ``domain`."""
+
+    resource: Optional[str]
+    """The specific resource to which this policy applies."""
+
+    def __repr__(self) -> str:
+        """Return this scope as a :-delimited string."""
+        return ":".join(self)
+
+    def __str__(self) -> str:
+        """Return this scope as a :-delimited string."""
+        return ":".join(self)
+
+
 class Authorizations(NamedTuple):
     """Authorization information, e.g. associated with a :class:`.Session`."""
 
@@ -132,8 +157,8 @@ class Authorizations(NamedTuple):
     endorsements: List[Category] = []
     """Categories to which the user is permitted to submit."""
 
-    scopes: List[str] = []
-    """Authorized scopes. See :mod:`arxiv.users.auth.scopes`."""
+    scopes: List[Scope] = []
+    """Authorized :class:`.scope`s. See also :mod:`arxiv.users.auth.scopes`."""
 
     @classmethod
     def before_init(cls, data: dict) -> None:
@@ -247,10 +272,6 @@ class Session(NamedTuple):
         if self.end_time is None:
             return None
         return max((self.end_time - datetime.now(tz=EASTERN)).seconds, 0)
-
-    # Consider for later:
-    #  localization (preferred language)
-    #  preferences for sharing contact info
 
 
 # Helpers and private functions.

@@ -145,7 +145,7 @@ def create(authorizations: domain.Authorizations,
         with util.transaction() as session:
             tapir_session = DBSession(
                 user_id=user.user_id,
-                last_reissue=0,   # TODO: do we need this?
+                last_reissue=util.epoch(start),
                 start_time=util.epoch(start),
                 end_time=0
             )
