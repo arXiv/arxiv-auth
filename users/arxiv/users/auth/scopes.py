@@ -24,45 +24,30 @@ from typing import Optional
 from ..domain import Scope
 
 
-class domain:
-    PROFILE = 'profile'
-    SUBMISSION = 'submission'
-    UPLOAD = 'upload'
-
-
-class action:
-    UPDATE = 'update'
-    CREATE = 'created'
-    DELETE = 'delete'
-    RELEASE = 'release'
-    READ = 'read'
-    PROXY = 'proxy'
-
-
-EDIT_PROFILE = Scope(domain.PROFILE, action.UPDATE)
+EDIT_PROFILE = Scope(Scope.domains.PROFILE, Scope.actions.UPDATE)
 """
 Authorizes editing user profile.
 
 This includes things like affiliation, full name, etc..
 """
 
-VIEW_PROFILE = Scope(domain.PROFILE, action.READ)
+VIEW_PROFILE = Scope(Scope.domains.PROFILE, Scope.actions.READ)
 """
 Authorizes viewing the content of a user profile.
 
 This includes things like affiliation, full name, and e-mail address.
 """
 
-CREATE_SUBMISSION = Scope(domain.SUBMISSION, action.CREATE)
+CREATE_SUBMISSION = Scope(Scope.domains.SUBMISSION, Scope.actions.CREATE)
 """Authorizes creating a new submission."""
 
-EDIT_SUBMISSION = Scope(domain.SUBMISSION, action.UPDATE)
+EDIT_SUBMISSION = Scope(Scope.domains.SUBMISSION, Scope.actions.UPDATE)
 """Authorizes updating a submission that has not yet been announced."""
 
-VIEW_SUBMISSION = Scope(domain.SUBMISSION, action.READ)
+VIEW_SUBMISSION = Scope(Scope.domains.SUBMISSION, Scope.actions.READ)
 """Authorizes viewing a submission."""
 
-PROXY_SUBMISSION = Scope(domain.SUBMISSION, action.PROXY)
+PROXY_SUBMISSION = Scope(Scope.domains.SUBMISSION, Scope.actions.PROXY)
 """
 Authorizes creating a submission on behalf of another user.
 
@@ -71,13 +56,13 @@ other human users. For client authorization to submit on behalf of a user,
 <code>submission:create</code> should be used instead.
 """
 
-READ_UPLOAD = Scope(domain.UPLOAD, action.READ)
+READ_UPLOAD = Scope(Scope.domains.UPLOAD, Scope.actions.READ)
 """Authorizes viewing the content of an upload workspace."""
 
-WRITE_UPLOAD = Scope(domain.UPLOAD, action.UPDATE)
+WRITE_UPLOAD = Scope(Scope.domains.UPLOAD, Scope.actions.UPDATE)
 """Authorizes uploading files to to a workspace."""
 
-RELEASE_UPLOAD = Scope(domain.UPLOAD, action.RELEASE)
+RELEASE_UPLOAD = Scope(Scope.domains.UPLOAD, Scope.actions.RELEASE)
 """Authorizes releasing an upload workspace."""
 
 GENERAL_USER = [

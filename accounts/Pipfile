@@ -17,8 +17,8 @@ requests = "*"
 sqlalchemy = "*"
 uwsgi = "*"
 wtforms = "*"
-"390d6aa" = {path = "/Users/brp53/projects/arxiv-base-ui"}
-"6c2b755" = {path = "./../users"}
+arxiv-base = "==0.10.1rc0"
+arxiv-auth = "==0.1.0rc6"
 
 [dev-packages]
 mimesis = "*"

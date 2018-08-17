@@ -147,6 +147,31 @@ class Scope(NamedTuple):
         """Return this scope as a :-delimited string."""
         return ":".join(self)
 
+    def for_resource(self, resource_id: str) -> 'Scope':
+        """Create a copy of this scope with a specific resource."""
+        return Scope(self.domain, self.action, resource_id)
+
+    def as_global(self) -> 'Scope':
+        """Create a copy of this scope with a global resource."""
+        return self.for_resource('*')
+
+    class domains:
+        """Known authorization domains."""
+
+        PROFILE = 'profile'
+        SUBMISSION = 'submission'
+        UPLOAD = 'upload'
+
+    class actions:
+        """Known authorization actions."""
+
+        UPDATE = 'update'
+        CREATE = 'created'
+        DELETE = 'delete'
+        RELEASE = 'release'
+        READ = 'read'
+        PROXY = 'proxy'
+
 
 class Authorizations(NamedTuple):
     """Authorization information, e.g. associated with a :class:`.Session`."""

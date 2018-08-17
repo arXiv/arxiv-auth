@@ -147,3 +147,57 @@ class TestScoped(TestCase):
             """A protected function."""
 
         protected()
+
+    @mock.patch(f'{decorators.__name__}.request')
+    def test_session_has_global(self, mock_request):
+        """Session has global scope, and authorizer func returns false."""
+        mock_request.session = domain.Session(
+            session_id='fooid',
+            start_time=datetime.now(tz=EASTERN),
+            user=domain.User(
+                user_id='235678',
+                email='foo@foo.com',
+                username='foouser'
+            ),
+            authorizations=domain.Authorizations(
+                scopes=[scopes.CREATE_SUBMISSION.as_global()]
+            )
+        )
+
+        def return_false(session: domain.Session) -> bool:
+            return False
+
+        @decorators.scoped(scopes.CREATE_SUBMISSION, authorizer=return_false)
+        def protected():
+            """A protected function."""
+
+        protected()
+
+    @mock.patch(f'{decorators.__name__}.request')
+    def test_session_has_resource_scope(self, mock_request):
+        """Session has resource scope, and authorizer func returns false."""
+        mock_request.session = domain.Session(
+            session_id='fooid',
+            start_time=datetime.now(tz=EASTERN),
+            user=domain.User(
+                user_id='235678',
+                email='foo@foo.com',
+                username='foouser'
+            ),
+            authorizations=domain.Authorizations(
+                scopes=[scopes.EDIT_SUBMISSION.for_resource('1')]
+            )
+        )
+
+        def return_false(session: domain.Session) -> bool:
+            return False
+
+        def get_resource(*args, **kwargs) -> bool:
+            return '1'
+
+        @decorators.scoped(scopes.EDIT_SUBMISSION, resource=get_resource,
+                           authorizer=return_false)
+        def protected():
+            """A protected function."""
+
+        protected()

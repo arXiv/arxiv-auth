@@ -6,6 +6,10 @@ routes for which authorization is required. This is done by specifying a
 required authorization scope (see :mod:`arxiv.users.auth.scopes`) and/or by
 providing a custom authorizer function.
 
+For routes that involve specific resources, a ``resource`` callback should also
+be provided. That callback function should accept the same arguments as the
+route function, and return the identifier for the resource as a string.
+
 Using :func:`scoped` with an authorizer function allows you to define
 application-specific authorization logic on a per-request basis without adding
 complexity to request controllers. The call signature of the authorizer
@@ -13,6 +17,10 @@ function should be: ``(session: domain.Session, *args, **kwargs) -> bool``,
 where `*args` and `**kwargs` are the positional and keyword arguments,
 respectively, passed by Flask to the decorated route function (e.g. the
 URL parameters).
+
+.. note:: The authorizer function is only called if the session does not have
+   a global or resource-specific instance of the required scope, or if a
+   required scope is not specified.
 
 Here's an example of how you might use this in a Flask application:
 
@@ -28,8 +36,19 @@ Here's an example of how you might use this in a Flask application:
        return session.user.user_id == user_id
 
 
+   def get_resource_id(user_id: str) -> str:
+       '''Get the user ID from the request.'''
+       return user_id
+
+
+   def redirect_to_login(user_id: str) -> Response:
+       '''Send the unauthorized user to the log in page.'''
+       return url_for('login')
+
+
    @blueprint.route('/<string:user_id>/profile', methods=['GET'])
-   @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)
+   @scoped(scopes.EDIT_PROFILE, resource=get_resource_id,
+           authorizer=user_is_owner, unauthorized=redirect_to_login)
    def edit_profile(user_id: str):
        '''User can update their account information.'''
        data, code, headers = profile.get_profile(user_id)
@@ -39,10 +58,18 @@ Here's an example of how you might use this in a Flask application:
 When the decorated route function is called...
 
 - If no session is available from either the middleware or the legacy database,
-  an :class:`Unauthorized` exception is raised.
+  the ``unauthorized`` callback is called, and/or :class:`Unauthorized`
+  exception is raised.
 - If a required scope was provided, the session is checked for the presence of
-  that scope.
-- If an authorization function was provided, the function is called.
+  that scope in this order:
+
+  - Global scope (`:*`), e.g. for administrators.
+  - Resource-specific scope (`:[resource_id]`), i.e. explicitly granted for a
+    particular resource.
+  - Generic scope (no resource part).
+
+- If an authorization function was provided, the function is called only if
+  a required scope was not provided, or if only the generic scope was found.
 - Session data is added directly to the Flask request object as
   ``request.session``, for ease of access elsewhere in the application.
 - Finally, if no exceptions have been raised, the route is called with the
@@ -66,6 +93,7 @@ logger = logging.getLogger(__name__)
 
 
 def scoped(required: Optional[str] = None,
+           resource: Optional[Callable] = None,
            authorizer: Optional[Callable] = None,
            unauthorized: Optional[Callable] = None) -> Callable:
     """
@@ -77,6 +105,10 @@ def scoped(required: Optional[str] = None,
         The scope required on a user or client session in order use the
         decorated route. See :mod:`arxiv.users.auth.scopes`. If not provided,
         no scope will be enforced.
+    resource : function
+        If a route provides actions for a specific resource, a callable should
+        be provided that accepts the route arguments and returns the resource
+        identifier (str).
     authorizer : function
         In addition, an authorizer function may be passed to provide more
         specific authorization checks. For example, this function may check
@@ -120,6 +152,9 @@ def scoped(required: Optional[str] = None,
 
             """
             session = request.session
+            scopes: List[domain.Scope] = []
+            authorized: bool = False
+
             # Use of the decorator implies that an auth session ought to be
             # present. So we'll complain here if it's not.
             if not session or not (session.user or session.client):
@@ -130,15 +165,57 @@ def scoped(required: Optional[str] = None,
                         return response
                 raise Unauthorized('Not a valid session')  # type: ignore
 
-            # Check the required scopes.
-            if required and (session.authorizations is None
-                             or required not in session.authorizations.scopes):
-                logger.debug('Session is not authorized for %s', required)
-                raise Forbidden('Access denied')  # type: ignore
+            if session.authorizations is not None:
+                scopes = session.authorizations.scopes
 
-            # Call the provided authorizer function.
-            if authorizer and not authorizer(session, *args, **kwargs):
-                logger.debug('Authorizer retured negative result')
+            # If a required scope is provided, we first check to see whether
+            # the session globally or explicitly authorizes the request. We
+            # then fall back to the locally-defined authorizer function if it
+            # is provided.
+            if required and scopes:
+
+                # A global scope is usually granted to administrators, or
+                # perhaps moderators (e.g. view submission content).
+                # For example: `submission:read:*`.
+                if required.as_global() in scopes:
+                    logger.debug('Authorized with global scope')
+                    authorized = True
+
+                # A resource-specific scope may be granted at the auth layer.
+                # For example, an admin may provide provisional access to a
+                # specific resource for a specific role. This kind of
+                # authorization is only supported if the service provides a
+                # ``resource()`` callback to get the resource identifier.
+                elif (resource is not None
+                      and (
+                        required.for_resource(str(resource(*args, **kwargs)))
+                        in scopes)):
+                    logger.debug('Authorized by specific resource')
+                    authorized = True
+
+                # If both the global and resource-specific scope authorization
+                # fail, then we look for the general scope in the session.
+                elif required in scopes:
+                    # If an authorizer callback is provided by the service,
+                    # then we will enforce whatever it returns.
+                    if authorizer:
+                        authorized = authorizer(session, *args, **kwargs)
+                    # If no authorizer callback is provided, it is implied that
+                    # the general scope is sufficient to authorize the request.
+                    elif authorizer is None:
+                        authorized = True
+                # The required scope is not present. There is nothing left to
+                # check.
+                else:
+                    authorized = False
+
+            # If a specific scope is not required, we rely entirely on the
+            # authorizer callback.
+            elif authorizer is not None:
+                authorized = authorizer(session, *args, **kwargs)
+
+            if not authorized:
+                logger.debug('Session is not authorized for %s', required)
                 raise Forbidden('Access denied')  # type: ignore
 
             logger.debug('Request is authorized, proceeding')
