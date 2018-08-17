@@ -17,7 +17,7 @@ requests = "*"
 sqlalchemy = "*"
 uwsgi = "*"
 wtforms = "*"
-arxiv-base = "==0.10.1rc0"
+arxiv-base = "==0.10.1rc1"
 arxiv-auth = "==0.1.0rc6"
 
 [dev-packages]
