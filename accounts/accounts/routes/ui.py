@@ -64,9 +64,6 @@ def set_cookies(response: Response, data: dict) -> None:
         response.set_cookie(cookie_name, cookie_value, max_age=max_age,
                             **params)
 
-# 2018-07-30 : Disabling everything except login and logout routes for accounts
-#  v0.1. - Erick
-
 
 @blueprint.route('/register', methods=['GET', 'POST'])
 @anonymous_only

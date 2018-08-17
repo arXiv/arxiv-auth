@@ -154,6 +154,7 @@ def edit_profile(method: str, user_id: str, session: domain.Session,
     return data, status.HTTP_200_OK, {}
 
 
+
 class ProfileForm(Form):
     """User registration form."""
 
@@ -176,21 +177,6 @@ class ProfileForm(Form):
 
     user_id = HiddenField('User ID')
 
-    email = StringField(
-        'Email address',
-        validators=[Email(), Length(max=255), DataRequired()],
-        description="You must be able to receive mail at this address."
-        " We take <a href='https://arxiv.org/help/email-protection'>"
-        " strong measures</a> to protect your email address from viruses and"
-        " spam. Do not enter an e-mail address that belongs to someone"
-        " else: if we discover that you've done so, we will suspend your"
-        " account."
-    )
-
-    username = StringField('Username',
-                           validators=[Length(min=5, max=20), DataRequired()],
-                           description='Please choose a username between 5 and'
-                                       ' 20 characters in length.')
     forename = StringField('First or given name',
                            validators=[Length(min=1, max=50), DataRequired()])
     surname = StringField('Last or family name',
@@ -260,21 +246,25 @@ class ProfileForm(Form):
             )
         )
 
-    def validate_username(self, field: StringField) -> None:
-        """Ensure that the username is unique."""
-        if users.username_exists(field.data):
-            raise ValidationError('An account with that username already'
-                                  ' exists')
 
-    def validate_email(self, field: StringField) -> None:
-        """Ensure that the email address is unique."""
-        if users.email_exists(field.data):
-            raise ValidationError('An account with that email address'
-                                  ' already exists')
-
-
-class RegistrationForm(ProfileForm):
+class RegistrationForm(Form):
     """User registration form."""
+
+    email = StringField(
+        'Email address',
+        validators=[Email(), Length(max=255), DataRequired()],
+        description="You must be able to receive mail at this address."
+        " We take <a href='https://arxiv.org/help/email-protection'>"
+        " strong measures</a> to protect your email address from viruses and"
+        " spam. Do not enter an e-mail address that belongs to someone"
+        " else: if we discover that you've done so, we will suspend your"
+        " account."
+    )
+
+    username = StringField('Username',
+                           validators=[Length(min=5, max=20), DataRequired()],
+                           description='Please choose a username between 5 and'
+                                       ' 20 characters in length.')
 
     password = PasswordField(
         'Password',
@@ -299,6 +289,18 @@ class RegistrationForm(ProfileForm):
         self.captcha_secret = captcha_secret
         self.ip = ip
 
+    def validate_username(self, field: StringField) -> None:
+        """Ensure that the username is unique."""
+        if users.username_exists(field.data):
+            raise ValidationError('An account with that username already'
+                                  ' exists')
+
+    def validate_email(self, field: StringField) -> None:
+        """Ensure that the email address is unique."""
+        if users.email_exists(field.data):
+            raise ValidationError('An account with that email address'
+                                  ' already exists')
+
     def validate_captcha_value(self, field: StringField) -> None:
         """Check the captcha value against the captcha token."""
         try:
@@ -320,3 +322,19 @@ class RegistrationForm(ProfileForm):
         """Verify that the password is the same in both fields."""
         if self.password.data != self.password2.data:
             raise ValidationError('Passwords must match')
+
+    @classmethod
+    def from_domain(cls, user: domain.User) -> 'RegistrationForm':
+        """Instantiate this form with data from a domain object."""
+        return cls(MultiDict({  # type: ignore
+            'username': user.username,
+            'email': user.email,
+        }))
+
+    def to_domain(self) -> domain.User:
+        """Generate a :class:`.User` from this form's data."""
+        return domain.User(
+            user_id=None,
+            username=self.username.data,
+            email=self.email.data,
+        )

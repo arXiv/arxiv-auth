@@ -38,71 +38,268 @@
     </p>
 
     <form action="{{ url_for('ui.edit_profile', user_id=user_id) }}" method="POST">
-      {{ form.csrf_token }}
-      {{ form.user_id }}
-      <div class="field">
-        {{ render_field(form.email) }}
-      </div>
-      <div class="field">
-        {{ render_field(form.username) }}
-      </div>
-      <div class="field">
-        {{ render_field(form.affiliation) }}
-      </div>
-      <div class="field">
-        {{ render_field(form.country) }}
-      </div>
-      <div class="field">
-        {{ render_field(form.status) }}
-      </div>
-      <div class="field">
-        <div class="control">
-          {{ form.groups.label }}
-          {% if form.groups.errors %}
-            {{ form.groups(class="is-small is-warning", li_class="is-inline-block")|safe }}
-          {% else %}
-            {{ form.groups(class="is-small", li_class="is-inline-block")|safe }}
-          {% endif %}
-          {% if form.groups.errors %}
-            <div class="help is-warning">
-              {% for error in form.groups.errors %}
-                  {{ error }}
-              {% endfor %}
+      <hr />
+
+
+
+      <div class="columns">
+        <div class="column">
+          <fieldset class="fieldset">
+            <legend class="legend">Your Name</legend>
+          <div class="field is-grouped is-grouped-multiline">
+            {% with field = form.forename %}
+            <div class="control">
+              {{ field.label(class="label") }}
+              {% if field.errors %}
+                {{ field(class="input is-warning")|safe }}
+              {% else %}
+                {{ field(class="input")|safe }}
+              {% endif %}
+              {% if field.errors %}
+                <div class="help is-warning">
+                  {% for error in field.errors %}
+                      {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if field.description %}
+              <p class="help has-text-grey">
+                {{ field.description|safe }}
+              </p>
+              {% endif %}
             </div>
-          {% endif %}
-          {% if form.groups.description %}
-          <p class="help has-text-grey">
-            {{ form.groups.description|safe }}
-          </p>
-          {% endif %}
+            {% endwith %}
+            {% with field = form.surname %}
+            <div class="control">
+              {{ field.label(class="label") }}
+              {% if field.errors %}
+                {{ field(class="input is-warning")|safe }}
+              {% else %}
+                {{ field(class="input")|safe }}
+              {% endif %}
+              {% if field.errors %}
+                <div class="help is-warning">
+                  {% for error in field.errors %}
+                      {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if field.description %}
+              <p class="help has-text-grey">
+                {{ field.description|safe }}
+              </p>
+              {% endif %}
+            </div>
+            {% endwith %}
+            {% with field = form.suffix %}
+            <div class="control">
+              {{ field.label(class="label") }}
+              {% if field.errors %}
+                {{ field(class="input is-warning", size=10)|safe }}
+              {% else %}
+                {{ field(class="input", size=10)|safe }}
+              {% endif %}
+              {% if field.errors %}
+                <div class="help is-warning">
+                  {% for error in field.errors %}
+                      {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if field.description %}
+              <p class="help has-text-grey">
+                {{ field.description|safe }}
+              </p>
+              {% endif %}
+            </div>
+            {% endwith %}
+          </div>
+        </fieldset>
+        </div>
+        <div class="column">
         </div>
       </div>
-      <div class="field">
-        {{ render_field(form.default_category) }}
-      </div>
-      <div class="field">
-        {{ render_field(form.url) }}
-      </div>
-      <div class="field">
-        {{ form.remember_me.label }}
-        {% if form.remember_me.errors %}
-          {{ form.remember_me(class="is-small is-warning")|safe }}
-        {% else %}
-          {{ form.remember_me(class="is-small")|safe }}
-        {% endif %}
-        {% if form.remember_me.errors %}
-          <div class="help is-warning">
-            {% for error in form.remember_me.errors %}
-                {{ error }}
-            {% endfor %}
+
+      <div class="columns">
+        <div class="column is-half">
+
+
+
+
+
+            <div class="field">
+              {% with field = form.affiliation %}
+              <div class="control">
+                {{ field.label(class="label") }}
+                {% if field.errors %}
+                  {{ field(class="input is-warning field-body")|safe }}
+                {% else %}
+                  {{ field(class="input field-body")|safe }}
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                {% if field.description %}
+                <p class="help has-text-grey">
+                  {{ field.description|safe }}
+                </p>
+                {% endif %}
+              </div>
+              {% endwith %}
+            </div>
+            <div class="field">
+              {% with field = form.country %}
+              <div class="control is-expanded">
+                {{ field.label(class="label") }}
+                {% if field.errors %}
+                  <span class="select">{{ field(class="is-warning field-body")|safe }}</span>
+                {% else %}
+                  <span class="select">{{ field(class="is-fullwidth field-body")|safe }}</span>
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                {% if field.description %}
+                <p class="help has-text-grey">
+                  {{ field.description|safe }}
+                </p>
+                {% endif %}
+              </div>
+              {% endwith %}
+            </div>
+            <div class="field">
+              {% with field = form.status %}
+              <div class="control">
+                {{ field.label(class="label") }}
+                {% if field.errors %}
+                  {{ field(class="input is-warning field-body")|safe }}
+                {% else %}
+                  {{ field(class="input field-body")|safe }}
+                {% endif %}
+                {% if field.errors %}
+                  <div class="help is-warning">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                {% if field.description %}
+                <p class="help has-text-grey">
+                  {{ field.description|safe }}
+                </p>
+                {% endif %}
+              </div>
+              {% endwith %}
+            </div>
+
+          <div class="field">
+            <div class="control">
+              {{ form.groups.label }}
+              {% if form.groups.errors %}
+                {{ form.groups(class="is-small is-warning", li_class="is-inline-block")|safe }}
+              {% else %}
+                {{ form.groups(class="is-small", li_class="is-inline-block")|safe }}
+              {% endif %}
+              {% if form.groups.errors %}
+                <div class="help is-warning">
+                  {% for error in form.groups.errors %}
+                      {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if form.groups.description %}
+              <p class="help has-text-grey">
+                {{ form.groups.description|safe }}
+              </p>
+              {% endif %}
+            </div>
           </div>
-        {% endif %}
-        {% if form.remember_me.description %}
-        <p class="help has-text-grey">
-          {{ form.remember_me.description|safe }}
-        </p>
-        {% endif %}
-      </div>
+          <div class="field">
+            {% with field = form.default_category %}
+            <div class="control">
+              {{ field.label(class="label") }}
+              {% if field.errors %}
+                {{ field(class="input is-warning field-body")|safe }}
+              {% else %}
+                {{ field(class="input field-body")|safe }}
+              {% endif %}
+              {% if field.errors %}
+                <div class="help is-warning">
+                  {% for error in field.errors %}
+                      {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if field.description %}
+              <p class="help has-text-grey">
+                {{ field.description|safe }}
+              </p>
+              {% endif %}
+            </div>
+            {% endwith %}
+          </div>
+          <div class="field">
+            {% with field = form.url %}
+            <div class="control">
+              {{ field.label(class="label") }}
+              {% if field.errors %}
+                {{ field(class="input is-warning field-body")|safe }}
+              {% else %}
+                {{ field(class="input field-body")|safe }}
+              {% endif %}
+              {% if field.errors %}
+                <div class="help is-warning">
+                  {% for error in field.errors %}
+                      {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if field.description %}
+              <p class="help has-text-grey">
+                {{ field.description|safe }}
+              </p>
+              {% endif %}
+            </div>
+            {% endwith %}
+          </div>
+
+
+          <div class="field">
+            {{ form.remember_me.label }}
+            {% if form.remember_me.errors %}
+              {{ form.remember_me(class="is-small is-warning")|safe }}
+            {% else %}
+              {{ form.remember_me(class="is-small")|safe }}
+            {% endif %}
+            {% if form.remember_me.errors %}
+              <div class="help is-warning">
+                {% for error in form.remember_me.errors %}
+                    {{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if form.remember_me.description %}
+            <p class="help has-text-grey">
+              {{ form.remember_me.description|safe }}
+            </p>
+            {% endif %}
+          </div>
+          <div class="box">
+            
+          </div>
+
+          <div class="control">
+            <input type="submit" class="button is-success" value="Register"></input>
+          </div>
+        </div>
 
       <div class="control">
         <input type="submit" class="button is-link is-small"></input>
