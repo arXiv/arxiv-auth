@@ -136,7 +136,7 @@ class Scope(NamedTuple):
     action: str
     """An action within ``domain`."""
 
-    resource: Optional[str]
+    resource: Optional[str] = None
     """The specific resource to which this policy applies."""
 
     def __repr__(self) -> str:
@@ -170,6 +170,10 @@ class Authorizations(NamedTuple):
             Category(*obj) if isinstance(obj, tuple) else Category(**obj)
             for obj in data.get('endorsements', [])
         ]
+        if 'scopes' in data and type(data['scopes']) is str:
+            data['scopes'] = [
+                Scope(*scope.split(':')) for scope in data['scopes'].split()
+            ]
 
 
 class UserFullName(NamedTuple):

@@ -23,30 +23,46 @@ see :mod:`arxiv.users.auth.decorators`.
 from typing import Optional
 from ..domain import Scope
 
-EDIT_PROFILE = Scope('profile', 'update')
+
+class domain:
+    PROFILE = 'profile'
+    SUBMISSION = 'submission'
+    UPLOAD = 'upload'
+
+
+class action:
+    UPDATE = 'update'
+    CREATE = 'created'
+    DELETE = 'delete'
+    RELEASE = 'release'
+    READ = 'read'
+    PROXY = 'proxy'
+
+
+EDIT_PROFILE = Scope(domain.PROFILE, action.UPDATE)
 """
 Authorizes editing user profile.
 
 This includes things like affiliation, full name, etc..
 """
 
-VIEW_PROFILE = 'profile:read'
+VIEW_PROFILE = Scope(domain.PROFILE, action.READ)
 """
 Authorizes viewing the content of a user profile.
 
 This includes things like affiliation, full name, and e-mail address.
 """
 
-CREATE_SUBMISSION = 'submission:create'
+CREATE_SUBMISSION = Scope(domain.SUBMISSION, action.CREATE)
 """Authorizes creating a new submission."""
 
-EDIT_SUBMISSION = 'submission:update'
+EDIT_SUBMISSION = Scope(domain.SUBMISSION, action.UPDATE)
 """Authorizes updating a submission that has not yet been announced."""
 
-VIEW_SUBMISSION = 'submission:read'
+VIEW_SUBMISSION = Scope(domain.SUBMISSION, action.READ)
 """Authorizes viewing a submission."""
 
-PROXY_SUBMISSION = 'submission:proxy'
+PROXY_SUBMISSION = Scope(domain.SUBMISSION, action.PROXY)
 """
 Authorizes creating a submission on behalf of another user.
 
@@ -55,17 +71,14 @@ other human users. For client authorization to submit on behalf of a user,
 <code>submission:create</code> should be used instead.
 """
 
-READ_UPLOAD = 'upload:read'
+READ_UPLOAD = Scope(domain.UPLOAD, action.READ)
 """Authorizes viewing the content of an upload workspace."""
 
-WRITE_UPLOAD = 'upload:write'
+WRITE_UPLOAD = Scope(domain.UPLOAD, action.UPDATE)
 """Authorizes uploading files to to a workspace."""
 
-RELEASE_UPLOAD = 'upload:release'
+RELEASE_UPLOAD = Scope(domain.UPLOAD, action.RELEASE)
 """Authorizes releasing an upload workspace."""
-
-ADMIN_UPLOAD = 'upload:admin'
-"""Authorizes administrative powers related to uploads."""
 
 GENERAL_USER = [
     EDIT_PROFILE,

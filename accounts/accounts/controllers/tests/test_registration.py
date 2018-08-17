@@ -13,7 +13,8 @@ class TestRegister(TestCase):
     def test_post_no_data(self):
         """POST request with no data."""
         params = MultiDict({})
-        data, code, headers = register('POST', params, '', '10.10.10.10')
+        data, code, headers = register('POST', params, '', '10.10.10.10',
+                                       '/foo')
         self.assertEqual(code, status.HTTP_400_BAD_REQUEST,
                          "Returns 400 response")
 
@@ -43,7 +44,8 @@ class TestRegister(TestCase):
         }
         params = MultiDict(registration_data)
 
-        data, code, headers = register('POST', params, '', '10.10.10.10')
+        data, code, headers = register('POST', params, '', '10.10.10.10',
+                                       '/foo')
         self.assertEqual(code, status.HTTP_201_CREATED, "Returns 201 response")
 
         args, kwargs = users.register.call_args
@@ -90,7 +92,8 @@ class TestRegister(TestCase):
             to_post = dict(registration_data)
             to_post.pop(key)    # Drop this one.
             params = MultiDict(to_post)
-            data, code, headers = register('POST', params, '', '10.10.10.10')
+            data, code, headers = register('POST', params, '', '10.10.10.10',
+                                           '/foo')
             self.assertEqual(code, status.HTTP_400_BAD_REQUEST,
                              "Returns 400 response")
 
@@ -113,7 +116,8 @@ class TestRegister(TestCase):
             'captcha_value': 'asdf1234'
         }
         params = MultiDict(registration_data)
-        data, code, headers = register('POST', params, '', '10.10.10.10')
+        data, code, headers = register('POST', params, '', '10.10.10.10',
+                                       '/foo')
         self.assertEqual(code, status.HTTP_400_BAD_REQUEST,
                          "Returns 400 response")
 
@@ -143,7 +147,8 @@ class TestRegister(TestCase):
         }
         params = MultiDict(registration_data)
 
-        data, code, headers = register('POST', params, '', '10.10.10.10')
+        data, code, headers = register('POST', params, '', '10.10.10.10',
+                                       '/foo')
         self.assertEqual(code, status.HTTP_400_BAD_REQUEST,
                          "Returns 400 response")
 
@@ -175,7 +180,8 @@ class TestRegister(TestCase):
         }
         params = MultiDict(registration_data)
 
-        data, code, headers = register('POST', params, '', '10.10.10.10')
+        data, code, headers = register('POST', params, '', '10.10.10.10',
+                                       '/foo')
         self.assertEqual(code, status.HTTP_400_BAD_REQUEST,
                          "Returns 400 response")
 
@@ -210,7 +216,8 @@ class TestRegister(TestCase):
         }
         params = MultiDict(registration_data)
 
-        data, code, headers = register('POST', params, '', '10.10.10.10')
+        data, code, headers = register('POST', params, '', '10.10.10.10',
+                                       '/foo')
         self.assertEqual(code, status.HTTP_400_BAD_REQUEST,
                          "Returns 400 response")
 
@@ -243,7 +250,8 @@ class TestRegister(TestCase):
         }
         params = MultiDict(registration_data)
 
-        data, code, headers = register('POST', params, '', '10.10.10.10')
+        data, code, headers = register('POST', params, '', '10.10.10.10',
+                                       '/foo')
         self.assertEqual(code, status.HTTP_400_BAD_REQUEST,
                          "Returns 400 response")
 
