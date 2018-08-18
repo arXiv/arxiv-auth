@@ -21,6 +21,9 @@ from .models import DBUser, DBUserPassword, DBPermanentToken, \
     DBUserNickname, DBProfile, DBPolicyClass
 
 
+logger = logging.getLogger(__name__)
+
+
 def username_exists(username: str) -> bool:
     """
     Determine whether a user with a particular username already exists.
@@ -92,6 +95,7 @@ def register(user: domain.User, password: str, ip: str,
     try:
         db_user, db_nick, db_profile = _create(user, password, ip, remote_host)
     except Exception as e:
+        logger.debug(e)
         raise exceptions.RegistrationFailed('Could not create user') from e
 
     user = domain.User(
@@ -103,7 +107,7 @@ def register(user: domain.User, password: str, ip: str,
             surname=db_user.last_name,
             suffix=db_user.suffix_name
         ),
-        profile=db_profile.to_domain()
+        profile=db_profile.to_domain() if db_profile is not None else None
     )
     auths = domain.Authorizations(
         classic=util.compute_capabilities(db_user),
@@ -196,25 +200,25 @@ def _get_user_data(user_id: str) -> Tuple[DBUser, DBUserNickname, DBProfile]:
 
 
 def _create(user: domain.User, password: str, ip: str, remote_host: str) \
-        -> Tuple[DBUser, DBUserNickname, DBProfile]:
-    if user.name is None:
-        raise ValueError('User name must be set')
-    if user.profile is None:
-        raise ValueError('User profile must be set')
+        -> Tuple[DBUser, DBUserNickname, Optional[DBProfile]]:
+    data = dict(
+        email=user.email,
+        policy_class=DBPolicyClass.PUBLIC_USER,
+        joined_ip_num=ip,
+        joined_remote_host=remote_host,
+        joined_date=util.now(),
+        tracking_cookie=''      # TODO: set this.
+    )
+    if user.name is not None:
+        data.update(dict(
+            first_name=user.name.forename,
+            last_name=user.name.surname,
+            suffix_name=user.name.suffix
+        ))
 
     with util.transaction() as session:
         # Main user entry.
-        db_user = DBUser(
-            first_name=user.name.forename,
-            last_name=user.name.surname,
-            suffix_name=user.name.suffix,
-            email=user.email,
-            policy_class=DBPolicyClass.PUBLIC_USER,
-            joined_ip_num=ip,
-            joined_remote_host=remote_host,
-            joined_date=util.now(),
-            tracking_cookie='',  # TODO: how to set?
-        )
+        db_user = DBUser(**data)
         session.add(db_user)
 
         # Nickname is (apparently) where we keep the username.
@@ -231,25 +235,28 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
                 return 0
             return int(group in user.profile.submission_groups)
 
-        db_profile = DBProfile(
-            user=db_user,
-            country=user.profile.country,
-            affiliation=user.profile.affiliation,
-            url=user.profile.homepage_url,
-            rank=user.profile.rank,
-            archive=user.profile.default_archive,
-            subject_class=user.profile.default_subject,
-            original_subject_classes='',
-            flag_group_physics=_has_group('grp_physics'),
-            flag_group_math=_has_group('grp_math'),
-            flag_group_cs=_has_group('grp_cs'),
-            flag_group_q_bio=_has_group('grp_q-bio'),
-            flag_group_q_fin=_has_group('grp_q-fin'),
-            flag_group_stat=_has_group('grp_stat'),
-            flag_group_eess=_has_group('grp_eess'),
-            flag_group_econ=_has_group('grp_econ'),
-        )
-        session.add(db_profile)
+        if user.profile is not None:
+            db_profile = DBProfile(
+                user=db_user,
+                country=user.profile.country,
+                affiliation=user.profile.affiliation,
+                url=user.profile.homepage_url,
+                rank=user.profile.rank,
+                archive=user.profile.default_archive,
+                subject_class=user.profile.default_subject,
+                original_subject_classes='',
+                flag_group_physics=_has_group('grp_physics'),
+                flag_group_math=_has_group('grp_math'),
+                flag_group_cs=_has_group('grp_cs'),
+                flag_group_q_bio=_has_group('grp_q-bio'),
+                flag_group_q_fin=_has_group('grp_q-fin'),
+                flag_group_stat=_has_group('grp_stat'),
+                flag_group_eess=_has_group('grp_eess'),
+                flag_group_econ=_has_group('grp_econ'),
+            )
+            session.add(db_profile)
+        else:
+            db_profile = None
 
         db_pass = DBUserPassword(
             user=db_user,

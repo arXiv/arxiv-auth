@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0b36a6e99a1c676d8bb44d8966d618bffba20dcc414232557d949723501ff4d9"
+            "sha256": "2f0316afe7f0c88fdc002f9d168115ed8a8c5609d66829d513bfd4ae8f7ae9e9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -26,12 +26,19 @@
             ],
             "version": "==2.3.2"
         },
-        "arxiv-base": {
+        "arxiv-auth": {
             "hashes": [
-                "sha256:34e90b12c503572cdd5dc36f14d19c00a961a9c8dc05e347078ca7a1123f70a1"
+                "sha256:db63fff8b14b99f44ee5a245168abbc1a204d822fccd226fa1c0af1e727a39cd"
             ],
             "index": "pypi",
-            "version": "==0.10.1rc0"
+            "version": "==0.1.0rc6"
+        },
+        "arxiv-base": {
+            "hashes": [
+                "sha256:83f8c9680aa7aea00d2a6f2e25bef6642336a53955ceb6483182309363cd26de"
+            ],
+            "index": "pypi",
+            "version": "==0.10.1rc2"
         },
         "billiard": {
             "hashes": [
@@ -41,17 +48,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:602051e81a6145f12da0f4e12838de5a7ac95aabe9943dc1761b8088b9726c98",
-                "sha256:a74722f7f9e6b881a87e4ebae762573026be6ccdab7e9d6e18924a7dee3c9ee6"
+                "sha256:83abd7ced787d634b170aac56d1f3f79b464b9bea67a22d141f575a1d0856bc9",
+                "sha256:8a71c68f0ff41bd8094a5b2c19170c93d99f98b09e3cf0e2dd9645b538460128"
             ],
-            "version": "==1.7.79"
+            "version": "==1.7.80"
         },
         "botocore": {
             "hashes": [
-                "sha256:03f383e2403e6f9d5b01abb67c2d0ed1c9d90184c8beab6abeb927eb8e2ca947",
-                "sha256:a69019a5cea7051d2dd69c8f82d8d221d493820f72393d80c5307ea6e7686104"
+                "sha256:41b9cf12310d9eca3871ad51d4094ef1fdd49b9bab722dd29dc49aab1124a4da",
+                "sha256:4f81a8613a57a722b0de75ced5e9bb40b2db476be17cf94b6f1550615fdcbe2a"
             ],
-            "version": "==1.10.79"
+            "version": "==1.10.80"
         },
         "captcha": {
             "hashes": [
@@ -690,6 +697,7 @@
                 "sha256:edb04bdd45bfd76c8292c4d9654568efaedf76fe78eb246dde69bdb13b2dad87",
                 "sha256:f19f2a4f547505fe9072e15f6f4ae714af51b5a681a97f187971f50c283193b6"
             ],
+            "markers": "python_version < '3.7' and implementation_name == 'cpython'",
             "version": "==1.1.0"
         },
         "urllib3": {

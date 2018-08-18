@@ -22,6 +22,7 @@ from wtforms import StringField, PasswordField, SelectField, \
 from wtforms.validators import DataRequired, Email, Length, URL, optional, \
     ValidationError
 from wtforms.widgets import ListWidget, CheckboxInput, Select
+from flask import url_for, Markup
 import pycountry
 
 # from .. import domain
@@ -75,12 +76,12 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str,
     if method == 'GET':
         captcha_token = stateless_captcha.new(captcha_secret, ip)
         _params = MultiDict({'captcha_token': captcha_token})  # type: ignore
-        form = RegistrationForm(_params)
+        form = RegistrationForm(_params, next_page=next_page)
         form.configure_captcha(captcha_secret, ip)
         data = {'form': form, 'next_page': next_page}
     elif method == 'POST':
         logger.debug('Registration form submitted')
-        form = RegistrationForm(params)
+        form = RegistrationForm(params, next_page=next_page)
         data = {'form': form, 'next_page': next_page}
         form.configure_captcha(captcha_secret, ip)
 
@@ -108,7 +109,7 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str,
             },
             'user_id': user.user_id
         })
-        return data, status.HTTP_201_CREATED, {'Location': next_page}
+        return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
     return data, status.HTTP_200_OK, {}
 
 
@@ -152,7 +153,6 @@ def edit_profile(method: str, user_id: str, session: domain.Session,
         }})
         return data, status.HTTP_303_SEE_OTHER, {}
     return data, status.HTTP_200_OK, {}
-
 
 
 class ProfileForm(Form):
@@ -284,6 +284,11 @@ class RegistrationForm(Form):
                                             " see in the image above")
     captcha_token = HiddenField()
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Grab `next_page` param, if provided."""
+        self.next_page = kwargs.pop('next_page', None)
+        super(RegistrationForm, self).__init__(*args, **kwargs)
+
     def configure_captcha(self, captcha_secret: str, ip: str) -> None:
         """Set configuration details for the stateless_captcha."""
         self.captcha_secret = captcha_secret
@@ -292,14 +297,22 @@ class RegistrationForm(Form):
     def validate_username(self, field: StringField) -> None:
         """Ensure that the username is unique."""
         if users.username_exists(field.data):
-            raise ValidationError('An account with that username already'
-                                  ' exists')
+            raise ValidationError(Markup(
+                f'An account with that email already exists. You can try'
+                f' <a href="{url_for("ui.login")}?next_page={self.next_page}">'
+                f' logging in</a>, or <a href="{url_for("lost_password")}">'
+                f' reset your password </a>.'
+            ))
 
     def validate_email(self, field: StringField) -> None:
         """Ensure that the email address is unique."""
         if users.email_exists(field.data):
-            raise ValidationError('An account with that email address'
-                                  ' already exists')
+            raise ValidationError(Markup(
+                f'An account with that email already exists. You can try'
+                f' <a href="{url_for("ui.login")}?next_page={self.next_page}">'
+                f' logging in</a>, or <a href="{url_for("lost_password")}">'
+                f' reset your password </a>.'
+            ))
 
     def validate_captcha_value(self, field: StringField) -> None:
         """Check the captcha value against the captcha token."""
