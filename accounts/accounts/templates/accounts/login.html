@@ -46,7 +46,7 @@
     </form>
 
     <h2>If you've never logged in to arXiv.org</h2>
-      <p><a class="button is-link" href="{{ url_for('register') }}">Register for the first time</a></p>
+      <p><a class="button is-link" href="{{ url_for('ui.register') }}?next_page={{ next_page }}">Register for the first time</a></p>
       <p>Registration is required to submit or update papers.</p>
   </div>
 </div>

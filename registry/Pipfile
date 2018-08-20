@@ -13,6 +13,7 @@ sqlalchemy = "*"
 authlib = "*"
 "6c2b755" = {path = "./../users"}
 "390d6aa" = {path = "/Users/brp53/projects/arxiv-base-ui"}
+arxiv-base = "==0.10.1rc2"
 
 [dev-packages]
 "nose2" = "*"

@@ -5,6 +5,7 @@ from datetime import datetime
 
 from .. import tokens
 from ... import domain
+from ...auth import scopes
 
 
 class TestEncodeDecode(TestCase):
@@ -29,7 +30,7 @@ class TestEncodeDecode(TestCase):
                 )
             ),
             authorizations=domain.Authorizations(
-                scopes=['submission:read', 'submission:create'],
+                scopes=[scopes.VIEW_SUBMISSION, scopes.CREATE_SUBMISSION],
                 endorsements=[domain.Category('astro-ph', 'CO')]
             )
         )
@@ -58,7 +59,7 @@ class TestEncodeDecode(TestCase):
                 )
             ),
             authorizations=domain.Authorizations(
-                scopes=['submission:read', 'submission:create'],
+                scopes=[scopes.VIEW_SUBMISSION, scopes.CREATE_SUBMISSION],
                 endorsements=[domain.Category('astro-ph', 'CO')]
             )
         )

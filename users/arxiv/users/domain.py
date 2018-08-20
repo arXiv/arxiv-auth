@@ -141,11 +141,11 @@ class Scope(NamedTuple):
 
     def __repr__(self) -> str:
         """Return this scope as a :-delimited string."""
-        return ":".join(self)
+        return ":".join([o for o in self if o is not None])
 
     def __str__(self) -> str:
         """Return this scope as a :-delimited string."""
-        return ":".join(self)
+        return ":".join([o for o in self if o is not None])
 
     def for_resource(self, resource_id: str) -> 'Scope':
         """Create a copy of this scope with a specific resource."""
@@ -195,10 +195,18 @@ class Authorizations(NamedTuple):
             Category(*obj) if isinstance(obj, tuple) else Category(**obj)
             for obj in data.get('endorsements', [])
         ]
-        if 'scopes' in data and type(data['scopes']) is str:
-            data['scopes'] = [
-                Scope(*scope.split(':')) for scope in data['scopes'].split()
-            ]
+        if 'scopes' in data:
+            if type(data['scopes']) is str:
+                data['scopes'] = [
+                    Scope(*scope.split(':')) for scope
+                    in data['scopes'].split()
+                ]
+            elif type(data['scopes']) is list:
+                data['scopes'] = [
+                    Scope(**scope) if type(scope) is dict
+                    else Scope(*scope.split(':'))
+                    for scope in data['scopes']
+                ]
 
 
 class UserFullName(NamedTuple):

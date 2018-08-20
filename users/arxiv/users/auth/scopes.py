@@ -65,6 +65,9 @@ WRITE_UPLOAD = Scope(Scope.domains.UPLOAD, Scope.actions.UPDATE)
 RELEASE_UPLOAD = Scope(Scope.domains.UPLOAD, Scope.actions.RELEASE)
 """Authorizes releasing an upload workspace."""
 
+DELETE_UPLOAD_WORKSPACE = Scope(Scope.domains.UPLOAD, 'delete_workspace')
+DELETE_UPLOAD_FILE = Scope(Scope.domains.UPLOAD, Scope.actions.DELETE)
+
 GENERAL_USER = [
     EDIT_PROFILE,
     VIEW_PROFILE,

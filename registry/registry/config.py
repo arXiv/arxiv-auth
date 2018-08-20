@@ -36,6 +36,7 @@ SESSION_COOKIE_SECURE = bool(int(os.environ.get('SESSION_COOKIE_SECURE', '1')))
 EXTERNAL_URL_SCHEME = os.environ.get('EXTERNAL_URL_SCHEME', 'https')
 BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 URLS = [
+    ("login", "/login", BASE_SERVER),
     ("register", "/register", BASE_SERVER),
     ("lost_password", "/lost_password", BASE_SERVER),
 ]

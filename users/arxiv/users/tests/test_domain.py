@@ -5,6 +5,7 @@ from typing import NamedTuple, Optional
 from datetime import datetime
 from pytz import timezone
 
+from ..auth import scopes
 from .. import domain
 
 EASTERN = timezone('US/Eastern')
@@ -83,13 +84,22 @@ class TestDictCoercion(TestCase):
                 )
             ),
             authorizations=domain.Authorizations(
-                scopes=['submission:read', 'submission:create'],
+                scopes=[scopes.VIEW_SUBMISSION, scopes.CREATE_SUBMISSION],
                 endorsements=[domain.Category('astro-ph', 'CO')]
             )
         )
         session_data = domain.to_dict(session)
         self.assertEqual(session_data['authorizations']['scopes'],
-                         ['submission:read', 'submission:create'])
+                         [{
+                             'action': 'read',
+                             'domain': 'submission',
+                             'resource': None
+                         },
+                         {
+                             'action': 'created',
+                             'domain': 'submission',
+                             'resource': None
+                         }])
         self.assertEqual(session_data['authorizations']['endorsements'],
                          [{'archive': 'astro-ph', 'subject': 'CO'}])
 
