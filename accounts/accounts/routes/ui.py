@@ -126,7 +126,7 @@ def login() -> Response:
     data, code, headers = authentication.login(request.method,
                                                form_data, ip_address,
                                                next_page)
-
+    data.update({'pagetitle': 'Log in to arXiv'})
     # Flask puts cookie-setting methods on the response, so we do that here
     # instead of in the controller.
     if code is status.HTTP_303_SEE_OTHER:
@@ -150,7 +150,6 @@ def logout() -> Response:
     logger.debug('Request to log out, then redirect to %s', next_page)
     data, code, headers = authentication.logout(session_cookie, classic_cookie,
                                                 next_page)
-
     # Flask puts cookie-setting methods on the response, so we do that here
     # instead of in the controller.
     if code is status.HTTP_303_SEE_OTHER:

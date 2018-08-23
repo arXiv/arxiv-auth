@@ -65,3 +65,6 @@ URLS = [
     ("register", "/user/register", BASE_SERVER),
     ("lost_password", "/user/lost_password", BASE_SERVER),
 ]
+
+RELEASE_NOTES_URL = "https://confluence.cornell.edu/x/7rtyFQ"
+RELEASE_NOTES_TEXT = "Accounts v0.1 released 2018-08-23"
