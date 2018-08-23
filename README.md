@@ -109,11 +109,16 @@ You can start the accounts service in a manner similar to other Flask apps.
 You will need to run Redis, which is most easily achieved using Docker:
 
 ```bash
-docker run -it -p 7000:7000 redis:latest
+docker run -d \
+ -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003 -p 7004:7004 -p 7005:7005 -p 7006:7006 \
+ -e "IP=0.0.0.0" --hostname=server grokzen/redis-cluster:4.0.9
 ```
 
-This will start a local Redis instance, and map your host port 7000 to the
+This will start a local Redis instance, and map your host port 7000-7006 to the
 Redis instance.
+
+Note: we're running Redis in cluster mode; the image used in this example
+is for dev/test purposes only.
 
 To start the application itself, first make sure that all dependencies are
 installed. You'll need to install the ``arxiv.users`` package; see
