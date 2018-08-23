@@ -19,7 +19,6 @@ uwsgi = "*"
 wtforms = "*"
 arxiv-base = "==0.10.1rc2"
 authlib = "*"
-"4010dd8" = {path = "./users"}
 redis-py-cluster = "*"
 
 [dev-packages]
