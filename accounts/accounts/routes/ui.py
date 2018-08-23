@@ -60,12 +60,14 @@ def set_cookies(response: Response, data: dict) -> None:
                      cookie_name, cookie_value, max_age)
         params = dict(httponly=True)
         if current_app.config['SESSION_COOKIE_SECURE']:
-            params.update({'secure': True, 'samesite': 'strict'})
+            # Setting samesite to lax, to allow reasonable links to
+            # authenticated views using GET requests.
+            params.update({'secure': True, 'samesite': 'lax'})
         response.set_cookie(cookie_name, cookie_value, max_age=max_age,
                             **params)
 
 
-@blueprint.route('/register', methods=['GET', 'POST'])
+# @blueprint.route('/register', methods=['GET', 'POST'])
 @anonymous_only
 def register() -> Response:
     """Interface for creating new accounts."""
@@ -159,7 +161,7 @@ def logout() -> Response:
     return redirect(url_for('get_login'), code=status.HTTP_302_FOUND)
 
 
-@blueprint.route('/captcha', methods=['GET'])
+# @blueprint.route('/captcha', methods=['GET'])
 @anonymous_only
 def captcha() -> Response:
     """Provide the image for stateless stateless_captcha."""
