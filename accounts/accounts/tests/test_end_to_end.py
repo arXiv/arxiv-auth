@@ -301,15 +301,15 @@ class TestLoginLogoutRoutes(TestCase):
 
     def setUp(self):
         """Spin up redis."""
-        self.redis = subprocess.run(
-            "docker run -d -p 6379:6379 redis",
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
-        time.sleep(2)    # In case it takes a moment to start.
-        if self.redis.returncode > 0:
-            raise RuntimeError('Could not start redis. Is Docker running?')
+        # self.redis = subprocess.run(
+        #     "docker run -d -p 6379:6379 redis",
+        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        # )
+        # time.sleep(2)    # In case it takes a moment to start.
+        # if self.redis.returncode > 0:
+        #     raise RuntimeError('Could not start redis. Is Docker running?')
 
-        self.container = self.redis.stdout.decode('ascii').strip()
+        # self.container = self.redis.stdout.decode('ascii').strip()
         self.secret = 'bazsecret'
         self.db = 'db.sqlite'
         try:
@@ -319,6 +319,8 @@ class TestLoginLogoutRoutes(TestCase):
             self.app.config['SESSION_COOKIE_SECURE'] = '0'
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+            self.app.config['REDIS_HOST'] = 'localhost'
+            self.app.config['REDIS_PORT'] = '6379'
             self.client = self.app.test_client()
             with self.app.app_context():
                 from accounts.services import legacy, users
@@ -366,13 +368,13 @@ class TestLoginLogoutRoutes(TestCase):
                     session.add(db_nick)
 
         except Exception as e:
-            stop_container(self.container)
+            # stop_container(self.container)
             raise
-
-    def tearDown(self):
-        """Tear down redis."""
-        stop_container(self.container)
-        os.remove(self.db)
+    #
+    # def tearDown(self):
+    #     """Tear down redis."""
+    #     stop_container(self.container)
+    #     os.remove(self.db)
 
     def test_get_login(self):
         """GET request to /login returns the login form."""

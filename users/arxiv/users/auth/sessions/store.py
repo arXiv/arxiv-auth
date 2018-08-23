@@ -48,7 +48,7 @@ class SessionStore(object):
                  duration: int = 7200, token: str = None) -> None:
         """Open the connection to Redis."""
         # params = #, db=db)
-        self.r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host=host, port=str(port))])
+        self.r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host=host, port=str(port))], skip_full_coverage_check=True)
         self._secret = secret
         self._duration = duration
 

@@ -7,6 +7,7 @@ import json
 
 import os
 import redis
+import rediscluster
 import jwt
 
 from .... import domain
@@ -20,21 +21,21 @@ class TestDistributedSessionServiceIntegration(TestCase):
 
     def setUp(self):
         """Spin up redis."""
-        self.redis = subprocess.run(
-            "docker run -d -p 6379:6379 redis",
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
-        if self.redis.returncode > 0:
-            raise RuntimeError('Could not start redis. Is Docker running?')
-        self.container = self.redis.stdout.decode('ascii').strip()
+        # self.redis = subprocess.run(
+        #     "docker run -d -p 6379:6379 arxiv/redis-cluster:4.0.10",
+        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        # )
+        # if self.redis.returncode > 0:
+        #     raise RuntimeError('Could not start redis. Is Docker running?')
+        # self.container = self.redis.stdout.decode('ascii').strip()
         self.secret = 'bazsecret'
-        time.sleep(2)    # In case it takes a moment to start.
+        # time.sleep(2)    # In case it takes a moment to start.
 
     def tearDown(self):
         """Tear down redis."""
-        subprocess.run(f"docker rm -f {self.container}",
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                       shell=True)
+        # subprocess.run(f"docker rm -f {self.container}",
+        #                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        #                shell=True)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     def test_store_create(self, mock_get_config):
@@ -61,7 +62,7 @@ class TestDistributedSessionServiceIntegration(TestCase):
         self.assertIsNotNone(cookie)
 
         # Are the expected values stored in Redis?
-        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+        r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='6379')])
         raw = r.get(session.session_id)
         stored_data = json.loads(raw)
         cookie_data = jwt.decode(cookie, self.secret)
@@ -69,7 +70,7 @@ class TestDistributedSessionServiceIntegration(TestCase):
 
     # def test_invalidate_session(self):
     #     """Invalidate a session from the datastore."""
-    #     r = redis.StrictRedis(host='localhost', port=6379, db=0)
+    #     r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='6379')])
     #     data_in = {'end_time': time.time() + 30 * 60, 'user_id': 1,
     #                'nonce': '123'}
     #     r.set('fookey', json.dumps(data_in))
@@ -91,6 +92,6 @@ class TestDistributedSessionServiceIntegration(TestCase):
     def test_delete_session(self, mock_get_config):
         """Delete a session from the datastore."""
         mock_get_config.return_value = {'JWT_SECRET': self.secret}
-        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+        r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='6379')])
         r.set('fookey', b'foovalue')
         store.delete_by_id('fookey')
