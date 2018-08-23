@@ -13,7 +13,7 @@ LOGFILE = os.environ.get('LOGFILE')
 LOGLEVEL = os.environ.get('LOGLEVEL', 20)
 
 REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
-REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
+REDIS_PORT = os.environ.get('REDIS_PORT', '7000')
 REDIS_DATABASE = os.environ.get('REDIS_DATABASE', '0')
 REDIS_TOKEN = os.environ.get('REDIS_TOKEN', None)
 """This is the token used in the AUTH procedure."""

@@ -37,7 +37,7 @@ class TestDistributedSessionService(TestCase):
             scopes=['foo:write'],
             endorsements=[]
         )
-        r = store.SessionStore('localhost', 6379, 0, 'foosecret')
+        r = store.SessionStore('localhost', 7000, 0, 'foosecret')
         session = r.create(auths, ip, remote_host, user=user)
         cookie = r.generate_cookie(session)
         self.assertIsInstance(session, domain.Session)
@@ -53,7 +53,7 @@ class TestDistributedSessionService(TestCase):
         mock_redis.exceptions.ConnectionError = ConnectionError
         mock_redis_connection = mock.MagicMock()
         mock_redis.StrictRedisCluster.return_value = mock_redis_connection
-        r = store.SessionStore('localhost', 6379, 0, 'foosecret')
+        r = store.SessionStore('localhost', 7000, 0, 'foosecret')
         r.delete_by_id('fookey')
         self.assertEqual(mock_redis_connection.delete.call_count, 1)
 
@@ -78,7 +78,7 @@ class TestDistributedSessionService(TestCase):
             scopes=['foo:write'],
             endorsements=[]
         )
-        r = store.SessionStore('localhost', 6379, 0, 'foosecret')
+        r = store.SessionStore('localhost', 7000, 0, 'foosecret')
         with self.assertRaises(store.SessionCreationFailed):
             r.create(auths, ip, remote_host, user=user)
 

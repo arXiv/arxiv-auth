@@ -29,7 +29,7 @@ class TestClientAuthentication(TestCase):
     def setUp(self):
         """Spin up redis."""
         self.redis = subprocess.run(
-            "docker run -d -p 6379:6379 redis",
+            "docker run -d -p 7000:7000 redis",
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
         )
         time.sleep(2)    # In case it takes a moment to start.

@@ -48,7 +48,11 @@ class SessionStore(object):
                  duration: int = 7200, token: str = None) -> None:
         """Open the connection to Redis."""
         # params = #, db=db)
-        self.r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host=host, port=str(port))], skip_full_coverage_check=True)
+        logger.debug('New Redis connection at %s, port %s', host, port)
+        self.r = rediscluster.StrictRedisCluster(
+            startup_nodes=[{'host': host, 'port': str(port)}],
+            skip_full_coverage_check=True
+        )
         self._secret = secret
         self._duration = duration
 
@@ -253,7 +257,7 @@ def init_app(app: object = None) -> None:
     """Set default configuration parameters for an application instance."""
     config = get_application_config(app)
     config.setdefault('REDIS_HOST', 'localhost')
-    config.setdefault('REDIS_PORT', '6379')
+    config.setdefault('REDIS_PORT', '7000')
     config.setdefault('REDIS_DATABASE', '0')
     config.setdefault('REDIS_TOKEN', None)
     config.setdefault('JWT_SECRET', 'foosecret')
@@ -264,7 +268,7 @@ def get_redis_session(app: object = None) -> SessionStore:
     """Get a new session with the search index."""
     config = get_application_config(app)
     host = config.get('REDIS_HOST', 'localhost')
-    port = int(config.get('REDIS_PORT', '6379'))
+    port = int(config.get('REDIS_PORT', '7000'))
     db = int(config.get('REDIS_DATABASE', '0'))
     token = config.get('REDIS_TOKEN', None)
     secret = config['JWT_SECRET']

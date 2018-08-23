@@ -51,7 +51,7 @@ def stop_container(container):
 #     def setUp(self):
 #         """Spin up redis."""
 #         self.redis = subprocess.run(
-#             "docker run -d -p 6379:6379 redis",
+#             "docker run -d -p 7000:7000 redis",
 #             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
 #         )
 #         time.sleep(5)    # In case it takes a moment to start.
@@ -71,7 +71,7 @@ def stop_container(container):
 #             self.app.config['CAPTCHA_SECRET'] = self.captcha_secret
 #             self.app.config['JWT_SECRET'] = self.secret
 #             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
-#             self.client = self.app.test_client()
+#             client = self.app.test_client()
 #             with self.app.app_context():
 #                 from accounts.services import legacy, users
 #                 legacy.create_all()
@@ -87,7 +87,7 @@ def stop_container(container):
 #
 #     def test_get_registration_form(self):
 #         """GET request for the registration form."""
-#         response = self.client.get('/register')
+#         response = client.get('/register')
 #         self.assertEqual(response.status_code, status.HTTP_200_OK)
 #         self.assertEqual(response.content_type, 'text/html; charset=utf-8')
 #
@@ -112,7 +112,7 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         response = self.client.post('/register', data=registration_data,
+#         response = client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 #         self.assertTrue(
@@ -147,38 +147,38 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         response = self.client.post('/register', data=registration_data,
+#         response = client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #
 #         # We have to set the cookies manually here.
 #         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-#         self.client.set_cookie(
+#         client.set_cookie(
 #             'localhost',
 #             self.app.config['SESSION_COOKIE_NAME'],
 #             cookies[self.app.config['SESSION_COOKIE_NAME']]['value']
 #         )
-#         self.client.set_cookie(
+#         client.set_cookie(
 #             'localhost',
 #             self.app.config['CLASSIC_COOKIE_NAME'],
 #             cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value']
 #         )
 #
 #         # Attempting to access the registration form results in a redirect.
-#         response = self.client.post('/register', data=registration_data,
+#         response = client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
-#         response = self.client.get('/register',
+#         response = client.get('/register',
 #                                    environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
 #
 #         # Clear session cookies. The user is no longer using an authenticated
 #         # session.
-#         self.client.set_cookie('localhost',
+#         client.set_cookie('localhost',
 #                                self.app.config['SESSION_COOKIE_NAME'], '')
-#         self.client.set_cookie('localhost',
+#         client.set_cookie('localhost',
 #                                self.app.config['CLASSIC_COOKIE_NAME'], '')
 #
-#         response = self.client.get('/register',
+#         response = client.get('/register',
 #                                    environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_200_OK)
 #
@@ -204,12 +204,12 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         self.client.post('/register', data=registration_data,
+#         client.post('/register', data=registration_data,
 #                          environ_base=self.environ_base)
 #         # Clear session cookies.
-#         self.client.set_cookie('localhost',
+#         client.set_cookie('localhost',
 #                                self.app.config['SESSION_COOKIE_NAME'], '')
-#         self.client.set_cookie('localhost',
+#         client.set_cookie('localhost',
 #                                self.app.config['CLASSIC_COOKIE_NAME'], '')
 #
 #         # Now we attempt to register the same user.
@@ -232,15 +232,15 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         response = self.client.post('/register', data=registration_data,
+#         response = client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
 #                          "Returns 400 response")
 #
 #         # Clear session cookies.
-#         self.client.set_cookie('localhost',
+#         client.set_cookie('localhost',
 #                                self.app.config['SESSION_COOKIE_NAME'], '')
-#         self.client.set_cookie('localhost',
+#         client.set_cookie('localhost',
 #                                self.app.config['CLASSIC_COOKIE_NAME'], '')
 #
 #         registration_data = {
@@ -257,7 +257,7 @@ def stop_container(container):
 #             'captcha_value': captcha_value,
 #             'captcha_token': captcha_token
 #         }
-#         response = self.client.post('/register', data=registration_data,
+#         response = client.post('/register', data=registration_data,
 #                                     environ_base=self.environ_base)
 #         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
 #                          "Returns 400 response")
@@ -287,7 +287,7 @@ def stop_container(container):
 #         for key in registration_data.keys():
 #             to_post = dict(registration_data)
 #             to_post.pop(key)    # Drop this one.
-#             response = self.client.post('/register', data=to_post,
+#             response = client.post('/register', data=to_post,
 #                                         environ_base=self.environ_base)
 #
 #             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
@@ -299,17 +299,20 @@ class TestLoginLogoutRoutes(TestCase):
 
     __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         """Spin up redis."""
-        # self.redis = subprocess.run(
-        #     "docker run -d -p 6379:6379 redis",
-        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        # )
-        # time.sleep(2)    # In case it takes a moment to start.
-        # if self.redis.returncode > 0:
-        #     raise RuntimeError('Could not start redis. Is Docker running?')
+        self.redis = subprocess.run(
+            "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
+            " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
+            " --hostname=server grokzen/redis-cluster:4.0.9",
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        )
+        time.sleep(10)    # In case it takes a moment to start.
+        if self.redis.returncode > 0:
+            raise RuntimeError('Could not start redis. Is Docker running?')
 
-        # self.container = self.redis.stdout.decode('ascii').strip()
+        self.container = self.redis.stdout.decode('ascii').strip()
         self.secret = 'bazsecret'
         self.db = 'db.sqlite'
         try:
@@ -320,8 +323,8 @@ class TestLoginLogoutRoutes(TestCase):
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.app.config['REDIS_HOST'] = 'localhost'
-            self.app.config['REDIS_PORT'] = '6379'
-            self.client = self.app.test_client()
+            self.app.config['REDIS_PORT'] = '7000'
+            client = self.app.test_client()
             with self.app.app_context():
                 from accounts.services import legacy, users
                 legacy.create_all()
@@ -368,26 +371,29 @@ class TestLoginLogoutRoutes(TestCase):
                     session.add(db_nick)
 
         except Exception as e:
-            # stop_container(self.container)
+            stop_container(self.container)
             raise
-    #
-    # def tearDown(self):
-    #     """Tear down redis."""
-    #     stop_container(self.container)
-    #     os.remove(self.db)
+
+    @classmethod
+    def tearDownClass(self):
+        """Tear down redis and the test DB."""
+        stop_container(self.container)
+        os.remove(self.db)
 
     def test_get_login(self):
         """GET request to /login returns the login form."""
-        response = self.client.get('/login')
+        client = self.app.test_client()
+        response = client.get('/login')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.content_type, 'text/html; charset=utf-8')
 
     def test_post_login(self):
         """POST request to /login with valid form data returns redirect."""
+        client = self.app.test_client()
         form_data = {'username': 'foouser', 'password': 'thepassword'}
         next_page = '/foo'
-        response = self.client.post(f'/login?next_page={next_page}',
-                                    data=form_data)
+        response = client.post(f'/login?next_page={next_page}',
+                               data=form_data)
         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
         self.assertTrue(response.headers['Location'].endswith(next_page),
                         "Redirect should point at value of `next_page` param")
@@ -401,24 +407,26 @@ class TestLoginLogoutRoutes(TestCase):
     def test_post_login_baddata(self):
         """POST rquest to /login with invalid data returns 400."""
         form_data = {'username': 'foouser', 'password': 'notthepassword'}
-        response = self.client.post('/login', data=form_data)
+        client = self.app.test_client()
+        response = client.post('/login', data=form_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_login_logout(self):
         """User logs in and then logs out."""
+        client = self.app.test_client()
         form_data = {'username': 'foouser', 'password': 'thepassword'}
 
         # Werkzeug should keep the cookies around for the next request.
-        response = self.client.post('/login', data=form_data)
+        response = client.post('/login', data=form_data)
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
         self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
                       "Sets cookie for authn session.")
         self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
                       "Sets cookie for classic sessions.")
 
-        response = self.client.get('/logout')
+        response = client.get('/logout')
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-        print(logout_cookies)
+
         self.assertEqual(
             logout_cookies[self.app.config['SESSION_COOKIE_NAME']]['value'],
             '',

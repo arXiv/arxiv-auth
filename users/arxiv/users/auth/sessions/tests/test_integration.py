@@ -19,23 +19,27 @@ class TestDistributedSessionServiceIntegration(TestCase):
 
     __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         """Spin up redis."""
-        # self.redis = subprocess.run(
-        #     "docker run -d -p 6379:6379 arxiv/redis-cluster:4.0.10",
-        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        # )
-        # if self.redis.returncode > 0:
-        #     raise RuntimeError('Could not start redis. Is Docker running?')
-        # self.container = self.redis.stdout.decode('ascii').strip()
+        self.redis = subprocess.run(
+            "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
+            " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
+            " --hostname=server grokzen/redis-cluster:4.0.9",
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        )
+        if self.redis.returncode > 0:
+            raise RuntimeError('Could not start redis. Is Docker running?')
+        self.container = self.redis.stdout.decode('ascii').strip()
         self.secret = 'bazsecret'
-        # time.sleep(2)    # In case it takes a moment to start.
+        time.sleep(10)    # In case it takes a moment to start.
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(self):
         """Tear down redis."""
-        # subprocess.run(f"docker rm -f {self.container}",
-        #                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        #                shell=True)
+        subprocess.run(f"docker rm -f {self.container}",
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       shell=True)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     def test_store_create(self, mock_get_config):
@@ -62,7 +66,7 @@ class TestDistributedSessionServiceIntegration(TestCase):
         self.assertIsNotNone(cookie)
 
         # Are the expected values stored in Redis?
-        r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='6379')])
+        r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='7000')])
         raw = r.get(session.session_id)
         stored_data = json.loads(raw)
         cookie_data = jwt.decode(cookie, self.secret)
@@ -70,7 +74,7 @@ class TestDistributedSessionServiceIntegration(TestCase):
 
     # def test_invalidate_session(self):
     #     """Invalidate a session from the datastore."""
-    #     r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='6379')])
+    #     r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='7000')])
     #     data_in = {'end_time': time.time() + 30 * 60, 'user_id': 1,
     #                'nonce': '123'}
     #     r.set('fookey', json.dumps(data_in))
@@ -92,6 +96,6 @@ class TestDistributedSessionServiceIntegration(TestCase):
     def test_delete_session(self, mock_get_config):
         """Delete a session from the datastore."""
         mock_get_config.return_value = {'JWT_SECRET': self.secret}
-        r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='6379')])
+        r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='7000')])
         r.set('fookey', b'foovalue')
         store.delete_by_id('fookey')

@@ -69,7 +69,7 @@ WITH_INTEGRATION=1 pipenv run pytest \
     accounts users/arxiv
 ```
 
-Note that this requires Docker to be running, and port 6379 to be free on your
+Note that this requires Docker to be running, and port 7000 to be free on your
 machine.
 
 
@@ -99,7 +99,7 @@ To run integration and end-to-end tests with a live Redis, use:
 WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov-report=term-missing accounts
 ```
 
-Note that this requires Docker to be running, and port 6379 to be free on your
+Note that this requires Docker to be running, and port 7000 to be free on your
 machine.
 
 
@@ -109,10 +109,10 @@ You can start the accounts service in a manner similar to other Flask apps.
 You will need to run Redis, which is most easily achieved using Docker:
 
 ```bash
-docker run -it -p 6379:6379 redis:latest
+docker run -it -p 7000:7000 redis:latest
 ```
 
-This will start a local Redis instance, and map your host port 6379 to the
+This will start a local Redis instance, and map your host port 7000 to the
 Redis instance.
 
 To start the application itself, first make sure that all dependencies are
