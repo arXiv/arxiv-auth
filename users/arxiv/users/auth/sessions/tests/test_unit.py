@@ -18,13 +18,13 @@ class TestDistributedSessionService(TestCase):
     """The store session service puts sessions in a key-value store."""
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis')
+    @mock.patch(f'{store.__name__}.rediscluster')
     def test_create(self, mock_redis, mock_get_config):
         """Accept a :class:`.User` and returns a :class:`.Session`."""
         mock_get_config.return_value = {'JWT_SECRET': 'foosecret'}
         mock_redis.exceptions.ConnectionError = ConnectionError
         mock_redis_connection = mock.MagicMock()
-        mock_redis.StrictRedis.return_value = mock_redis_connection
+        mock_redis.StrictRedisCluster.return_value = mock_redis_connection
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         user = domain.User(
@@ -46,26 +46,26 @@ class TestDistributedSessionService(TestCase):
         self.assertEqual(mock_redis_connection.set.call_count, 1)
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis')
+    @mock.patch(f'{store.__name__}.rediscluster')
     def test_delete(self, mock_redis, mock_get_config):
         """Delete a session from the datastore."""
         mock_get_config.return_value = {'JWT_SECRET': 'foosecret'}
         mock_redis.exceptions.ConnectionError = ConnectionError
         mock_redis_connection = mock.MagicMock()
-        mock_redis.StrictRedis.return_value = mock_redis_connection
+        mock_redis.StrictRedisCluster.return_value = mock_redis_connection
         r = store.SessionStore('localhost', 6379, 0, 'foosecret')
         r.delete_by_id('fookey')
         self.assertEqual(mock_redis_connection.delete.call_count, 1)
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis')
+    @mock.patch(f'{store.__name__}.rediscluster')
     def test_connection_failed(self, mock_redis, mock_get_config):
         """:class:`.SessionCreationFailed` is raised when creation fails."""
         mock_get_config.return_value = {'JWT_SECRET': 'foosecret'}
         mock_redis.exceptions.ConnectionError = ConnectionError
         mock_redis_connection = mock.MagicMock()
         mock_redis_connection.set.side_effect = ConnectionError
-        mock_redis.StrictRedis.return_value = mock_redis_connection
+        mock_redis.StrictRedisCluster.return_value = mock_redis_connection
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         user = domain.User(
@@ -87,7 +87,7 @@ class TestInvalidateSession(TestCase):
     """Tests for :func:`store.invalidate`."""
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_valid_token(self, mock_get_redis, mock_get_config):
         """A valid token is passed."""
         secret = 'barsecret'
@@ -142,7 +142,7 @@ class TestGetSession(TestCase):
     """Tests for :func:`store.load`."""
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_not_a_token(self, mock_get_redis, mock_get_config):
         """Something other than a JWT is passed."""
         mock_get_config.return_value = {
@@ -157,7 +157,7 @@ class TestGetSession(TestCase):
             store.load('notatoken')
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_malformed_token(self, mock_get_redis, mock_get_config):
         """A JWT with missing claims is passed."""
         secret = 'barsecret'
@@ -177,7 +177,7 @@ class TestGetSession(TestCase):
                 store.load(malformed_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_token_with_bad_encryption(self, mock_get_redis, mock_get_config):
         """A JWT produced with a different secret is passed."""
         secret = 'barsecret'
@@ -202,7 +202,7 @@ class TestGetSession(TestCase):
             store.load(bad_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_expired_token(self, mock_get_redis, mock_get_config):
         """A JWT produced with a different secret is passed."""
         secret = 'barsecret'
@@ -233,7 +233,7 @@ class TestGetSession(TestCase):
             store.load(expired_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_forged_token(self, mock_get_redis, mock_get_config):
         """A JWT with the wrong nonce is passed."""
         start_time = datetime.now(tz=EASTERN)
@@ -271,7 +271,7 @@ class TestGetSession(TestCase):
             store.load(expired_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_other_forged_token(self, mock_get_redis, mock_get_config):
         """A JWT with the wrong user_id is passed."""
         start_time = datetime.now(tz=EASTERN)
@@ -307,7 +307,7 @@ class TestGetSession(TestCase):
             store.load(expired_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_empty_session(self, mock_get_redis, mock_get_config):
         """Session has been removed, or may never have existed."""
         start_time = datetime.now(tz=EASTERN)
@@ -335,7 +335,7 @@ class TestGetSession(TestCase):
             store.load(expired_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
-    @mock.patch(f'{store.__name__}.redis.StrictRedis')
+    @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_valid_token(self, mock_get_redis, mock_get_config):
         """A valid token is passed."""
         start_time = datetime.now(tz=EASTERN)

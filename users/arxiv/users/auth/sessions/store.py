@@ -16,6 +16,8 @@ from typing import Any, Optional, Union, Tuple
 
 from functools import wraps
 import redis
+import rediscluster
+
 import jwt
 
 from ... import domain
@@ -45,10 +47,8 @@ class SessionStore(object):
     def __init__(self, host: str, port: int, db: int, secret: str,
                  duration: int = 7200, token: str = None) -> None:
         """Open the connection to Redis."""
-        params = dict(host=host, port=port, db=db)
-        if token is not None:
-            params.update({'password': token})
-        self.r = redis.StrictRedis(**params)
+        # params = #, db=db)
+        self.r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host=host, port=str(port))])
         self._secret = secret
         self._duration = duration
 
