@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2f0316afe7f0c88fdc002f9d168115ed8a8c5609d66829d513bfd4ae8f7ae9e9"
+            "sha256": "1dba9c7d016250252f040b11cc6a259a0ebc7d0f9ab619deccb9ac17e5efb664"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,9 +16,6 @@
         ]
     },
     "default": {
-        "6c2b755": {
-            "path": "./../users"
-        },
         "amqp": {
             "hashes": [
                 "sha256:073dd02fdd73041bffc913b767866015147b61f2a9bc104daef172fc1a0066eb",
@@ -28,10 +25,10 @@
         },
         "arxiv-auth": {
             "hashes": [
-                "sha256:db63fff8b14b99f44ee5a245168abbc1a204d822fccd226fa1c0af1e727a39cd"
+                "sha256:da72cee2a5aa5d475fcde4fc810822f66e40382b0e33f3c95994c0e74bc1fd6f"
             ],
             "index": "pypi",
-            "version": "==0.1.0rc6"
+            "version": "==0.1.0rc9"
         },
         "arxiv-base": {
             "hashes": [
@@ -697,6 +694,7 @@
                 "sha256:edb04bdd45bfd76c8292c4d9654568efaedf76fe78eb246dde69bdb13b2dad87",
                 "sha256:f19f2a4f547505fe9072e15f6f4ae714af51b5a681a97f187971f50c283193b6"
             ],
+            "markers": "python_version < '3.7' and implementation_name == 'cpython'",
             "version": "==1.1.0"
         },
         "urllib3": {

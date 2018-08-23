@@ -14,6 +14,6 @@ script:
   - pipenv install --dev
   - pipenv install ./users
   - ./lintstats.sh
-  - WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov=users/arxiv --cov=authenticator --cov=registry --cov-report=term-missing accounts users/arxiv authenticator registry
+  - WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov=users/arxiv --cov-report=term-missing accounts users/arxiv
 after_success:
   - coveralls
