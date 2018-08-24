@@ -302,17 +302,17 @@ class TestLoginLogoutRoutes(TestCase):
     @classmethod
     def setUpClass(self):
         """Spin up redis."""
-        self.redis = subprocess.run(
-            "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
-            " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
-            " --hostname=server grokzen/redis-cluster:4.0.9",
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
-        time.sleep(10)    # In case it takes a moment to start.
-        if self.redis.returncode > 0:
-            raise RuntimeError('Could not start redis. Is Docker running?')
-
-        self.container = self.redis.stdout.decode('ascii').strip()
+        # self.redis = subprocess.run(
+        #     "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
+        #     " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
+        #     " --hostname=server grokzen/redis-cluster:4.0.9",
+        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        # )
+        # time.sleep(10)    # In case it takes a moment to start.
+        # if self.redis.returncode > 0:
+        #     raise RuntimeError('Could not start redis. Is Docker running?')
+        #
+        # self.container = self.redis.stdout.decode('ascii').strip()
         self.secret = 'bazsecret'
         self.db = 'db.sqlite'
         try:
@@ -324,7 +324,7 @@ class TestLoginLogoutRoutes(TestCase):
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.app.config['REDIS_HOST'] = 'localhost'
             self.app.config['REDIS_PORT'] = '7000'
-            client = self.app.test_client()
+
             with self.app.app_context():
                 from accounts.services import legacy, users
                 legacy.create_all()
@@ -377,7 +377,7 @@ class TestLoginLogoutRoutes(TestCase):
     @classmethod
     def tearDownClass(self):
         """Tear down redis and the test DB."""
-        stop_container(self.container)
+        # stop_container(self.container)
         os.remove(self.db)
 
     def test_get_login(self):

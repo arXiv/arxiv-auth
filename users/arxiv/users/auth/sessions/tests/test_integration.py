@@ -22,24 +22,24 @@ class TestDistributedSessionServiceIntegration(TestCase):
     @classmethod
     def setUpClass(self):
         """Spin up redis."""
-        self.redis = subprocess.run(
-            "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
-            " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
-            " --hostname=server grokzen/redis-cluster:4.0.9",
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
-        if self.redis.returncode > 0:
-            raise RuntimeError('Could not start redis. Is Docker running?')
-        self.container = self.redis.stdout.decode('ascii').strip()
+        # self.redis = subprocess.run(
+        #     "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
+        #     " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
+        #     " --hostname=server grokzen/redis-cluster:4.0.9",
+        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        # )
+        # if self.redis.returncode > 0:
+        #     raise RuntimeError('Could not start redis. Is Docker running?')
+        # self.container = self.redis.stdout.decode('ascii').strip()
         self.secret = 'bazsecret'
-        time.sleep(10)    # In case it takes a moment to start.
+        # time.sleep(10)    # In case it takes a moment to start.
 
     @classmethod
     def tearDownClass(self):
         """Tear down redis."""
-        subprocess.run(f"docker rm -f {self.container}",
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                       shell=True)
+        # subprocess.run(f"docker rm -f {self.container}",
+        #                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        #                shell=True)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     def test_store_create(self, mock_get_config):
