@@ -9,9 +9,11 @@ os:
   - linux
 python:
   - "3.6"
-script:
+before_install:
   - pip install pipenv
   - pipenv install --dev
+
+script:
   - pipenv install ./users
   - ./lintstats.sh
   - docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003 -p 7004:7004 -p 7005:7005 -p 7006:7006 -e "IP=0.0.0.0" --hostname=server grokzen/redis-cluster:4.0.9

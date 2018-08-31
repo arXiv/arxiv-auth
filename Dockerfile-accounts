@@ -13,8 +13,8 @@ RUN pipenv install
 
 ENV PATH "/opt/arxiv:${PATH}"
 
-ADD wsgi.py /opt/arxiv/
-ADD accounts/ /opt/arxiv/accounts/
+ADD accounts/wsgi.py /opt/arxiv/
+ADD accounts/accounts/ /opt/arxiv/accounts/
 
 EXPOSE 8000
 
