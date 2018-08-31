@@ -67,7 +67,7 @@ def set_cookies(response: Response, data: dict) -> None:
                             **params)
 
 
-# @blueprint.route('/register', methods=['GET', 'POST'])
+@blueprint.route('/register', methods=['GET', 'POST'])
 @anonymous_only
 def register() -> Response:
     """Interface for creating new accounts."""
@@ -160,7 +160,7 @@ def logout() -> Response:
     return redirect(url_for('get_login'), code=status.HTTP_302_FOUND)
 
 
-# @blueprint.route('/captcha', methods=['GET'])
+@blueprint.route('/captcha', methods=['GET'])
 @anonymous_only
 def captcha() -> Response:
     """Provide the image for stateless stateless_captcha."""
