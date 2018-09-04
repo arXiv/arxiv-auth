@@ -92,7 +92,8 @@ class SessionStore(object):
         )
 
         try:
-            self.r.set(session_id, json.dumps(domain.to_dict(session)))
+            self.r.set(session_id, json.dumps(domain.to_dict(session)),
+                       ex=self._duration)
         except redis.exceptions.ConnectionError as e:
             raise SessionCreationFailed(f'Connection failed: {e}') from e
         except Exception as e:
