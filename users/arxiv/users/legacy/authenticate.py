@@ -73,7 +73,8 @@ def authenticate(username_or_email: Optional[str]=None,
             forename=db_user.first_name,
             surname=db_user.last_name,
             suffix=db_user.suffix_name
-        )
+        ),
+        verified=bool(db_user.flag_email_verified)
     )
     auths = domain.Authorizations(
         classic=util.compute_capabilities(db_user),

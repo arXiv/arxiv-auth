@@ -88,6 +88,13 @@ def login(method: str, form_data: MultiDict, ip: str,
         data.update({'error': 'Invalid username or password.'})
         return data, status.HTTP_400_BAD_REQUEST, {}
 
+    if not userdata.verified:
+        data.update({
+            'error': 'Your account has not yet been verified. Please contact '
+                     'help@beta.arxiv.org. if you believe this to be in error.'
+        })
+        return data, status.HTTP_400_BAD_REQUEST, {}
+
     # Create a session in the distributed session store.
     try:
         session = sessions.create(auths, ip, ip, track, user=userdata)

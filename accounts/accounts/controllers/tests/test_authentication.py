@@ -119,7 +119,8 @@ class TestPOSTLogin(TestCase):
         user = domain.User(
             user_id=42,
             username='foouser',
-            email='user@ema.il'
+            email='user@ema.il',
+            verified=True
         )
         auths = domain.Authorizations(
             classic=6,
@@ -156,3 +157,54 @@ class TestPOSTLogin(TestCase):
                          "Session cookie is returned")
         self.assertEqual(data['cookies']['classic_cookie'], (c_cookie, None),
                          "Classic session cookie is returned")
+
+    @mock.patch('accounts.controllers.authentication.users')
+    @mock.patch('accounts.controllers.authentication.sessions')
+    @mock.patch('accounts.controllers.authentication.legacy')
+    def test_post_not_verified(self, mock_legacy, mock_sessions, mock_users):
+        """Form data are valid and check out."""
+        mock_users.exceptions.AuthenticationFailed = \
+            users.exceptions.AuthenticationFailed
+        mock_sessions.exceptions.SessionCreationFailed = \
+            sessions.exceptions.SessionCreationFailed
+        mock_legacy.exceptions.SessionCreationFailed = \
+            legacy.exceptions.SessionCreationFailed
+        form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
+        ip = '123.45.67.89'
+        next_page = '/foo'
+        start_time = datetime.now(tz=EASTERN)
+        user = domain.User(
+            user_id=42,
+            username='foouser',
+            email='user@ema.il',
+            verified=False
+        )
+        auths = domain.Authorizations(
+            classic=6,
+            scopes=['public:read', 'submission:create']
+        )
+        mock_users.authenticate.return_value = user, auths
+        c_session = domain.Session(
+            session_id='barsession',
+            user=user,
+            start_time=start_time,
+            authorizations=auths
+        )
+        c_cookie = 'bardata'
+        mock_legacy.create.return_value = c_session
+        mock_legacy.generate_cookie.return_value = c_cookie
+        session = domain.Session(
+            session_id='foosession',
+            user=user,
+            start_time=start_time,
+            authorizations=domain.Authorizations(
+                scopes=['public:read', 'submission:create']
+            )
+        )
+        cookie = 'foodata'
+        mock_sessions.create.return_value = session
+        mock_sessions.generate_cookie.return_value = cookie
+
+        data, status_code, header = login('POST', form_data, ip, next_page)
+        self.assertEqual(status_code, status.HTTP_400_BAD_REQUEST,
+                         "Bad request error is returned")
