@@ -31,5 +31,7 @@ def create_web_app() -> Flask:
 
     app.jinja_env.filters['scope_label'] = filters.scope_label
 
-    datastore.create_all()
+    if app.config['CREATE_DB']:
+        datastore.create_all()
+
     return app

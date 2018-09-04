@@ -10,6 +10,8 @@ RUN pip install -U pip pipenv
 ENV LC_ALL en_US.utf-8
 ENV LANG en_US.utf-8
 RUN pipenv install
+ADD users/ /opt/arxiv/users/
+RUN pipenv install /opt/arxiv/users/
 
 ENV PATH "/opt/arxiv:${PATH}"
 

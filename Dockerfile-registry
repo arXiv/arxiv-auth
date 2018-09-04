@@ -12,6 +12,9 @@ ENV LANG en_US.utf-8
 ADD Pipfile /opt/arxiv/
 RUN pipenv install
 
+ADD users/ /opt/arxiv/users/
+RUN pipenv install /opt/arxiv/users/
+
 ENV PATH "/opt/arxiv:${PATH}"
 
 ADD registry/wsgi.py /opt/arxiv/

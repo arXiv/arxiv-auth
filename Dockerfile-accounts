@@ -9,12 +9,19 @@ ADD Pipfile Pipfile.lock /opt/arxiv/
 RUN pip install -U pip pipenv
 ENV LC_ALL en_US.utf-8
 ENV LANG en_US.utf-8
+
 RUN pipenv install
+
+ADD users/ /opt/arxiv/users/
+RUN pipenv install /opt/arxiv/users/
 
 ENV PATH "/opt/arxiv:${PATH}"
 
 ADD accounts/wsgi.py /opt/arxiv/
 ADD accounts/accounts/ /opt/arxiv/accounts/
+ADD fonts/montserrat.ttf /opt/arxiv/fonts/montserrat.ttf
+
+ENV CAPTCHA_FONT "/opt/arxiv/fonts/montserrat.ttf"
 
 EXPOSE 8000
 
@@ -28,4 +35,5 @@ CMD ["--http-socket", ":8000", \
      "--async", "100", \
      "--ugreen", \
      "--mount", "/accounts=wsgi.py", \
+     "--wsgi-disable-file-wrapper", \
      "--logformat", "%(addr) %(addr) - %(user_id)|%(session_id) [%(rtime)] [%(uagent)] \"%(method) %(uri) %(proto)\" %(status) %(size) %(micros) %(ttfb)"]

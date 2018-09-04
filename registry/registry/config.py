@@ -42,3 +42,4 @@ URLS = [
 ]
 
 REGISTRY_DATABASE_URI = os.environ.get('REGISTRY_DATABASE_URI', 'sqlite://')
+CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))

@@ -69,3 +69,4 @@ URLS = [
 
 RELEASE_NOTES_URL = "https://confluence.cornell.edu/x/7rtyFQ"
 RELEASE_NOTES_TEXT = "Accounts v0.1 released 2018-08-23"
+CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
