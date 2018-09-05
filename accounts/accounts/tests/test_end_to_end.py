@@ -542,7 +542,7 @@ class TestLogoutLegacySubmitCookie(TestCase):
         # Werkzeug should keep the cookies around for the next request.
         response = client.post('/login', data=form_data)
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-        print(response.headers.getlist('Set-Cookie'))
+
         client.set_cookie('', 'submit_session', '12345678')
         self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
                       "Sets cookie for authn session.")
@@ -551,7 +551,7 @@ class TestLogoutLegacySubmitCookie(TestCase):
 
         response = client.get('/logout')
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-        print(response.headers.getlist('Set-Cookie'))
+
         self.assertEqual(
             logout_cookies[self.app.config['SESSION_COOKIE_NAME']]['value'],
             '',
@@ -573,7 +573,7 @@ class TestLogoutLegacySubmitCookie(TestCase):
             'Classic session cookie is expired'
         )
         self.assertEqual(
-            logout_cookies['submit_cookie']['Max-Age'],
+            logout_cookies['submit_session']['Max-Age'],
             '0',
             'Legacy submission cookie is expired'
         )
