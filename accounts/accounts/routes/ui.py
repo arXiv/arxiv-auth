@@ -67,6 +67,22 @@ def set_cookies(response: Response, data: dict) -> None:
                             **params)
 
 
+# This is unlikely to be useful once the classic submission UI is disabled.
+def unset_submission_cookie(response: Response) -> None:
+    """
+    Unset the legacy Catalyst submission cookie.
+
+    In addition to the authenticated session (which was originally from the
+    Tapir auth system), Catalyst also tracks a session used specifically for
+    the submission process. The legacy Catalyst controller sets this
+    automatically, so we don't need to do anything on login. But on logout,
+    if this cookie is not cleared, Catalyst may attempt to use the same
+    submission session upon subsequent logins. This can lead to weird
+    inconsistencies.
+    """
+    response.set_cookie('submit_session', '', max_age=0, httponly=True)
+
+
 # @blueprint.route('/register', methods=['GET', 'POST'])
 @anonymous_only
 def register() -> Response:
@@ -133,6 +149,7 @@ def login() -> Response:
         # Set the session cookie.
         response = make_response(redirect(headers.get('Location'), code=code))
         set_cookies(response, data)
+        unset_submission_cookie(response)    # Fix for ARXIVNG-1149.
         return response
 
     # Form is invalid, or login failed.
@@ -156,6 +173,7 @@ def logout() -> Response:
         logger.debug('Redirecting to %s: %i', headers.get('Location'), code)
         response = make_response(redirect(headers.get('Location'), code=code))
         set_cookies(response, data)
+        unset_submission_cookie(response)    # Fix for ARXIVNG-1149.
         return response
     return redirect(url_for('get_login'), code=status.HTTP_302_FOUND)
 

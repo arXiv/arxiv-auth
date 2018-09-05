@@ -18,11 +18,13 @@ sqlalchemy = "*"
 uwsgi = "*"
 wtforms = "*"
 arxiv-base = "==0.10.1rc2"
-arxiv-auth = "==0.1.0rc11"
+authlib = "*"
+redis-py-cluster = "*"
+arxiv-auth = "==0.1.0rc12"
 
 [dev-packages]
 mimesis = "*"
-mypy = "==0.610"
+mypy = "*"
 pydocstyle = "*"
 pylint = "*"
 sphinx = "*"
@@ -31,6 +33,7 @@ coverage = "*"
 coveralls = "*"
 pytest = "*"
 pytest-cov = "*"
+"nose2" = "*"
 
 [requires]
 python_version = "3.6"
