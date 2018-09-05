@@ -67,7 +67,7 @@ def stop_container(container):
 #         try:
 #             self.app = create_web_app()
 #             self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-#             self.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
+#             self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
 #             self.app.config['CAPTCHA_SECRET'] = self.captcha_secret
 #             self.app.config['JWT_SECRET'] = self.secret
 #             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
@@ -120,7 +120,7 @@ def stop_container(container):
 #         )
 #         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 #
-#         self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
+#         self.assertIn(self.app.config['AUTH_SESSION_COOKIE_NAME'], cookies,
 #                       "Sets cookie for authn session.")
 #         self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
 #                       "Sets cookie for classic sessions.")
@@ -154,8 +154,8 @@ def stop_container(container):
 #         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 #         client.set_cookie(
 #             'localhost',
-#             self.app.config['SESSION_COOKIE_NAME'],
-#             cookies[self.app.config['SESSION_COOKIE_NAME']]['value']
+#             self.app.config['AUTH_SESSION_COOKIE_NAME'],
+#             cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['value']
 #         )
 #         client.set_cookie(
 #             'localhost',
@@ -174,7 +174,7 @@ def stop_container(container):
 #         # Clear session cookies. The user is no longer using an authenticated
 #         # session.
 #         client.set_cookie('localhost',
-#                                self.app.config['SESSION_COOKIE_NAME'], '')
+#                                self.app.config['AUTH_SESSION_COOKIE_NAME'], '')
 #         client.set_cookie('localhost',
 #                                self.app.config['CLASSIC_COOKIE_NAME'], '')
 #
@@ -208,7 +208,7 @@ def stop_container(container):
 #                          environ_base=self.environ_base)
 #         # Clear session cookies.
 #         client.set_cookie('localhost',
-#                                self.app.config['SESSION_COOKIE_NAME'], '')
+#                                self.app.config['AUTH_SESSION_COOKIE_NAME'], '')
 #         client.set_cookie('localhost',
 #                                self.app.config['CLASSIC_COOKIE_NAME'], '')
 #
@@ -239,7 +239,7 @@ def stop_container(container):
 #
 #         # Clear session cookies.
 #         client.set_cookie('localhost',
-#                                self.app.config['SESSION_COOKIE_NAME'], '')
+#                                self.app.config['AUTH_SESSION_COOKIE_NAME'], '')
 #         client.set_cookie('localhost',
 #                                self.app.config['CLASSIC_COOKIE_NAME'], '')
 #
@@ -318,8 +318,8 @@ class TestLoginLogoutRoutes(TestCase):
         try:
             self.app = create_web_app()
             self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-            self.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
-            self.app.config['SESSION_COOKIE_SECURE'] = '0'
+            self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
+            self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.app.config['REDIS_HOST'] = 'localhost'
@@ -399,7 +399,7 @@ class TestLoginLogoutRoutes(TestCase):
                         "Redirect should point at value of `next_page` param")
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
-        self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
+        self.assertIn(self.app.config['AUTH_SESSION_COOKIE_NAME'], cookies,
                       "Sets cookie for authn session.")
         self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
                       "Sets cookie for classic sessions.")
@@ -419,7 +419,7 @@ class TestLoginLogoutRoutes(TestCase):
         # Werkzeug should keep the cookies around for the next request.
         response = client.post('/login', data=form_data)
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-        self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
+        self.assertIn(self.app.config['AUTH_SESSION_COOKIE_NAME'], cookies,
                       "Sets cookie for authn session.")
         self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
                       "Sets cookie for classic sessions.")
@@ -428,12 +428,12 @@ class TestLoginLogoutRoutes(TestCase):
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
         self.assertEqual(
-            logout_cookies[self.app.config['SESSION_COOKIE_NAME']]['value'],
+            logout_cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['value'],
             '',
             'Session cookie is unset'
         )
         self.assertEqual(
-            logout_cookies[self.app.config['SESSION_COOKIE_NAME']]['Max-Age'],
+            logout_cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['Max-Age'],
             '0',
             'Session cookie is expired'
         )

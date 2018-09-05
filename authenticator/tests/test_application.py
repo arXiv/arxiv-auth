@@ -16,7 +16,7 @@ EASTERN = timezone('US/Eastern')
 class TestAuthorizeWithCookie(TestCase):
     def setUp(self):
         self.app = create_app()
-        self.app.config['SESSION_COOKIE_NAME'] = 'foocookie'
+        self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'foocookie'
         self.client = self.app.test_client()
 
     def test_no_auth_data(self):
@@ -27,7 +27,7 @@ class TestAuthorizeWithCookie(TestCase):
     @mock.patch('authenticator.services.sessions')
     def test_not_a_token(self, mock_sessions):
         """Something other than a JWT is passed."""
-        self.client.set_cookie('', self.app.config['SESSION_COOKIE_NAME'],
+        self.client.set_cookie('', self.app.config['AUTH_SESSION_COOKIE_NAME'],
                                'definitelynotatoken')
         response = self.client.get('/auth')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -40,7 +40,7 @@ class TestAuthorizeWithCookie(TestCase):
             claims = {claim: '' for claim in required_claims if claim != exc}
             bad_token = jwt.encode(claims, self.app.config['JWT_SECRET']) \
                 .decode('utf-8')
-            self.client.set_cookie('', self.app.config['SESSION_COOKIE_NAME'],
+            self.client.set_cookie('', self.app.config['AUTH_SESSION_COOKIE_NAME'],
                                    bad_token)
             response = self.client.get('/auth')
             self.assertEqual(response.status_code,
@@ -57,7 +57,7 @@ class TestAuthorizeWithCookie(TestCase):
             'nonce': '0039299290099'
         }
         bad_token = jwt.encode(claims, 'nottherightsecret')
-        self.client.set_cookie('', self.app.config['SESSION_COOKIE_NAME'],
+        self.client.set_cookie('', self.app.config['AUTH_SESSION_COOKIE_NAME'],
                                bad_token)
         response = self.client.get('/auth')
         self.assertEqual(response.status_code,
@@ -76,7 +76,7 @@ class TestAuthorizeWithCookie(TestCase):
         }
         expired_token = jwt.encode(claims, self.app.config['JWT_SECRET']) \
             .decode('utf-8')
-        self.client.set_cookie('', self.app.config['SESSION_COOKIE_NAME'],
+        self.client.set_cookie('', self.app.config['AUTH_SESSION_COOKIE_NAME'],
                                expired_token)
         response = self.client.get('/auth')
         print(response.data)
@@ -96,7 +96,7 @@ class TestAuthorizeWithCookie(TestCase):
         }
         forged_token = jwt.encode(claims, self.app.config['JWT_SECRET']) \
             .decode('utf-8')
-        self.client.set_cookie('', self.app.config['SESSION_COOKIE_NAME'],
+        self.client.set_cookie('', self.app.config['AUTH_SESSION_COOKIE_NAME'],
                                forged_token)
         response = self.client.get('/auth')
         self.assertEqual(response.status_code,
@@ -115,7 +115,7 @@ class TestAuthorizeWithCookie(TestCase):
         }
         token = jwt.encode(claims, self.app.config['JWT_SECRET']) \
             .decode('utf-8')
-        self.client.set_cookie('', self.app.config['SESSION_COOKIE_NAME'],
+        self.client.set_cookie('', self.app.config['AUTH_SESSION_COOKIE_NAME'],
                                token)
         response = self.client.get('/auth')
         self.assertEqual(response.status_code,
@@ -144,7 +144,7 @@ class TestAuthorizeWithCookie(TestCase):
         }
         token = jwt.encode(claims, self.app.config['JWT_SECRET']) \
             .decode('utf-8')
-        self.client.set_cookie('', self.app.config['SESSION_COOKIE_NAME'],
+        self.client.set_cookie('', self.app.config['AUTH_SESSION_COOKIE_NAME'],
                                token)
         response = self.client.get('/auth')
         self.assertEqual(response.status_code,
@@ -164,7 +164,7 @@ class TestAuthorizeWithHeader(TestCase):
     def setUp(self):
         """Instantiate the authenticator app for testing."""
         self.app = create_app()
-        self.app.config['SESSION_COOKIE_NAME'] = 'foocookie'
+        self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'foocookie'
         self.client = self.app.test_client()
 
     @mock.patch('authenticator.services.sessions.load_by_id')

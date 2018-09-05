@@ -20,6 +20,7 @@ wtforms = "*"
 arxiv-base = "==0.10.1rc2"
 authlib = "*"
 redis-py-cluster = "*"
+"4010dd8" = {path = "./users"}
 
 [dev-packages]
 mimesis = "*"
