@@ -149,6 +149,7 @@ def login() -> Response:
         # Set the session cookie.
         response = make_response(redirect(headers.get('Location'), code=code))
         set_cookies(response, data)
+        unset_submission_cookie(response)    # Fix for ARXIVNG-1149.
         return response
 
     # Form is invalid, or login failed.
