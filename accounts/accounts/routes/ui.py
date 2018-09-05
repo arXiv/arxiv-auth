@@ -80,7 +80,7 @@ def unset_submission_cookie(response: Response) -> None:
     submission session upon subsequent logins. This can lead to weird
     inconsistencies.
     """
-    response.set_cookie('submit_cookie', '', max_age=0, httponly=True)
+    response.set_cookie('submit_session', '', max_age=0, httponly=True)
 
 
 # @blueprint.route('/register', methods=['GET', 'POST'])
