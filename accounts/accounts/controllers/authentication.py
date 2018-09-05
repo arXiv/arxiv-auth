@@ -15,7 +15,7 @@ import uuid
 
 from werkzeug import MultiDict, ImmutableMultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
-from flask import url_for
+from flask import url_for, Markup
 
 from wtforms import StringField, PasswordField, SelectField, \
     SelectMultipleField, BooleanField, Form, HiddenField
@@ -90,8 +90,11 @@ def login(method: str, form_data: MultiDict, ip: str,
 
     if not userdata.verified:
         data.update({
-            'error': 'Your account has not yet been verified. Please contact '
-                     'help@beta.arxiv.org. if you believe this to be in error.'
+            'error': Markup(
+                'Your account has not yet been verified. Please contact '
+                '<a href="mailto:help@arxiv.org">help@arxiv.org</a> if '
+                 'you believe this to be in error.'
+            )
         })
         return data, status.HTTP_400_BAD_REQUEST, {}
 
