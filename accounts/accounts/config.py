@@ -67,5 +67,5 @@ URLS = [
     ("login", "/login", BASE_SERVER)
 ]
 
-RELEASE_NOTES_URL = "https://confluence.cornell.edu/x/7rtyFQ"
-RELEASE_NOTES_TEXT = "Accounts v0.1 released 2018-08-23"
+RELEASE_NOTES_URL = "https://confluence.cornell.edu/x/wtJyFQ"
+RELEASE_NOTES_TEXT = "Accounts v0.2 released 2018-09-05"
