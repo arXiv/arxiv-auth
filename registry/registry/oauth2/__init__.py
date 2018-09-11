@@ -138,6 +138,8 @@ class OAuth2Client(ClientMixin):
 
     def check_redirect_uri(self, redirect_uri: str) -> bool:
         """Check that the provided redirect URI is authorized."""
+        logger.debug('Check redirect URI: %s, %s',
+                     redirect_uri, self._client.redirect_uri)
         return redirect_uri == self._client.redirect_uri
 
     def check_requested_scopes(self, scopes: set) -> bool:
@@ -145,19 +147,21 @@ class OAuth2Client(ClientMixin):
         # If there is an active user on the session, ensure that we are not
         # granting scopes for which the user themself is not authorized.
         if request.session and request.session.user:
-            session_scopes = [
+            session_scopes = {
                 str(s) for s in request.session.authorizations.scopes
-            ]
+            }
             return self._scopes.issuperset(scopes) and \
-                set(session_scopes).issuperset(scopes)
+                session_scopes.issuperset(scopes)
         return self._scopes.issuperset(scopes)
 
     def check_response_type(self, response_type: str) -> bool:
         """Check the proposed response type."""
+        logger.debug('Check response type: %s', response_type)
         return response_type == 'code'
 
     def check_token_endpoint_auth_method(self, method: str) -> bool:
         """Force POST auth method."""
+        logger.debug('Check endpoint auth method: %s', method)
         return method == 'client_secret_post'
 
     def get_default_redirect_uri(self) -> str:
@@ -166,6 +170,7 @@ class OAuth2Client(ClientMixin):
 
     def has_client_secret(self) -> bool:
         """Check that the client has a secret."""
+        logger.debug('Check has client secret')
         return self._credential.client_secret is not None
 
 
@@ -216,6 +221,7 @@ class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
     def parse_authorization_code(self, code: str, client: OAuth2Client) \
             -> Optional[domain.AuthorizationCode]:
         """Attempt to retrieve an auth code for an API client."""
+        logger.debug('Parse authorization code %s for %s', code, client)
         try:
             code_grant = OAuth2AuthorizationCode(
                 datastore.load_auth_code(code, client.client_id)
