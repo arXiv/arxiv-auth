@@ -97,7 +97,7 @@ class OAuth2Client(ClientMixin):
         logger.debug('New OAuth2Client with client_id %s', client.client_id)
         self._client = client
         self._credential = credential
-        self._scopes = set([auth.scope for auth in authorizations])
+        self._scopes = set([str(auth.scope) for auth in authorizations])
         self._grant_types = [gtype.grant_type for gtype in grant_types]
 
     @property
@@ -145,8 +145,11 @@ class OAuth2Client(ClientMixin):
         # If there is an active user on the session, ensure that we are not
         # granting scopes for which the user themself is not authorized.
         if request.session and request.session.user:
+            session_scopes = [
+                str(s) for s in request.session.authorizations.scopes
+            ]
             return self._scopes.issuperset(scopes) and \
-                set(request.session.authorizations.scopes).issuperset(scopes)
+                set(session_scopes).issuperset(scopes)
         return self._scopes.issuperset(scopes)
 
     def check_response_type(self, response_type: str) -> bool:
@@ -293,10 +296,10 @@ def save_token(token: dict, oauth_request: OAuth2Request) -> None:
     session_id = token['access_token']
     client = oauth_request.client
     logger.debug("Client has scopes %s", client.scopes)
-    user = oauth_request.user if oauth_request.user else None
+    user = oauth_request.user._user if oauth_request.user else None
     authorizations = domain.Authorizations(scopes=client.scopes)
     session = sessions.create(authorizations, request.remote_addr,
-                              request.remote_addr, user=user._user,
+                              request.remote_addr, user=user,
                               client=client._client, session_id=session_id)
     logger.debug('Created session %s', session.session_id)
 
