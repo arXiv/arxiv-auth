@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='arxiv-auth',
-    version='0.1.0rc14',
+    version='0.1.0rc15',
     packages=[f'arxiv.{package}' for package
               in find_packages('./arxiv', exclude=['*test*'])],
     install_requires=[
