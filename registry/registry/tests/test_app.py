@@ -7,7 +7,7 @@ import json
 from datetime import datetime, timedelta
 from hashlib import sha256
 from unittest import TestCase
-from urllib.parse import urlencode, urlparse, parse_qs
+from urllib.parse import urlencode, urlparse, parse_qs, unquote
 
 from arxiv import status
 from arxiv.users.helpers import generate_token
@@ -198,6 +198,7 @@ class TestAuthorizationCode(TestCase):
             self.app = create_web_app()
             self.app.config['REGISTRY_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.app.config['JWT_SECRET'] = 'foosecret'
+            self.app.config['SERVER_NAME'] = 'localhost:5000'
 
             self.test_client = self.app.test_client()
             self.user_agent = self.app.test_client()
@@ -271,6 +272,26 @@ class TestAuthorizationCode(TestCase):
                          'Requested code in granted')
         self.assertEqual(data['token_type'], 'Bearer',
                          'Access token is a bearer token')
+
+    def test_user_is_not_logged_in(self):
+        """User is directed to an auth page and is not logged in."""
+        params = {
+            'response_type': 'code',
+            'client_id': '5678',   # Invalid client ID.
+            'redirect_uri': self.client.redirect_uri,
+            'scope': 'something:read'
+        }
+        response = self.user_agent.get('/authorize?%s' % urlencode(params))
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND,
+                         'User is redirected')
+        target = urlparse(response.headers['Location'])
+        self.assertEqual(target.scheme, 'https')
+        self.assertEqual(target.netloc, 'arxiv.org')
+        self.assertEqual(target.path, '/login')
+        next_page = urlparse(unquote(parse_qs(target.query)['next_page'][0]))
+        self.assertEqual(next_page.netloc, self.app.config['SERVER_NAME'])
+        self.assertEqual(next_page.path, '/authorize')
+        # http://localhost:5000/authorize?response_type=code&client_id=5678&redirect_uri=https://foo.com/bar&scope=something:read
 
     def test_auth_confirmation_has_invalid_client(self):
         """User is directed to an auth page with an invalid client ID."""
