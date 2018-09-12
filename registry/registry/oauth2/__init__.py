@@ -97,7 +97,7 @@ class OAuth2Client(ClientMixin):
         logger.debug('New OAuth2Client with client_id %s', client.client_id)
         self._client = client
         self._credential = credential
-        self._scopes = set([auth.scope for auth in authorizations])
+        self._scopes = set([str(auth.scope) for auth in authorizations])
         self._grant_types = [gtype.grant_type for gtype in grant_types]
 
     @property
@@ -138,23 +138,34 @@ class OAuth2Client(ClientMixin):
 
     def check_redirect_uri(self, redirect_uri: str) -> bool:
         """Check that the provided redirect URI is authorized."""
+        logger.debug('Check redirect URI: %s, %s',
+                     redirect_uri, self._client.redirect_uri)
         return redirect_uri == self._client.redirect_uri
 
     def check_requested_scopes(self, scopes: set) -> bool:
         """Check that the requested scopes are authorized for this client."""
         # If there is an active user on the session, ensure that we are not
         # granting scopes for which the user themself is not authorized.
+        logger.debug('Client requests scopes: %s', scopes)
+
         if request.session and request.session.user:
+            session_scopes = {
+                str(s) for s in request.session.authorizations.scopes
+            }
+            logger.debug('Authorized scopes on user session: %s',
+                         session_scopes)
             return self._scopes.issuperset(scopes) and \
-                set(request.session.authorizations.scopes).issuperset(scopes)
+                session_scopes.issuperset(scopes)
         return self._scopes.issuperset(scopes)
 
     def check_response_type(self, response_type: str) -> bool:
         """Check the proposed response type."""
+        logger.debug('Check response type: %s', response_type)
         return response_type == 'code'
 
     def check_token_endpoint_auth_method(self, method: str) -> bool:
         """Force POST auth method."""
+        logger.debug('Check endpoint auth method: %s', method)
         return method == 'client_secret_post'
 
     def get_default_redirect_uri(self) -> str:
@@ -163,6 +174,7 @@ class OAuth2Client(ClientMixin):
 
     def has_client_secret(self) -> bool:
         """Check that the client has a secret."""
+        logger.debug('Check has client secret')
         return self._credential.client_secret is not None
 
 
@@ -213,6 +225,7 @@ class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
     def parse_authorization_code(self, code: str, client: OAuth2Client) \
             -> Optional[domain.AuthorizationCode]:
         """Attempt to retrieve an auth code for an API client."""
+        logger.debug('Parse authorization code %s for %s', code, client)
         try:
             code_grant = OAuth2AuthorizationCode(
                 datastore.load_auth_code(code, client.client_id)
@@ -293,10 +306,10 @@ def save_token(token: dict, oauth_request: OAuth2Request) -> None:
     session_id = token['access_token']
     client = oauth_request.client
     logger.debug("Client has scopes %s", client.scopes)
-    user = oauth_request.user if oauth_request.user else None
+    user = oauth_request.user._user if oauth_request.user else None
     authorizations = domain.Authorizations(scopes=client.scopes)
     session = sessions.create(authorizations, request.remote_addr,
-                              request.remote_addr, user=user._user,
+                              request.remote_addr, user=user,
                               client=client._client, session_id=session_id)
     logger.debug('Created session %s', session.session_id)
 

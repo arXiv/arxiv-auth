@@ -59,7 +59,7 @@ def set_cookies(response: Response, data: dict) -> None:
         logger.debug('Set cookie %s with %s, max_age %s',
                      cookie_name, cookie_value, max_age)
         params = dict(httponly=True)
-        if current_app.config['SESSION_COOKIE_SECURE']:
+        if current_app.config['AUTH_SESSION_COOKIE_SECURE']:
             # Setting samesite to lax, to allow reasonable links to
             # authenticated views using GET requests.
             params.update({'secure': True, 'samesite': 'lax'})
@@ -159,7 +159,7 @@ def login() -> Response:
 @blueprint.route('/logout', methods=['GET'])
 def logout() -> Response:
     """Log out of arXiv."""
-    session_cookie_key = current_app.config['SESSION_COOKIE_NAME']
+    session_cookie_key = current_app.config['AUTH_SESSION_COOKIE_NAME']
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_key, None)
     classic_cookie = request.cookies.get(classic_cookie_key, None)
@@ -178,7 +178,7 @@ def logout() -> Response:
     return redirect(url_for('get_login'), code=status.HTTP_302_FOUND)
 
 
-# @blueprint.route('/captcha', methods=['GET'])
+@blueprint.route('/captcha', methods=['GET'])
 @anonymous_only
 def captcha() -> Response:
     """Provide the image for stateless stateless_captcha."""

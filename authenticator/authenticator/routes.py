@@ -17,7 +17,7 @@ blueprint = Blueprint('authenticator', __name__, url_prefix='')
 def authorize():
     """Authorize the request."""
     try:
-        cookie_name = current_app.config['SESSION_COOKIE_NAME']
+        cookie_name = current_app.config['AUTH_SESSION_COOKIE_NAME']
     except KeyError as e:
         raise RuntimeError('Configuration error: missing parameter') from e
 

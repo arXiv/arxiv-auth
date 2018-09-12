@@ -23,4 +23,8 @@ def create_web_app() -> Flask:
     Base(app)    # Gives us access to the base UI templates and resources.
     auth.Auth(app)  # Handless sessions and authn/z.
     wrap(app, [auth.middleware.AuthMiddleware])
+
+    if app.config['CREATE_DB']:
+        legacy.create_all()
+        users.create_all()
     return app

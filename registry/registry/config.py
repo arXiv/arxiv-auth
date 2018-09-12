@@ -30,8 +30,8 @@ DEFAULT_LOGOUT_REDIRECT_URL = os.environ.get(
     'https://arxiv.org'
 )
 
-SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
-SESSION_COOKIE_SECURE = bool(int(os.environ.get('SESSION_COOKIE_SECURE', '1')))
+AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
+AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))
 
 EXTERNAL_URL_SCHEME = os.environ.get('EXTERNAL_URL_SCHEME', 'https')
 BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
@@ -42,3 +42,4 @@ URLS = [
 ]
 
 REGISTRY_DATABASE_URI = os.environ.get('REGISTRY_DATABASE_URI', 'sqlite://')
+CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))

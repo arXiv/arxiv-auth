@@ -1,14 +1,118 @@
 version: '3'
 
 services:
-  accounts-test-redis:
-    image: redis
-    container_name: accounts-test-redis
+  accounts-redis-sessions:
+    image: grokzen/redis-cluster:4.0.9
+    container_name: accounts-redis-sessions
     networks:
-      - accounts-test
+      - arxiv-accounts
     ports:
       - '127.0.0.1:7000:7000'
+      - '127.0.0.1:7001:7001'
+      - '127.0.0.1:7002:7002'
+      - '127.0.0.1:7003:7003'
+      - '127.0.0.1:7004:7004'
+      - '127.0.0.1:7005:7005'
+      - '127.0.0.1:7006:7006'
+    environment:
+      IP: "0.0.0.0"
 
+  accounts-maria:
+    image: mariadb:10.3
+    container_name: accounts-maria
+    networks:
+      - arxiv-accounts
+    environment:
+      MYSQL_USER: foouser
+      MYSQL_PASSWORD: foopass
+      MYSQL_ROOT_PASSWORD: foorootpassword
+      MYSQL_DATABASE: accounts
+    command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+
+  registry-maria:
+    image: mariadb:10.3
+    container_name: registry-maria
+    networks:
+      - arxiv-accounts
+    environment:
+      MYSQL_USER: foouser
+      MYSQL_PASSWORD: foopass
+      MYSQL_ROOT_PASSWORD: foorootpassword
+      MYSQL_DATABASE: registry
+    command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+
+  accounts:
+    build:
+      context: ./
+      dockerfile: Dockerfile-accounts
+    container_name: accounts
+    environment:
+      REDIS_HOST: "accounts-redis-sessions"
+      REDIS_PORT: "7000"
+      LOGLEVEL: 10
+      CLASSIC_DATABASE_URI: "mysql+mysqldb://foouser:foopass@accounts-maria:3306/accounts?charset=utf8"
+      JWT_SECRET: foosecret
+      CAPTCHA_SECRET: foocaptchasecret
+      CAPTCHA_FONT: /opt/arxiv/fonts/montserrat.ttf
+      CREATE_DB: 1
+    networks:
+      - arxiv-accounts
+    depends_on:
+      - accounts-redis-sessions
+      - accounts-maria
+
+  registry:
+    build:
+      context: ./
+      dockerfile: Dockerfile-registry
+    container_name: registry
+    environment:
+      REDIS_HOST: "accounts-redis-sessions"
+      REDIS_PORT: "7000"
+      LOGLEVEL: 10
+      CLASSIC_DATABASE_URI: "mysql+mysqldb://foouser:foopass@registry-maria:3306/registry?charset=utf8"
+      JWT_SECRET: foosecret
+      CREATE_DB: 1
+    networks:
+      - arxiv-accounts
+    depends_on:
+      - accounts-redis-sessions
+      - registry-maria
+
+  authenticator:
+    build:
+      context: ./
+      dockerfile: Dockerfile-authenticator
+    container_name: authenticator
+    environment:
+      LOGLEVEL: 10
+      REDIS_HOST: "accounts-redis-sessions"
+      REDIS_PORT: "7000"
+      JWT_SECRET: foosecret
+    networks:
+      - arxiv-accounts
+    depends_on:
+      - accounts-redis-sessions
+
+  gateway:
+    build:
+      context: ./gateway/
+      dockerfile: Dockerfile
+    container_name: gateway
+    environment:
+      REDIS_ENDPOINT: "submission-redis:6379"
+      AWS_ACCESS_KEY_ID: "foo"
+      AWS_SECRET_ACCESS_KEY: "bar"
+      LOGLEVEL: 10
+    ports:
+      - "8000:8000"
+    networks:
+      - arxiv-accounts
+    depends_on:
+      - accounts-redis-sessions
+      - authenticator
+      - registry
+      - accounts
 
 networks:
-  accounts-test:
+  arxiv-accounts:

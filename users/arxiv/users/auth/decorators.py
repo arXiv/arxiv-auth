@@ -154,7 +154,8 @@ def scoped(required: Optional[str] = None,
             session = request.session
             scopes: List[domain.Scope] = []
             authorized: bool = False
-
+            logger.debug('Required: %s, authorizer: %s, unauthorized: %s',
+                         required, authorizer, unauthorized)
             # Use of the decorator implies that an auth session ought to be
             # present. So we'll complain here if it's not.
             if not session or not (session.user or session.client):
@@ -209,9 +210,15 @@ def scoped(required: Optional[str] = None,
                 else:
                     authorized = False
 
+            elif required is None and authorizer is None:
+                logger.debug('No scope required, no authorizer function;'
+                             ' request is authorized.')
+                authorized = True
+
             # If a specific scope is not required, we rely entirely on the
             # authorizer callback.
             elif authorizer is not None:
+                logger.debug('Calling authorizer callback')
                 authorized = authorizer(session, *args, **kwargs)
 
             if not authorized:

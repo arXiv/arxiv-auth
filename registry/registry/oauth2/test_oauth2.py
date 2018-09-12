@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from unittest import TestCase, mock
 
 from ..domain import Client, ClientCredential, ClientAuthorization, \
-    ClientGrantType
+    ClientGrantType, Session, User, Scope, Authorizations
 
 from ..services import datastore
 from .. import oauth2
@@ -79,8 +79,21 @@ class TestOAuth2Client(TestCase):
             self.oa2client.check_redirect_uri('https://fdsa.com/nope')
         )
 
-    def test_check_requested_scopes(self):
+    @mock.patch(f'{oauth2.__name__}.request')
+    def test_check_requested_scopes(self, mock_request):
         """:meth:`.check_requested_scopes` evaluates authorized scopes."""
+        mock_request.session = Session(
+            session_id='1234-abcd',
+            start_time=datetime.now(),
+            user=User(
+                username='foouser',
+                email='foo@bar.com',
+                user_id='12345'
+            ),
+            authorizations=Authorizations(
+                scopes=[Scope('foo', 'bar'), Scope('baz', 'bat')]
+            )
+        )
         self.assertTrue(self.oa2client.check_requested_scopes(['foo:bar']))
         self.assertTrue(self.oa2client.check_requested_scopes(['baz:bat']))
         self.assertFalse(self.oa2client.check_requested_scopes(['all:delete']))
@@ -160,9 +173,22 @@ class TestGetClient(TestCase):
             )
         ]
 
+    @mock.patch(f'{oauth2.__name__}.request')
     @mock.patch(f'{oauth2.__name__}.datastore')
-    def test_get_client(self, mock_datastore):
+    def test_get_client(self, mock_datastore, mock_request):
         """:func:`.get_client` returns an :class:`OAuth2Client`."""
+        mock_request.session = Session(
+            session_id='1234-abcd',
+            start_time=datetime.now(),
+            user=User(
+                username='foouser',
+                email='foo@bar.com',
+                user_id='12345'
+            ),
+            authorizations=Authorizations(
+                scopes=[Scope('foo', 'bar'), Scope('baz', 'bat')]
+            )
+        )
         mock_datastore.load_client.return_value = (
             self.client, self.cred, self.auths, self.grant_types
         )
@@ -225,7 +251,7 @@ class TestSaveToken(TestCase):
     def test_save_token(self, mock_sessions, mock_request):
         """Use the session store to persist a token as a session."""
         oa2request = mock.MagicMock(
-            client=mock.MagicMock(scopes=['foo:bar']),
+            client=mock.MagicMock(scopes=[Scope('foo', 'bar')]),
             user=None,
         )
         mock_request.remote_addr = '127.0.0.1'
@@ -233,7 +259,7 @@ class TestSaveToken(TestCase):
 
         self.assertEqual(mock_sessions.create.call_count, 1)
         (auths, ip, radr), kwargs = mock_sessions.create.call_args
-        self.assertEqual(auths.scopes, ['foo:bar'])
+        self.assertEqual(auths.scopes, [Scope('foo', 'bar')])
         self.assertEqual(ip, '127.0.0.1')
         self.assertEqual(radr, '127.0.0.1')
         self.assertIsNone(kwargs['user'])

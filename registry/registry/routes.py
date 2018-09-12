@@ -36,7 +36,7 @@ def redirect_to_login(*args, **kwargs):
 @blueprint.route('/token', methods=['POST'])
 def issue_token() -> Response:
     """Client authentication endpoint."""
-    logger.debug('Request to issue token')
+    logger.debug('Request to issue token with params %s', request.form)
     server = current_app.server
     logger.debug('Got OAuth2 server %s', id(server))
     response = server.create_token_response()
@@ -59,6 +59,7 @@ def authorize():
                 user=request.session.user
             )
         except oauth2.OAuth2Error as e:
+            logger.debug('Got OAuth2Error: %s', e)
             raise BadRequest(str(e)) from e
     elif request.method == 'POST':
         if request.form['confirm'] == 'ok':

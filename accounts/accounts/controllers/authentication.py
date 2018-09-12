@@ -121,7 +121,7 @@ def login(method: str, form_data: MultiDict, ip: str,
     # The UI route should use these to set cookies on the response.
     data.update({
         'cookies': {
-            'session_cookie': (cookie, session.expires),
+            'auth_session_cookie': (cookie, session.expires),
             'classic_cookie': (c_cookie, c_session.expires)
         }
     })
@@ -170,7 +170,7 @@ def logout(session_cookie: Optional[str],
 
     data = {
         'cookies': {
-            'session_cookie': ('', 0),
+            'auth_session_cookie': ('', 0),
             'classic_cookie': ('', 0)
         }
     }
