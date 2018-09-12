@@ -23,6 +23,14 @@ see :mod:`arxiv.users.auth.decorators`.
 from typing import Optional
 from ..domain import Scope
 
+READ_PUBLIC = Scope(Scope.domains.PUBLIC, Scope.actions.READ)
+"""
+Authorizes access to public endpoints.
+
+This is implicitly granted to all anonymous users. For endpoints requiring
+authentication (e.g. APIs) this scope can be used to denote baseline read
+access for clients.
+"""
 
 EDIT_PROFILE = Scope(Scope.domains.PROFILE, Scope.actions.UPDATE)
 """

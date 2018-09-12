@@ -158,9 +158,14 @@ class Scope(NamedTuple):
     class domains:
         """Known authorization domains."""
 
+        PUBLIC = 'public'
+        """The public arXiv site, including APIs."""
         PROFILE = 'profile'
+        """arXiv user profile."""
         SUBMISSION = 'submission'
+        """Submission interfaces and actions."""
         UPLOAD = 'upload'
+        """File uploads, including those for submissions."""
 
     class actions:
         """Known authorization actions."""
