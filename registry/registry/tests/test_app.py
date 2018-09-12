@@ -105,9 +105,10 @@ class TestClientAuthentication(TestCase):
         response = self.test_client.post('/token', data=payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.content_type, 'application/json')
-        self.assertIn('access_token', json.loads(response.data))
-        self.assertIn('expires_in', json.loads(response.data))
-        self.assertIn('token_type', json.loads(response.data))
+        data = json.loads(response.data)
+        self.assertIn('access_token', data)
+        self.assertIn('expires_in', data)
+        self.assertIn('token_type', data)
 
     def test_post_invalid_credentials(self):
         """POST request with bad creds returns 400 Bad Request."""
@@ -139,7 +140,7 @@ class TestClientAuthentication(TestCase):
             'client_id': self.client_id,
             'client_secret': self.secret,
             'grant_type': 'client_credentials',
-            'scope': 'not:authorized,delete:everything'
+            'scope': 'not:authorized delete:everything'
         }
         response = self.test_client.post('/token', data=payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -223,13 +224,14 @@ class TestAuthorizationCode(TestCase):
     def test_auth_code_workflow(self):
         """Test authorization code workflow."""
         user_token = generate_token('1234', 'foo@bar.com', 'foouser',
-                                    scope=[Scope('something', 'read')])
+                                    scope=[Scope('something', 'read'),
+                                           Scope('baz', 'bat')])
         user_headers = {'Authorization': user_token}
         params = {
             'response_type': 'code',
             'client_id': self.client_id,
             'redirect_uri': self.client.redirect_uri,
-            'scope': 'something:read'
+            'scope': 'something:read baz:bat'
         }
         response = self.user_agent.get('/authorize?%s' % urlencode(params),
                                        headers=user_headers)
@@ -268,7 +270,7 @@ class TestAuthorizationCode(TestCase):
         self.assertIn('access_token', data, 'Response contains access token')
         self.assertIn('expires_in', data, 'Response contains expiration')
         self.assertGreater(data['expires_in'], 0)
-        self.assertEqual(data['scope'], 'something:read',
+        self.assertEqual(data['scope'], 'something:read baz:bat',
                          'Requested code in granted')
         self.assertEqual(data['token_type'], 'Bearer',
                          'Access token is a bearer token')

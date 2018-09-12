@@ -146,10 +146,14 @@ class OAuth2Client(ClientMixin):
         """Check that the requested scopes are authorized for this client."""
         # If there is an active user on the session, ensure that we are not
         # granting scopes for which the user themself is not authorized.
+        logger.debug('Client requests scopes: %s', scopes)
+
         if request.session and request.session.user:
             session_scopes = {
                 str(s) for s in request.session.authorizations.scopes
             }
+            logger.debug('Authorized scopes on user session: %s',
+                         session_scopes)
             return self._scopes.issuperset(scopes) and \
                 session_scopes.issuperset(scopes)
         return self._scopes.issuperset(scopes)
