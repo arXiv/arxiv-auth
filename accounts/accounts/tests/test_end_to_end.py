@@ -471,8 +471,8 @@ class TestLogoutLegacySubmitCookie(TestCase):
         try:
             self.app = create_web_app()
             self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-            self.app.config['SESSION_COOKIE_NAME'] = 'baz_session'
-            self.app.config['SESSION_COOKIE_SECURE'] = '0'
+            self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
+            self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.app.config['REDIS_HOST'] = 'localhost'
@@ -544,7 +544,7 @@ class TestLogoutLegacySubmitCookie(TestCase):
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
         client.set_cookie('', 'submit_session', '12345678')
-        self.assertIn(self.app.config['SESSION_COOKIE_NAME'], cookies,
+        self.assertIn(self.app.config['AUTH_SESSION_COOKIE_NAME'], cookies,
                       "Sets cookie for authn session.")
         self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
                       "Sets cookie for classic sessions.")
@@ -553,12 +553,12 @@ class TestLogoutLegacySubmitCookie(TestCase):
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
         self.assertEqual(
-            logout_cookies[self.app.config['SESSION_COOKIE_NAME']]['value'],
+            logout_cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['value'],
             '',
             'Session cookie is unset'
         )
         self.assertEqual(
-            logout_cookies[self.app.config['SESSION_COOKIE_NAME']]['Max-Age'],
+            logout_cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['Max-Age'],
             '0',
             'Session cookie is expired'
         )
