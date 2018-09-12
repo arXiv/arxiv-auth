@@ -240,6 +240,21 @@ class User(NamedTuple):
     profile: Optional[UserProfile] = None
     """The user's account profile (if available)."""
 
+    verified: bool = False
+    """Whether or not the users' e-mail address has been verified."""
+
+    # TODO: consider whether this information is relevant beyond the
+    # ``arxiv.users.legacy.authenticate`` module.
+    #
+    # approved: bool = True
+    # """Whether or not the users' account is approved."""
+    #
+    # banned: bool = False
+    # """Whether or not the user has been banned."""
+    #
+    # deleted: bool = False
+    # """Whether or not the user has been deleted."""
+
 
 class Client(NamedTuple):
     """API client."""

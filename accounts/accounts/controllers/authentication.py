@@ -15,7 +15,7 @@ import uuid
 
 from werkzeug import MultiDict, ImmutableMultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
-from flask import url_for
+from flask import url_for, Markup
 
 from wtforms import StringField, PasswordField, SelectField, \
     SelectMultipleField, BooleanField, Form, HiddenField
@@ -86,6 +86,16 @@ def login(method: str, form_data: MultiDict, ip: str,
         logger.debug('Authentication failed for %s with %s',
                      form.username.data, form.password.data)
         data.update({'error': 'Invalid username or password.'})
+        return data, status.HTTP_400_BAD_REQUEST, {}
+
+    if not userdata.verified:
+        data.update({
+            'error': Markup(
+                'Your account has not yet been verified. Please contact '
+                '<a href="mailto:help@arxiv.org">help@arxiv.org</a> if '
+                 'you believe this to be in error.'
+            )
+        })
         return data, status.HTTP_400_BAD_REQUEST, {}
 
     # Create a session in the distributed session store.

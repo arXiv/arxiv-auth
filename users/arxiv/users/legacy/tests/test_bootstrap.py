@@ -170,7 +170,8 @@ class TestBootstrap(TestCase):
                                 forename=db_user.first_name,
                                 surname=db_user.last_name,
                                 suffix=db_user.suffix_name
-                            )
+                            ),
+                            verified=bool(db_user.flag_email_verified)
                         ),
                         domain.Authorizations(
                             classic=util.compute_capabilities(db_user),

@@ -97,7 +97,8 @@ def load(cookie: str) -> domain.Session:
                 forename=db_user.first_name,
                 surname=db_user.last_name,
                 suffix=db_user.suffix_name
-            )
+            ),
+            verified=bool(db_user.flag_email_verified)
         )
 
         # We should get one row per endorsement.
