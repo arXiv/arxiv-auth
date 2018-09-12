@@ -219,8 +219,8 @@ class TestAuthorizationCode(TestCase):
         # stop_container(self.container)
         os.remove(self.db)
 
-    def test_post_credentials(self):
-        """POST request to /token returns auth token."""
+    def test_auth_code_workflow(self):
+        """Test authorization code workflow."""
         user_token = generate_token('1234', 'foo@bar.com', 'foouser',
                                     scope=[Scope('something', 'read')])
         user_headers = {'Authorization': user_token}
@@ -272,41 +272,65 @@ class TestAuthorizationCode(TestCase):
         self.assertEqual(data['token_type'], 'Bearer',
                          'Access token is a bearer token')
 
+    def test_auth_confirmation_has_invalid_client(self):
+        """User is directed to an auth page with an invalid client ID."""
+        user_token = generate_token('1234', 'foo@bar.com', 'foouser',
+                                    scope=[Scope('something', 'read')])
+        user_headers = {'Authorization': user_token}
+        params = {
+            'response_type': 'code',
+            'client_id': '5678',   # Invalid client ID.
+            'redirect_uri': self.client.redirect_uri,
+            'scope': 'something:read'
+        }
+        response = self.user_agent.get('/authorize?%s' % urlencode(params),
+                                       headers=user_headers)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         'A 400 Bad Request is returned')
 
-    # def test_post_invalid_credentials(self):
-    #     """POST request with bad creds returns 400 Bad Request."""
-    #     payload = {
-    #         'client_id': self.client_id,
-    #         'client_secret': 'not the secret',
-    #         'grant_type': 'client_credentials'
-    #     }
-    #     response = self.test_client.post('/token', data=payload)
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertEqual(response.content_type, 'application/json')
-    #     self.assertEqual(response.data, b'{"error": "invalid_client"}')
-    #
-    # def test_post_invalid_grant_type(self):
-    #     """POST request with bad grant type returns 400 Bad Request."""
-    #     payload = {
-    #         'client_id': self.client_id,
-    #         'client_secret': self.secret,
-    #         'grant_type': 'implicit'
-    #     }
-    #     response = self.test_client.post('/token', data=payload)
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertEqual(response.content_type, 'application/json')
-    #     self.assertEqual(response.data, b'{"error": "invalid_grant"}')
-    #
-    # def test_post_invalid_scope(self):
-    #     """POST request with unauthorized scope returns 400 Bad Request."""
-    #     payload = {
-    #         'client_id': self.client_id,
-    #         'client_secret': self.secret,
-    #         'grant_type': 'client_credentials',
-    #         'scope': 'not:authorized,delete:everything'
-    #     }
-    #     response = self.test_client.post('/token', data=payload)
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertEqual(response.content_type, 'application/json')
-    #     data = json.loads(response.data)
-    #     self.assertEqual(data['error'], "invalid_scope")
+    def test_auth_confirmation_has_unauthorized_scope(self):
+        """User is directed with scope for which client is unauthorized."""
+        user_token = generate_token('1234', 'foo@bar.com', 'foouser',
+                                    scope=[Scope('something', 'read')])
+        user_headers = {'Authorization': user_token}
+        params = {
+            'response_type': 'code',
+            'client_id': self.client_id,
+            'redirect_uri': self.client.redirect_uri,
+            'scope': 'somethingelse:delete'
+        }
+        response = self.user_agent.get('/authorize?%s' % urlencode(params),
+                                       headers=user_headers)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         'A 400 Bad Request is returned')
+
+    def test_auth_confirmation_post_missing_confirmation(self):
+        """User agent issues POST request without confirmation."""
+        user_token = generate_token('1234', 'foo@bar.com', 'foouser',
+                                    scope=[Scope('something', 'read')])
+        user_headers = {'Authorization': user_token}
+        # Missing `confirm` field.
+        params = {
+            'response_type': 'code',
+            'client_id': self.client_id,
+            'redirect_uri': self.client.redirect_uri,
+            'scope': 'something:read'
+        }
+        response = self.user_agent.post('/authorize', data=params,
+                                        headers=user_headers)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         'A 400 Bad Request is returned')
+
+    def test_auth_invalid_code(self):
+        """Client attempts to exchange an invalid code."""
+        payload = {
+            'client_id': self.client_id,
+            'client_secret': self.secret,
+            'code': 'notavalidcode',
+            'grant_type': 'authorization_code',
+            'redirect_uri': self.client.redirect_uri
+        }
+        response = self.test_client.post('/token', data=payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         'A 400 Bad Request is returned')
