@@ -34,6 +34,6 @@ CMD ["--http-socket", ":8000", \
      "--threads", "1", \
      "--async", "100", \
      "--ugreen", \
-     "--mount", "/accounts=wsgi.py", \
+     "--mount", "/user=wsgi.py", \
      "--wsgi-disable-file-wrapper", \
      "--logformat", "%(addr) %(addr) - %(user_id)|%(session_id) [%(rtime)] [%(uagent)] \"%(method) %(uri) %(proto)\" %(status) %(size) %(micros) %(ttfb)"]

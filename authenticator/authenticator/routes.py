@@ -41,7 +41,7 @@ def authorize():
         return jsonify({}), status.HTTP_200_OK, {}
 
     jwt_secret = current_app.config['JWT_SECRET']
-    headers = {'Token': jwt.encode(claims, jwt_secret)}
+    headers = {'Authorization': jwt.encode(claims, jwt_secret)}
     return jsonify({}), status.HTTP_200_OK, headers
 
 
