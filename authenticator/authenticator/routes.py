@@ -32,40 +32,42 @@ def authorize():
             logger.error('Authorization header malformed')
             raise BadRequest('Authorization header is malformed')
         logger.debug('Got auth token: %s', auth_token)
-        claims = _authorize_from_header(auth_token)
+        jwt_encoded = _authorize_from_header(auth_token)
     elif auth_cookie:   # Try the cookie second.
         logger.debug('Got auth cookie: %s', auth_cookie)
-        claims = _authorize_from_cookie(auth_cookie)
+        jwt_encoded = _authorize_from_cookie(auth_cookie)
     else:
         logger.error('Authorization token not found')
         return jsonify({}), status.HTTP_200_OK, {}
 
-    jwt_secret = current_app.config['JWT_SECRET']
-    headers = {'Authorization': jwt.encode(claims, jwt_secret)}
+    # jwt_secret = current_app.config['JWT_SECRET']
+    headers = {'Authorization': jwt_encoded}
     return jsonify({}), status.HTTP_200_OK, headers
 
 
-def _authorize_from_cookie(auth_cookie: str) -> dict:
+def _authorize_from_cookie(auth_cookie: str) -> str:
     """Authorize the request based on an auth cookie."""
     try:
-        session = sessions.load(auth_cookie)
+        session_token = sessions.load(auth_cookie)
     except (sessions.exceptions.InvalidToken,
             sessions.exceptions.ExpiredToken,
             sessions.exceptions.UnknownSession):
         logger.error('Invalid user session token')
         raise Unauthorized('Not a valid user session token')
-    claims = arxiv.users.domain.to_dict(session)
-    return claims
+    # claims = arxiv.users.domain.to_dict(session)
+    # return claims
+    return session_token
 
 
-def _authorize_from_header(auth_token: str) -> dict:
+def _authorize_from_header(auth_token: str) -> str:
     """Authorize the request based on an auth token."""
     try:
-        session = sessions.load_by_id(auth_token)
+        session_token = sessions.load_by_id(auth_token)
     except (sessions.exceptions.InvalidToken,
             sessions.exceptions.ExpiredToken,
-            sessions.exceptions.UnknownSession):
-        logger.error('Invalid auth token')
+            sessions.exceptions.UnknownSession) as e:
+        logger.error('Invalid auth token: %s: %s', type(e), e)
         raise Unauthorized('Not a valid auth token')
-    claims = arxiv.users.domain.to_dict(session)
-    return claims
+    return session_token
+    # claims = arxiv.users.domain.to_dict(session)
+    # return claims

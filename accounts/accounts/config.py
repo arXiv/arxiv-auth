@@ -19,6 +19,7 @@ REDIS_PORT = os.environ.get('REDIS_PORT', '7000')
 REDIS_DATABASE = os.environ.get('REDIS_DATABASE', '0')
 REDIS_TOKEN = os.environ.get('REDIS_TOKEN', None)
 """This is the token used in the AUTH procedure."""
+REDIS_CLUSTER = os.environ.get('REDIS_CLUSTER', '1')
 
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')

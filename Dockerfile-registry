@@ -20,6 +20,7 @@ ENV PATH "/opt/arxiv:${PATH}"
 ADD registry/wsgi.py /opt/arxiv/
 ADD registry/registry/ /opt/arxiv/registry/
 ADD registry/create_client.py /opt/arxiv/
+ADD registry/create_db.py /opt/arxiv/
 
 EXPOSE 8000
 

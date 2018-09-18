@@ -12,11 +12,12 @@ from authenticator.factory import create_app
 
 EASTERN = timezone('US/Eastern')
 
-
+#
 class TestAuthorizeWithCookie(TestCase):
     def setUp(self):
         self.app = create_app()
         self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'foocookie'
+        self.app.config['REDIS_CLUSTER'] = '0'
         self.client = self.app.test_client()
 
     def test_no_auth_data(self):
@@ -136,7 +137,10 @@ class TestAuthorizeWithCookie(TestCase):
             session_id='ajx9043jjx00s',
             nonce='0039299290098'
         )
-        mock_load.return_value = session
+        mock_load.return_value = jwt.encode(
+            arxiv.users.domain.to_dict(session),
+            self.app.config['JWT_SECRET']
+        )
         claims = {
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
@@ -149,13 +153,13 @@ class TestAuthorizeWithCookie(TestCase):
         response = self.client.get('/auth')
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
-        self.assertIn('Token', response.headers,
-                      'Token header is set in response')
+        self.assertIn('Authorization', response.headers,
+                      'Authorization header is set in response')
         expected_jwt = jwt.encode(
             arxiv.users.domain.to_dict(session),
             self.app.config['JWT_SECRET']
         ).decode('utf-8')
-        self.assertEqual(response.headers['Token'], expected_jwt)
+        self.assertEqual(response.headers['Authorization'], expected_jwt)
 
 
 class TestAuthorizeWithHeader(TestCase):
@@ -213,15 +217,18 @@ class TestAuthorizeWithHeader(TestCase):
             session_id='foo',
             nonce='0039299290098'
         )
-        mock_load.return_value = session
+        mock_load.return_value = jwt.encode(
+            arxiv.users.domain.to_dict(session),
+            self.app.config['JWT_SECRET']
+        )
         headers = {'Authorization': 'Bearer foo'}
         response = self.client.get('/auth', headers=headers)
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
-        self.assertIn('Token', response.headers,
-                      'Token header is set in response')
+        self.assertIn('Authorization', response.headers,
+                      'Authorization header is set in response')
         expected_jwt = jwt.encode(
             arxiv.users.domain.to_dict(session),
             self.app.config['JWT_SECRET']
         ).decode('utf-8')
-        self.assertEqual(response.headers['Token'], expected_jwt)
+        self.assertEqual(response.headers['Authorization'], expected_jwt)

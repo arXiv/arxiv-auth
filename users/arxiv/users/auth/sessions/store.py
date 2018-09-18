@@ -45,14 +45,18 @@ class SessionStore(object):
     """
 
     def __init__(self, host: str, port: int, db: int, secret: str,
-                 duration: int = 7200, token: str = None) -> None:
+                 duration: int = 7200, token: str = None,
+                 cluster: bool = True) -> None:
         """Open the connection to Redis."""
         # params = #, db=db)
         logger.debug('New Redis connection at %s, port %s', host, port)
-        self.r = rediscluster.StrictRedisCluster(
-            startup_nodes=[{'host': host, 'port': str(port)}],
-            skip_full_coverage_check=True
-        )
+        if cluster:
+            self.r = rediscluster.StrictRedisCluster(
+                startup_nodes=[{'host': host, 'port': str(port)}],
+                skip_full_coverage_check=True
+            )
+        else:
+            self.r = redis.StrictRedis(host=host, port=port)
         self._secret = secret
         self._duration = duration
 
@@ -92,7 +96,7 @@ class SessionStore(object):
         )
 
         try:
-            self.r.set(session_id, json.dumps(domain.to_dict(session)),
+            self.r.set(session_id, self._encode(domain.to_dict(session)),
                        ex=self._duration)
         except redis.exceptions.ConnectionError as e:
             raise SessionCreationFailed(f'Connection failed: {e}') from e
@@ -136,34 +140,6 @@ class SessionStore(object):
         except Exception as e:
             raise SessionDeletionFailed(f'Failed to delete: {e}') from e
 
-    def invalidate(self, cookie: str) -> None:
-        """
-        Invalidate a session in the key-value store.
-
-        Parameters
-        ----------
-        cookie : str
-
-        """
-        try:    # Load the current session data from the session store.
-            session = self.load(cookie)
-            session_data = domain.to_dict(session)
-            self.validate_session_against_cookie(session, cookie)
-        except ExpiredToken as e:
-            # This is what we set out to do; our work here is done.
-            logger.debug('Session already expired')
-            return None
-        except Exception as e:
-            # Something went terribly wrong.
-            logger.debug('Could not load session data: %s', e)
-            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
-
-        try:
-            session_data['end_time'] = datetime.now(tz=EASTERN).isoformat()
-            self.r.set(session_data['session_id'], json.dumps(session_data))
-        except Exception as e:
-            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
-
     def validate_session_against_cookie(self, session: domain.Session,
                                         cookie: str) -> None:
         """
@@ -184,31 +160,7 @@ class SessionStore(object):
                 or session.user.user_id != cookie_data['user_id']:
             raise InvalidToken('Invalid token; likely a forgery')
 
-    def invalidate_by_id(self, session_id: str) -> None:
-        """
-        Invalidate a session in the key-value store by session ID.
-
-        Parameters
-        ----------
-        session_id : str
-        """
-        try:
-            session_data = domain.to_dict(self.load_by_id(session_id))
-        except ExpiredToken as e:
-            # This is what we set out to do; our work here is done.
-            logger.debug('Session already expired')
-            return None
-        except Exception as e:
-            logger.debug('Could not load session data: %s', e)
-            raise SessionDeletionFailed(f'Connection failed: {e}') from e
-
-        session_data['end_time'] = datetime.now(tz=EASTERN).isoformat()
-        try:
-            self.r.set(session_id, json.dumps(session_data))
-        except Exception as e:
-            raise SessionDeletionFailed(f'Failed to delete: {e}') from e
-
-    def load(self, cookie: str) -> domain.Session:
+    def load(self, cookie: str, decode: bool = True) -> domain.Session:
         """Load a session using a session cookie."""
         try:
             cookie_data = self._unpack_cookie(cookie)
@@ -219,7 +171,7 @@ class SessionStore(object):
         if expires <= datetime.now(tz=EASTERN):
             raise InvalidToken('Session has expired')
 
-        session = self.load_by_id(cookie_data['session_id'])
+        session = self.load_by_id(cookie_data['session_id'], decode=decode)
         if session.expired:
             raise ExpiredToken('Session has expired')
         if session.user is None and session.client is None:
@@ -228,17 +180,27 @@ class SessionStore(object):
         self.validate_session_against_cookie(session, cookie)
         return session
 
-    def load_by_id(self, session_id: str) -> domain.Session:
+    def load_by_id(self, session_id: str, decode: bool = True) \
+            -> Union[domain.Session, str]:
         """Get session data by session ID."""
-        user_session: Union[str, bytes, bytearray] = self.r.get(session_id)
-        if not user_session:
+        session_jwt: str = self.r.get(session_id)
+        if not session_jwt:
             logger.error(f'No such session: {session_id}')
             raise UnknownSession(f'Failed to find session {session_id}')
+        if decode:
+            return self._decode(session_jwt)
+        return session_jwt
+
+    def _encode(self, session_data: dict) -> str:
+        return jwt.encode(session_data, self._secret)
+
+    def _decode(self, session_jwt: str) -> domain.Session:
         try:
-            data: dict = json.loads(user_session)
-        except json.decoder.JSONDecodeError:
+            session: domain.Session = domain.from_dict(
+                jwt.decode(session_jwt, self._secret)
+            )
+        except jwt.exceptions.InvalidSignatureError:
             raise InvalidToken('Invalid or corrupted session token')
-        session: domain.Session = domain.from_dict(domain.Session, data)
         return session
 
     def _unpack_cookie(self, cookie: str) -> dict:
@@ -261,6 +223,7 @@ def init_app(app: object = None) -> None:
     config.setdefault('REDIS_PORT', '7000')
     config.setdefault('REDIS_DATABASE', '0')
     config.setdefault('REDIS_TOKEN', None)
+    config.setdefault('REDIS_CLUSTER', '1')
     config.setdefault('JWT_SECRET', 'foosecret')
     config.setdefault('SESSION_DURATION', '7200')
 
@@ -272,9 +235,11 @@ def get_redis_session(app: object = None) -> SessionStore:
     port = int(config.get('REDIS_PORT', '7000'))
     db = int(config.get('REDIS_DATABASE', '0'))
     token = config.get('REDIS_TOKEN', None)
+    cluster = config.get('REDIS_CLUSTER', '1') == '1'
     secret = config['JWT_SECRET']
     duration = int(config.get('SESSION_DURATION', '7200'))
-    return SessionStore(host, port, db, secret, duration, token=token)
+    return SessionStore(host, port, db, secret, duration, token=token,
+                        cluster=cluster)
 
 
 def current_session() -> SessionStore:
@@ -301,15 +266,16 @@ def create(authorizations: domain.Authorizations,
 
 
 @wraps(SessionStore.load)
-def load(cookie: str) -> domain.Session:
+def load(cookie: str, decode: bool = True) -> Union[domain.Session, str]:
     """Load a session by cookie value."""
-    return current_session().load(cookie)
+    return current_session().load(cookie, decode=decode)
 
 
 @wraps(SessionStore.load)
-def load_by_id(session_id: str) -> domain.Session:
+def load_by_id(session_id: str, decode: bool = True) \
+        -> Union[domain.Session, str]:
     """Load a session by session ID."""
-    return current_session().load_by_id(session_id)
+    return current_session().load_by_id(session_id, decode=decode)
 
 
 @wraps(SessionStore.delete)
@@ -322,18 +288,6 @@ def delete(cookie: str) -> None:
 def delete_by_id(session_id: str) -> None:
     """Delete a session in the key-value store by ID."""
     return current_session().delete_by_id(session_id)
-
-
-@wraps(SessionStore.invalidate)
-def invalidate(cookie: str) -> None:
-    """Invalidate a session in the key-value store."""
-    return current_session().invalidate(cookie)
-
-
-@wraps(SessionStore.invalidate_by_id)
-def invalidate_by_id(session_id: str) -> None:
-    """Invalidate a session in the key-value store by identifier."""
-    return current_session().invalidate_by_id(session_id)
 
 
 @wraps(SessionStore.generate_cookie)

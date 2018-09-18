@@ -29,7 +29,7 @@ class TestLogout(TestCase):
     def test_logout(self, mock_legacy, mock_sessions):
         """A logged-in user requests to log out."""
         mock_legacy.sessions.invalidate_session.return_value = None
-        mock_sessions.invalidate_session.return_value = None
+        mock_sessions.delete.return_value = None
         next_page = '/'
         session_id = 'foosession'
         classic_id = 'bazsession'
@@ -44,7 +44,7 @@ class TestLogout(TestCase):
     def test_logout_anonymous(self, mock_legacy, mock_sessions):
         """An anonymous user requests to log out."""
         mock_legacy.sessions.invalidate_session.return_value = None
-        mock_sessions.invalidate_session.return_value = None
+        mock_sessions.delete.return_value = None
         next_page = '/'
         data, status_code, header = logout(None, None, next_page)
         self.assertEqual(status_code, status.HTTP_303_SEE_OTHER,

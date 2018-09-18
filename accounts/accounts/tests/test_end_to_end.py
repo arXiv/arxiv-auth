@@ -476,7 +476,8 @@ class TestLogoutLegacySubmitCookie(TestCase):
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.app.config['REDIS_HOST'] = 'localhost'
-            self.app.config['REDIS_PORT'] = '7000'
+            self.app.config['REDIS_PORT'] = '6379'
+            self.app.config['REDIS_CLUSTER'] = '0'
 
             with self.app.app_context():
                 from accounts.services import legacy, users

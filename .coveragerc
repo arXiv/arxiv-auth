@@ -9,3 +9,4 @@ omit =
     */controllers/registration.py
     */stateless_captcha/*
     */controllers/util.py
+    generate_token.py
