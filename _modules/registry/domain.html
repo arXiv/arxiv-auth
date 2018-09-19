@@ -41,30 +41,34 @@
 
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
-<span class="kn">from</span> <span class="nn">arxiv.users.domain</span> <span class="k">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">Client</span><span class="p">,</span> <span class="n">User</span><span class="p">,</span> <span class="n">Authorizations</span>
+<span class="kn">from</span> <span class="nn">arxiv.users.domain</span> <span class="k">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">Client</span><span class="p">,</span> <span class="n">User</span><span class="p">,</span> <span class="n">Authorizations</span><span class="p">,</span> <span class="n">User</span><span class="p">,</span> \
+    <span class="n">Scope</span>
 
 
 <div class="viewcode-block" id="ClientCredential"><a class="viewcode-back" href="../../registry/registry.domain.html#registry.domain.ClientCredential">[docs]</a><span class="k">class</span> <span class="nc">ClientCredential</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Key-pair for API client authentication.&quot;&quot;&quot;</span>
 
-    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="sd">&quot;&quot;&quot;Public identifier for the API client.&quot;&quot;&quot;</span>
-
     <span class="n">client_secret</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="sd">&quot;&quot;&quot;Secret key for API client authentication.&quot;&quot;&quot;</span></div>
+    <span class="sd">&quot;&quot;&quot;Hashed secret key for API client authentication.&quot;&quot;&quot;</span>
+
+    <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Public identifier for the API client.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="ClientAuthorization"><a class="viewcode-back" href="../../registry/registry.domain.html#registry.domain.ClientAuthorization">[docs]</a><span class="k">class</span> <span class="nc">ClientAuthorization</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A specific authorization for a :class:`Client`.&quot;&quot;&quot;</span>
-
-    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="sd">&quot;&quot;&quot;The client to which this authorization applies.&quot;&quot;&quot;</span>
 
     <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span>
     <span class="sd">&quot;&quot;&quot;The specific scope being granted.&quot;&quot;&quot;</span>
 
     <span class="n">requested</span><span class="p">:</span> <span class="n">datetime</span>
     <span class="sd">&quot;&quot;&quot;The date/time when the scope was requsted.&quot;&quot;&quot;</span>
+
+    <span class="n">authorization_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Unique identifier for the scope authorization.&quot;&quot;&quot;</span>
+
+    <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The client to which this authorization applies.&quot;&quot;&quot;</span>
 
     <span class="n">authorized</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="sd">&quot;&quot;&quot;The date/time when the scope was authorized.&quot;&quot;&quot;</span></div>
@@ -84,17 +88,51 @@
         <span class="n">PASSWORD</span>
     <span class="p">)</span>
 
-    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="sd">&quot;&quot;&quot;The client to which this authorization applies.&quot;&quot;&quot;</span>
-
     <span class="n">grant_type</span><span class="p">:</span> <span class="nb">str</span>
     <span class="sd">&quot;&quot;&quot;Must be one of :attr:`.GRANT_TYPES`.&quot;&quot;&quot;</span>
 
     <span class="n">requested</span><span class="p">:</span> <span class="n">datetime</span>
     <span class="sd">&quot;&quot;&quot;The date/time when the grant type was requsted.&quot;&quot;&quot;</span>
 
+    <span class="n">grant_type_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Unique identifier for grant type authorization.&quot;&quot;&quot;</span>
+
+    <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The client to which this authorization applies.&quot;&quot;&quot;</span>
+
     <span class="n">authorized</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="sd">&quot;&quot;&quot;The date/time when the grant type was authorized.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="AuthorizationCode"><a class="viewcode-back" href="../../registry/registry.domain.html#registry.domain.AuthorizationCode">[docs]</a><span class="k">class</span> <span class="nc">AuthorizationCode</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An authorization code granted by a user to an API client.&quot;&quot;&quot;</span>
+
+    <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The unique identifier of the arXiv user granting the authorization.&quot;&quot;&quot;</span>
+
+    <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The username of the arXiv user granting the authorization.&quot;&quot;&quot;</span>
+
+    <span class="n">user_email</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The email address of the arXiv user granting the authorization.&quot;&quot;&quot;</span>
+
+    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The unique identifier of the API client.&quot;&quot;&quot;</span>
+
+    <span class="n">redirect_uri</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The URI to which the user should be redirected.&quot;&quot;&quot;</span>
+
+    <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The scope authorized by the user.&quot;&quot;&quot;</span>
+
+    <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The authorization code itself.&quot;&quot;&quot;</span>
+
+    <span class="n">created</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="sd">&quot;&quot;&quot;The time when the auth code was generated.&quot;&quot;&quot;</span>
+
+    <span class="n">expires</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="sd">&quot;&quot;&quot;The time when the auth code expires.&quot;&quot;&quot;</span></div>
 </pre></div>
 
           </div>
@@ -118,8 +156,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../authenticator/authenticator.html">authenticator package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -151,7 +189,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

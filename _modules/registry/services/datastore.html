@@ -35,7 +35,7 @@
   <h1>Source code for registry.services.datastore</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Database integration for persisting API client information.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">util</span><span class="p">,</span> <span class="n">models</span>
 <span class="kn">from</span> <span class="nn">...</span> <span class="k">import</span> <span class="n">domain</span>
 
@@ -44,17 +44,171 @@
     <span class="sd">&quot;&quot;&quot;A client was requested that does not exist.&quot;&quot;&quot;</span></div>
 
 
+<div class="viewcode-block" id="NoSuchAuthorization"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.NoSuchAuthorization">[docs]</a><span class="k">class</span> <span class="nc">NoSuchAuthorization</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A non-existant :class:`domain.ClientAuthorization` was requested.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="NoSuchGrantType"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.NoSuchGrantType">[docs]</a><span class="k">class</span> <span class="nc">NoSuchGrantType</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A non-existant :class:`domain.ClientGrantType` was requested.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="NoSuchAuthCode"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.NoSuchAuthCode">[docs]</a><span class="k">class</span> <span class="nc">NoSuchAuthCode</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A non-existant :class:`domain.AuthorizationCode` was requested.&quot;&quot;&quot;</span></div>
+
+
+<span class="n">init_app</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">init_app</span>
+<span class="n">create_all</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_all</span>
+<span class="n">drop_all</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">drop_all</span>
+
+
+<div class="viewcode-block" id="save_client"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.save_client">[docs]</a><span class="k">def</span> <span class="nf">save_client</span><span class="p">(</span>
+        <span class="n">client</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Client</span><span class="p">,</span>
+        <span class="n">cred</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientCredential</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">auths</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientAuthorization</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">grant_types</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientGrantType</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Persist a :class:`domain.Client` and (optionally) related data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    client : :class:`domain.Client`</span>
+<span class="sd">    cred : :class:`domain.ClientCredential` or None</span>
+<span class="sd">    auths : list or None</span>
+<span class="sd">        Items are :class:`domain.ClientAuthorization` instances.</span>
+<span class="sd">    grant_types : list or None</span>
+<span class="sd">        Items are :class:`domain.ClientGrantType` instances.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">client_id</span><span class="p">:</span>
+            <span class="n">db_client</span> <span class="o">=</span> <span class="n">_load_dbclient</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">)</span>
+            <span class="n">db_client</span><span class="o">.</span><span class="n">owner_id</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">owner_id</span>
+            <span class="n">db_client</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">db_client</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">url</span>
+            <span class="n">db_client</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">description</span>
+            <span class="n">db_client</span><span class="o">.</span><span class="n">redirect_uri</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">redirect_uri</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">db_client</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="p">(</span>
+                <span class="n">owner_id</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">owner_id</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">url</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                <span class="n">redirect_uri</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">redirect_uri</span>
+            <span class="p">)</span>
+        <span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">db_client</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cred</span><span class="p">:</span>
+            <span class="n">set_credential</span><span class="p">(</span><span class="n">cred</span><span class="p">,</span> <span class="n">db_client</span><span class="o">=</span><span class="n">db_client</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">auths</span><span class="p">:</span>
+            <span class="n">update_authorizations</span><span class="p">(</span><span class="n">auths</span><span class="p">,</span> <span class="n">db_client</span><span class="o">=</span><span class="n">db_client</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">grant_types</span><span class="p">:</span>
+            <span class="n">update_grant_types</span><span class="p">(</span><span class="n">grant_types</span><span class="p">,</span> <span class="n">db_client</span><span class="o">=</span><span class="n">db_client</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">db_client</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="set_credential"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.set_credential">[docs]</a><span class="k">def</span> <span class="nf">set_credential</span><span class="p">(</span><span class="n">cred</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">ClientCredential</span><span class="p">,</span>
+                   <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">db_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">commit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">(</span><span class="n">commit</span><span class="p">)</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">db_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">db_client</span> <span class="o">=</span> <span class="n">_load_dbclient</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">db_client</span><span class="o">.</span><span class="n">credential</span><span class="p">:</span>
+            <span class="n">db_client</span><span class="o">.</span><span class="n">credential</span><span class="o">.</span><span class="n">client_secret</span> <span class="o">=</span> <span class="n">cred</span><span class="o">.</span><span class="n">client_secret</span>
+            <span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">db_client</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBClientCredential</span><span class="p">(</span>
+                <span class="n">client</span><span class="o">=</span><span class="n">db_client</span><span class="p">,</span>
+                <span class="n">client_secret</span><span class="o">=</span><span class="n">cred</span><span class="o">.</span><span class="n">client_secret</span>
+            <span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="update_authorizations"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.update_authorizations">[docs]</a><span class="k">def</span> <span class="nf">update_authorizations</span><span class="p">(</span><span class="n">auths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientAuthorization</span><span class="p">],</span>
+                          <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">db_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">commit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">(</span><span class="n">commit</span><span class="p">)</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">db_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">db_client</span> <span class="o">=</span> <span class="n">_load_dbclient</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">)</span>
+        <span class="n">auths_to_keep</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">auth</span><span class="o">.</span><span class="n">authorization_id</span> <span class="k">for</span> <span class="n">auth</span> <span class="ow">in</span> <span class="n">auths</span>
+                             <span class="k">if</span> <span class="n">auth</span><span class="o">.</span><span class="n">authorization_id</span><span class="p">])</span>
+        <span class="n">extant_auths</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">authorization_id</span><span class="p">):</span> <span class="n">auth</span>
+                        <span class="k">for</span> <span class="n">auth</span> <span class="ow">in</span> <span class="n">db_client</span><span class="o">.</span><span class="n">authorizations</span><span class="p">}</span>
+        <span class="c1"># Remove auths from the datastore that are not included.</span>
+        <span class="k">for</span> <span class="n">auth_id</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">extant_auths</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="n">auths_to_keep</span><span class="p">:</span>
+            <span class="n">dbsession</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">extant_auths</span><span class="p">[</span><span class="n">auth_id</span><span class="p">])</span>
+
+        <span class="c1"># Add or update auths in the datastore.</span>
+        <span class="k">for</span> <span class="n">auth</span> <span class="ow">in</span> <span class="n">auths</span><span class="p">:</span>
+            <span class="c1"># Does not yet exist in the datastore.</span>
+            <span class="k">if</span> <span class="n">auth</span><span class="o">.</span><span class="n">authorization_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                    <span class="n">models</span><span class="o">.</span><span class="n">DBClientAuthorization</span><span class="p">(</span>
+                        <span class="n">client</span><span class="o">=</span><span class="n">db_client</span><span class="p">,</span>
+                        <span class="n">scope</span><span class="o">=</span><span class="n">auth</span><span class="o">.</span><span class="n">scope</span><span class="p">,</span>
+                        <span class="n">requested</span><span class="o">=</span><span class="n">auth</span><span class="o">.</span><span class="n">requested</span><span class="p">,</span>
+                        <span class="n">authorized</span><span class="o">=</span><span class="n">auth</span><span class="o">.</span><span class="n">authorized</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="c1"># Update an existing auth.</span>
+            <span class="k">elif</span> <span class="n">auth</span><span class="o">.</span><span class="n">authorization_id</span> <span class="ow">in</span> <span class="n">extant_auths</span><span class="p">:</span>
+                <span class="n">db_auth</span> <span class="o">=</span> <span class="n">extant_auths</span><span class="p">[</span><span class="n">auth</span><span class="o">.</span><span class="n">authorization_id</span><span class="p">]</span>
+                <span class="n">db_auth</span><span class="o">.</span><span class="n">scope</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">scope</span>
+                <span class="n">db_auth</span><span class="o">.</span><span class="n">requested</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">requested</span>
+                <span class="n">db_auth</span><span class="o">.</span><span class="n">authorized</span> <span class="o">=</span> <span class="n">auth</span><span class="o">.</span><span class="n">authorized</span>
+                <span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">db_auth</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NoSuchAuthorization</span><span class="p">(</span>
+                    <span class="n">f</span><span class="s1">&#39;No auth </span><span class="si">{auth.authorization_id}</span><span class="s1"> for client&#39;</span>
+                <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="update_grant_types"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.update_grant_types">[docs]</a><span class="k">def</span> <span class="nf">update_grant_types</span><span class="p">(</span><span class="n">grant_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientGrantType</span><span class="p">],</span>
+                       <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">db_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">commit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">(</span><span class="n">commit</span><span class="p">)</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">db_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">db_client</span> <span class="o">=</span> <span class="n">_load_dbclient</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">)</span>
+        <span class="n">gtypes_to_keep</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">g</span><span class="o">.</span><span class="n">grant_type_id</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">grant_types</span>
+                              <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">grant_type_id</span><span class="p">])</span>
+        <span class="n">extant_gtypes</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">grant_type_id</span><span class="p">):</span> <span class="n">g</span>
+                         <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">db_client</span><span class="o">.</span><span class="n">grant_types</span><span class="p">}</span>
+        <span class="c1"># Remove grant_types from the datastore that are not included.</span>
+        <span class="k">for</span> <span class="n">gtype_id</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">extant_gtypes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="n">gtypes_to_keep</span><span class="p">:</span>
+            <span class="n">dbsession</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">extant_gtypes</span><span class="p">[</span><span class="n">gtype_id</span><span class="p">])</span>
+
+        <span class="c1"># Add or update grant_types in the datastore.</span>
+        <span class="k">for</span> <span class="n">gtype</span> <span class="ow">in</span> <span class="n">grant_types</span><span class="p">:</span>
+            <span class="c1"># Does not yet exist in the datastore.</span>
+            <span class="k">if</span> <span class="n">gtype</span><span class="o">.</span><span class="n">grant_type_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                    <span class="n">models</span><span class="o">.</span><span class="n">DBClientGrantType</span><span class="p">(</span>
+                        <span class="n">client</span><span class="o">=</span><span class="n">db_client</span><span class="p">,</span>
+                        <span class="n">grant_type</span><span class="o">=</span><span class="n">gtype</span><span class="o">.</span><span class="n">grant_type</span><span class="p">,</span>
+                        <span class="n">requested</span><span class="o">=</span><span class="n">gtype</span><span class="o">.</span><span class="n">requested</span><span class="p">,</span>
+                        <span class="n">authorized</span><span class="o">=</span><span class="n">gtype</span><span class="o">.</span><span class="n">authorized</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="c1"># Update an existing auth.</span>
+            <span class="k">elif</span> <span class="n">gtype</span><span class="o">.</span><span class="n">grant_type_id</span> <span class="ow">in</span> <span class="n">extant_gtypes</span><span class="p">:</span>
+                <span class="n">db_grant_type</span> <span class="o">=</span> <span class="n">extant_gtypes</span><span class="p">[</span><span class="n">gtype</span><span class="o">.</span><span class="n">grant_type_id</span><span class="p">]</span>
+                <span class="n">db_grant_type</span><span class="o">.</span><span class="n">grant_type</span> <span class="o">=</span> <span class="n">gtype</span><span class="o">.</span><span class="n">grant_type</span>
+                <span class="n">db_grant_type</span><span class="o">.</span><span class="n">requested</span> <span class="o">=</span> <span class="n">gtype</span><span class="o">.</span><span class="n">requested</span>
+                <span class="n">db_grant_type</span><span class="o">.</span><span class="n">authorized</span> <span class="o">=</span> <span class="n">gtype</span><span class="o">.</span><span class="n">authorized</span>
+                <span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">db_grant_type</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NoSuchGrantType</span><span class="p">(</span>
+                    <span class="n">f</span><span class="s1">&#39;No grant type </span><span class="si">{gtype.grant_type_id}</span><span class="s1"> for client&#39;</span>
+                <span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="load_client"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.load_client">[docs]</a><span class="k">def</span> <span class="nf">load_client</span><span class="p">(</span><span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Client</span><span class="p">,</span>
-                                         <span class="n">domain</span><span class="o">.</span><span class="n">ClientCredential</span><span class="p">,</span>
+                                         <span class="n">Optional</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientCredential</span><span class="p">],</span>
                                          <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientAuthorization</span><span class="p">],</span>
                                          <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientGrantType</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;Load a :class:`.Client` from the datastore.&quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
-        <span class="n">db_client</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">DBClient</span> <span class="o">=</span> <span class="n">dbsession</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="p">)</span> \
-            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="o">.</span><span class="n">client_id</span> <span class="o">==</span> <span class="n">client_id</span><span class="p">)</span> \
-            <span class="o">.</span><span class="n">first</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">db_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NoSuchClient</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Client </span><span class="si">{client_id}</span><span class="s1"> does not exist&#39;</span><span class="p">)</span>
+        <span class="n">db_client</span> <span class="o">=</span> <span class="n">_load_dbclient</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">)</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="n">db_client</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
             <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="n">db_client</span><span class="o">.</span><span class="n">owner_id</span><span class="p">,</span>
@@ -65,17 +219,22 @@
         <span class="p">}</span>
         <span class="n">client</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
                                   <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
-        <span class="n">cred</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">ClientCredential</span><span class="p">(</span>
-            <span class="n">client_id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">db_client</span><span class="o">.</span><span class="n">client_id</span><span class="p">),</span>
-            <span class="n">client_secret</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">db_client</span><span class="o">.</span><span class="n">credential</span><span class="o">.</span><span class="n">client_secret</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">db_client</span><span class="o">.</span><span class="n">credential</span><span class="p">:</span>
+            <span class="n">cred</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">ClientCredential</span><span class="p">(</span>
+                <span class="n">client_id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">db_client</span><span class="o">.</span><span class="n">client_id</span><span class="p">),</span>
+                <span class="n">client_secret</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">db_client</span><span class="o">.</span><span class="n">credential</span><span class="o">.</span><span class="n">client_secret</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cred</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">auths</span> <span class="o">=</span> <span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientAuthorization</span><span class="p">(</span>
+            <span class="n">authorization_id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">authorization_id</span><span class="p">),</span>
             <span class="n">client_id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">db_client</span><span class="o">.</span><span class="n">client_id</span><span class="p">),</span>
             <span class="n">scope</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">scope</span><span class="p">),</span>
             <span class="n">requested</span><span class="o">=</span><span class="n">auth</span><span class="o">.</span><span class="n">requested</span><span class="p">,</span>
             <span class="n">authorized</span><span class="o">=</span><span class="n">auth</span><span class="o">.</span><span class="n">authorized</span>
         <span class="p">)</span> <span class="k">for</span> <span class="n">auth</span> <span class="ow">in</span> <span class="n">db_client</span><span class="o">.</span><span class="n">authorizations</span><span class="p">]</span>
         <span class="n">grant_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">ClientGrantType</span><span class="p">(</span>
+            <span class="n">grant_type_id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">grant_type</span><span class="o">.</span><span class="n">grant_type_id</span><span class="p">),</span>
             <span class="n">client_id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">db_client</span><span class="o">.</span><span class="n">client_id</span><span class="p">),</span>
             <span class="n">grant_type</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">grant_type</span><span class="o">.</span><span class="n">grant_type</span><span class="p">),</span>
             <span class="n">requested</span><span class="o">=</span><span class="n">grant_type</span><span class="o">.</span><span class="n">requested</span><span class="p">,</span>
@@ -84,8 +243,92 @@
         <span class="k">return</span> <span class="n">client</span><span class="p">,</span> <span class="n">cred</span><span class="p">,</span> <span class="n">auths</span><span class="p">,</span> <span class="n">grant_types</span></div>
 
 
-<span class="n">init_app</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">init_app</span>
-<span class="n">create_all</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_all</span>
+<div class="viewcode-block" id="save_auth_code"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.save_auth_code">[docs]</a><span class="k">def</span> <span class="nf">save_auth_code</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">AuthorizationCode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Save a new authorization code.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
+        <span class="n">db_code</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DBAuthorizationCode</span><span class="p">(</span>
+            <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">code</span><span class="p">,</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+            <span class="n">user_email</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">user_email</span><span class="p">,</span>
+            <span class="n">username</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+            <span class="n">client_id</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="n">redirect_uri</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span>
+            <span class="n">scope</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">scope</span><span class="p">,</span>
+            <span class="n">created</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
+            <span class="n">expires</span><span class="o">=</span><span class="n">code</span><span class="o">.</span><span class="n">expires</span>
+        <span class="p">)</span>
+        <span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">db_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="delete_auth_code"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.delete_auth_code">[docs]</a><span class="k">def</span> <span class="nf">delete_auth_code</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Delete an auth code from the database.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
+        <span class="n">db_code</span> <span class="o">=</span> <span class="n">_load_dbauthcode</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">)</span>
+        <span class="n">dbsession</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">db_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_auth_code"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.load_auth_code">[docs]</a><span class="k">def</span> <span class="nf">load_auth_code</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">domain</span><span class="o">.</span><span class="n">AuthorizationCode</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Load an authorization code for an API client.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
+        <span class="n">db_code</span> <span class="o">=</span> <span class="n">_load_dbauthcode</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">domain</span><span class="o">.</span><span class="n">AuthorizationCode</span><span class="p">(</span>
+        <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+        <span class="n">user_email</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">user_email</span><span class="p">,</span>
+        <span class="n">username</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+        <span class="n">client_id</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+        <span class="n">redirect_uri</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span>
+        <span class="n">scope</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">scope</span><span class="p">,</span>
+        <span class="n">created</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
+        <span class="n">expires</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">expires</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_auth_code_by_user"><a class="viewcode-back" href="../../../registry/registry.services.datastore.html#registry.services.datastore.load_auth_code_by_user">[docs]</a><span class="k">def</span> <span class="nf">load_auth_code_by_user</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">domain</span><span class="o">.</span><span class="n">AuthorizationCode</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Load an authorization code for an API client.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">dbsession</span><span class="p">:</span>
+        <span class="n">db_code</span> <span class="o">=</span> <span class="n">dbsession</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBAuthorizationCode</span><span class="p">)</span>\
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBAuthorizationCode</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">code</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBAuthorizationCode</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">user_id</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">db_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoSuchAuthCode</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Auth code </span><span class="si">{code}</span><span class="s1"> does not exist&#39;</span>
+                                 <span class="n">f</span><span class="s1">&#39; for user </span><span class="si">{user_id}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">domain</span><span class="o">.</span><span class="n">AuthorizationCode</span><span class="p">(</span>
+        <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+        <span class="n">user_email</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">user_email</span><span class="p">,</span>
+        <span class="n">username</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+        <span class="n">client_id</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+        <span class="n">redirect_uri</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span>
+        <span class="n">scope</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">scope</span><span class="p">,</span>
+        <span class="n">created</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
+        <span class="n">expires</span><span class="o">=</span><span class="n">db_code</span><span class="o">.</span><span class="n">expires</span>
+    <span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_load_dbauthcode</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">:</span> <span class="n">util</span><span class="o">.</span><span class="n">Session</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">db_code</span> <span class="o">=</span> <span class="n">dbsession</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBAuthorizationCode</span><span class="p">)</span>\
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBAuthorizationCode</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">code</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBAuthorizationCode</span><span class="o">.</span><span class="n">client_id</span> <span class="o">==</span> <span class="n">client_id</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">db_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NoSuchAuthCode</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Auth code </span><span class="si">{code}</span><span class="s1"> does not exist&#39;</span>
+                             <span class="n">f</span><span class="s1">&#39; for client </span><span class="si">{client_id}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">db_code</span>
+
+
+<span class="k">def</span> <span class="nf">_load_dbclient</span><span class="p">(</span><span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dbsession</span><span class="p">:</span> <span class="n">util</span><span class="o">.</span><span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="p">:</span>
+    <span class="n">db_client</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">DBClient</span> <span class="o">=</span> <span class="n">dbsession</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DBClient</span><span class="o">.</span><span class="n">client_id</span> <span class="o">==</span> <span class="n">client_id</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">db_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NoSuchClient</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Client </span><span class="si">{client_id}</span><span class="s1"> does not exist&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">db_client</span>
 </pre></div>
 
           </div>
@@ -109,8 +352,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">authenticator package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -142,7 +385,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

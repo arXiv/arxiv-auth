@@ -38,10 +38,73 @@
 <span id="registry-services-datastore-package"></span><h1>registry.services.datastore package<a class="headerlink" href="#module-registry.services.datastore" title="Permalink to this headline">¶</a></h1>
 <p>Database integration for persisting API client information.</p>
 <dl class="exception">
+<dt id="registry.services.datastore.NoSuchAuthCode">
+<em class="property">exception </em><code class="descclassname">registry.services.datastore.</code><code class="descname">NoSuchAuthCode</code><a class="reference internal" href="../_modules/registry/services/datastore.html#NoSuchAuthCode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.NoSuchAuthCode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>A non-existant <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.AuthorizationCode</span></code> was requested.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="registry.services.datastore.NoSuchAuthorization">
+<em class="property">exception </em><code class="descclassname">registry.services.datastore.</code><code class="descname">NoSuchAuthorization</code><a class="reference internal" href="../_modules/registry/services/datastore.html#NoSuchAuthorization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.NoSuchAuthorization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>A non-existant <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.ClientAuthorization</span></code> was requested.</p>
+</dd></dl>
+
+<dl class="exception">
 <dt id="registry.services.datastore.NoSuchClient">
 <em class="property">exception </em><code class="descclassname">registry.services.datastore.</code><code class="descname">NoSuchClient</code><a class="reference internal" href="../_modules/registry/services/datastore.html#NoSuchClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.NoSuchClient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
 <p>A client was requested that does not exist.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="registry.services.datastore.NoSuchGrantType">
+<em class="property">exception </em><code class="descclassname">registry.services.datastore.</code><code class="descname">NoSuchGrantType</code><a class="reference internal" href="../_modules/registry/services/datastore.html#NoSuchGrantType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.NoSuchGrantType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>A non-existant <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.ClientGrantType</span></code> was requested.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.delete_auth_code">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">delete_auth_code</code><span class="sig-paren">(</span><em>code</em>, <em>client_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#delete_auth_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.delete_auth_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete an auth code from the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.load_auth_code">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">load_auth_code</code><span class="sig-paren">(</span><em>code</em>, <em>client_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#load_auth_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.load_auth_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an authorization code for an API client.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="registry.domain.html#registry.domain.AuthorizationCode" title="registry.domain.AuthorizationCode"><code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationCode</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.load_auth_code_by_user">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">load_auth_code_by_user</code><span class="sig-paren">(</span><em>code</em>, <em>user_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#load_auth_code_by_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.load_auth_code_by_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an authorization code for an API client.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="registry.domain.html#registry.domain.AuthorizationCode" title="registry.domain.AuthorizationCode"><code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationCode</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -52,7 +115,83 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client" title="arxiv.users.domain.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a>, <a class="reference internal" href="registry.domain.html#registry.domain.ClientCredential" title="registry.domain.ClientCredential"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientCredential</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="registry.domain.html#registry.domain.ClientAuthorization" title="registry.domain.ClientAuthorization"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientAuthorization</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="registry.domain.html#registry.domain.ClientGrantType" title="registry.domain.ClientGrantType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientGrantType</span></code></a>]]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client" title="arxiv.users.domain.Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="registry.domain.html#registry.domain.ClientCredential" title="registry.domain.ClientCredential"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientCredential</span></code></a>], <a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="registry.domain.html#registry.domain.ClientAuthorization" title="registry.domain.ClientAuthorization"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientAuthorization</span></code></a>], <a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="registry.domain.html#registry.domain.ClientGrantType" title="registry.domain.ClientGrantType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientGrantType</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.save_auth_code">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">save_auth_code</code><span class="sig-paren">(</span><em>code</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#save_auth_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.save_auth_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a new authorization code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.save_client">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">save_client</code><span class="sig-paren">(</span><em>client</em>, <em>cred=None</em>, <em>auths=None</em>, <em>grant_types=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#save_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.save_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Persist a <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Client</span></code> and (optionally) related data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Client</span></code>) – </li>
+<li><strong>cred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.ClientCredential</span></code> or None) – </li>
+<li><strong>auths</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Items are <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.ClientAuthorization</span></code> instances.</li>
+<li><strong>grant_types</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Items are <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.ClientGrantType</span></code> instances.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.set_credential">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">set_credential</code><span class="sig-paren">(</span><em>cred</em>, <em>client_id=None</em>, <em>db_client=None</em>, <em>commit=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#set_credential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.set_credential" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.update_authorizations">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">update_authorizations</code><span class="sig-paren">(</span><em>auths</em>, <em>client_id=None</em>, <em>db_client=None</em>, <em>commit=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#update_authorizations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.update_authorizations" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="registry.services.datastore.update_grant_types">
+<code class="descclassname">registry.services.datastore.</code><code class="descname">update_grant_types</code><span class="sig-paren">(</span><em>grant_types</em>, <em>client_id=None</em>, <em>db_client=None</em>, <em>commit=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore.html#update_grant_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.update_grant_types" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -91,8 +230,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="registry.html">registry package</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="registry.html">API client registry service</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="registry.html#subpackages">Subpackages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="registry.html#submodules">Submodules</a></li>
 </ul>
@@ -103,7 +242,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="registry.html">registry package</a><ul>
+  <li><a href="registry.html">API client registry service</a><ul>
   <li><a href="registry.services.html">registry.services package</a><ul>
       <li>Previous: <a href="registry.services.html" title="previous chapter">registry.services package</a></li>
       <li>Next: <a href="registry.services.datastore.models.html" title="next chapter">registry.services.datastore.models module</a></li>
@@ -132,7 +271,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

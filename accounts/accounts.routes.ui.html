@@ -45,7 +45,21 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Callable" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="accounts.routes.ui.captcha">
+<code class="descclassname">accounts.routes.ui.</code><code class="descname">captcha</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/routes/ui.html#captcha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.routes.ui.captcha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide the image for stateless stateless_captcha.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -80,11 +94,46 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="accounts.routes.ui.register">
+<code class="descclassname">accounts.routes.ui.</code><code class="descname">register</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/routes/ui.html#register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.routes.ui.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface for creating new accounts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="accounts.routes.ui.set_cookies">
 <code class="descclassname">accounts.routes.ui.</code><code class="descname">set_cookies</code><span class="sig-paren">(</span><em>response</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/routes/ui.html#set_cookies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.routes.ui.set_cookies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update a <code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code> with cookies in controller data.</p>
 <p>Contollers seeking to update cookies must include a ‘cookies’ key
 in their response data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="accounts.routes.ui.unset_submission_cookie">
+<code class="descclassname">accounts.routes.ui.</code><code class="descname">unset_submission_cookie</code><span class="sig-paren">(</span><em>response</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/routes/ui.html#unset_submission_cookie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.routes.ui.unset_submission_cookie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unset the legacy Catalyst submission cookie.</p>
+<p>In addition to the authenticated session (which was originally from the
+Tapir auth system), Catalyst also tracks a session used specifically for
+the submission process. The legacy Catalyst controller sets this
+automatically, so we don’t need to do anything on login. But on logout,
+if this cookie is not cleared, Catalyst may attempt to use the same
+submission session upon subsequent logins. This can lead to weird
+inconsistencies.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -103,7 +152,7 @@ in their response data.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -138,8 +187,8 @@ in their response data.</p>
 <li class="toctree-l2"><a class="reference internal" href="accounts.html#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -175,7 +224,7 @@ in their response data.</p>
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

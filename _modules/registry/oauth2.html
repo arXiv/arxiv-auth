@@ -40,25 +40,79 @@
 <span class="sd">data stored in :mod:`registry.services.datastore` and instantiating authorized</span>
 <span class="sd">sessions in :mod:`registry.services.sessions`.</span>
 
-<span class="sd">The current implementation supports only the `client_credentials` grant.</span>
-
-<span class="sd">.. todo:: Implement the `authorization_code` and `password` grants.</span>
-
-
+<span class="sd">The current implementation supports the `client_credentials` and</span>
+<span class="sd">`authorization_code` grants.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
-
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">request</span>
 <span class="kn">from</span> <span class="nn">authlib.flask.oauth2</span> <span class="k">import</span> <span class="n">AuthorizationServer</span>
-<span class="kn">from</span> <span class="nn">authlib.specs.rfc6749</span> <span class="k">import</span> <span class="n">ClientMixin</span><span class="p">,</span> <span class="n">grants</span><span class="p">,</span> <span class="n">OAuth2Request</span>
+<span class="kn">from</span> <span class="nn">authlib.specs.rfc6749</span> <span class="k">import</span> <span class="n">ClientMixin</span><span class="p">,</span> <span class="n">grants</span><span class="p">,</span> <span class="n">OAuth2Request</span><span class="p">,</span> \
+    <span class="n">OAuth2Error</span>
+<span class="kn">from</span> <span class="nn">authlib.common.security</span> <span class="k">import</span> <span class="n">generate_token</span>
 
 <span class="kn">from</span> <span class="nn">arxiv.base.globals</span> <span class="k">import</span> <span class="n">get_application_config</span><span class="p">,</span> <span class="n">get_application_global</span>
 <span class="kn">from</span> <span class="nn">arxiv.base</span> <span class="k">import</span> <span class="n">logging</span>
-<span class="kn">from</span> <span class="nn">.services</span> <span class="k">import</span> <span class="n">datastore</span><span class="p">,</span> <span class="n">sessions</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">domain</span>
+<span class="kn">from</span> <span class="nn">..services</span> <span class="k">import</span> <span class="n">datastore</span><span class="p">,</span> <span class="n">sessions</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">domain</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="OAuth2User"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2User">[docs]</a><span class="k">class</span> <span class="nc">OAuth2User</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents the resource owner in OAuth2 workflows.</span>
+
+<span class="sd">    This is a thin wrapper around :class:`domain.User` to support Authlib</span>
+<span class="sd">    integration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initialize with a :class:`domain.User`.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user</span> <span class="o">=</span> <span class="n">user</span>
+
+<div class="viewcode-block" id="OAuth2User.get_user_id"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2User.get_user_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the ID of the user.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user</span><span class="o">.</span><span class="n">user_id</span></div>
+
+<div class="viewcode-block" id="OAuth2User.get_user_email"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2User.get_user_email">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_email</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the email address of the user.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user</span><span class="o">.</span><span class="n">email</span></div>
+
+<div class="viewcode-block" id="OAuth2User.get_username"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2User.get_username">[docs]</a>    <span class="k">def</span> <span class="nf">get_username</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the username of the user.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user</span><span class="o">.</span><span class="n">username</span></div></div>
+
+
+<div class="viewcode-block" id="OAuth2AuthorizationCode"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2AuthorizationCode">[docs]</a><span class="k">class</span> <span class="nc">OAuth2AuthorizationCode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wraps :class:`domain.AuthorizationCode` for use in OAuth2 workflows.&quot;&quot;&quot;</span>
+
+    <span class="n">_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">,</span> <span class="s1">&#39;user_email&#39;</span><span class="p">,</span> <span class="s1">&#39;client_id&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;redirect_uri&#39;</span><span class="p">,</span> <span class="s1">&#39;scope&#39;</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="s1">&#39;created&#39;</span><span class="p">,</span> <span class="s1">&#39;expires&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auth_code</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">AuthorizationCode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initialize with the wrapped :class:`domain.AuthorizationCode`.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_code</span> <span class="o">=</span> <span class="n">auth_code</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get an attribute from the wrapped :class:`.AuthorizationCode`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_code</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No attribute </span><span class="si">{key}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OAuth2AuthorizationCode.is_expired"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2AuthorizationCode.is_expired">[docs]</a>    <span class="k">def</span> <span class="nf">is_expired</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Indicate whether the code is expired.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code</span><span class="o">.</span><span class="n">expires</span> <span class="o">&lt;=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OAuth2AuthorizationCode.get_redirect_uri"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2AuthorizationCode.get_redirect_uri">[docs]</a>    <span class="k">def</span> <span class="nf">get_redirect_uri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the authorization code&#39;s redirect URI.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code</span><span class="o">.</span><span class="n">redirect_uri</span></div>
+
+<div class="viewcode-block" id="OAuth2AuthorizationCode.get_scope"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2AuthorizationCode.get_scope">[docs]</a>    <span class="k">def</span> <span class="nf">get_scope</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the scope for the authorization code.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code</span><span class="o">.</span><span class="n">scope</span></div></div>
 
 
 <div class="viewcode-block" id="OAuth2Client"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client">[docs]</a><span class="k">class</span> <span class="nc">OAuth2Client</span><span class="p">(</span><span class="n">ClientMixin</span><span class="p">):</span>
@@ -68,7 +122,6 @@
 <span class="sd">    This class essentially wraps an aggregate of registry domain objects for a</span>
 <span class="sd">    particular client, and implements methods expected by the</span>
 <span class="sd">    :class:`AuthorizationServer`.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Client</span><span class="p">,</span>
@@ -79,18 +132,39 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;New OAuth2Client with client_id </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">client</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">client</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_credential</span> <span class="o">=</span> <span class="n">credential</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_scopes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">auth</span><span class="o">.</span><span class="n">scope</span> <span class="k">for</span> <span class="n">auth</span> <span class="ow">in</span> <span class="n">authorizations</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scopes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">auth</span><span class="o">.</span><span class="n">scope</span><span class="p">)</span> <span class="k">for</span> <span class="n">auth</span> <span class="ow">in</span> <span class="n">authorizations</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_grant_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">gtype</span><span class="o">.</span><span class="n">grant_type</span> <span class="k">for</span> <span class="n">gtype</span> <span class="ow">in</span> <span class="n">grant_types</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the client name.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the client description.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">description</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">scopes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Authorized scopes as a list.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scopes</span><span class="p">)</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the client URL.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">url</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the client ID.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">client_id</span>
+
 <div class="viewcode-block" id="OAuth2Client.check_client_secret"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_client_secret">[docs]</a>    <span class="k">def</span> <span class="nf">check_client_secret</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_secret</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check that the provided client secret is correct.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Check client secret </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">client_secret</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_credential</span><span class="o">.</span><span class="n">client_secret</span> <span class="o">==</span> <span class="n">client_secret</span></div>
+        <span class="n">hashed</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">client_secret</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_credential</span><span class="o">.</span><span class="n">client_secret</span> <span class="o">==</span> <span class="n">hashed</span></div>
 
 <div class="viewcode-block" id="OAuth2Client.check_grant_type"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_grant_type">[docs]</a>    <span class="k">def</span> <span class="nf">check_grant_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grant_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check that the client is authorized for the proposed grant type.&quot;&quot;&quot;</span>
@@ -99,18 +173,34 @@
 
 <div class="viewcode-block" id="OAuth2Client.check_redirect_uri"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_redirect_uri">[docs]</a>    <span class="k">def</span> <span class="nf">check_redirect_uri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redirect_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check that the provided redirect URI is authorized.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Check redirect URI: </span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">redirect_uri</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">redirect_uri</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">redirect_uri</span></div>
 
-<div class="viewcode-block" id="OAuth2Client.check_requested_scopes"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_requested_scopes">[docs]</a>    <span class="k">def</span> <span class="nf">check_requested_scopes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scopes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="OAuth2Client.check_requested_scopes"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_requested_scopes">[docs]</a>    <span class="k">def</span> <span class="nf">check_requested_scopes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scopes</span><span class="p">:</span> <span class="nb">set</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check that the requested scopes are authorized for this client.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scopes</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="n">scopes</span><span class="p">)</span></div>
+        <span class="c1"># If there is an active user on the session, ensure that we are not</span>
+        <span class="c1"># granting scopes for which the user themself is not authorized.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Client requests scopes: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">scopes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">user</span><span class="p">:</span>
+            <span class="n">session_scopes</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">authorizations</span><span class="o">.</span><span class="n">scopes</span>
+            <span class="p">}</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Authorized scopes on user session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">session_scopes</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scopes</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="n">scopes</span><span class="p">)</span> <span class="ow">and</span> \
+                <span class="n">session_scopes</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="n">scopes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scopes</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="n">scopes</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="OAuth2Client.check_response_type"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_response_type">[docs]</a>    <span class="k">def</span> <span class="nf">check_response_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check the proposed response type.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Check response type: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">response_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">response_type</span> <span class="o">==</span> <span class="s1">&#39;code&#39;</span></div>
 
 <div class="viewcode-block" id="OAuth2Client.check_token_endpoint_auth_method"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.check_token_endpoint_auth_method">[docs]</a>    <span class="k">def</span> <span class="nf">check_token_endpoint_auth_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Force POST auth method.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Check endpoint auth method: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;client_secret_post&#39;</span></div>
 
 <div class="viewcode-block" id="OAuth2Client.get_default_redirect_uri"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.get_default_redirect_uri">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_redirect_uri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -119,7 +209,86 @@
 
 <div class="viewcode-block" id="OAuth2Client.has_client_secret"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.OAuth2Client.has_client_secret">[docs]</a>    <span class="k">def</span> <span class="nf">has_client_secret</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check that the client has a secret.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Check has client secret&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_credential</span><span class="o">.</span><span class="n">client_secret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="AuthorizationCodeGrant"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.AuthorizationCodeGrant">[docs]</a><span class="k">class</span> <span class="nc">AuthorizationCodeGrant</span><span class="p">(</span><span class="n">grants</span><span class="o">.</span><span class="n">AuthorizationCodeGrant</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Authorization code grant for arXiv users.&quot;&quot;&quot;</span>
+
+    <span class="n">EXPIRES</span> <span class="o">=</span> <span class="mi">3600</span>
+    <span class="n">TOKEN_ENDPOINT_AUTH_METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;client_secret_post&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="AuthorizationCodeGrant.create_authorization_code"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.AuthorizationCodeGrant.create_authorization_code">[docs]</a>    <span class="k">def</span> <span class="nf">create_authorization_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">OAuth2Client</span><span class="p">,</span>
+                                  <span class="n">grant_user</span><span class="p">:</span> <span class="n">OAuth2User</span><span class="p">,</span>
+                                  <span class="n">request</span><span class="p">:</span> <span class="n">OAuth2Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate and store a new authorization code.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        client : :class:`OAuth2Client`</span>
+<span class="sd">            The client requesting authorization.</span>
+<span class="sd">        grant_user : :class:`OAuth2User`</span>
+<span class="sd">            The resource owner who has granted authorization to the client.</span>
+<span class="sd">        request : :class:`OAuth2Request`</span>
+<span class="sd">            The request wrapper containing request details.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            An authorization code that the client can exchange for an access</span>
+<span class="sd">            token.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">generate_token</span><span class="p">(</span><span class="mi">48</span><span class="p">)</span>
+        <span class="n">created</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">datastore</span><span class="o">.</span><span class="n">save_auth_code</span><span class="p">(</span><span class="n">domain</span><span class="o">.</span><span class="n">AuthorizationCode</span><span class="p">(</span>
+            <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="n">grant_user</span><span class="o">.</span><span class="n">get_user_id</span><span class="p">(),</span>
+            <span class="n">username</span><span class="o">=</span><span class="n">grant_user</span><span class="o">.</span><span class="n">get_username</span><span class="p">(),</span>
+            <span class="n">user_email</span><span class="o">=</span><span class="n">grant_user</span><span class="o">.</span><span class="n">get_user_email</span><span class="p">(),</span>
+            <span class="n">redirect_uri</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span>
+            <span class="n">scope</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">scope</span><span class="p">,</span>
+            <span class="n">client_id</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="n">created</span><span class="o">=</span><span class="n">created</span><span class="p">,</span>
+            <span class="n">expires</span><span class="o">=</span><span class="n">created</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">EXPIRES</span><span class="p">)</span>
+
+        <span class="p">))</span>
+        <span class="k">return</span> <span class="n">code</span></div>
+
+<div class="viewcode-block" id="AuthorizationCodeGrant.parse_authorization_code"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.AuthorizationCodeGrant.parse_authorization_code">[docs]</a>    <span class="k">def</span> <span class="nf">parse_authorization_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">OAuth2Client</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">AuthorizationCode</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Attempt to retrieve an auth code for an API client.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Parse authorization code </span><span class="si">%s</span><span class="s1"> for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">code_grant</span> <span class="o">=</span> <span class="n">OAuth2AuthorizationCode</span><span class="p">(</span>
+                <span class="n">datastore</span><span class="o">.</span><span class="n">load_auth_code</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">client</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">datastore</span><span class="o">.</span><span class="n">NoSuchAuthCode</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No such auth code: </span><span class="si">{code}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">code_grant</span><span class="o">.</span><span class="n">is_expired</span><span class="p">():</span>
+            <span class="k">return</span>
+        <span class="k">return</span> <span class="n">code_grant</span></div>
+
+<div class="viewcode-block" id="AuthorizationCodeGrant.delete_authorization_code"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.AuthorizationCodeGrant.delete_authorization_code">[docs]</a>    <span class="k">def</span> <span class="nf">delete_authorization_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auth_code</span><span class="p">:</span> <span class="n">OAuth2AuthorizationCode</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Delete an auth code.&quot;&quot;&quot;</span>
+        <span class="n">datastore</span><span class="o">.</span><span class="n">delete_auth_code</span><span class="p">(</span><span class="n">auth_code</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">auth_code</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AuthorizationCodeGrant.authenticate_user"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.AuthorizationCodeGrant.authenticate_user">[docs]</a>    <span class="k">def</span> <span class="nf">authenticate_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auth_code</span><span class="p">:</span> <span class="n">OAuth2AuthorizationCode</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">OAuth2User</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Authenticate the user implicated in the auth code.&quot;&quot;&quot;</span>
+        <span class="n">code_grant</span> <span class="o">=</span> <span class="n">OAuth2AuthorizationCode</span><span class="p">(</span>
+            <span class="n">datastore</span><span class="o">.</span><span class="n">load_auth_code_by_user</span><span class="p">(</span><span class="n">auth_code</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">auth_code</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">OAuth2User</span><span class="p">(</span><span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">(</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="n">code_grant</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+            <span class="n">email</span><span class="o">=</span><span class="n">code_grant</span><span class="o">.</span><span class="n">user_email</span><span class="p">,</span>
+            <span class="n">username</span><span class="o">=</span><span class="n">code_grant</span><span class="o">.</span><span class="n">username</span>
+        <span class="p">))</span></div></div>
 
 
 <div class="viewcode-block" id="ClientCredentialsGrant"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.ClientCredentialsGrant">[docs]</a><span class="k">class</span> <span class="nc">ClientCredentialsGrant</span><span class="p">(</span><span class="n">grants</span><span class="o">.</span><span class="n">ClientCredentialsGrant</span><span class="p">):</span>
@@ -172,7 +341,7 @@
     <span class="n">session_id</span> <span class="o">=</span> <span class="n">token</span><span class="p">[</span><span class="s1">&#39;access_token&#39;</span><span class="p">]</span>
     <span class="n">client</span> <span class="o">=</span> <span class="n">oauth_request</span><span class="o">.</span><span class="n">client</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Client has scopes </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">client</span><span class="o">.</span><span class="n">scopes</span><span class="p">)</span>
-    <span class="n">user</span> <span class="o">=</span> <span class="n">oauth_request</span><span class="o">.</span><span class="n">user</span> <span class="k">if</span> <span class="n">oauth_request</span><span class="o">.</span><span class="n">user</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">oauth_request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">_user</span> <span class="k">if</span> <span class="n">oauth_request</span><span class="o">.</span><span class="n">user</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="n">authorizations</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">Authorizations</span><span class="p">(</span><span class="n">scopes</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">scopes</span><span class="p">)</span>
     <span class="n">session</span> <span class="o">=</span> <span class="n">sessions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">authorizations</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span><span class="p">,</span>
                               <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
@@ -181,10 +350,11 @@
 
 
 <div class="viewcode-block" id="create_server"><a class="viewcode-back" href="../../registry/registry.oauth2.html#registry.oauth2.create_server">[docs]</a><span class="k">def</span> <span class="nf">create_server</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">AuthorizationServer</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Instantiate and configure an :class:`AuthoriationServer`.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Instantiate and configure an :class:`AuthorizationServer`.&quot;&quot;&quot;</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">AuthorizationServer</span><span class="p">(</span><span class="n">query_client</span><span class="o">=</span><span class="n">get_client</span><span class="p">,</span>
                                  <span class="n">save_token</span><span class="o">=</span><span class="n">save_token</span><span class="p">)</span>
     <span class="n">server</span><span class="o">.</span><span class="n">register_grant</span><span class="p">(</span><span class="n">ClientCredentialsGrant</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">register_grant</span><span class="p">(</span><span class="n">AuthorizationCodeGrant</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created server </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="n">server</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">server</span></div>
 
@@ -217,8 +387,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../authenticator/authenticator.html">authenticator package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -250,7 +420,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

@@ -39,8 +39,11 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
+
+<span class="kn">from</span> <span class="nn">werkzeug.urls</span> <span class="k">import</span> <span class="n">Href</span><span class="p">,</span> <span class="n">url_encode</span><span class="p">,</span> <span class="n">url_parse</span><span class="p">,</span> <span class="n">url_unparse</span><span class="p">,</span> <span class="n">url_encode</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">abort</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> \
-    <span class="n">make_response</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">send_file</span><span class="p">,</span> <span class="n">Response</span>
+    <span class="n">make_response</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">send_file</span><span class="p">,</span> <span class="n">Response</span><span class="p">,</span> <span class="n">redirect</span>
+
 <span class="kn">from</span> <span class="nn">arxiv</span> <span class="k">import</span> <span class="n">status</span>
 <span class="kn">from</span> <span class="nn">arxiv.users.auth.decorators</span> <span class="k">import</span> <span class="n">scoped</span>
 <span class="kn">from</span> <span class="nn">arxiv.users.auth</span> <span class="k">import</span> <span class="n">scopes</span>
@@ -58,15 +61,49 @@
 <span class="n">blueprint</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;oauth&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="redirect_to_login"><a class="viewcode-back" href="../../registry/registry.routes.html#registry.routes.redirect_to_login">[docs]</a><span class="k">def</span> <span class="nf">redirect_to_login</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Send the user to log in, with a pointer back to the current URL.&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">url_encode</span><span class="p">({</span><span class="s1">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">})</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">url_parse</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;login&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_unparse</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span></div>
+
+
 <div class="viewcode-block" id="issue_token"><a class="viewcode-back" href="../../registry/registry.routes.html#registry.routes.issue_token">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/token&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">issue_token</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Client authentication endpoint.&quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Request to issue token&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Request to issue token with params </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">)</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">server</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got OAuth2 server </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="n">server</span><span class="p">))</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">create_token_response</span><span class="p">()</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Generated response </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span></div>
+
+
+<div class="viewcode-block" id="authorize"><a class="viewcode-back" href="../../registry/registry.routes.html#registry.routes.authorize">[docs]</a><span class="nd">@blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/authorize&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="nd">@scoped</span><span class="p">(</span><span class="n">unauthorized</span><span class="o">=</span><span class="n">redirect_to_login</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">authorize</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;User-facing endpoint for authorization code (three-legged) workflow.&quot;&quot;&quot;</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">server</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">grant_user</span> <span class="o">=</span> <span class="n">oauth2</span><span class="o">.</span><span class="n">OAuth2User</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+            <span class="n">grant</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">validate_consent_request</span><span class="p">(</span><span class="n">end_user</span><span class="o">=</span><span class="n">grant_user</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span>
+                <span class="s1">&#39;registry/authorize.html&#39;</span><span class="p">,</span>
+                <span class="n">grant</span><span class="o">=</span><span class="n">grant</span><span class="p">,</span>
+                <span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">user</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">oauth2</span><span class="o">.</span><span class="n">OAuth2Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Got OAuth2Error: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">BadRequest</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
+    <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;confirm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ok&#39;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;User authorizes client&#39;</span><span class="p">)</span>
+            <span class="n">grant_user</span> <span class="o">=</span> <span class="n">oauth2</span><span class="o">.</span><span class="n">OAuth2User</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;User has not authorized client&#39;</span><span class="p">)</span>
+            <span class="n">grant_user</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">server</span><span class="o">.</span><span class="n">create_authorization_response</span><span class="p">(</span><span class="n">grant_user</span><span class="o">=</span><span class="n">grant_user</span><span class="p">)</span></div>
 </pre></div>
 
           </div>
@@ -90,8 +127,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../authenticator/authenticator.html">authenticator package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -123,7 +160,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

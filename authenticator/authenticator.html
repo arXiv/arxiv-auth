@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>authenticator package &#8212; arXiv AuthN/Z 0.1 documentation</title>
+    <title>Authenticator service &#8212; arXiv AuthN/Z 0.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -35,7 +35,7 @@
           <div class="body" role="main">
             
   <div class="section" id="module-authenticator">
-<span id="authenticator-package"></span><h1>authenticator package<a class="headerlink" href="#module-authenticator" title="Permalink to this headline">¶</a></h1>
+<span id="authenticator-service"></span><h1>Authenticator service<a class="headerlink" href="#module-authenticator" title="Permalink to this headline">¶</a></h1>
 <p>Lightweight service for authorizing requests.</p>
 <p>The authenticator service is a Flask application that handles client
 authorization requests from NGINX.</p>
@@ -53,7 +53,7 @@ service includes in its response an encrypted JWT (see
 client session, including its authorization scopes (see
 <code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.user.auth.scopes</span></code>).</p>
 <div class="figure" id="id1">
-<span id="figure-authenticator-service-containers"></span><img alt="authenticator/../_static/diagrams/authenticator-service-containers.png" src="authenticator/../_static/diagrams/authenticator-service-containers.png" />
+<span id="figure-authenticator-service-containers"></span><img alt="../_images/authenticator-service-containers.png" src="../_images/authenticator-service-containers.png" />
 <p class="caption"><span class="caption-text">Authorizer service containers.</span></p>
 </div>
 <p>The authenticator service uses session keys and API auth tokens to retrieve
@@ -106,12 +106,12 @@ session information from the distributed session/token store.</p>
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">authenticator package</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Authenticator service</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -143,7 +143,7 @@ session information from the distributed session/token store.</p>
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

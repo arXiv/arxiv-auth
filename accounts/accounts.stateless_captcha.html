@@ -55,14 +55,14 @@ for use elsewhere.</p>
 <dl class="exception">
 <dt id="accounts.stateless_captcha.InvalidCaptchaToken">
 <em class="property">exception </em><code class="descclassname">accounts.stateless_captcha.</code><code class="descname">InvalidCaptchaToken</code><a class="reference internal" href="../_modules/accounts/stateless_captcha.html#InvalidCaptchaToken"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.InvalidCaptchaToken" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
 <p>A token was passed that is either expired or corrupted.</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="accounts.stateless_captcha.InvalidCaptchaValue">
 <em class="property">exception </em><code class="descclassname">accounts.stateless_captcha.</code><code class="descname">InvalidCaptchaValue</code><a class="reference internal" href="../_modules/accounts/stateless_captcha.html#InvalidCaptchaValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.InvalidCaptchaValue" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
 <p>The passed value did not match the associated captcha token.</p>
 </dd></dl>
 
@@ -75,11 +75,11 @@ for use elsewhere.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A captcha token (see <a class="reference internal" href="#accounts.stateless_captcha.new" title="accounts.stateless_captcha.new"><code class="xref py py-func docutils literal notranslate"><span class="pre">new()</span></code></a>).</li>
-<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The value of the captcha challenge (i.e. the text that the user is
+<li><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A captcha token (see <a class="reference internal" href="#accounts.stateless_captcha.new" title="accounts.stateless_captcha.new"><code class="xref py py-func docutils literal notranslate"><span class="pre">new()</span></code></a>).</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The value of the captcha challenge (i.e. the text that the user is
 asked to enter).</li>
-<li><strong>secret</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The captcha secret used to generate the token.</li>
-<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The client IP address used to generate the token.</li>
+<li><strong>secret</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The captcha secret used to generate the token.</li>
+<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The client IP address used to generate the token.</li>
 </ul>
 </td>
 </tr>
@@ -107,9 +107,9 @@ match the one used to generate the token.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>secret</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Used to encrypt the captcha challenge.</li>
-<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The client IP address, also used to encrypt the token.</li>
-<li><strong>expires</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Number of seconds for which the token is valid. Default is 300 (5
+<li><strong>secret</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Used to encrypt the captcha challenge.</li>
+<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The client IP address, also used to encrypt the token.</li>
+<li><strong>expires</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of seconds for which the token is valid. Default is 300 (5
 minutes).</li>
 </ul>
 </td>
@@ -117,10 +117,10 @@ minutes).</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A captcha token, which contains a captcha challenge and expiration.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -129,23 +129,23 @@ minutes).</li>
 
 <dl class="function">
 <dt id="accounts.stateless_captcha.render">
-<code class="descclassname">accounts.stateless_captcha.</code><code class="descname">render</code><span class="sig-paren">(</span><em>token</em>, <em>secret</em>, <em>ip_address</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha.html#render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.render" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">accounts.stateless_captcha.</code><code class="descname">render</code><span class="sig-paren">(</span><em>token</em>, <em>secret</em>, <em>ip_address</em>, <em>font=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/stateless_captcha.html#render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.stateless_captcha.render" title="Permalink to this definition">¶</a></dt>
 <dd><p>Render a captcha image using the value in a captcha token.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A captcha token (see <a class="reference internal" href="#accounts.stateless_captcha.new" title="accounts.stateless_captcha.new"><code class="xref py py-func docutils literal notranslate"><span class="pre">new()</span></code></a>).</li>
-<li><strong>secret</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The captcha secret used to generate the token.</li>
-<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The client IP address used to generate the token.</li>
+<li><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A captcha token (see <a class="reference internal" href="#accounts.stateless_captcha.new" title="accounts.stateless_captcha.new"><code class="xref py py-func docutils literal notranslate"><span class="pre">new()</span></code></a>).</li>
+<li><strong>secret</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The captcha secret used to generate the token.</li>
+<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The client IP address used to generate the token.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">PNG image data.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/io.html#io.BytesIO" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">io.BytesIO</span></code></a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3.6/library/io.html#io.BytesIO" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">io.BytesIO</span></code></a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#accounts.stateless_captcha.InvalidCaptchaToken" title="accounts.stateless_captcha.InvalidCaptchaToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">InvalidCaptchaToken</span></code></a> – Raised if the token is malformed, expired, or the IP address does not
@@ -168,23 +168,23 @@ match the one used to generate the token.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A captcha token (see <a class="reference internal" href="#accounts.stateless_captcha.new" title="accounts.stateless_captcha.new"><code class="xref py py-func docutils literal notranslate"><span class="pre">new()</span></code></a>).</li>
-<li><strong>secret</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The captcha secret used to generate the token.</li>
-<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The client IP address used to generate the token.</li>
+<li><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – A captcha token (see <a class="reference internal" href="#accounts.stateless_captcha.new" title="accounts.stateless_captcha.new"><code class="xref py py-func docutils literal notranslate"><span class="pre">new()</span></code></a>).</li>
+<li><strong>secret</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The captcha secret used to generate the token.</li>
+<li><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The client IP address used to generate the token.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The captcha challenge (i.e. the text that the user is asked to enter).</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#accounts.stateless_captcha.InvalidCaptchaToken" title="accounts.stateless_captcha.InvalidCaptchaToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">InvalidCaptchaToken</span></code></a> – Raised if the token is malformed, expired, or the IP address does not
 match the one used to generate the token.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -228,8 +228,8 @@ match the one used to generate the token.</p>
 <li class="toctree-l2"><a class="reference internal" href="accounts.html#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../authorizer/authorizer.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API Client Registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -263,7 +263,7 @@ match the one used to generate the token.</p>
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

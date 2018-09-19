@@ -1,4 +1,4 @@
-authenticator package
+Authenticator service
 =====================
 
 .. automodule:: authenticator
@@ -21,4 +21,3 @@ Submodules
    authenticator.config
    authenticator.factory
    authenticator.routes
-

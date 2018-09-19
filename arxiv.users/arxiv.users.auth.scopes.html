@@ -52,33 +52,85 @@ str objects, these constants should be imported and used. This improves the
 semantics of code, and reduces the risk of programming errors. For an example,
 see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-arxiv.users.auth.decorators" title="arxiv.users.auth.decorators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users.auth.decorators</span></code></a>.</p>
 <dl class="data">
-<dt id="arxiv.users.auth.scopes.ADMIN_UPLOAD">
-<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">ADMIN_UPLOAD</code><em class="property"> = 'upload:admin'</em><a class="headerlink" href="#arxiv.users.auth.scopes.ADMIN_UPLOAD" title="Permalink to this definition">¶</a></dt>
-<dd><p>Access to administrative functionality and resources related to uploads.</p>
-</dd></dl>
-
-<dl class="data">
 <dt id="arxiv.users.auth.scopes.CREATE_SUBMISSION">
-<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">CREATE_SUBMISSION</code><em class="property"> = 'submission:create'</em><a class="headerlink" href="#arxiv.users.auth.scopes.CREATE_SUBMISSION" title="Permalink to this definition">¶</a></dt>
-<dd><p>Authorizes creating a submission.</p>
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">CREATE_SUBMISSION</code><em class="property"> = submission:created</em><a class="headerlink" href="#arxiv.users.auth.scopes.CREATE_SUBMISSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes creating a new submission.</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="arxiv.users.auth.scopes.EDIT_PROFILE">
-<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">EDIT_PROFILE</code><em class="property"> = 'profile:update'</em><a class="headerlink" href="#arxiv.users.auth.scopes.EDIT_PROFILE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">EDIT_PROFILE</code><em class="property"> = profile:update</em><a class="headerlink" href="#arxiv.users.auth.scopes.EDIT_PROFILE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Authorizes editing user profile.</p>
+<p>This includes things like affiliation, full name, etc..</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.EDIT_SUBMISSION">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">EDIT_SUBMISSION</code><em class="property"> = submission:update</em><a class="headerlink" href="#arxiv.users.auth.scopes.EDIT_SUBMISSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes updating a submission that has not yet been announced.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.PROXY_SUBMISSION">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">PROXY_SUBMISSION</code><em class="property"> = submission:proxy</em><a class="headerlink" href="#arxiv.users.auth.scopes.PROXY_SUBMISSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes creating a submission on behalf of another user.</p>
+<p>This authorization is specifically for human users submitting on behalf of
+other human users. For client authorization to submit on behalf of a user,
+&lt;code&gt;submission:create&lt;/code&gt; should be used instead.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.READ_PUBLIC">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">READ_PUBLIC</code><em class="property"> = public:read</em><a class="headerlink" href="#arxiv.users.auth.scopes.READ_PUBLIC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes access to public endpoints.</p>
+<p>This is implicitly granted to all anonymous users. For endpoints requiring
+authentication (e.g. APIs) this scope can be used to denote baseline read
+access for clients.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.READ_UPLOAD">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">READ_UPLOAD</code><em class="property"> = upload:read</em><a class="headerlink" href="#arxiv.users.auth.scopes.READ_UPLOAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes viewing the content of an upload workspace.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.RELEASE_UPLOAD">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">RELEASE_UPLOAD</code><em class="property"> = upload:release</em><a class="headerlink" href="#arxiv.users.auth.scopes.RELEASE_UPLOAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes releasing an upload workspace.</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="arxiv.users.auth.scopes.VIEW_PROFILE">
-<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">VIEW_PROFILE</code><em class="property"> = 'profile:read'</em><a class="headerlink" href="#arxiv.users.auth.scopes.VIEW_PROFILE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Authorizes viewing user profile.</p>
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">VIEW_PROFILE</code><em class="property"> = profile:read</em><a class="headerlink" href="#arxiv.users.auth.scopes.VIEW_PROFILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes viewing the content of a user profile.</p>
+<p>This includes things like affiliation, full name, and e-mail address.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="arxiv.users.auth.scopes.VIEW_SUBMISSION">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">VIEW_SUBMISSION</code><em class="property"> = submission:read</em><a class="headerlink" href="#arxiv.users.auth.scopes.VIEW_SUBMISSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes viewing a submission.</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="arxiv.users.auth.scopes.WRITE_UPLOAD">
-<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">WRITE_UPLOAD</code><em class="property"> = 'upload:write'</em><a class="headerlink" href="#arxiv.users.auth.scopes.WRITE_UPLOAD" title="Permalink to this definition">¶</a></dt>
-<dd><p>Required to create new uploads.</p>
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">WRITE_UPLOAD</code><em class="property"> = upload:update</em><a class="headerlink" href="#arxiv.users.auth.scopes.WRITE_UPLOAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes uploading files to to a workspace.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arxiv.users.auth.scopes.get_human_label">
+<code class="descclassname">arxiv.users.auth.scopes.</code><code class="descname">get_human_label</code><span class="sig-paren">(</span><em>scope</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arxiv/users/auth/scopes.html#get_human_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arxiv.users.auth.scopes.get_human_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>The the human-readable label for a scope, for display to end users.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -110,8 +162,8 @@ see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -147,7 +199,7 @@ see <a class="reference internal" href="arxiv.users.auth.decorators.html#module-
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

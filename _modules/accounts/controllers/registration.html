@@ -57,6 +57,7 @@
 <span class="kn">from</span> <span class="nn">wtforms.validators</span> <span class="k">import</span> <span class="n">DataRequired</span><span class="p">,</span> <span class="n">Email</span><span class="p">,</span> <span class="n">Length</span><span class="p">,</span> <span class="n">URL</span><span class="p">,</span> <span class="n">optional</span><span class="p">,</span> \
     <span class="n">ValidationError</span>
 <span class="kn">from</span> <span class="nn">wtforms.widgets</span> <span class="k">import</span> <span class="n">ListWidget</span><span class="p">,</span> <span class="n">CheckboxInput</span><span class="p">,</span> <span class="n">Select</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">Markup</span>
 <span class="kn">import</span> <span class="nn">pycountry</span>
 
 <span class="c1"># from .. import domain</span>
@@ -73,7 +74,7 @@
 <span class="k">def</span> <span class="nf">_login_classic</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">,</span> <span class="n">auth</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">Authorizations</span><span class="p">,</span>
                    <span class="n">ip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">c_session</span> <span class="o">=</span> <span class="n">legacy</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+        <span class="n">c_session</span> <span class="o">=</span> <span class="n">legacy</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
         <span class="n">c_cookie</span> <span class="o">=</span> <span class="n">legacy</span><span class="o">.</span><span class="n">generate_cookie</span><span class="p">(</span><span class="n">c_session</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created classic session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">c_session</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">legacy</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionCreationFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -84,7 +85,7 @@
 
 <span class="k">def</span> <span class="nf">_logout</span><span class="p">(</span><span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">sessions</span><span class="o">.</span><span class="n">invalidate_by_id</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="n">sessions</span><span class="o">.</span><span class="n">delete_by_id</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">sessions</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SessionDeletionFailed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Could not delete session </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">session_id</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">(</span><span class="s1">&#39;Cannot logout&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>  <span class="c1"># type: ignore</span>
@@ -103,20 +104,20 @@
     <span class="k">return</span> <span class="n">session</span><span class="p">,</span> <span class="n">cookie</span>
 
 
-<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.register">[docs]</a><span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">,</span> <span class="n">captcha_secret</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> \
-        <span class="o">-&gt;</span> <span class="n">ResponseData</span><span class="p">:</span>
+<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.register">[docs]</a><span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">MultiDict</span><span class="p">,</span> <span class="n">captcha_secret</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+             <span class="n">next_page</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResponseData</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Handle requests for the registration view.&quot;&quot;&quot;</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
         <span class="n">captcha_token</span> <span class="o">=</span> <span class="n">stateless_captcha</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">captcha_secret</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
         <span class="n">_params</span> <span class="o">=</span> <span class="n">MultiDict</span><span class="p">({</span><span class="s1">&#39;captcha_token&#39;</span><span class="p">:</span> <span class="n">captcha_token</span><span class="p">})</span>  <span class="c1"># type: ignore</span>
-        <span class="n">form</span> <span class="o">=</span> <span class="n">RegistrationForm</span><span class="p">(</span><span class="n">_params</span><span class="p">)</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">RegistrationForm</span><span class="p">(</span><span class="n">_params</span><span class="p">,</span> <span class="n">next_page</span><span class="o">=</span><span class="n">next_page</span><span class="p">)</span>
         <span class="n">form</span><span class="o">.</span><span class="n">configure_captcha</span><span class="p">(</span><span class="n">captcha_secret</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span> <span class="s1">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">next_page</span><span class="p">}</span>
     <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Registration form submitted&#39;</span><span class="p">)</span>
-        <span class="n">form</span> <span class="o">=</span> <span class="n">RegistrationForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">}</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">RegistrationForm</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">next_page</span><span class="o">=</span><span class="n">next_page</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span> <span class="s1">&#39;next_page&#39;</span><span class="p">:</span> <span class="n">next_page</span><span class="p">}</span>
         <span class="n">form</span><span class="o">.</span><span class="n">configure_captcha</span><span class="p">(</span><span class="n">captcha_secret</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">form</span><span class="o">.</span><span class="n">validate</span><span class="p">():</span>
@@ -143,7 +144,7 @@
             <span class="p">},</span>
             <span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">user_id</span>
         <span class="p">})</span>
-        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">,</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_303_SEE_OTHER</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Location&#39;</span><span class="p">:</span> <span class="n">next_page</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">,</span> <span class="p">{}</span></div>
 
 
@@ -211,19 +212,6 @@
 
     <span class="n">user_id</span> <span class="o">=</span> <span class="n">HiddenField</span><span class="p">(</span><span class="s1">&#39;User ID&#39;</span><span class="p">)</span>
 
-    <span class="n">email</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span>
-        <span class="s1">&#39;Email address&#39;</span><span class="p">,</span>
-        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Email</span><span class="p">(),</span> <span class="n">Length</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">255</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()],</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;You must be able to receive mail at this address.&quot;</span>
-        <span class="s2">&quot; We take &lt;a href=&#39;https://arxiv.org/help/email-protection&#39;&gt;&quot;</span>
-        <span class="s2">&quot; strong measures&lt;/a&gt; to protect your email address from viruses and&quot;</span>
-        <span class="s2">&quot; spam. Do not enter an e-mail address that belongs to someone&quot;</span>
-        <span class="s2">&quot; else: if we discover that you&#39;ve done so, we will suspend your&quot;</span>
-        <span class="s2">&quot; account.&quot;</span>
-    <span class="p">)</span>
-
-    <span class="n">username</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Username&#39;</span><span class="p">,</span>
-                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
     <span class="n">forename</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;First or given name&#39;</span><span class="p">,</span>
                            <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
     <span class="n">surname</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Last or family name&#39;</span><span class="p">,</span>
@@ -238,7 +226,8 @@
     <span class="p">)</span>
     <span class="n">country</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">&#39;Country&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">COUNTRIES</span><span class="p">,</span>
                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()])</span>
-    <span class="n">status</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">&#39;Status&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">RANKS</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">&#39;Academic Status&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">RANKS</span><span class="p">,</span>
+                         <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()])</span>
 
     <span class="n">groups</span> <span class="o">=</span> <span class="n">MultiCheckboxField</span><span class="p">(</span><span class="s1">&#39;Group(s) to which you would like to submit&#39;</span><span class="p">,</span>
                                 <span class="n">choices</span><span class="o">=</span><span class="n">GROUPS</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
@@ -290,28 +279,39 @@
                 <span class="n">homepage_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
                 <span class="n">remember_me</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remember_me</span><span class="o">.</span><span class="n">data</span>
             <span class="p">)</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="ProfileForm.validate_username"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.validate_username">[docs]</a>    <span class="k">def</span> <span class="nf">validate_username</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Ensure that the username is unique.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">users</span><span class="o">.</span><span class="n">username_exists</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;An account with that username already&#39;</span>
-                                  <span class="s1">&#39; exists&#39;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ProfileForm.validate_email"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.ProfileForm.validate_email">[docs]</a>    <span class="k">def</span> <span class="nf">validate_email</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Ensure that the email address is unique.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">users</span><span class="o">.</span><span class="n">email_exists</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;An account with that email address&#39;</span>
-                                  <span class="s1">&#39; already exists&#39;</span><span class="p">)</span></div></div>
+        <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="RegistrationForm"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm">[docs]</a><span class="k">class</span> <span class="nc">RegistrationForm</span><span class="p">(</span><span class="n">ProfileForm</span><span class="p">):</span>
+<div class="viewcode-block" id="RegistrationForm"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm">[docs]</a><span class="k">class</span> <span class="nc">RegistrationForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;User registration form.&quot;&quot;&quot;</span>
 
-    <span class="n">password</span> <span class="o">=</span> <span class="n">PasswordField</span><span class="p">(</span><span class="s1">&#39;Password&#39;</span><span class="p">,</span>
-                             <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
-    <span class="n">password2</span> <span class="o">=</span> <span class="n">PasswordField</span><span class="p">(</span><span class="s1">&#39;Re-enter password&#39;</span><span class="p">,</span>
-                              <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()])</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span>
+        <span class="s1">&#39;Email address&#39;</span><span class="p">,</span>
+        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Email</span><span class="p">(),</span> <span class="n">Length</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mi">255</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()],</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;You must be able to receive mail at this address.&quot;</span>
+        <span class="s2">&quot; We take &lt;a href=&#39;https://arxiv.org/help/email-protection&#39;&gt;&quot;</span>
+        <span class="s2">&quot; strong measures&lt;/a&gt; to protect your email address from viruses and&quot;</span>
+        <span class="s2">&quot; spam. Do not enter an e-mail address that belongs to someone&quot;</span>
+        <span class="s2">&quot; else: if we discover that you&#39;ve done so, we will suspend your&quot;</span>
+        <span class="s2">&quot; account.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">username</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Username&#39;</span><span class="p">,</span>
+                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()],</span>
+                           <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Please choose a username between 5 and&#39;</span>
+                                       <span class="s1">&#39; 20 characters in length.&#39;</span><span class="p">)</span>
+
+    <span class="n">password</span> <span class="o">=</span> <span class="n">PasswordField</span><span class="p">(</span>
+        <span class="s1">&#39;Password&#39;</span><span class="p">,</span>
+        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()],</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Please choose a password that is between 8 and 20&quot;</span>
+                    <span class="s2">&quot; characters in length. Longer passwords are more secure.&quot;</span>
+                    <span class="s2">&quot; You may use alphanumeric characters, as well as&quot;</span>
+                    <span class="s2">&quot; &lt;code&gt;* @ # $ ! ? %&lt;/code&gt;.&quot;</span><span class="p">)</span>
+    <span class="n">password2</span> <span class="o">=</span> <span class="n">PasswordField</span><span class="p">(</span>
+        <span class="s1">&#39;Re-enter password&#39;</span><span class="p">,</span>
+        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">Length</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">8</span><span class="p">),</span> <span class="n">DataRequired</span><span class="p">()],</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Your passwords must match.&quot;</span><span class="p">)</span>
 
     <span class="n">captcha_value</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;Are you a robot?&#39;</span><span class="p">,</span>
                                 <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">DataRequired</span><span class="p">()],</span>
@@ -319,10 +319,35 @@
                                             <span class="s2">&quot; see in the image above&quot;</span><span class="p">)</span>
     <span class="n">captcha_token</span> <span class="o">=</span> <span class="n">HiddenField</span><span class="p">()</span>
 
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Grab `next_page` param, if provided.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_page</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;next_page&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RegistrationForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
 <div class="viewcode-block" id="RegistrationForm.configure_captcha"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.configure_captcha">[docs]</a>    <span class="k">def</span> <span class="nf">configure_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">captcha_secret</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ip</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Set configuration details for the stateless_captcha.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">captcha_secret</span> <span class="o">=</span> <span class="n">captcha_secret</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span></div>
+
+<div class="viewcode-block" id="RegistrationForm.validate_username"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.validate_username">[docs]</a>    <span class="k">def</span> <span class="nf">validate_username</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that the username is unique.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">users</span><span class="o">.</span><span class="n">username_exists</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">Markup</span><span class="p">(</span>
+                <span class="n">f</span><span class="s1">&#39;An account with that email already exists. You can try&#39;</span>
+                <span class="n">f</span><span class="s1">&#39; &lt;a href=&quot;{url_for(&quot;ui.login&quot;)}?next_page=</span><span class="si">{self.next_page}</span><span class="s1">&quot;&gt;&#39;</span>
+                <span class="n">f</span><span class="s1">&#39; logging in&lt;/a&gt;, or &lt;a href=&quot;{url_for(&quot;lost_password&quot;)}&quot;&gt;&#39;</span>
+                <span class="n">f</span><span class="s1">&#39; reset your password &lt;/a&gt;.&#39;</span>
+            <span class="p">))</span></div>
+
+<div class="viewcode-block" id="RegistrationForm.validate_email"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.validate_email">[docs]</a>    <span class="k">def</span> <span class="nf">validate_email</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that the email address is unique.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">users</span><span class="o">.</span><span class="n">email_exists</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">Markup</span><span class="p">(</span>
+                <span class="n">f</span><span class="s1">&#39;An account with that email already exists. You can try&#39;</span>
+                <span class="n">f</span><span class="s1">&#39; &lt;a href=&quot;{url_for(&quot;ui.login&quot;)}?next_page=</span><span class="si">{self.next_page}</span><span class="s1">&quot;&gt;&#39;</span>
+                <span class="n">f</span><span class="s1">&#39; logging in&lt;/a&gt;, or &lt;a href=&quot;{url_for(&quot;lost_password&quot;)}&quot;&gt;&#39;</span>
+                <span class="n">f</span><span class="s1">&#39; reset your password &lt;/a&gt;.&#39;</span>
+            <span class="p">))</span></div>
 
 <div class="viewcode-block" id="RegistrationForm.validate_captcha_value"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.validate_captcha_value">[docs]</a>    <span class="k">def</span> <span class="nf">validate_captcha_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check the captcha value against the captcha token.&quot;&quot;&quot;</span>
@@ -344,7 +369,23 @@
 <div class="viewcode-block" id="RegistrationForm.validate_password"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.validate_password">[docs]</a>    <span class="k">def</span> <span class="nf">validate_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="n">StringField</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Verify that the password is the same in both fields.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="o">.</span><span class="n">data</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">password2</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Passwords must match&#39;</span><span class="p">)</span></div></div>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Passwords must match&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegistrationForm.from_domain"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.from_domain">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_domain</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;RegistrationForm&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate this form with data from a domain object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">MultiDict</span><span class="p">({</span>  <span class="c1"># type: ignore</span>
+            <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+            <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+        <span class="p">}))</span></div>
+
+<div class="viewcode-block" id="RegistrationForm.to_domain"><a class="viewcode-back" href="../../../accounts/accounts.controllers.registration.html#accounts.controllers.registration.RegistrationForm.to_domain">[docs]</a>    <span class="k">def</span> <span class="nf">to_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate a :class:`.User` from this form&#39;s data.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">domain</span><span class="o">.</span><span class="n">User</span><span class="p">(</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">username</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">email</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">email</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
 </pre></div>
 
           </div>
@@ -368,8 +409,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">authenticator package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -403,7 +444,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

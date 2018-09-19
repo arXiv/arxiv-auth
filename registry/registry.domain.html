@@ -39,10 +39,77 @@
 <p>Core domain classes for the API client registry.</p>
 <p>See also <a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#module-arxiv.users.domain" title="arxiv.users.domain"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.users.domain</span></code></a>.</p>
 <dl class="class">
+<dt id="registry.domain.AuthorizationCode">
+<em class="property">class </em><code class="descclassname">registry.domain.</code><code class="descname">AuthorizationCode</code><a class="reference internal" href="../_modules/registry/domain.html#AuthorizationCode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.domain.AuthorizationCode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>An authorization code granted by a user to an API client.</p>
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.client_id">
+<code class="descname">client_id</code><a class="headerlink" href="#registry.domain.AuthorizationCode.client_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unique identifier of the API client.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.code">
+<code class="descname">code</code><a class="headerlink" href="#registry.domain.AuthorizationCode.code" title="Permalink to this definition">¶</a></dt>
+<dd><p>The authorization code itself.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.created">
+<code class="descname">created</code><a class="headerlink" href="#registry.domain.AuthorizationCode.created" title="Permalink to this definition">¶</a></dt>
+<dd><p>The time when the auth code was generated.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.expires">
+<code class="descname">expires</code><a class="headerlink" href="#registry.domain.AuthorizationCode.expires" title="Permalink to this definition">¶</a></dt>
+<dd><p>The time when the auth code expires.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.redirect_uri">
+<code class="descname">redirect_uri</code><a class="headerlink" href="#registry.domain.AuthorizationCode.redirect_uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>The URI to which the user should be redirected.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.scope">
+<code class="descname">scope</code><a class="headerlink" href="#registry.domain.AuthorizationCode.scope" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scope authorized by the user.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.user_email">
+<code class="descname">user_email</code><a class="headerlink" href="#registry.domain.AuthorizationCode.user_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>The email address of the arXiv user granting the authorization.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.user_id">
+<code class="descname">user_id</code><a class="headerlink" href="#registry.domain.AuthorizationCode.user_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unique identifier of the arXiv user granting the authorization.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.domain.AuthorizationCode.username">
+<code class="descname">username</code><a class="headerlink" href="#registry.domain.AuthorizationCode.username" title="Permalink to this definition">¶</a></dt>
+<dd><p>The username of the arXiv user granting the authorization.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="registry.domain.ClientAuthorization">
 <em class="property">class </em><code class="descclassname">registry.domain.</code><code class="descname">ClientAuthorization</code><a class="reference internal" href="../_modules/registry/domain.html#ClientAuthorization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.domain.ClientAuthorization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <p>A specific authorization for a <code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>.</p>
+<dl class="attribute">
+<dt id="registry.domain.ClientAuthorization.authorization_id">
+<code class="descname">authorization_id</code><a class="headerlink" href="#registry.domain.ClientAuthorization.authorization_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier for the scope authorization.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="registry.domain.ClientAuthorization.authorized">
 <code class="descname">authorized</code><a class="headerlink" href="#registry.domain.ClientAuthorization.authorized" title="Permalink to this definition">¶</a></dt>
@@ -72,7 +139,7 @@
 <dl class="class">
 <dt id="registry.domain.ClientCredential">
 <em class="property">class </em><code class="descclassname">registry.domain.</code><code class="descname">ClientCredential</code><a class="reference internal" href="../_modules/registry/domain.html#ClientCredential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.domain.ClientCredential" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <p>Key-pair for API client authentication.</p>
 <dl class="attribute">
 <dt id="registry.domain.ClientCredential.client_id">
@@ -83,7 +150,7 @@
 <dl class="attribute">
 <dt id="registry.domain.ClientCredential.client_secret">
 <code class="descname">client_secret</code><a class="headerlink" href="#registry.domain.ClientCredential.client_secret" title="Permalink to this definition">¶</a></dt>
-<dd><p>Secret key for API client authentication.</p>
+<dd><p>Hashed secret key for API client authentication.</p>
 </dd></dl>
 
 </dd></dl>
@@ -91,7 +158,7 @@
 <dl class="class">
 <dt id="registry.domain.ClientGrantType">
 <em class="property">class </em><code class="descclassname">registry.domain.</code><code class="descname">ClientGrantType</code><a class="reference internal" href="../_modules/registry/domain.html#ClientGrantType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.domain.ClientGrantType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <p>A grant type for which a client is authorized.</p>
 <dl class="attribute">
 <dt id="registry.domain.ClientGrantType.AUTHORIZATION_CODE">
@@ -137,6 +204,12 @@
 </dd></dl>
 
 <dl class="attribute">
+<dt id="registry.domain.ClientGrantType.grant_type_id">
+<code class="descname">grant_type_id</code><a class="headerlink" href="#registry.domain.ClientGrantType.grant_type_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier for grant type authorization.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="registry.domain.ClientGrantType.requested">
 <code class="descname">requested</code><a class="headerlink" href="#registry.domain.ClientGrantType.requested" title="Permalink to this definition">¶</a></dt>
 <dd><p>The date/time when the grant type was requsted.</p>
@@ -168,8 +241,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="registry.html">registry package</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="registry.html">API client registry service</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="registry.html#subpackages">Subpackages</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="registry.html#submodules">Submodules</a></li>
 </ul>
@@ -180,7 +253,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="registry.html">registry package</a><ul>
+  <li><a href="registry.html">API client registry service</a><ul>
       <li>Previous: <a href="registry.config.html" title="previous chapter">registry.config module</a></li>
       <li>Next: <a href="registry.factory.html" title="next chapter">registry.factory module</a></li>
   </ul></li>
@@ -207,7 +280,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

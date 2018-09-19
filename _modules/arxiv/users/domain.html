@@ -48,7 +48,7 @@
 <span class="n">EASTERN</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="s1">&#39;US/Eastern&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Category"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Category">[docs]</a><span class="k">class</span> <span class="nc">Category</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<div class="viewcode-block" id="Category"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Category">[docs]</a><span class="k">class</span> <span class="nc">Category</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Reprents a classification category.&quot;&quot;&quot;</span>
 
     <span class="n">archive</span><span class="p">:</span> <span class="nb">str</span>
@@ -57,7 +57,7 @@
     <span class="n">subject</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="sd">&quot;&quot;&quot;Leaf-level classification in the arXiv taxonomy.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Category.from_compound"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Category.from_compound">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Category.from_compound"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Category.from_compound">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_compound</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Category&#39;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a :class:`.Category` from a compound classification slug.</span>
@@ -93,7 +93,7 @@
         <span class="k">return</span> <span class="n">name</span></div>
 
 
-<div class="viewcode-block" id="UserProfile"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserProfile">[docs]</a><span class="k">class</span> <span class="nc">UserProfile</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<div class="viewcode-block" id="UserProfile"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.UserProfile">[docs]</a><span class="k">class</span> <span class="nc">UserProfile</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;User profile data.&quot;&quot;&quot;</span>
 
     <span class="c1"># mypy (oddly) does not support class attributes:</span>
@@ -158,7 +158,62 @@
         <span class="p">])</span></div>
 
 
-<div class="viewcode-block" id="Authorizations"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Authorizations">[docs]</a><span class="k">class</span> <span class="nc">Authorizations</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<div class="viewcode-block" id="Scope"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Scope">[docs]</a><span class="k">class</span> <span class="nc">Scope</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents an authorization policy.&quot;&quot;&quot;</span>
+
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The domain to which the scope applies.</span>
+
+<span class="sd">    This will generally refer to a specific service.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">action</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;An action within ``domain`.&quot;&quot;&quot;</span>
+
+    <span class="n">resource</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;The specific resource to which this policy applies.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return this scope as a :-delimited string.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">o</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return this scope as a :-delimited string.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">o</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Scope.for_resource"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Scope.for_resource">[docs]</a>    <span class="k">def</span> <span class="nf">for_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Scope&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create a copy of this scope with a specific resource.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Scope</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">domain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">resource_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Scope.as_global"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Scope.as_global">[docs]</a>    <span class="k">def</span> <span class="nf">as_global</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Scope&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create a copy of this scope with a global resource.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">for_resource</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Scope.domains"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Scope.domains">[docs]</a>    <span class="k">class</span> <span class="nc">domains</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Known authorization domains.&quot;&quot;&quot;</span>
+
+        <span class="n">PUBLIC</span> <span class="o">=</span> <span class="s1">&#39;public&#39;</span>
+        <span class="sd">&quot;&quot;&quot;The public arXiv site, including APIs.&quot;&quot;&quot;</span>
+        <span class="n">PROFILE</span> <span class="o">=</span> <span class="s1">&#39;profile&#39;</span>
+        <span class="sd">&quot;&quot;&quot;arXiv user profile.&quot;&quot;&quot;</span>
+        <span class="n">SUBMISSION</span> <span class="o">=</span> <span class="s1">&#39;submission&#39;</span>
+        <span class="sd">&quot;&quot;&quot;Submission interfaces and actions.&quot;&quot;&quot;</span>
+        <span class="n">UPLOAD</span> <span class="o">=</span> <span class="s1">&#39;upload&#39;</span>
+        <span class="sd">&quot;&quot;&quot;File uploads, including those for submissions.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="Scope.actions"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Scope.actions">[docs]</a>    <span class="k">class</span> <span class="nc">actions</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Known authorization actions.&quot;&quot;&quot;</span>
+
+        <span class="n">UPDATE</span> <span class="o">=</span> <span class="s1">&#39;update&#39;</span>
+        <span class="n">CREATE</span> <span class="o">=</span> <span class="s1">&#39;created&#39;</span>
+        <span class="n">DELETE</span> <span class="o">=</span> <span class="s1">&#39;delete&#39;</span>
+        <span class="n">RELEASE</span> <span class="o">=</span> <span class="s1">&#39;release&#39;</span>
+        <span class="n">READ</span> <span class="o">=</span> <span class="s1">&#39;read&#39;</span>
+        <span class="n">PROXY</span> <span class="o">=</span> <span class="s1">&#39;proxy&#39;</span></div></div>
+
+
+<div class="viewcode-block" id="Authorizations"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Authorizations">[docs]</a><span class="k">class</span> <span class="nc">Authorizations</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Authorization information, e.g. associated with a :class:`.Session`.&quot;&quot;&quot;</span>
 
     <span class="n">classic</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -167,21 +222,34 @@
     <span class="n">endorsements</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Category</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="sd">&quot;&quot;&quot;Categories to which the user is permitted to submit.&quot;&quot;&quot;</span>
 
-    <span class="n">scopes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="sd">&quot;&quot;&quot;Authorized scopes. See :mod:`arxiv.users.auth.scopes`.&quot;&quot;&quot;</span>
+    <span class="n">scopes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Scope</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="sd">&quot;&quot;&quot;Authorized :class:`.scope`s. See also :mod:`arxiv.users.auth.scopes`.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Authorizations.before_init"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Authorizations.before_init">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Authorizations.before_init"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Authorizations.before_init">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">before_init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Make sure that endorsements are :class:`.Category` instances.&quot;&quot;&quot;</span>
         <span class="c1"># Iterative coercion is hard. It&#39;s a lot easier to handle this here</span>
         <span class="c1"># than to implement a general-purpose coercsion.</span>
         <span class="c1"># if self.endorsements and type(self.endorsements[0]) is not Category:</span>
         <span class="n">data</span><span class="p">[</span><span class="s1">&#39;endorsements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">Category</span><span class="p">(</span><span class="o">*</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;endorsements&#39;</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="p">]</span></div></div>
+            <span class="n">Category</span><span class="p">(</span><span class="o">*</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="n">Category</span><span class="p">(</span><span class="o">**</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;endorsements&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;scopes&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;scopes&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;scopes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">Scope</span><span class="p">(</span><span class="o">*</span><span class="n">scope</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">))</span> <span class="k">for</span> <span class="n">scope</span>
+                    <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;scopes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;scopes&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;scopes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">Scope</span><span class="p">(</span><span class="o">**</span><span class="n">scope</span><span class="p">)</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span>
+                    <span class="k">else</span> <span class="n">Scope</span><span class="p">(</span><span class="o">*</span><span class="n">scope</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">scope</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;scopes&#39;</span><span class="p">]</span>
+                <span class="p">]</span></div></div>
 
 
-<div class="viewcode-block" id="UserFullName"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.UserFullName">[docs]</a><span class="k">class</span> <span class="nc">UserFullName</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<div class="viewcode-block" id="UserFullName"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.UserFullName">[docs]</a><span class="k">class</span> <span class="nc">UserFullName</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents a user&#39;s full name.&quot;&quot;&quot;</span>
 
     <span class="n">forename</span><span class="p">:</span> <span class="nb">str</span>
@@ -194,7 +262,7 @@
     <span class="sd">&quot;&quot;&quot;Any title or qualifier used as a suffix/postfix.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="User"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<div class="viewcode-block" id="User"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents an arXiv user and their authorizations.&quot;&quot;&quot;</span>
 
     <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
@@ -210,17 +278,32 @@
     <span class="sd">&quot;&quot;&quot;The user&#39;s full name (if available).&quot;&quot;&quot;</span>
 
     <span class="n">profile</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UserProfile</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="sd">&quot;&quot;&quot;The user&#39;s account profile (if available).&quot;&quot;&quot;</span></div>
+    <span class="sd">&quot;&quot;&quot;The user&#39;s account profile (if available).&quot;&quot;&quot;</span>
+
+    <span class="n">verified</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="sd">&quot;&quot;&quot;Whether or not the users&#39; e-mail address has been verified.&quot;&quot;&quot;</span></div>
+
+    <span class="c1"># TODO: consider whether this information is relevant beyond the</span>
+    <span class="c1"># ``arxiv.users.legacy.authenticate`` module.</span>
+    <span class="c1">#</span>
+    <span class="c1"># approved: bool = True</span>
+    <span class="c1"># &quot;&quot;&quot;Whether or not the users&#39; account is approved.&quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1"># banned: bool = False</span>
+    <span class="c1"># &quot;&quot;&quot;Whether or not the user has been banned.&quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1"># deleted: bool = False</span>
+    <span class="c1"># &quot;&quot;&quot;Whether or not the user has been deleted.&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;API client.&quot;&quot;&quot;</span>
-
-    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="sd">&quot;&quot;&quot;Unique identifier for a :class:`.Client`.&quot;&quot;&quot;</span>
 
     <span class="n">owner_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="sd">&quot;&quot;&quot;The arXiv user responsible for the client.&quot;&quot;&quot;</span>
+
+    <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;Unique identifier for a :class:`.Client`.&quot;&quot;&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="sd">&quot;&quot;&quot;Human-friendly name of the API client.&quot;&quot;&quot;</span>
@@ -235,7 +318,7 @@
     <span class="sd">&quot;&quot;&quot;The authorized redirect URI for the client.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="Session"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Session">[docs]</a><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<div class="viewcode-block" id="Session"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.Session">[docs]</a><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents an authenticated session in the arXiv system.&quot;&quot;&quot;</span>
 
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
@@ -282,15 +365,11 @@
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">end_time</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">EASTERN</span><span class="p">))</span><span class="o">.</span><span class="n">seconds</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
 
-    <span class="c1"># Consider for later:</span>
-    <span class="c1">#  localization (preferred language)</span>
-    <span class="c1">#  preferences for sharing contact info</span>
-
 
 <span class="c1"># Helpers and private functions.</span>
 
 
-<div class="viewcode-block" id="to_dict"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.to_dict">[docs]</a><span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="to_dict"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.to_dict">[docs]</a><span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate a dict representation of a NamedTuple instance.</span>
 
@@ -312,16 +391,23 @@
         <span class="k">return</span> <span class="p">{}</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
     <span class="n">_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_cast</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;_asdict&#39;</span><span class="p">):</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="p">[</span><span class="n">_cast</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;_asdict&#39;</span><span class="p">):</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
-        <span class="n">_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="n">_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_cast</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_data</span></div>
 
 
-<div class="viewcode-block" id="from_dict"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.from_dict">[docs]</a><span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<div class="viewcode-block" id="from_dict"><a class="viewcode-back" href="../../../arxiv.users/arxiv.users.domain.html#arxiv.users.auth.scopes.from_dict">[docs]</a><span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate a NamedTuple instance from a dict, with recursion.</span>
 
@@ -355,8 +441,8 @@
         <span class="k">if</span> <span class="n">target_type</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">target_type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="n">_data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;before_init&#39;</span><span class="p">):</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">before_init</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;before_init&#39;</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">before_init</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">_data</span><span class="p">)</span></div>
 
 
@@ -445,8 +531,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">authenticator package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -478,7 +564,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

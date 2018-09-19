@@ -108,7 +108,8 @@
             <span class="n">forename</span><span class="o">=</span><span class="n">db_user</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span>
             <span class="n">surname</span><span class="o">=</span><span class="n">db_user</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span>
             <span class="n">suffix</span><span class="o">=</span><span class="n">db_user</span><span class="o">.</span><span class="n">suffix_name</span>
-        <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">verified</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">db_user</span><span class="o">.</span><span class="n">flag_email_verified</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="n">auths</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">Authorizations</span><span class="p">(</span>
         <span class="n">classic</span><span class="o">=</span><span class="n">util</span><span class="o">.</span><span class="n">compute_capabilities</span><span class="p">(</span><span class="n">db_user</span><span class="p">),</span>
@@ -330,8 +331,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../authenticator/authenticator.html">authenticator package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -363,7 +364,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

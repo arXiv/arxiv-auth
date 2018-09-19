@@ -41,6 +41,10 @@
 <span class="sd">required authorization scope (see :mod:`arxiv.users.auth.scopes`) and/or by</span>
 <span class="sd">providing a custom authorizer function.</span>
 
+<span class="sd">For routes that involve specific resources, a ``resource`` callback should also</span>
+<span class="sd">be provided. That callback function should accept the same arguments as the</span>
+<span class="sd">route function, and return the identifier for the resource as a string.</span>
+
 <span class="sd">Using :func:`scoped` with an authorizer function allows you to define</span>
 <span class="sd">application-specific authorization logic on a per-request basis without adding</span>
 <span class="sd">complexity to request controllers. The call signature of the authorizer</span>
@@ -48,6 +52,10 @@
 <span class="sd">where `*args` and `**kwargs` are the positional and keyword arguments,</span>
 <span class="sd">respectively, passed by Flask to the decorated route function (e.g. the</span>
 <span class="sd">URL parameters).</span>
+
+<span class="sd">.. note:: The authorizer function is only called if the session does not have</span>
+<span class="sd">   a global or resource-specific instance of the required scope, or if a</span>
+<span class="sd">   required scope is not specified.</span>
 
 <span class="sd">Here&#39;s an example of how you might use this in a Flask application:</span>
 
@@ -63,8 +71,19 @@
 <span class="sd">       return session.user.user_id == user_id</span>
 
 
+<span class="sd">   def get_resource_id(user_id: str) -&gt; str:</span>
+<span class="sd">       &#39;&#39;&#39;Get the user ID from the request.&#39;&#39;&#39;</span>
+<span class="sd">       return user_id</span>
+
+
+<span class="sd">   def redirect_to_login(user_id: str) -&gt; Response:</span>
+<span class="sd">       &#39;&#39;&#39;Send the unauthorized user to the log in page.&#39;&#39;&#39;</span>
+<span class="sd">       return url_for(&#39;login&#39;)</span>
+
+
 <span class="sd">   @blueprint.route(&#39;/&lt;string:user_id&gt;/profile&#39;, methods=[&#39;GET&#39;])</span>
-<span class="sd">   @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)</span>
+<span class="sd">   @scoped(scopes.EDIT_PROFILE, resource=get_resource_id,</span>
+<span class="sd">           authorizer=user_is_owner, unauthorized=redirect_to_login)</span>
 <span class="sd">   def edit_profile(user_id: str):</span>
 <span class="sd">       &#39;&#39;&#39;User can update their account information.&#39;&#39;&#39;</span>
 <span class="sd">       data, code, headers = profile.get_profile(user_id)</span>
@@ -74,10 +93,18 @@
 <span class="sd">When the decorated route function is called...</span>
 
 <span class="sd">- If no session is available from either the middleware or the legacy database,</span>
-<span class="sd">  an :class:`Unauthorized` exception is raised.</span>
+<span class="sd">  the ``unauthorized`` callback is called, and/or :class:`Unauthorized`</span>
+<span class="sd">  exception is raised.</span>
 <span class="sd">- If a required scope was provided, the session is checked for the presence of</span>
-<span class="sd">  that scope.</span>
-<span class="sd">- If an authorization function was provided, the function is called.</span>
+<span class="sd">  that scope in this order:</span>
+
+<span class="sd">  - Global scope (`:*`), e.g. for administrators.</span>
+<span class="sd">  - Resource-specific scope (`:[resource_id]`), i.e. explicitly granted for a</span>
+<span class="sd">    particular resource.</span>
+<span class="sd">  - Generic scope (no resource part).</span>
+
+<span class="sd">- If an authorization function was provided, the function is called only if</span>
+<span class="sd">  a required scope was not provided, or if only the generic scope was found.</span>
 <span class="sd">- Session data is added directly to the Flask request object as</span>
 <span class="sd">  ``request.session``, for ease of access elsewhere in the application.</span>
 <span class="sd">- Finally, if no exceptions have been raised, the route is called with the</span>
@@ -101,7 +128,9 @@
 
 
 <div class="viewcode-block" id="scoped"><a class="viewcode-back" href="../../../../arxiv.users/arxiv.users.auth.decorators.html#arxiv.users.auth.decorators.scoped">[docs]</a><span class="k">def</span> <span class="nf">scoped</span><span class="p">(</span><span class="n">required</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-           <span class="n">authorizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+           <span class="n">resource</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+           <span class="n">authorizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+           <span class="n">unauthorized</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate a decorator to enforce authorization requirements.</span>
 
@@ -111,6 +140,10 @@
 <span class="sd">        The scope required on a user or client session in order use the</span>
 <span class="sd">        decorated route. See :mod:`arxiv.users.auth.scopes`. If not provided,</span>
 <span class="sd">        no scope will be enforced.</span>
+<span class="sd">    resource : function</span>
+<span class="sd">        If a route provides actions for a specific resource, a callable should</span>
+<span class="sd">        be provided that accepts the route arguments and returns the resource</span>
+<span class="sd">        identifier (str).</span>
 <span class="sd">    authorizer : function</span>
 <span class="sd">        In addition, an authorizer function may be passed to provide more</span>
 <span class="sd">        specific authorization checks. For example, this function may check</span>
@@ -119,6 +152,14 @@
 <span class="sd">        ``*args`` and ``**kwargs`` are the parameters passed to the decorated</span>
 <span class="sd">        function. If the authorizer returns ``False``, an :class:`.`</span>
 <span class="sd">        exception is raised.</span>
+<span class="sd">    unauthorized : function</span>
+<span class="sd">        A callback may be passed to handle cases in which the request is</span>
+<span class="sd">        unauthorized. This function will be passed the same arguments as the</span>
+<span class="sd">        original route function. If the callback returns anything other than</span>
+<span class="sd">        ``None``, the return value will be treated as a response and execution</span>
+<span class="sd">        will stop. Otherwise, an ``Unauthorized`` exception will be raised.</span>
+<span class="sd">        If a callback is not provided (default) an ``Unauthorized`` exception</span>
+<span class="sd">        will be raised.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -146,21 +187,77 @@
 
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">session</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span>
+            <span class="n">scopes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">Scope</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">authorized</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Required: </span><span class="si">%s</span><span class="s1">, authorizer: </span><span class="si">%s</span><span class="s1">, unauthorized: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">required</span><span class="p">,</span> <span class="n">authorizer</span><span class="p">,</span> <span class="n">unauthorized</span><span class="p">)</span>
             <span class="c1"># Use of the decorator implies that an auth session ought to be</span>
             <span class="c1"># present. So we&#39;ll complain here if it&#39;s not.</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">user</span> <span class="ow">or</span> <span class="n">session</span><span class="o">.</span><span class="n">client</span><span class="p">):</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;No valid session; aborting&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">unauthorized</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">unauthorized</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">response</span>
                 <span class="k">raise</span> <span class="n">Unauthorized</span><span class="p">(</span><span class="s1">&#39;Not a valid session&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
-            <span class="c1"># Check the required scopes.</span>
-            <span class="k">if</span> <span class="n">required</span> <span class="ow">and</span> <span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">authorizations</span> <span class="ow">is</span> <span class="kc">None</span>
-                             <span class="ow">or</span> <span class="n">required</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">session</span><span class="o">.</span><span class="n">authorizations</span><span class="o">.</span><span class="n">scopes</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Session is not authorized for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">required</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="n">Forbidden</span><span class="p">(</span><span class="s1">&#39;Access denied&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">authorizations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scopes</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">authorizations</span><span class="o">.</span><span class="n">scopes</span>
 
-            <span class="c1"># Call the provided authorizer function.</span>
-            <span class="k">if</span> <span class="n">authorizer</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">authorizer</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Authorizer retured negative result&#39;</span><span class="p">)</span>
+            <span class="c1"># If a required scope is provided, we first check to see whether</span>
+            <span class="c1"># the session globally or explicitly authorizes the request. We</span>
+            <span class="c1"># then fall back to the locally-defined authorizer function if it</span>
+            <span class="c1"># is provided.</span>
+            <span class="k">if</span> <span class="n">required</span> <span class="ow">and</span> <span class="n">scopes</span><span class="p">:</span>
+
+                <span class="c1"># A global scope is usually granted to administrators, or</span>
+                <span class="c1"># perhaps moderators (e.g. view submission content).</span>
+                <span class="c1"># For example: `submission:read:*`.</span>
+                <span class="k">if</span> <span class="n">required</span><span class="o">.</span><span class="n">as_global</span><span class="p">()</span> <span class="ow">in</span> <span class="n">scopes</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Authorized with global scope&#39;</span><span class="p">)</span>
+                    <span class="n">authorized</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="c1"># A resource-specific scope may be granted at the auth layer.</span>
+                <span class="c1"># For example, an admin may provide provisional access to a</span>
+                <span class="c1"># specific resource for a specific role. This kind of</span>
+                <span class="c1"># authorization is only supported if the service provides a</span>
+                <span class="c1"># ``resource()`` callback to get the resource identifier.</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">resource</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                      <span class="ow">and</span> <span class="p">(</span>
+                        <span class="n">required</span><span class="o">.</span><span class="n">for_resource</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">resource</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)))</span>
+                        <span class="ow">in</span> <span class="n">scopes</span><span class="p">)):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Authorized by specific resource&#39;</span><span class="p">)</span>
+                    <span class="n">authorized</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="c1"># If both the global and resource-specific scope authorization</span>
+                <span class="c1"># fail, then we look for the general scope in the session.</span>
+                <span class="k">elif</span> <span class="n">required</span> <span class="ow">in</span> <span class="n">scopes</span><span class="p">:</span>
+                    <span class="c1"># If an authorizer callback is provided by the service,</span>
+                    <span class="c1"># then we will enforce whatever it returns.</span>
+                    <span class="k">if</span> <span class="n">authorizer</span><span class="p">:</span>
+                        <span class="n">authorized</span> <span class="o">=</span> <span class="n">authorizer</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="c1"># If no authorizer callback is provided, it is implied that</span>
+                    <span class="c1"># the general scope is sufficient to authorize the request.</span>
+                    <span class="k">elif</span> <span class="n">authorizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">authorized</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1"># The required scope is not present. There is nothing left to</span>
+                <span class="c1"># check.</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">authorized</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">elif</span> <span class="n">required</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">authorizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;No scope required, no authorizer function;&#39;</span>
+                             <span class="s1">&#39; request is authorized.&#39;</span><span class="p">)</span>
+                <span class="n">authorized</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="c1"># If a specific scope is not required, we rely entirely on the</span>
+            <span class="c1"># authorizer callback.</span>
+            <span class="k">elif</span> <span class="n">authorizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Calling authorizer callback&#39;</span><span class="p">)</span>
+                <span class="n">authorized</span> <span class="o">=</span> <span class="n">authorizer</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">authorized</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Session is not authorized for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">required</span><span class="p">)</span>
                 <span class="k">raise</span> <span class="n">Forbidden</span><span class="p">(</span><span class="s1">&#39;Access denied&#39;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Request is authorized, proceeding&#39;</span><span class="p">)</span>
@@ -190,8 +287,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../authenticator/authenticator.html">authenticator package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -225,7 +322,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

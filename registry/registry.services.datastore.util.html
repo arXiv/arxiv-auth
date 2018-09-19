@@ -94,13 +94,13 @@
 
 <dl class="function">
 <dt id="registry.services.datastore.util.transaction">
-<code class="descclassname">registry.services.datastore.util.</code><code class="descname">transaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore/util.html#transaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.util.transaction" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">registry.services.datastore.util.</code><code class="descname">transaction</code><span class="sig-paren">(</span><em>commit=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/services/datastore/util.html#transaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.services.datastore.util.transaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Context manager for database transaction.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>[+T_co, -T_contra, +V_co]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Generator" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>[+T_co, -T_contra, +V_co]</td>
 </tr>
 </tbody>
 </table>
@@ -130,8 +130,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="registry.html">registry package</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="registry.html">API client registry service</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="registry.html#subpackages">Subpackages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="registry.html#submodules">Submodules</a></li>
 </ul>
@@ -142,7 +142,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="registry.html">registry package</a><ul>
+  <li><a href="registry.html">API client registry service</a><ul>
   <li><a href="registry.services.html">registry.services package</a><ul>
   <li><a href="registry.services.datastore.html">registry.services.datastore package</a><ul>
       <li>Previous: <a href="registry.services.datastore.models.html" title="previous chapter">registry.services.datastore.models module</a></li>
@@ -173,7 +173,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

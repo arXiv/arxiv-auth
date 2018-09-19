@@ -40,11 +40,96 @@
 <p>This module extends the <code class="xref py py-mod docutils literal notranslate"><span class="pre">authlib.flask</span></code> implementation, leveraging client
 data stored in <a class="reference internal" href="registry.services.datastore.html#module-registry.services.datastore" title="registry.services.datastore"><code class="xref py py-mod docutils literal notranslate"><span class="pre">registry.services.datastore</span></code></a> and instantiating authorized
 sessions in <a class="reference internal" href="registry.services.sessions.html#module-registry.services.sessions" title="registry.services.sessions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">registry.services.sessions</span></code></a>.</p>
-<p>The current implementation supports only the <cite>client_credentials</cite> grant.</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<p class="last">Implement the <cite>authorization_code</cite> and <cite>password</cite> grants.</p>
-</div>
+<p>The current implementation supports the <cite>client_credentials</cite> and
+<cite>authorization_code</cite> grants.</p>
+<dl class="class">
+<dt id="registry.oauth2.AuthorizationCodeGrant">
+<em class="property">class </em><code class="descclassname">registry.oauth2.</code><code class="descname">AuthorizationCodeGrant</code><span class="sig-paren">(</span><em>request</em>, <em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#AuthorizationCodeGrant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.AuthorizationCodeGrant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">authlib.specs.rfc6749.grants.authorization_code.AuthorizationCodeGrant</span></code></p>
+<p>Authorization code grant for arXiv users.</p>
+<dl class="attribute">
+<dt id="registry.oauth2.AuthorizationCodeGrant.EXPIRES">
+<code class="descname">EXPIRES</code><em class="property"> = 3600</em><a class="headerlink" href="#registry.oauth2.AuthorizationCodeGrant.EXPIRES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="registry.oauth2.AuthorizationCodeGrant.TOKEN_ENDPOINT_AUTH_METHODS">
+<code class="descname">TOKEN_ENDPOINT_AUTH_METHODS</code><em class="property"> = ['client_secret_post']</em><a class="headerlink" href="#registry.oauth2.AuthorizationCodeGrant.TOKEN_ENDPOINT_AUTH_METHODS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="registry.oauth2.AuthorizationCodeGrant.authenticate_user">
+<code class="descname">authenticate_user</code><span class="sig-paren">(</span><em>auth_code</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#AuthorizationCodeGrant.authenticate_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.AuthorizationCodeGrant.authenticate_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authenticate the user implicated in the auth code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#registry.oauth2.OAuth2User" title="registry.oauth2.OAuth2User"><code class="xref py py-class docutils literal notranslate"><span class="pre">OAuth2User</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="registry.oauth2.AuthorizationCodeGrant.create_authorization_code">
+<code class="descname">create_authorization_code</code><span class="sig-paren">(</span><em>client</em>, <em>grant_user</em>, <em>request</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#AuthorizationCodeGrant.create_authorization_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.AuthorizationCodeGrant.create_authorization_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate and store a new authorization code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<a class="reference internal" href="#registry.oauth2.OAuth2Client" title="registry.oauth2.OAuth2Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">OAuth2Client</span></code></a>) – The client requesting authorization.</li>
+<li><strong>grant_user</strong> (<a class="reference internal" href="#registry.oauth2.OAuth2User" title="registry.oauth2.OAuth2User"><code class="xref py py-class docutils literal notranslate"><span class="pre">OAuth2User</span></code></a>) – The resource owner who has granted authorization to the client.</li>
+<li><strong>request</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">OAuth2Request</span></code>) – The request wrapper containing request details.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An authorization code that the client can exchange for an access
+token.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="registry.oauth2.AuthorizationCodeGrant.delete_authorization_code">
+<code class="descname">delete_authorization_code</code><span class="sig-paren">(</span><em>auth_code</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#AuthorizationCodeGrant.delete_authorization_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.AuthorizationCodeGrant.delete_authorization_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete an auth code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="registry.oauth2.AuthorizationCodeGrant.parse_authorization_code">
+<code class="descname">parse_authorization_code</code><span class="sig-paren">(</span><em>code</em>, <em>client</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#AuthorizationCodeGrant.parse_authorization_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.AuthorizationCodeGrant.parse_authorization_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to retrieve an auth code for an API client.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="registry.domain.html#registry.domain.AuthorizationCode" title="registry.domain.AuthorizationCode"><code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationCode</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="registry.oauth2.ClientCredentialsGrant">
 <em class="property">class </em><code class="descclassname">registry.oauth2.</code><code class="descname">ClientCredentialsGrant</code><span class="sig-paren">(</span><em>request</em>, <em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#ClientCredentialsGrant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.ClientCredentialsGrant" title="Permalink to this definition">¶</a></dt>
@@ -54,6 +139,55 @@ sessions in <a class="reference internal" href="registry.services.sessions.html#
 <dt id="registry.oauth2.ClientCredentialsGrant.TOKEN_ENDPOINT_AUTH_METHODS">
 <code class="descname">TOKEN_ENDPOINT_AUTH_METHODS</code><em class="property"> = ['client_secret_post']</em><a class="headerlink" href="#registry.oauth2.ClientCredentialsGrant.TOKEN_ENDPOINT_AUTH_METHODS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="registry.oauth2.OAuth2AuthorizationCode">
+<em class="property">class </em><code class="descclassname">registry.oauth2.</code><code class="descname">OAuth2AuthorizationCode</code><span class="sig-paren">(</span><em>auth_code</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#OAuth2AuthorizationCode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.OAuth2AuthorizationCode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Wraps <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.AuthorizationCode</span></code> for use in OAuth2 workflows.</p>
+<dl class="method">
+<dt id="registry.oauth2.OAuth2AuthorizationCode.get_redirect_uri">
+<code class="descname">get_redirect_uri</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#OAuth2AuthorizationCode.get_redirect_uri"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.OAuth2AuthorizationCode.get_redirect_uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the authorization code’s redirect URI.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="registry.oauth2.OAuth2AuthorizationCode.get_scope">
+<code class="descname">get_scope</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#OAuth2AuthorizationCode.get_scope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.OAuth2AuthorizationCode.get_scope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the scope for the authorization code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="registry.oauth2.OAuth2AuthorizationCode.is_expired">
+<code class="descname">is_expired</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#OAuth2AuthorizationCode.is_expired"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.OAuth2AuthorizationCode.is_expired" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate whether the code is expired.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -73,7 +207,7 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -87,7 +221,7 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -101,7 +235,7 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -115,7 +249,7 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -129,7 +263,7 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -143,7 +277,35 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.oauth2.OAuth2Client.client_id">
+<code class="descname">client_id</code><a class="headerlink" href="#registry.oauth2.OAuth2Client.client_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the client ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.oauth2.OAuth2Client.description">
+<code class="descname">description</code><a class="headerlink" href="#registry.oauth2.OAuth2Client.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the client description.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -157,7 +319,7 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -171,7 +333,21 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.oauth2.OAuth2Client.name">
+<code class="descname">name</code><a class="headerlink" href="#registry.oauth2.OAuth2Client.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the client name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -185,7 +361,72 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="registry.oauth2.OAuth2Client.url">
+<code class="descname">url</code><a class="headerlink" href="#registry.oauth2.OAuth2Client.url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the client URL.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="registry.oauth2.OAuth2User">
+<em class="property">class </em><code class="descclassname">registry.oauth2.</code><code class="descname">OAuth2User</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#OAuth2User"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.OAuth2User" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Represents the resource owner in OAuth2 workflows.</p>
+<p>This is a thin wrapper around <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.User</span></code> to support Authlib
+integration.</p>
+<dl class="method">
+<dt id="registry.oauth2.OAuth2User.get_user_email">
+<code class="descname">get_user_email</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#OAuth2User.get_user_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.OAuth2User.get_user_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the email address of the user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="registry.oauth2.OAuth2User.get_user_id">
+<code class="descname">get_user_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#OAuth2User.get_user_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.OAuth2User.get_user_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the ID of the user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="registry.oauth2.OAuth2User.get_username">
+<code class="descname">get_username</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#OAuth2User.get_username"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.OAuth2User.get_username" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the username of the user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -196,7 +437,7 @@ particular client, and implements methods expected by the
 <dl class="function">
 <dt id="registry.oauth2.create_server">
 <code class="descclassname">registry.oauth2.</code><code class="descname">create_server</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#create_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.create_server" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instantiate and configure an <code class="xref py py-class docutils literal notranslate"><span class="pre">AuthoriationServer</span></code>.</p>
+<dd><p>Instantiate and configure an <code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationServer</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -215,13 +456,13 @@ particular client, and implements methods expected by the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If the client is not found, returns <cite>None</cite>.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#registry.oauth2.OAuth2Client" title="registry.oauth2.OAuth2Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">OAuth2Client</span></code></a> or None</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#registry.oauth2.OAuth2Client" title="registry.oauth2.OAuth2Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">OAuth2Client</span></code></a>]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#registry.oauth2.OAuth2Client" title="registry.oauth2.OAuth2Client"><code class="xref py py-class docutils literal notranslate"><span class="pre">OAuth2Client</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -252,7 +493,7 @@ by the <a class="reference internal" href="../authenticator/authenticator.html#m
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – Token data generated by the OAuth2 <code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationServer</span></code>.
+<li><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Token data generated by the OAuth2 <code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationServer</span></code>.
 At this point the token has not been stored.</li>
 <li><strong>oauth_request</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">OAuth2Request</span></code>) – Wrapper for OAuth2-related request data.</li>
 </ul>
@@ -289,8 +530,8 @@ At this point the token has not been stored.</li>
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="registry.html">registry package</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="registry.html">API client registry service</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="registry.html#subpackages">Subpackages</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="registry.html#submodules">Submodules</a></li>
 </ul>
@@ -301,7 +542,7 @@ At this point the token has not been stored.</li>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="registry.html">registry package</a><ul>
+  <li><a href="registry.html">API client registry service</a><ul>
       <li>Previous: <a href="registry.factory.html" title="previous chapter">registry.factory module</a></li>
       <li>Next: <a href="registry.routes.html" title="next chapter">registry.routes module</a></li>
   </ul></li>
@@ -328,7 +569,7 @@ At this point the token has not been stored.</li>
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

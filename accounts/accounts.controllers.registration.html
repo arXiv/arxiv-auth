@@ -83,11 +83,6 @@ ORCID.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="accounts.controllers.registration.ProfileForm.email">
-<code class="descname">email</code><em class="property"> = &lt;UnboundField(StringField, ('Email address',), {'validators': [&lt;wtforms.validators.Email object&gt;, &lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': &quot;You must be able to receive mail at this address. We take &lt;a href='https://arxiv.org/help/email-protection'&gt; strong measures&lt;/a&gt; to protect your email address from viruses and spam. Do not enter an e-mail address that belongs to someone else: if we discover that you've done so, we will suspend your account.&quot;})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.email" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
 <dt id="accounts.controllers.registration.ProfileForm.forename">
 <code class="descname">forename</code><em class="property"> = &lt;UnboundField(StringField, ('First or given name',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.forename" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -118,7 +113,7 @@ ORCID.</p>
 
 <dl class="attribute">
 <dt id="accounts.controllers.registration.ProfileForm.status">
-<code class="descname">status</code><em class="property"> = &lt;UnboundField(SelectField, ('Status',), {'choices': [('', ''), ('1', 'Staff'), ('2', 'Professor'), ('3', 'Post doc'), ('4', 'Grad student'), ('5', 'Other')], 'validators': [&lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.status" title="Permalink to this definition">¶</a></dt>
+<code class="descname">status</code><em class="property"> = &lt;UnboundField(SelectField, ('Academic Status',), {'choices': [('', ''), ('1', 'Staff'), ('2', 'Professor'), ('3', 'Post doc'), ('4', 'Grad student'), ('5', 'Other')], 'validators': [&lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.status" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -155,45 +150,12 @@ ORCID.</p>
 <code class="descname">user_id</code><em class="property"> = &lt;UnboundField(HiddenField, ('User ID',), {})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.user_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="accounts.controllers.registration.ProfileForm.username">
-<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('Username',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.username" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="accounts.controllers.registration.ProfileForm.validate_email">
-<code class="descname">validate_email</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#ProfileForm.validate_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.validate_email" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ensure that the email address is unique.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="accounts.controllers.registration.ProfileForm.validate_username">
-<code class="descname">validate_username</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#ProfileForm.validate_username"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.ProfileForm.validate_username" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ensure that the username is unique.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="class">
 <dt id="accounts.controllers.registration.RegistrationForm">
-<em class="property">class </em><code class="descclassname">accounts.controllers.registration.</code><code class="descname">RegistrationForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#accounts.controllers.registration.ProfileForm" title="accounts.controllers.registration.ProfileForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">accounts.controllers.registration.ProfileForm</span></code></a></p>
+<em class="property">class </em><code class="descclassname">accounts.controllers.registration.</code><code class="descname">RegistrationForm</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">wtforms.form.Form</span></code></p>
 <p>User registration form.</p>
 <dl class="attribute">
 <dt id="accounts.controllers.registration.RegistrationForm.captcha_token">
@@ -220,19 +182,71 @@ ORCID.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="accounts.controllers.registration.RegistrationForm.email">
+<code class="descname">email</code><em class="property"> = &lt;UnboundField(StringField, ('Email address',), {'validators': [&lt;wtforms.validators.Email object&gt;, &lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': &quot;You must be able to receive mail at this address. We take &lt;a href='https://arxiv.org/help/email-protection'&gt; strong measures&lt;/a&gt; to protect your email address from viruses and spam. Do not enter an e-mail address that belongs to someone else: if we discover that you've done so, we will suspend your account.&quot;})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="accounts.controllers.registration.RegistrationForm.from_domain">
+<em class="property">classmethod </em><code class="descname">from_domain</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm.from_domain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.from_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate this form with data from a domain object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#accounts.controllers.registration.RegistrationForm" title="accounts.controllers.registration.RegistrationForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegistrationForm</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="accounts.controllers.registration.RegistrationForm.password">
-<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('Password',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.password" title="Permalink to this definition">¶</a></dt>
+<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('Password',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': 'Please choose a password that is between 8 and 20 characters in length. Longer passwords are more secure. You may use alphanumeric characters, as well as &lt;code&gt;* &#64; # $ ! ? %&lt;/code&gt;.'})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.password" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="accounts.controllers.registration.RegistrationForm.password2">
-<code class="descname">password2</code><em class="property"> = &lt;UnboundField(PasswordField, ('Re-enter password',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.password2" title="Permalink to this definition">¶</a></dt>
+<code class="descname">password2</code><em class="property"> = &lt;UnboundField(PasswordField, ('Re-enter password',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': 'Your passwords must match.'})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.password2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="accounts.controllers.registration.RegistrationForm.to_domain">
+<code class="descname">to_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm.to_domain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.to_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a <a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a> from this form’s data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.User" title="arxiv.users.domain.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="accounts.controllers.registration.RegistrationForm.username">
+<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('Username',), {'validators': [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;], 'description': 'Please choose a username between 5 and 20 characters in length.'})&gt;</em><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.username" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="accounts.controllers.registration.RegistrationForm.validate_captcha_value">
 <code class="descname">validate_captcha_value</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm.validate_captcha_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.validate_captcha_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the captcha value against the captcha token.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="accounts.controllers.registration.RegistrationForm.validate_email">
+<code class="descname">validate_email</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm.validate_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.validate_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the email address is unique.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -257,6 +271,20 @@ ORCID.</p>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="accounts.controllers.registration.RegistrationForm.validate_username">
+<code class="descname">validate_username</code><span class="sig-paren">(</span><em>field</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#RegistrationForm.validate_username"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.RegistrationForm.validate_username" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the username is unique.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -267,7 +295,7 @@ ORCID.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -275,13 +303,13 @@ ORCID.</p>
 
 <dl class="function">
 <dt id="accounts.controllers.registration.register">
-<code class="descclassname">accounts.controllers.registration.</code><code class="descname">register</code><span class="sig-paren">(</span><em>method</em>, <em>params</em>, <em>captcha_secret</em>, <em>ip</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.register" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">accounts.controllers.registration.</code><code class="descname">register</code><span class="sig-paren">(</span><em>method</em>, <em>params</em>, <em>captcha_secret</em>, <em>ip</em>, <em>next_page</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/accounts/controllers/registration.html#register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#accounts.controllers.registration.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handle requests for the registration view.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -295,7 +323,7 @@ ORCID.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -330,8 +358,8 @@ ORCID.</p>
 <li class="toctree-l2"><a class="reference internal" href="accounts.html#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">registry package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registry/registry.html">API client registry service</a></li>
 </ul>
 
 <div class="relations">
@@ -367,7 +395,7 @@ ORCID.</p>
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

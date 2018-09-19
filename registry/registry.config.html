@@ -38,6 +38,12 @@
 <span id="registry-config-module"></span><h1>registry.config module<a class="headerlink" href="#module-registry.config" title="Permalink to this headline">¶</a></h1>
 <p>Flask configuration.</p>
 <dl class="data">
+<dt id="registry.config.REDIS_CLUSTER">
+<code class="descclassname">registry.config.</code><code class="descname">REDIS_CLUSTER</code><em class="property"> = '1'</em><a class="headerlink" href="#registry.config.REDIS_CLUSTER" title="Permalink to this definition">¶</a></dt>
+<dd><p>If 1, expects a redis cluster; otherwise expects a single redis node.</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="registry.config.REDIS_TOKEN">
 <code class="descclassname">registry.config.</code><code class="descname">REDIS_TOKEN</code><em class="property"> = None</em><a class="headerlink" href="#registry.config.REDIS_TOKEN" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is the token used in the AUTH procedure.</p>
@@ -67,8 +73,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authorizer Service</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="registry.html">registry package</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="registry.html">API client registry service</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="registry.html#subpackages">Subpackages</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="registry.html#submodules">Submodules</a></li>
 </ul>
@@ -79,7 +85,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="registry.html">registry package</a><ul>
+  <li><a href="registry.html">API client registry service</a><ul>
       <li>Previous: <a href="registry.services.sessions.html" title="previous chapter">registry.services.sessions module</a></li>
       <li>Next: <a href="registry.domain.html" title="next chapter">registry.domain module</a></li>
   </ul></li>
@@ -106,7 +112,7 @@
       &copy;2018, arXiv.org.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.8</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
