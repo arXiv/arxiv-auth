@@ -10,3 +10,6 @@ omit =
     */stateless_captcha/*
     */controllers/util.py
     generate_token.py
+    registry/create_client.py
+    registry/create_db.py
+    accounts/create_user.py
