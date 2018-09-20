@@ -46,8 +46,8 @@ class TestDistributedSessionServiceIntegration(TestCase):
         """An entry should be created in Redis."""
         mock_get_config.return_value = {
             'JWT_SECRET': self.secret,
-            'REDIS_HOST': 'localhost',
-            'REDIS_PORT': '6379',
+            'REDIS_HOST': os.environ.get('REDIS_HOST', 'localhost'),
+            'REDIS_PORT': os.environ.get('REDIS_PORT', '6379'),
             'REDIS_CLUSTER': os.environ.get('REDIS_CLUSTER', '0')
         }
         ip = '127.0.0.1'
@@ -107,8 +107,8 @@ class TestDistributedSessionServiceIntegration(TestCase):
         """Delete a session from the datastore."""
         mock_get_config.return_value = {
             'JWT_SECRET': self.secret,
-            'REDIS_HOST': 'localhost',
-            'REDIS_PORT': '6379',
+            'REDIS_HOST': os.environ.get('REDIS_HOST', 'localhost'),
+            'REDIS_PORT': os.environ.get('REDIS_PORT', '6379'),
             'REDIS_CLUSTER': os.environ.get('REDIS_CLUSTER', '0')
         }
         if os.environ.get('REDIS_CLUSTER') == '1':
