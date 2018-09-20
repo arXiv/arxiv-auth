@@ -18,6 +18,6 @@ script:
   - ./lintstats.sh
   - docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003 -p 7004:7004 -p 7005:7005 -p 7006:7006 -e "IP=0.0.0.0" --hostname=server grokzen/redis-cluster:4.0.9
   - sleep 10
-  - WITH_INTEGRATION=1 REDIS_CLUSTER=1 REDIS_PORT=7000 pipenv run pytest --cov=accounts --cov=users/arxiv --cov=registry --cov-report=term-missing accounts users/arxiv registry
+  - WITH_INTEGRATION=1 REDIS_CLUSTER=1 REDIS_PORT=7000 pipenv run pytest --cov=accounts --cov=users/arxiv --cov=registry --cov=authenticator --cov-report=term-missing accounts users/arxiv registry authenticator
 after_success:
   - coveralls
