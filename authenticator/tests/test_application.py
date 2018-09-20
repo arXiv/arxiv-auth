@@ -2,6 +2,7 @@
 
 from unittest import TestCase, mock
 import json
+import os
 from datetime import datetime, timedelta
 from pytz import timezone
 import jwt
@@ -17,7 +18,7 @@ class TestAuthorizeWithCookie(TestCase):
     def setUp(self):
         self.app = create_app()
         self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'foocookie'
-        self.app.config['REDIS_CLUSTER'] = '0'
+        self.app.config['REDIS_CLUSTER'] = os.environ.get('REDIS_CLUSTER', '0')
         self.client = self.app.test_client()
 
     def test_no_auth_data(self):
