@@ -192,7 +192,7 @@ class TestGetSession(TestCase):
             'REDIS_DATABASE': 4
         }
         mock_redis = mock.MagicMock()
-        mock_redis.get.return_value = json.dumps({
+        mock_redis.get.return_value = jwt.encode({
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290098',
             'start_time': start_time.isoformat(),
@@ -202,7 +202,7 @@ class TestGetSession(TestCase):
                 'username': 'foouser',
                 'email': 'foo@foo.com'
             }
-        })
+        }, secret)
         mock_get_redis.return_value = mock_redis
 
         claims = {
@@ -230,7 +230,7 @@ class TestGetSession(TestCase):
             'REDIS_DATABASE': 4
         }
         mock_redis = mock.MagicMock()
-        mock_redis.get.return_value = json.dumps({
+        mock_redis.get.return_value = jwt.encode({
             'session_id': 'ajx9043jjx00s',
             'nonce': '0039299290099',
             'start_time': start_time.isoformat(),
@@ -239,7 +239,7 @@ class TestGetSession(TestCase):
                 'username': 'foouser',
                 'email': 'foo@foo.com'
             }
-        })
+        }, secret)
         mock_get_redis.return_value = mock_redis
         claims = {
             'user_id': '1234',  # <- Doesn't match!
@@ -294,7 +294,7 @@ class TestGetSession(TestCase):
             'REDIS_DATABASE': 4
         }
         mock_redis = mock.MagicMock()
-        mock_redis.get.return_value = json.dumps({
+        mock_redis.get.return_value = jwt.encode({
             'session_id': 'ajx9043jjx00s',
             'start_time': datetime.now(tz=EASTERN).isoformat(),
             'nonce': '0039299290098',
@@ -303,7 +303,7 @@ class TestGetSession(TestCase):
                 'username': 'foouser',
                 'email': 'foo@foo.com'
             }
-        })
+        }, secret)
         mock_get_redis.return_value = mock_redis
 
         claims = {

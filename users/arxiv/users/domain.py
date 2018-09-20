@@ -171,7 +171,7 @@ class Scope(NamedTuple):
         """Known authorization actions."""
 
         UPDATE = 'update'
-        CREATE = 'created'
+        CREATE = 'create'
         DELETE = 'delete'
         RELEASE = 'release'
         READ = 'read'

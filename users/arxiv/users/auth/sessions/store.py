@@ -197,6 +197,7 @@ class SessionStore(object):
     def _decode(self, session_jwt: str) -> domain.Session:
         try:
             session: domain.Session = domain.from_dict(
+                domain.Session,
                 jwt.decode(session_jwt, self._secret)
             )
         except jwt.exceptions.InvalidSignatureError:

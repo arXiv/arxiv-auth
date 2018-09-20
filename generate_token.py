@@ -105,7 +105,7 @@ def generate_token(user_id: str, email: str, username: str,
         ),
         authorizations=domain.Authorizations(
             scopes=[domain.Scope(*s.split(':')) for s in scope.split(',')],
-            endorsements=[domain.Category(cat.split('.', 1))
+            endorsements=[domain.Category(*cat.split('.', 1))
                           for cat in endorsements.split(',')]
         )
     )

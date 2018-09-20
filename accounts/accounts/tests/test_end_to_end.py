@@ -322,8 +322,9 @@ class TestLoginLogoutRoutes(TestCase):
             self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
-            self.app.config['REDIS_HOST'] = 'localhost'
-            self.app.config['REDIS_PORT'] = '7000'
+            self.app.config['REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
+            self.app.config['REDIS_PORT'] = os.environ.get('REDIS_PORT', '6379')
+            self.app.config['REDIS_CLUSTER'] = os.environ.get('REDIS_CLUSTER', '0')
 
             with self.app.app_context():
                 from accounts.services import legacy, users

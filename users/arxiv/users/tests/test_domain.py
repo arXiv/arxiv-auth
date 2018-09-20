@@ -96,7 +96,7 @@ class TestDictCoercion(TestCase):
                              'resource': None
                          },
                          {
-                             'action': 'created',
+                             'action': 'create',
                              'domain': 'submission',
                              'resource': None
                          }])
