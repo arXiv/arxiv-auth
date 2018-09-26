@@ -18,6 +18,8 @@ from datetime import datetime
 from pytz import timezone
 import click
 
+from authlib.common.security import generate_token
+
 from arxiv import taxonomy
 from arxiv.users import domain
 
@@ -26,16 +28,26 @@ from registry.services import datastore
 
 EASTERN = timezone('US/Eastern')
 
+DEFAULT_SCOPES = " ".join(([
+    "public:read",
+    "submission:create",
+    "submission:update",
+    "submission:read",
+    "upload:create",
+    "upload:update",
+    "upload:read",
+    "upload:read_logs"
+]))
 
 @click.command()
 @click.option('--name', prompt='Brief client name')
 @click.option('--url', prompt='Info URL for the client')
 @click.option('--description', prompt='What is it')
-@click.option('--secret', prompt='Client secret')
-@click.option('--scopes', prompt='Comma-delimited authorized scopes')
+@click.option('--scopes', prompt='Space-delimited authorized scopes',
+              default=DEFAULT_SCOPES)
 @click.option('--redirect_uri', prompt='Redirect URI')
-def create_client(name: str, url: str, description: str, secret: str,
-                  scopes: str, redirect_uri: str) -> None:
+def create_client(name: str, url: str, description: str, scopes: str,
+                  redirect_uri: str) -> None:
     """Create a new client. For dev/test purposes only."""
     app = create_web_app()
     with app.app_context():
@@ -48,13 +60,14 @@ def create_client(name: str, url: str, description: str, secret: str,
             description=description,
             redirect_uri=redirect_uri
         )
+        secret = generate_token(48)
         hashed = hashlib.sha256(secret.encode('utf-8')).hexdigest()
         db_cred = datastore.models.DBClientCredential(client=db_client,
                                                       client_secret=hashed)
         db_scopes = [
             datastore.models.DBClientAuthorization(
                 client=db_client, authorized=datetime.now(), scope=scope
-            ) for scope in scopes.split(',')
+            ) for scope in scopes.split()
         ]
         db_grant_type = datastore.models.DBClientGrantType(
             client=db_client,

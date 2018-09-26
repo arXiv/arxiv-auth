@@ -7,6 +7,10 @@ sessions in :mod:`registry.services.sessions`.
 
 The current implementation supports the `client_credentials` and
 `authorization_code` grants.
+
+.. todo:: Implement backend & integration to control client endorsements.
+
+
 """
 
 from typing import List, Optional, Any
@@ -20,6 +24,7 @@ from authlib.common.security import generate_token
 
 from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
+from arxiv import taxonomy
 from ..services import datastore, sessions
 from .. import domain
 
@@ -307,11 +312,33 @@ def save_token(token: dict, oauth_request: OAuth2Request) -> None:
     client = oauth_request.client
     logger.debug("Client has scopes %s", client.scopes)
     user = oauth_request.user._user if oauth_request.user else None
-    authorizations = domain.Authorizations(scopes=client.scopes)
+    authorizations = domain.Authorizations(
+        scopes=client.scopes,
+        endorsements=get_endorsements(client)
+    )
     session = sessions.create(authorizations, request.remote_addr,
                               request.remote_addr, user=user,
                               client=client._client, session_id=session_id)
     logger.debug('Created session %s', session.session_id)
+
+
+def get_endorsements(client: domain.Client) -> List[domain.Category]:
+    """
+    Get endorsed categories for a client.
+
+    The current implementation just returns all categories.
+
+    Parameters
+    ----------
+    client : :class:`domain.Client`
+
+    Returns
+    -------
+    list
+        Each item is a :class:`domain.Category`.
+
+    """
+    return [domain.Category('*', '*')]
 
 
 def create_server() -> AuthorizationServer:

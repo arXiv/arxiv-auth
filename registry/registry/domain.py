@@ -7,7 +7,7 @@ See also :mod:`arxiv.users.domain`.
 from datetime import datetime
 from typing import NamedTuple, Optional, List
 from arxiv.users.domain import Session, Client, User, Authorizations, User, \
-    Scope
+    Scope, Category
 
 
 class ClientCredential(NamedTuple):
