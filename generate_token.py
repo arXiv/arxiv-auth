@@ -48,6 +48,18 @@ import uuid
 from datetime import timedelta, datetime
 from arxiv.users import auth, domain
 
+DEFAULT_SCOPES = " ".join(([
+    "public:read",
+    "submission:create",
+    "submission:update",
+    "submission:read",
+    "upload:create",
+    "upload:update",
+    "upload:read",
+    "upload:delete",
+    "upload:read_logs"
+]))
+
 
 @click.command()
 @click.option('--user_id', prompt='Numeric user ID')
@@ -66,8 +78,8 @@ from arxiv.users import auth, domain
               default='grp_physics')
 @click.option('--endorsements', prompt='Endorsement categories (comma delim)',
               default='astro-ph.CO,astro-ph.GA')
-@click.option('--scope', prompt='Authorization scope (comma delim)',
-              default='upload:read,upload:write,upload:admin')
+@click.option('--scope', prompt='Authorization scope (space delim)',
+              default=DEFAULT_SCOPES)
 def generate_token(user_id: str, email: str, username: str,
                    first_name: str = 'Jane', last_name: str = 'Doe',
                    suffix_name: str = 'IV',
@@ -77,7 +89,7 @@ def generate_token(user_id: str, email: str, username: str,
                    default_category: str = 'astro-ph.GA',
                    submission_groups: str = 'grp_physics',
                    endorsements: str = 'astro-ph.CO,astro-ph.GA',
-                   scope: str = 'upload:read,upload:write,upload:admin') \
+                   scope: str = DEFAULT_SCOPES) \
         -> None:
     """Generate an auth token for dev/testing purposes."""
     # Specify the validity period for the session.
@@ -104,7 +116,7 @@ def generate_token(user_id: str, email: str, username: str,
             )
         ),
         authorizations=domain.Authorizations(
-            scopes=[domain.Scope(*s.split(':')) for s in scope.split(',')],
+            scopes=[domain.Scope(*s.split(':')) for s in scope.split()],
             endorsements=[domain.Category(*cat.split('.', 1))
                           for cat in endorsements.split(',')]
         )
