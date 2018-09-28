@@ -75,6 +75,9 @@ class TestClientAuthentication(TestCase):
             os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
             self.app = create_web_app()
             self.app.config['REGISTRY_DATABASE_URI'] = f'sqlite:///{self.db}'
+            self.app.config['REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
+            self.app.config['REDIS_PORT'] = os.environ.get('REDIS_PORT', '6379')
+            self.app.config['REDIS_CLUSTER'] = os.environ.get('REDIS_CLUSTER', '0')
 
             self.test_client = self.app.test_client()
             with self.app.app_context():
@@ -199,7 +202,10 @@ class TestAuthorizationCode(TestCase):
             self.app = create_web_app()
             self.app.config['REGISTRY_DATABASE_URI'] = f'sqlite:///{self.db}'
             self.app.config['JWT_SECRET'] = 'foosecret'
-            self.app.config['SERVER_NAME'] = 'localhost:5000'
+            self.app.config['SERVER_NAME'] = 'local.host:5000'
+            self.app.config['REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
+            self.app.config['REDIS_PORT'] = os.environ.get('REDIS_PORT', '6379')
+            self.app.config['REDIS_CLUSTER'] = os.environ.get('REDIS_CLUSTER', '0')
 
             self.test_client = self.app.test_client()
             self.user_agent = self.app.test_client()

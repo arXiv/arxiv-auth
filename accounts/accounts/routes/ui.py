@@ -58,7 +58,8 @@ def set_cookies(response: Response, data: dict) -> None:
         # expires_date = expires_date.replace(tzinfo=EASTERN)
         logger.debug('Set cookie %s with %s, max_age %s',
                      cookie_name, cookie_value, max_age)
-        params = dict(httponly=True)
+        domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
+        params = dict(httponly=True, domain=domain)
         if current_app.config['AUTH_SESSION_COOKIE_SECURE']:
             # Setting samesite to lax, to allow reasonable links to
             # authenticated views using GET requests.
@@ -83,7 +84,7 @@ def unset_submission_cookie(response: Response) -> None:
     response.set_cookie('submit_session', '', max_age=0, httponly=True)
 
 
-# @blueprint.route('/register', methods=['GET', 'POST'])
+@blueprint.route('/register', methods=['GET', 'POST'])
 @anonymous_only
 def register() -> Response:
     """Interface for creating new accounts."""

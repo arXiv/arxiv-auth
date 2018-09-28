@@ -27,7 +27,4 @@ authenticator service to authorize subsequent API requests.
 
    Containers in the API client registry system.
 
-
-
-
 """

@@ -129,7 +129,7 @@ class DBUserPassword(Base):  # type: ignore
                      server_default=text("'0'"), primary_key=True)
     password_storage = Column(Integer, nullable=False, index=True,
                               server_default=text("'0'"))
-    password_enc = Column(String(16), nullable=False)
+    password_enc = Column(String(50), nullable=False)
 
     user = relationship('DBUser')
 

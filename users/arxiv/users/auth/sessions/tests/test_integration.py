@@ -44,7 +44,12 @@ class TestDistributedSessionServiceIntegration(TestCase):
     @mock.patch(f'{store.__name__}.get_application_config')
     def test_store_create(self, mock_get_config):
         """An entry should be created in Redis."""
-        mock_get_config.return_value = {'JWT_SECRET': self.secret}
+        mock_get_config.return_value = {
+            'JWT_SECRET': self.secret,
+            'REDIS_HOST': os.environ.get('REDIS_HOST', 'localhost'),
+            'REDIS_PORT': os.environ.get('REDIS_PORT', '6379'),
+            'REDIS_CLUSTER': os.environ.get('REDIS_CLUSTER', '0')
+        }
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         user = domain.User(
@@ -66,9 +71,14 @@ class TestDistributedSessionServiceIntegration(TestCase):
         self.assertIsNotNone(cookie)
 
         # Are the expected values stored in Redis?
-        r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='7000')])
+        if os.environ.get('REDIS_CLUSTER') == '1':
+            r = rediscluster.StrictRedisCluster(
+                startup_nodes=[dict(host='localhost', port='7000')]
+            )
+        else:
+            r = redis.StrictRedis(host='localhost', port='6379')
         raw = r.get(session.session_id)
-        stored_data = json.loads(raw)
+        stored_data = jwt.decode(raw, self.secret)
         cookie_data = jwt.decode(cookie, self.secret)
         self.assertEqual(stored_data['nonce'], cookie_data['nonce'])
 
@@ -95,7 +105,18 @@ class TestDistributedSessionServiceIntegration(TestCase):
     @mock.patch(f'{store.__name__}.get_application_config')
     def test_delete_session(self, mock_get_config):
         """Delete a session from the datastore."""
-        mock_get_config.return_value = {'JWT_SECRET': self.secret}
-        r = rediscluster.StrictRedisCluster(startup_nodes=[dict(host='localhost', port='7000')])
+        mock_get_config.return_value = {
+            'JWT_SECRET': self.secret,
+            'REDIS_HOST': os.environ.get('REDIS_HOST', 'localhost'),
+            'REDIS_PORT': os.environ.get('REDIS_PORT', '6379'),
+            'REDIS_CLUSTER': os.environ.get('REDIS_CLUSTER', '0')
+        }
+        if os.environ.get('REDIS_CLUSTER') == '1':
+            r = rediscluster.StrictRedisCluster(
+                startup_nodes=[dict(host='localhost', port='7000')]
+            )
+        else:
+            r = redis.StrictRedis(host='localhost', port='6379')
         r.set('fookey', b'foovalue')
         store.delete_by_id('fookey')
+        self.assertIsNone(r.get('fookey'))

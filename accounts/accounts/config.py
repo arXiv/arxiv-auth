@@ -19,6 +19,7 @@ REDIS_PORT = os.environ.get('REDIS_PORT', '7000')
 REDIS_DATABASE = os.environ.get('REDIS_DATABASE', '0')
 REDIS_TOKEN = os.environ.get('REDIS_TOKEN', None)
 """This is the token used in the AUTH procedure."""
+REDIS_CLUSTER = os.environ.get('REDIS_CLUSTER', '1')
 
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
@@ -33,6 +34,7 @@ DEFAULT_LOGOUT_REDIRECT_URL = os.environ.get(
 )
 
 AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
+AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', '.arxiv.org')
 AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))
 
 CLASSIC_COOKIE_NAME = os.environ.get('CLASSIC_COOKIE_NAME', 'tapir_session')

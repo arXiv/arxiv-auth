@@ -50,7 +50,7 @@ def _login_classic(user: domain.User, auth: domain.Authorizations,
 
 def _logout(session_id: str) -> None:
     try:
-        sessions.invalidate_by_id(session_id)
+        sessions.delete_by_id(session_id)
     except sessions.exceptions.SessionDeletionFailed as e:
         logger.debug('Could not delete session %s', session_id)
         raise InternalServerError('Cannot logout') from e  # type: ignore
