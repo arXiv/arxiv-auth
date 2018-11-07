@@ -5,12 +5,6 @@ and client sessions, and the services that support authentication and
 authorization. It should be updated as our understanding of relevant threats
 evolves.
 
-.. todo:
-
-   This version of the document focuses on user sessions. It should be updated
-   to include API client sessions as that part of the system is implemented.
-
-
 Environment
 -----------
 End users interact with the arXiv platform primarily via a web browser, on
@@ -87,11 +81,11 @@ Potential attack vectors and failure scenarios include:
    arXiv software to execute code, such as SQL commands, resulting in
    corruption or exfiltration of sensitive data.
 8. **Brute force login attacks.** An attacker may attempt to gain access to
-   another user's account by simply trying a large volume of username/password 
+   another user's account by simply trying a large volume of username/password
    combinations.
 9. **Programmatic account creation.** It is important that a human user take
-   overt and specific action to create an account for themselves. A malicious 
-   actor may attempt to generate accounts programmatically, which would 
+   overt and specific action to create an account for themselves. A malicious
+   actor may attempt to generate accounts programmatically, which would
    undermine that policy.
 
 
@@ -117,14 +111,10 @@ Cross-Site Request Forgery protection
 The risk of replay attacks or other attacks that involve generating fraudulent
 requests can be mitigated through CSRF protection. This usually involves
 issuing a token to the client that must be included in a subsequent request
-(e.g. when POSTing form data). The :mod:`wtforms` package provides `tools for
-CSRF protection
-<http://wtforms.readthedocs.io/en/latest/csrf.html#module-wtforms.csrf>`_,
-including an API for implementing a CSRF protection mechanism.
+(e.g. when POSTing form data).
 
-.. todo::
-
-   Document CSRF implementation in :mod:`arxiv.base`.
+Forms that are used to mutate data based on user input must utilize the CSRF
+protection functionality in :mod:`arxiv.forms.csrf`.
 
 
 Input sanitization
@@ -195,13 +185,5 @@ Captcha
 In parts of the system where we want to prevent programmatic access (e.g.
 account creation, e-mail harvesting), some kind of robot-deterence should be
 used. While not a perfect solution, an image-based Captcha does provide a
-baseline level of confidence that a request has originated from a human 
+baseline level of confidence that a request has originated from a human
 user.
-
-Log sanitization
-^^^^^^^^^^^^^^^^
-
-.. todo:
-
-   Consider a sanitizing filter for :mod:`arxiv.base.logging`. See
-   https://docs.python.org/3/library/logging.html#filter-objects

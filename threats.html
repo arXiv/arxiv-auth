@@ -16,6 +16,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="arxiv.users package" href="arxiv.users/arxiv.users.html" />
+    <link rel="prev" title="arXiv Authorization &amp; Authentication" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -139,13 +141,9 @@ iframe).</p>
 <p>The risk of replay attacks or other attacks that involve generating fraudulent
 requests can be mitigated through CSRF protection. This usually involves
 issuing a token to the client that must be included in a subsequent request
-(e.g. when POSTing form data). The <code class="xref py py-mod docutils literal notranslate"><span class="pre">wtforms</span></code> package provides <a class="reference external" href="http://wtforms.readthedocs.io/en/latest/csrf.html#module-wtforms.csrf">tools for
-CSRF protection</a>,
-including an API for implementing a CSRF protection mechanism.</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<p class="last">Document CSRF implementation in <a class="reference external" href="https://cul-it.github.io/arxiv-base/arxiv/arxiv.base.html#module-arxiv.base" title="(in arXiv base v0.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.base</span></code></a>.</p>
-</div>
+(e.g. when POSTing form data).</p>
+<p>Forms that are used to mutate data based on user input must utilize the CSRF
+protection functionality in <a class="reference external" href="https://cul-it.github.io/arxiv-base/arxiv/arxiv.forms.csrf.html#module-arxiv.forms.csrf" title="(in arXiv base v0.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arxiv.forms.csrf</span></code></a>.</p>
 </div>
 <div class="section" id="input-sanitization">
 <h3>Input sanitization<a class="headerlink" href="#input-sanitization" title="Permalink to this headline">¶</a></h3>
@@ -169,7 +167,7 @@ set with the following attributes:</p>
 <li><code class="docutils literal notranslate"><span class="pre">SameSite</span></code>: prevents sending the cookie with cross-site requests.</li>
 </ul>
 <p>Enforcement of these cookie policies is up to the user’s browser.</p>
-<p>These attributes can be set when using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">flask.Response.set_cookie()</span></code>
+<p>These attributes can be set when using the <a class="reference external" href="http://flask.pocoo.org/docs/1.0/api/#flask.Response.set_cookie" title="(in Flask v1.0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flask.Response.set_cookie()</span></code></a>
 API. For example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">make_response</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="s1">&#39;foocookie&#39;</span><span class="p">,</span> <span class="s1">&#39;secret value&#39;</span><span class="p">,</span> <span class="n">secure</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
@@ -211,9 +209,6 @@ used. While not a perfect solution, an image-based Captcha does provide a
 baseline level of confidence that a request has originated from a human
 user.</p>
 </div>
-<div class="section" id="log-sanitization">
-<h3>Log sanitization<a class="headerlink" href="#log-sanitization" title="Permalink to this headline">¶</a></h3>
-</div>
 </div>
 </div>
 
@@ -235,8 +230,14 @@ user.</p>
 
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Threat model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#protected-data">Protected data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#threats-risks">Threats/risks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prevention-design-considerations">Prevention &amp; design considerations</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="accounts/accounts.html">Accounts Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authenticator/authenticator.html">Authenticator service</a></li>
@@ -247,6 +248,8 @@ user.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">arXiv Authorization &amp; Authentication</a></li>
+      <li>Next: <a href="arxiv.users/arxiv.users.html" title="next chapter">arxiv.users package</a></li>
   </ul></li>
 </ul>
 </div>

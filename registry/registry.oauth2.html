@@ -42,6 +42,10 @@ data stored in <a class="reference internal" href="registry.services.datastore.h
 sessions in <a class="reference internal" href="registry.services.sessions.html#module-registry.services.sessions" title="registry.services.sessions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">registry.services.sessions</span></code></a>.</p>
 <p>The current implementation supports the <cite>client_credentials</cite> and
 <cite>authorization_code</cite> grants.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Implement backend &amp; integration to control client endorsements.</p>
+</div>
 <dl class="class">
 <dt id="registry.oauth2.AuthorizationCodeGrant">
 <em class="property">class </em><code class="descclassname">registry.oauth2.</code><code class="descname">AuthorizationCodeGrant</code><span class="sig-paren">(</span><em>request</em>, <em>server</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#AuthorizationCodeGrant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.AuthorizationCodeGrant" title="Permalink to this definition">¶</a></dt>
@@ -469,6 +473,27 @@ integration.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="registry.oauth2.get_endorsements">
+<code class="descclassname">registry.oauth2.</code><code class="descname">get_endorsements</code><span class="sig-paren">(</span><em>client</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#get_endorsements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.get_endorsements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get endorsed categories for a client.</p>
+<p>The current implementation just returns all categories.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Client</span></code>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Each item is a <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.Category</span></code>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="../arxiv.users/arxiv.users.domain.html#arxiv.users.domain.Category" title="arxiv.users.domain.Category"><code class="xref py py-class docutils literal notranslate"><span class="pre">Category</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="registry.oauth2.init_app">
 <code class="descclassname">registry.oauth2.</code><code class="descname">init_app</code><span class="sig-paren">(</span><em>app</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/registry/oauth2.html#init_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#registry.oauth2.init_app" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attach an <code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationServer</span></code> to a <code class="xref py py-class docutils literal notranslate"><span class="pre">Flask</span></code> app.</p>
@@ -527,7 +552,7 @@ At this point the token has not been stored.</li>
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../threats.html">Threat model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../arxiv.users/arxiv.users.html">arxiv.users package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../accounts/accounts.html">Accounts Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../authenticator/authenticator.html">Authenticator service</a></li>
