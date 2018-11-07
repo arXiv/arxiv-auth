@@ -129,7 +129,7 @@ def get_user_by_id(user_id: str) -> domain.User:
             surname=db_user.last_name,
             suffix=db_user.suffix_name
         ),
-        profile=db_profile.to_domain()
+        profile=db_profile.to_domain() if db_profile is not None else None
     )
     return user
 
@@ -148,7 +148,7 @@ def update(user: domain.User) -> Tuple[domain.User, domain.Authorizations]:
             _update_field(db_user.last_name, user.name.surname)
             _update_field(db_user.suffix_name, user.name.suffix)
         if user.profile is not None:
-            _update_field(db_profile.origanization, user.profile.affiliation)
+            _update_field(db_profile.affiliation, user.profile.affiliation)
             _update_field(db_profile.country, user.profile.country)
             _update_field(db_profile.rank, user.profile.rank)
             _update_field(db_profile.rank, user.profile.rank)
@@ -182,18 +182,24 @@ def _update_field(to_update: Any, update_with: Any) -> None:
 
 def _get_user_data(user_id: str) -> Tuple[DBUser, DBUserNickname, DBProfile]:
     with util.transaction() as session:
-        db_user, db_nick, db_profile = (
-            session.query(DBUser, DBUserNickname, DBProfile)
-            .filter(DBUser.user_id == user_id)
-            .filter(DBUser.flag_approved == 1)
-            .filter(DBUser.flag_deleted == 0)
-            .filter(DBUser.flag_banned == 0)
-            .filter(DBUserNickname.flag_primary == 1)
-            .filter(DBUserNickname.flag_valid == 1)
-            .filter(DBUserNickname.user_id == DBUser.user_id)
-            .filter(DBProfile.user_id == DBUser.user_id)
+        try:
+            db_user, db_nick = (
+                session.query(DBUser, DBUserNickname)
+                .filter(DBUser.user_id == user_id)
+                .filter(DBUser.flag_approved == 1)
+                .filter(DBUser.flag_deleted == 0)
+                .filter(DBUser.flag_banned == 0)
+                .filter(DBUserNickname.flag_primary == 1)
+                .filter(DBUserNickname.flag_valid == 1)
+                .filter(DBUserNickname.user_id == DBUser.user_id)
+                .first()
+            )
+        except TypeError:   # first() returns a single None if no match.
+            raise exceptions.NoSuchUser('User does not exist')
+        # Profile may not exist.
+        db_profile = session.query(models.DBProfile) \
+            .filter(models.DBProfile.user_id == user_id) \
             .first()
-        )
         if not db_user:
             raise exceptions.NoSuchUser('User does not exist')
     return db_user, db_nick, db_profile
