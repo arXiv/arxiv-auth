@@ -79,6 +79,9 @@ DELETE_UPLOAD_FILE = Scope(Scope.domains.UPLOAD, Scope.actions.DELETE)
 READ_UPLOAD_LOGS = Scope(Scope.domains.UPLOAD, 'read_logs')
 READ_UPLOAD_SERVICE_LOGS = Scope(Scope.domains.UPLOAD, 'read_service_logs')
 
+READ_FULLTEXT = Scope(Scope.domains.FULLTEXT, Scope.actions.READ)
+CREATE_FULLTEXT = Scope(Scope.domains.FULLTEXT, Scope.actions.CREATE)
+
 GENERAL_USER = [
     EDIT_PROFILE,
     VIEW_PROFILE,

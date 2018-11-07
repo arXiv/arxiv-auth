@@ -195,7 +195,9 @@ intersphinx_mapping = {
     'arxitecture':  ('https://cul-it.github.io/arxiv-arxitecture/', None),
     'arxiv.taxonomy': ('https://cul-it.github.io/arxiv-base', None),
     'arxiv.base':  ('https://cul-it.github.io/arxiv-base', None),
+    'arxiv.forms':  ('https://cul-it.github.io/arxiv-base', None),
     'browse':  ('https://cul-it.github.io/arxiv-browse/', None),
     'search':  ('https://cul-it.github.io/arxiv-search/', None),
     'zero':  ('https://cul-it.github.io/arxiv-zero/', None),
+    'flask': ('http://flask.pocoo.org/docs/1.0/', None),
 }

@@ -23,7 +23,6 @@ client session, including its authorization scopes (see
 
 .. figure:: ../_static/diagrams/authenticator-service-containers.png
 
-   Authorizer service containers.
 
 The authenticator service uses session keys and API auth tokens to retrieve
 session information from the distributed session/token store.

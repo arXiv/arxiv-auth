@@ -166,6 +166,8 @@ class Scope(NamedTuple):
         """Submission interfaces and actions."""
         UPLOAD = 'upload'
         """File uploads, including those for submissions."""
+        FULLTEXT = 'fulltext'
+        """Fulltext extraction."""
 
     class actions:
         """Known authorization actions."""
