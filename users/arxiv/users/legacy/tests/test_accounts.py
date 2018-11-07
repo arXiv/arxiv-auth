@@ -272,3 +272,94 @@ class TestGetUserById(SetUpUserMixin, TestCase):
         self.assertEqual(loaded_user.username, user.username)
         self.assertEqual(loaded_user.email, user.email)
         self.assertIsNone(loaded_user.profile)
+
+
+class TestUpdate(SetUpUserMixin, TestCase):
+    """Tests for :func:`accounts.update`."""
+
+    def test_user_without_id(self):
+        """A :class:`domain.User` is passed without an ID."""
+        user = domain.User(username='bazuser', email='new@account.edu')
+        with temporary_db(self.db_uri, create=False, drop=False):
+            with self.assertRaises(ValueError):
+                accounts.update(user)
+
+    def test_update_nonexistant_user(self):
+        """A :class:`domain.User` is passed that is not in the database."""
+        user = domain.User(username='bazuser', email='new@account.edu',
+                           user_id='12345')
+        with temporary_db(self.db_uri, create=False, drop=False):
+            with self.assertRaises(exceptions.NoSuchUser):
+                accounts.update(user)
+
+    def test_update_name(self):
+        """The user's name is changed."""
+        name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
+        user = domain.User(username='bazuser', email='new@account.edu',
+                           name=name)
+        ip = '1.2.3.4'
+
+        with temporary_db(self.db_uri, create=False, drop=False) as session:
+            user, _ = accounts.register(user, 'apassword1', ip=ip,
+                                        remote_host=ip)
+
+        with temporary_db(self.db_uri, create=False, drop=False) as session:
+            updated_name = domain.UserFullName(forename='Foo',
+                                               surname=name.surname,
+                                               suffix=name.suffix)
+            updated_user = domain.User(user_id=user.user_id,
+                                       username=user.username,
+                                       email=user.email,
+                                       name=updated_name)
+
+            updated_user, _ = accounts.update(updated_user)
+            self.assertEqual(user.user_id, updated_user.user_id)
+            self.assertEqual(updated_user.name.forename, 'Foo')
+            db_user, db_nick, db_profile = get_user(session, user.user_id)
+            self.assertEqual(db_user.first_name, 'Foo')
+
+    def test_update_profile(self):
+        """Changes are made to profile information."""
+        profile = domain.UserProfile(
+            affiliation='School of Hard Knocks',
+            country='de',
+            rank=1,
+            submission_groups=['grp_cs', 'grp_q-bio'],
+            default_category=domain.Category('cs', 'DL'),
+            homepage_url='https://google.com'
+        )
+        name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
+        user = domain.User(username='bazuser', email='new@account.edu',
+                           name=name, profile=profile)
+        ip = '1.2.3.4'
+
+        with temporary_db(self.db_uri, create=False, drop=False) as session:
+            user, _ = accounts.register(user, 'apassword1', ip=ip,
+                                        remote_host=ip)
+
+        updated_profile = domain.UserProfile(
+            affiliation='School of Hard Knocks',
+            country='us',
+            rank=2,
+            submission_groups=['grp_cs', 'grp_physics'],
+            default_category=domain.Category('cs', 'IR'),
+            homepage_url='https://google.com'
+        )
+        updated_user = domain.User(user_id=user.user_id,
+                                   username=user.username,
+                                   email=user.email,
+                                   name=name,
+                                   profile=updated_profile)
+
+        with temporary_db(self.db_uri, create=False, drop=False) as session:
+            u, _ = accounts.update(updated_user)
+            db_user, db_nick, db_profile = get_user(session, u.user_id)
+
+        self.assertEqual(db_profile.affiliation, updated_profile.affiliation)
+        self.assertEqual(db_profile.country, updated_profile.country),
+        self.assertEqual(db_profile.rank, updated_profile.rank),
+        self.assertEqual(db_profile.flag_group_cs, 1)
+        self.assertEqual(db_profile.flag_group_q_bio, 0)
+        self.assertEqual(db_profile.flag_group_physics, 1)
+        self.assertEqual(db_profile.archive, 'cs')
+        self.assertEqual(db_profile.subject_class, 'IR')

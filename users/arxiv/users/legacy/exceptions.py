@@ -35,3 +35,7 @@ class InvalidCookie(ValueError):
 
 class RegistrationFailed(RuntimeError):
     """Could not create a new user."""
+
+
+class UpdateUserFailed(RuntimeError):
+    """Could not update a user."""
