@@ -1,4 +1,4 @@
-# Authorizer service
+# Authenticator service
 
 Lightweight service for authorizing requests.
 
