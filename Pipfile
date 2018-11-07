@@ -13,7 +13,7 @@ celery = "*"
 flask = "*"
 jsonschema = "*"
 pyjwt = "*"
-requests = "*"
+requests = "==2.20.0"
 sqlalchemy = "*"
 uwsgi = "*"
 wtforms = "*"
@@ -21,7 +21,6 @@ arxiv-base = "==0.10.1rc2"
 authlib = "*"
 redis-py-cluster = "*"
 openapi-spec-validator = "*"
-"4010dd8" = {path = "./users"}
 
 [dev-packages]
 mimesis = "*"

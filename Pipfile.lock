@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "be505ddb1dbd8ba9fab10a301bb1e4dc5a458f0bf09c29c9e1eaaee85d0ab409"
+            "sha256": "81323a31cc06c02a9fcb489192312133d0245452f06d48056557f199380d63f7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,9 +16,6 @@
         ]
     },
     "default": {
-        "4010dd8": {
-            "path": "./users"
-        },
         "amqp": {
             "hashes": [
                 "sha256:073dd02fdd73041bffc913b767866015147b61f2a9bc104daef172fc1a0066eb",
@@ -432,6 +429,7 @@
                 "sha256:61bf29cada3fc2fbefad4fdf059ea4bd1b4a86d2b6d15e1c7c0b582b9752fe39",
                 "sha256:de9529817c93f27c8ccbfead6985011db27bd0ddfcdb2d86f3f663385c6a9c22"
             ],
+            "markers": "python_version >= '3.4'",
             "version": "==1.24.1"
         },
         "uwsgi": {
@@ -877,6 +875,7 @@
                 "sha256:61bf29cada3fc2fbefad4fdf059ea4bd1b4a86d2b6d15e1c7c0b582b9752fe39",
                 "sha256:de9529817c93f27c8ccbfead6985011db27bd0ddfcdb2d86f3f663385c6a9c22"
             ],
+            "markers": "python_version >= '3.4'",
             "version": "==1.24.1"
         },
         "wrapt": {
