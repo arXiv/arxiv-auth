@@ -14,8 +14,8 @@ blueprint = Blueprint('authenticator', __name__, url_prefix='')
 
 
 @blueprint.route('/auth', methods=['GET'])
-def authorize():
-    """Authorize the request."""
+def authenticate():
+    """Authenticate the request."""
     try:
         cookie_name = current_app.config['AUTH_SESSION_COOKIE_NAME']
     except KeyError as e:
@@ -29,15 +29,15 @@ def authorize():
         try:
             auth_token = auth_header.split()[1]
         except IndexError:
-            logger.error('Authorization header malformed')
-            raise BadRequest('Authorization header is malformed')
+            logger.error('Auth header malformed')
+            raise BadRequest('Auth header is malformed')
         logger.debug('Got auth token: %s', auth_token)
-        jwt_encoded = _authorize_from_header(auth_token)
+        jwt_encoded = _authenticate_from_header(auth_token)
     elif auth_cookie:   # Try the cookie second.
         logger.debug('Got auth cookie: %s', auth_cookie)
-        jwt_encoded = _authorize_from_cookie(auth_cookie)
+        jwt_encoded = _authenticate_from_cookie(auth_cookie)
     else:
-        logger.error('Authorization token not found')
+        logger.error('Auth token not found')
         return jsonify({}), status.HTTP_200_OK, {}
 
     # jwt_secret = current_app.config['JWT_SECRET']
@@ -45,8 +45,8 @@ def authorize():
     return jsonify({}), status.HTTP_200_OK, headers
 
 
-def _authorize_from_cookie(auth_cookie: str) -> str:
-    """Authorize the request based on an auth cookie."""
+def _authenticate_from_cookie(auth_cookie: str) -> str:
+    """Authenticate the request based on an auth cookie."""
     try:
         session_token = sessions.load(auth_cookie)
     except (sessions.exceptions.InvalidToken,
@@ -59,8 +59,8 @@ def _authorize_from_cookie(auth_cookie: str) -> str:
     return session_token
 
 
-def _authorize_from_header(auth_token: str) -> str:
-    """Authorize the request based on an auth token."""
+def _authenticate_from_header(auth_token: str) -> str:
+    """Authenticate the request based on an auth token."""
     try:
         session_token = sessions.load_by_id(auth_token)
     except (sessions.exceptions.InvalidToken,

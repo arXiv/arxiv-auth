@@ -13,8 +13,8 @@ from authenticator.factory import create_app
 
 EASTERN = timezone('US/Eastern')
 
-#
-class TestAuthorizeWithCookie(TestCase):
+
+class TestAuthenticateWithCookie(TestCase):
     def setUp(self):
         self.app = create_app()
         self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'foocookie'
@@ -163,7 +163,7 @@ class TestAuthorizeWithCookie(TestCase):
         self.assertEqual(response.headers['Authorization'], expected_jwt)
 
 
-class TestAuthorizeWithHeader(TestCase):
+class TestAuthenticateWithHeader(TestCase):
     """Tests for :func:`session_store.get_token_session`."""
 
     def setUp(self):
