@@ -83,7 +83,7 @@ class UserProfile(NamedTuple):
     """
     Groups to which the user prefers to submit.
 
-    Items should be one of :ref:`arxiv.taxonomy.GROUPS`.
+    Items should be one of :ref:`arxiv.taxonomy.definitions.GROUPS`.
     """
 
     default_category: Category
@@ -119,7 +119,7 @@ class UserProfile(NamedTuple):
     def groups_display(self) -> str:
         """Display-ready representation of active groups for this profile."""
         return ", ".join([
-            taxonomy.GROUPS[group]['name'] for group in self.submission_groups
+            taxonomy.definitions.GROUPS[group]['name'] for group in self.submission_groups
         ])
 
 
