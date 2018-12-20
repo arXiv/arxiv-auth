@@ -23,7 +23,7 @@ redis-py-cluster = "*"
 openapi-spec-validator = "*"
 
 [dev-packages]
-mimesis = "*"
+mimesis = "==2.1.0"
 mypy = "*"
 pydocstyle = "*"
 pylint = "*"
