@@ -11,12 +11,34 @@ info:
     email: nextgen@arxiv.org
   license:
     name: MIT
+servers:
+  - url: https://api.arxiv.org/auth
+    description: Metadata API endpoint.
 
 paths:
-  /o/token:
+  /token:
     post:
       operationId: getAccessToken
       summary: Request a new access token, using one of the supported grants.
+      description: |
+        This endpoint is used in both two-legged and three-legged auth
+        workflows.
+
+        ## Example request
+
+        ```bash
+        curl -XPOST \
+          --data "client_id=[YOUR CLIENT ID]&client_secret=[YOUR CLIENT SECRET]&grant_type=client_credentials" \
+          https://api.arxiv.org/auth/token
+        ```
+
+        ## Example response
+
+        ```json
+        {"access_token": "[YOUR ACCESS TOKEN]", "expires_in": 864000, "token_type": "Bearer"}
+        ```
+
+
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -62,7 +84,7 @@ paths:
                   error:
                     type: "string"
                     description: "Details about the error."
-  /o/authorize:
+  /authorize:
     get:
       operationId: reviewAuthorizationRequest
       summary: |
