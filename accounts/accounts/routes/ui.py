@@ -33,7 +33,7 @@ def anonymous_only(func: Callable) -> Callable:
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.session:
             user = request.session.user
-            target = url_for('account', user_id=user.user_id)
+            target = url_for('account')
             content = redirect(target, code=status.HTTP_303_SEE_OTHER)
             response = make_response(content)
             return response
@@ -176,7 +176,7 @@ def logout() -> Response:
         set_cookies(response, data)
         unset_submission_cookie(response)    # Fix for ARXIVNG-1149.
         return response
-    return redirect(url_for('get_login'), code=status.HTTP_302_FOUND)
+    return redirect(next_page, code=status.HTTP_302_FOUND)
 
 
 # @blueprint.route('/captcha', methods=['GET'])

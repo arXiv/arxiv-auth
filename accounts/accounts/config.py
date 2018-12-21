@@ -66,7 +66,8 @@ BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 URLS = [
     ("register", "/user/register", BASE_SERVER),
     ("lost_password", "/user/lost_password", BASE_SERVER),
-    ("login", "/login", BASE_SERVER)
+    ("login", "/login", BASE_SERVER),
+    ("account", "/user", BASE_SERVER)
 ]
 
 CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))

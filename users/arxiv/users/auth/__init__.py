@@ -103,10 +103,9 @@ class Auth(object):
             logger.debug('Middleware passed an exception: %s', session)
             raise session
 
-        # If we don't see a session, we may not be deployed behind a
-        # gateway with an authorization service. If the legacy database
-        # is available, we can try to use that as a fall-back.
-        if not session and legacy.is_configured():
+        # If the legacy database is available, we should use it to authorize
+        # the request.
+        if legacy.is_configured():
             logger.debug('No session; attempting to get legacy session')
             session = self._get_legacy_session()
 

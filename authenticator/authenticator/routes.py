@@ -32,10 +32,18 @@ def authenticate():
             logger.error('Auth header malformed')
             raise BadRequest('Auth header is malformed')
         logger.debug('Got auth token: %s', auth_token)
-        jwt_encoded = _authenticate_from_header(auth_token)
+        try:
+            jwt_encoded = _authenticate_from_header(auth_token)
+        except Exception as e:
+            logger.error('Unhandled exception: %s', e)
+            return jsonify({}), status.HTTP_200_OK, {}
     elif auth_cookie:   # Try the cookie second.
         logger.debug('Got auth cookie: %s', auth_cookie)
-        jwt_encoded = _authenticate_from_cookie(auth_cookie)
+        try:
+            jwt_encoded = _authenticate_from_cookie(auth_cookie)
+        except Exception as e:
+            logger.error('Unhandled exception: %s', e)
+            return jsonify({}), status.HTTP_200_OK, {}
     else:
         logger.error('Auth token not found')
         return jsonify({}), status.HTTP_200_OK, {}
