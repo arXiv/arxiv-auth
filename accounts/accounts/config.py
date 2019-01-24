@@ -4,6 +4,9 @@ import os
 
 VERSION = '0.2'
 
+SESSION_DURATION = '36000'
+"""Temporary workaround for short session timeouts."""
+
 SECRET_KEY = os.environ.get('SECRET_KEY', 'asdf1234')
 SERVER_NAME = os.environ.get('ACCOUNTS_SERVER_NAME')
 
