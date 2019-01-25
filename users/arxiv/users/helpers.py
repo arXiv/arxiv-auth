@@ -2,7 +2,7 @@
 
 import os
 from typing import List
-from pytz import timezone
+from pytz import timezone, UTC
 import uuid
 from datetime import timedelta, datetime
 from arxiv.users import auth, domain

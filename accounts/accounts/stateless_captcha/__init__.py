@@ -26,7 +26,7 @@ import random
 import io
 from typing import Dict, Mapping, Any, Optional
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, UTC
 import dateutil.parser
 import string
 import jwt
@@ -104,7 +104,7 @@ def unpack(token: str, secret: str, ip_address: str) -> str:
     except jwt.exceptions.DecodeError:  # type: ignore
         raise InvalidCaptchaToken('Could not decode token')
     try:
-        now = datetime.now(tz=EASTERN)
+        now = datetime.now(tz=UTC)
         if dateutil.parser.parse(claims['expires']) <= now:
             logger.debug('captcha token expired: %s', claims['expires'])
             raise InvalidCaptchaToken('Expired token')
@@ -137,7 +137,7 @@ def new(secret: str, ip_address: str, expires: int = 300) -> str:
     """
     claims = {
         'value': _generate_random_string(),
-        'expires': (datetime.now(tz=EASTERN) + timedelta(seconds=300)).isoformat()
+        'expires': (datetime.now(tz=UTC) + timedelta(seconds=300)).isoformat()
     }
     return jwt.encode(claims, _secret(secret, ip_address)).decode('ascii')
 

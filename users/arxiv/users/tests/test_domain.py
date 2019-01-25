@@ -3,7 +3,7 @@
 from unittest import TestCase
 from typing import NamedTuple, Optional
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 
 from ..auth import scopes
 from .. import domain
@@ -61,8 +61,8 @@ class TestDictCoercion(TestCase):
             bat: Optional[datetime]
             baz: Optional[ChildClass] = None
 
-        parent = ParentClass(bat=datetime.now(tz=EASTERN),
-                             baz=ChildClass(foo=datetime.now(tz=EASTERN)))
+        parent = ParentClass(bat=datetime.now(tz=UTC),
+                             baz=ChildClass(foo=datetime.now(tz=UTC)))
         self.assertEqual(parent,
                          domain.from_dict(ParentClass, domain.to_dict(parent)))
 

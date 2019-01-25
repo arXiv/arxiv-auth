@@ -9,7 +9,7 @@ from flask import Flask
 from typing import List
 import random
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 from mimesis import Person, Internet, Datetime
 from mimesis import config as mimesis_config
 

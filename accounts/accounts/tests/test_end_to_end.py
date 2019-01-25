@@ -2,7 +2,7 @@
 
 from unittest import TestCase, mock
 from datetime import datetime
-from pytz import timezone, UTC
+from pytz import timezone, UTC, UTC
 from dateutil.parser import parse
 import os
 import subprocess

@@ -3,7 +3,7 @@
 from typing import Any, Callable
 from datetime import datetime, timedelta
 from functools import wraps
-from pytz import timezone
+from pytz import timezone, UTC
 from flask import Blueprint, render_template, url_for, abort, request, \
     make_response, redirect, current_app, send_file, Response
 from arxiv import status

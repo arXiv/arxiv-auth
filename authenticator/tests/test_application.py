@@ -4,7 +4,7 @@ from unittest import TestCase, mock
 import json
 import os
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, UTC
 import jwt
 
 import arxiv.users.auth.sessions.store

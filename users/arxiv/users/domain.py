@@ -3,7 +3,7 @@
 from typing import Any, Optional, Type, NamedTuple, List, Callable
 from datetime import datetime
 import dateutil.parser
-from pytz import timezone
+from pytz import timezone, UTC
 from functools import partial
 from arxiv import taxonomy
 
@@ -319,7 +319,7 @@ class Session(NamedTuple):
     def expired(self) -> bool:
         """Expired if the current time is later than :attr:`.end_time`."""
         return bool(self.end_time is not None
-                    and datetime.now(tz=EASTERN) >= self.end_time)
+                    and datetime.now(tz=UTC) >= self.end_time)
 
     @property
     def expires(self) -> Optional[int]:
@@ -330,7 +330,7 @@ class Session(NamedTuple):
         """
         if self.end_time is None:
             return None
-        return max((self.end_time - datetime.now(tz=EASTERN)).seconds, 0)
+        return max((self.end_time - datetime.now(tz=UTC)).seconds, 0)
 
 
 # Helpers and private functions.

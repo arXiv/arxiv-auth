@@ -10,7 +10,7 @@ import uuid
 import random
 from datetime import datetime, timedelta
 import dateutil.parser
-from pytz import timezone
+from pytz import timezone, UTC
 
 from typing import Any, Optional, Union, Tuple
 
@@ -83,7 +83,7 @@ class SessionStore(object):
         """
         if session_id is None:
             session_id = str(uuid.uuid4())
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         end_time = start_time + timedelta(seconds=self._duration)
         session = domain.Session(
             session_id=session_id,
@@ -168,7 +168,7 @@ class SessionStore(object):
         except (KeyError, jwt.exceptions.DecodeError) as e:    # type: ignore
             raise InvalidToken('Token payload malformed') from e
 
-        if expires <= datetime.now(tz=EASTERN):
+        if expires <= datetime.now(tz=UTC):
             raise InvalidToken('Session has expired')
 
         session = self.load_by_id(cookie_data['session_id'], decode=decode)
