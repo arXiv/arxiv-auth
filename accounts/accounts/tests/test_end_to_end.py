@@ -11,6 +11,7 @@ import hashlib
 from base64 import b64encode
 
 from arxiv import status
+from accounts.services import legacy, users
 from accounts.factory import create_web_app
 
 from accounts import stateless_captcha
@@ -317,71 +318,69 @@ class TestLoginLogoutRoutes(TestCase):
         self.secret = 'bazsecret'
         self.db = 'db.sqlite'
         self.expiry = 500
-        try:
-            self.app = create_web_app()
-            self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-            self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
-            self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
-            self.app.config['SESSION_DURATION'] = self.expiry
-            self.app.config['JWT_SECRET'] = self.secret
-            self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
-            self.app.config['REDIS_HOST'] = 'localhost'
-            self.app.config['REDIS_PORT'] = '7000'
-            self.app.config['REDIS_CLUSTER'] = '1'
 
-            with self.app.app_context():
-                from accounts.services import legacy, users
-                legacy.create_all()
-                users.create_all()
+    def setUp(self):
+        self.app = create_web_app()
+        self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
+        self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
+        self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
+        self.app.config['SESSION_DURATION'] = self.expiry
+        self.app.config['JWT_SECRET'] = self.secret
+        self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+        self.app.config['REDIS_HOST'] = 'localhost'
+        self.app.config['REDIS_PORT'] = '7000'
+        self.app.config['REDIS_CLUSTER'] = '1'
 
-                with users.transaction() as session:
-                    # We have a good old-fashioned user.
-                    db_user = users.models.DBUser(
-                        user_id=1,
-                        first_name='first',
-                        last_name='last',
-                        suffix_name='iv',
-                        email='first@last.iv',
-                        policy_class=2,
-                        flag_edit_users=1,
-                        flag_email_verified=1,
-                        flag_edit_system=0,
-                        flag_approved=1,
-                        flag_deleted=0,
-                        flag_banned=0,
-                        tracking_cookie='foocookie',
-                    )
-                    db_nick = users.models.DBUserNickname(
-                        nick_id=1,
-                        nickname='foouser',
-                        user_id=1,
-                        user_seq=1,
-                        flag_valid=1,
-                        role=0,
-                        policy=0,
-                        flag_primary=1
-                    )
-                    salt = b'fdoo'
-                    password = b'thepassword'
-                    hashed = hashlib.sha1(salt + b'-' + password).digest()
-                    encrypted = b64encode(salt + hashed)
-                    db_password = users.models.DBUserPassword(
-                        user_id=1,
-                        password_storage=2,
-                        password_enc=encrypted
-                    )
-                    session.add(db_user)
-                    session.add(db_password)
-                    session.add(db_nick)
+        with self.app.app_context():
+            legacy.create_all()
+            users.create_all()
 
-        except Exception:
-            stop_container(self.container)
-            raise
+            with users.transaction() as session:
+                # We have a good old-fashioned user.
+                db_user = users.models.DBUser(
+                    user_id=1,
+                    first_name='first',
+                    last_name='last',
+                    suffix_name='iv',
+                    email='first@last.iv',
+                    policy_class=2,
+                    flag_edit_users=1,
+                    flag_email_verified=1,
+                    flag_edit_system=0,
+                    flag_approved=1,
+                    flag_deleted=0,
+                    flag_banned=0,
+                    tracking_cookie='foocookie',
+                )
+                db_nick = users.models.DBUserNickname(
+                    nick_id=1,
+                    nickname='foouser',
+                    user_id=1,
+                    user_seq=1,
+                    flag_valid=1,
+                    role=0,
+                    policy=0,
+                    flag_primary=1
+                )
+                salt = b'fdoo'
+                password = b'thepassword'
+                hashed = hashlib.sha1(salt + b'-' + password).digest()
+                encrypted = b64encode(salt + hashed)
+                db_password = users.models.DBUserPassword(
+                    user_id=1,
+                    password_storage=2,
+                    password_enc=encrypted
+                )
+                session.add(db_user)
+                session.add(db_password)
+                session.add(db_nick)
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):
         """Tear down redis and the test DB."""
-        stop_container(self.container)
+        stop_container(cls.container)
+
+    def tearDown(self):
         os.remove(self.db)
 
     def test_get_login(self):
@@ -427,6 +426,16 @@ class TestLoginLogoutRoutes(TestCase):
         self.assertLess(expires_in - self.expiry, 2)
         self.assertLess(classic_expires_in - self.expiry, 2)
 
+        # Verify that the expiry is not set in the database. This is kind of
+        # a weird "feature" of the classic auth system.
+        with self.app.app_context():
+            with legacy.transaction() as session:
+                db_session = session.query(legacy.models.DBSession) \
+                    .filter(legacy.models.DBSession.user_id == 1) \
+                    .order_by(legacy.models.DBSession.session_id.desc()) \
+                    .first()
+                self.assertEqual(db_session.end_time, 0)
+
     def test_post_login_baddata(self):
         """POST rquest to /login with invalid data returns 400."""
         form_data = {'username': 'foouser', 'password': 'notthepassword'}
@@ -467,6 +476,16 @@ class TestLoginLogoutRoutes(TestCase):
         self.assertLess(expires_in - self.expiry, 2)
         self.assertLess(classic_expires_in - self.expiry, 2)
 
+        # Verify that the expiry is not set in the database. This is kind of
+        # a weird "feature" of the classic auth system.
+        with self.app.app_context():
+            with legacy.transaction() as session:
+                db_session = session.query(legacy.models.DBSession) \
+                    .filter(legacy.models.DBSession.user_id == 1) \
+                    .order_by(legacy.models.DBSession.session_id.desc()) \
+                    .first()
+                self.assertEqual(db_session.end_time, 0)
+
         response = client.get('/logout')
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
@@ -488,6 +507,18 @@ class TestLoginLogoutRoutes(TestCase):
                              'Classic session cookie is expired')
         self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
                          'Domain is set')
+
+        # Verify that the expiry is set in the database.
+        with self.app.app_context():
+            with legacy.transaction() as session:
+                db_session = session.query(legacy.models.DBSession) \
+                    .filter(legacy.models.DBSession.user_id == 1) \
+                    .order_by(legacy.models.DBSession.session_id.desc()) \
+                    .first()
+                self.assertLessEqual(
+                    datetime.fromtimestamp(db_session.end_time, tz=UTC),
+                    datetime.now(UTC)
+                )
 
 
 
