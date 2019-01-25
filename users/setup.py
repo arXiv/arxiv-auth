@@ -14,8 +14,8 @@ setup(
         "python-dateutil",
         "arxiv-base",
         "pyjwt",
-        "redis",
-        "redis-py-cluster"
+        "redis==2.10.6",
+        "redis-py-cluster==1.3.6"
     ],
     zip_safe=False
 )
