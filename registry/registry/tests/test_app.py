@@ -26,33 +26,41 @@ def stop_container(container):
     datastore.drop_all()
 
 
-class TestClientAuthentication(TestCase):
+class TestAuthentication(TestCase):
     __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Spin up redis."""
-        # self.redis = subprocess.run(
-        #     "docker run -d -p 7000:7000 redis",
-        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        # )
-        # time.sleep(2)    # In case it takes a moment to start.
-        # if self.redis.returncode > 0:
-        #     raise RuntimeError('Could not start redis. Is Docker running?')
-        #
-        # self.container = self.redis.stdout.decode('ascii').strip()
-        self.db = 'db.sqlite'
+        cls.redis = subprocess.run(
+            "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
+            " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
+            " --hostname=server grokzen/redis-cluster:4.0.9",
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        )
+        time.sleep(10)    # In case it takes a moment to start.
+        if cls.redis.returncode > 0:
+            raise RuntimeError('Could not start redis. Is Docker running?')
 
-        self.client = Client(
+        cls.container = cls.redis.stdout.decode('ascii').strip()
+        cls.db = 'db.sqlite'
+
+        cls.client = Client(
             owner_id='252',
             name='fooclient',
             url='http://asdf.com',
             description='a client',
             redirect_uri='https://foo.com/bar'
         )
-        self.secret = 'foohashedsecret'
-        self.hashed_secret = sha256(self.secret.encode('utf-8')).hexdigest()
-        self.cred = ClientCredential(client_secret=self.hashed_secret)
-        self.auths = [
+        cls.secret = 'foohashedsecret'
+        cls.hashed_secret = sha256(cls.secret.encode('utf-8')).hexdigest()
+        cls.cred = ClientCredential(client_secret=cls.hashed_secret)
+        cls.auths = [
+            ClientAuthorization(
+                scope='something:read',
+                requested=datetime.now() - timedelta(seconds=30),
+                authorized=datetime.now()
+            ),
             ClientAuthorization(
                 scope='foo:bar',
                 requested=datetime.now() - timedelta(seconds=30),
@@ -64,39 +72,48 @@ class TestClientAuthentication(TestCase):
                 authorized=datetime.now()
             )
         ]
-        self.grant_types = [
+        cls.grant_types = [
             ClientGrantType(
                 grant_type='client_credentials',
                 requested=datetime.now() - timedelta(seconds=30),
                 authorized=datetime.now()
+            ),
+            ClientGrantType(
+                grant_type='authorization_code',
+                requested=datetime.now() - timedelta(seconds=30),
+                authorized=datetime.now()
             )
+
         ]
         try:
             os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
-            self.app = create_web_app()
-            self.app.config['REGISTRY_DATABASE_URI'] = f'sqlite:///{self.db}'
-            self.app.config['REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
-            self.app.config['REDIS_PORT'] = os.environ.get('REDIS_PORT', '6379')
-            self.app.config['REDIS_CLUSTER'] = os.environ.get('REDIS_CLUSTER', '0')
+            cls.app = create_web_app()
+            cls.app.config['REGISTRY_DATABASE_URI'] = f'sqlite:///{cls.db}'
+            cls.app.config['SERVER_NAME'] = 'local.host:5000'
+            cls.app.config['REDIS_HOST'] = 'localhost'
+            cls.app.config['REDIS_PORT'] = '7000'
+            cls.app.config['REDIS_CLUSTER'] = '1'
 
-            self.test_client = self.app.test_client()
-            with self.app.app_context():
+            cls.test_client = cls.app.test_client()
+            cls.user_agent = cls.app.test_client()
+            with cls.app.app_context():
                 datastore.create_all()
-                self.client_id = datastore.save_client(
-                    self.client,
-                    self.cred,
-                    auths=self.auths,
-                    grant_types=self.grant_types
+                cls.client_id = datastore.save_client(
+                    cls.client,
+                    cls.cred,
+                    auths=cls.auths,
+                    grant_types=cls.grant_types
                 )
 
-        except Exception as e:
-            # stop_container(self.container)
+        except Exception:
+            stop_container(cls.container)
             raise
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         """Tear down redis."""
-        # stop_container(self.container)
-        os.remove(self.db)
+        stop_container(cls.container)
+        os.remove(cls.db)
 
     def test_post_credentials(self):
         """POST request to /token returns auth token."""
@@ -150,82 +167,6 @@ class TestClientAuthentication(TestCase):
         self.assertEqual(response.content_type, 'application/json')
         data = json.loads(response.data)
         self.assertEqual(data['error'], "invalid_scope")
-
-
-class TestAuthorizationCode(TestCase):
-    __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
-
-    def setUp(self):
-        """Spin up redis."""
-        # self.redis = subprocess.run(
-        #     "docker run -d -p 7000:7000 redis",
-        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        # )
-        # time.sleep(2)    # In case it takes a moment to start.
-        # if self.redis.returncode > 0:
-        #     raise RuntimeError('Could not start redis. Is Docker running?')
-        #
-        # self.container = self.redis.stdout.decode('ascii').strip()
-        self.db = 'db.sqlite'
-
-        self.client = Client(
-            owner_id='252',
-            name='fooclient',
-            url='http://asdf.com',
-            description='a client',
-            redirect_uri='https://foo.com/bar'
-        )
-        self.secret = 'foohashedsecret'
-        self.hashed_secret = sha256(self.secret.encode('utf-8')).hexdigest()
-        self.cred = ClientCredential(client_secret=self.hashed_secret)
-        self.auths = [
-            ClientAuthorization(
-                scope='something:read',
-                requested=datetime.now() - timedelta(seconds=30),
-                authorized=datetime.now()
-            ),
-            ClientAuthorization(
-                scope='baz:bat',
-                requested=datetime.now() - timedelta(seconds=30),
-                authorized=datetime.now()
-            )
-        ]
-        self.grant_types = [
-            ClientGrantType(
-                grant_type='authorization_code',
-                requested=datetime.now() - timedelta(seconds=30),
-                authorized=datetime.now()
-            )
-        ]
-        try:
-            os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
-            self.app = create_web_app()
-            self.app.config['REGISTRY_DATABASE_URI'] = f'sqlite:///{self.db}'
-            self.app.config['JWT_SECRET'] = 'foosecret'
-            self.app.config['SERVER_NAME'] = 'local.host:5000'
-            self.app.config['REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
-            self.app.config['REDIS_PORT'] = os.environ.get('REDIS_PORT', '6379')
-            self.app.config['REDIS_CLUSTER'] = os.environ.get('REDIS_CLUSTER', '0')
-
-            self.test_client = self.app.test_client()
-            self.user_agent = self.app.test_client()
-            with self.app.app_context():
-                datastore.create_all()
-                self.client_id = datastore.save_client(
-                    self.client,
-                    self.cred,
-                    auths=self.auths,
-                    grant_types=self.grant_types
-                )
-
-        except Exception as e:
-            # stop_container(self.container)
-            raise
-
-    def tearDown(self):
-        """Tear down redis."""
-        # stop_container(self.container)
-        os.remove(self.db)
 
     def test_auth_code_workflow(self):
         """Test authorization code workflow."""

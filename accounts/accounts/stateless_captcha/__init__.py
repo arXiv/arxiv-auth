@@ -98,7 +98,8 @@ def unpack(token: str, secret: str, ip_address: str) -> str:
     logger.debug('Unpack captcha token, %s', token)
     try:
         claims: Mapping[str, Any] = jwt.decode(token.encode('ascii'),
-                                               _secret(secret, ip_address))
+                                               _secret(secret, ip_address),
+                                               algorithms=['HS256'])
         logger.debug('Unpacked captcha token: %s', claims)
     except jwt.exceptions.DecodeError:  # type: ignore
         raise InvalidCaptchaToken('Could not decode token')

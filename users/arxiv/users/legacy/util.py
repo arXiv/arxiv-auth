@@ -151,5 +151,5 @@ def get_session_hash() -> str:
 def get_session_duration() -> int:
     """Get the session duration from the config."""
     config = get_application_config()
-    timeout: str = config['CLASSIC_SESSION_TIMEOUT']
+    timeout: str = config['SESSION_DURATION']
     return int(timeout)

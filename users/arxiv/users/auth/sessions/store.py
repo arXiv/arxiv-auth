@@ -198,7 +198,7 @@ class SessionStore(object):
         try:
             session: domain.Session = domain.from_dict(
                 domain.Session,
-                jwt.decode(session_jwt, self._secret)
+                jwt.decode(session_jwt, self._secret, algorithms=['HS256'])
             )
         except jwt.exceptions.InvalidSignatureError:
             raise InvalidToken('Invalid or corrupted session token')
@@ -207,7 +207,7 @@ class SessionStore(object):
     def _unpack_cookie(self, cookie: str) -> dict:
         secret = self._secret
         try:
-            data = dict(jwt.decode(cookie, secret))
+            data = dict(jwt.decode(cookie, secret, algorithms=['HS256']))
         except jwt.exceptions.DecodeError as e:   # type: ignore
             raise InvalidToken('Session cookie is malformed') from e
         return data

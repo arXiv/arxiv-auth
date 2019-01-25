@@ -2,7 +2,8 @@
 
 from unittest import TestCase, mock
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
+from dateutil.parser import parse
 import os
 import subprocess
 import time
@@ -302,29 +303,31 @@ class TestLoginLogoutRoutes(TestCase):
     @classmethod
     def setUpClass(self):
         """Spin up redis."""
-        # self.redis = subprocess.run(
-        #     "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
-        #     " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
-        #     " --hostname=server grokzen/redis-cluster:4.0.9",
-        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        # )
-        # time.sleep(10)    # In case it takes a moment to start.
-        # if self.redis.returncode > 0:
-        #     raise RuntimeError('Could not start redis. Is Docker running?')
-        #
-        # self.container = self.redis.stdout.decode('ascii').strip()
+        self.redis = subprocess.run(
+            "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
+            " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
+            " --hostname=server grokzen/redis-cluster:4.0.9",
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        )
+        time.sleep(10)    # In case it takes a moment to start.
+        if self.redis.returncode > 0:
+            raise RuntimeError('Could not start redis. Is Docker running?')
+
+        self.container = self.redis.stdout.decode('ascii').strip()
         self.secret = 'bazsecret'
         self.db = 'db.sqlite'
+        self.expiry = 500
         try:
             self.app = create_web_app()
             self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
             self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
             self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
+            self.app.config['SESSION_DURATION'] = self.expiry
             self.app.config['JWT_SECRET'] = self.secret
             self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
-            self.app.config['REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
-            self.app.config['REDIS_PORT'] = os.environ.get('REDIS_PORT', '6379')
-            self.app.config['REDIS_CLUSTER'] = os.environ.get('REDIS_CLUSTER', '0')
+            self.app.config['REDIS_HOST'] = 'localhost'
+            self.app.config['REDIS_PORT'] = '7000'
+            self.app.config['REDIS_CLUSTER'] = '1'
 
             with self.app.app_context():
                 from accounts.services import legacy, users
@@ -371,14 +374,14 @@ class TestLoginLogoutRoutes(TestCase):
                     session.add(db_password)
                     session.add(db_nick)
 
-        except Exception as e:
+        except Exception:
             stop_container(self.container)
             raise
 
     @classmethod
     def tearDownClass(self):
         """Tear down redis and the test DB."""
-        # stop_container(self.container)
+        stop_container(self.container)
         os.remove(self.db)
 
     def test_get_login(self):
@@ -400,10 +403,29 @@ class TestLoginLogoutRoutes(TestCase):
                         "Redirect should point at value of `next_page` param")
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
-        self.assertIn(self.app.config['AUTH_SESSION_COOKIE_NAME'], cookies,
-                      "Sets cookie for authn session.")
-        self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
-                      "Sets cookie for classic sessions.")
+        cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
+        self.assertIn(cookie_name, cookies, "Sets cookie for authn session.")
+
+        classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+        self.assertIn(classic_cookie_name, cookies, "Sets classic cookie")
+
+        cookie = cookies[cookie_name]
+        classic_cookie = cookies[classic_cookie_name]
+
+        # Verify that the domain is correct.
+        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
+        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+                         'Domain is set')
+
+        # Verify that the correct expiry is set.
+        self.assertEqual(int(cookie['Max-Age']), self.expiry - 1)
+        self.assertEqual(int(classic_cookie['Max-Age']), self.expiry - 1)
+
+        expires_in = (parse(cookie['Expires']) - datetime.now(UTC)).seconds
+        classic_expires_in = (parse(classic_cookie['Expires'])
+                              - datetime.now(UTC)).seconds
+        self.assertLess(expires_in - self.expiry, 2)
+        self.assertLess(classic_expires_in - self.expiry, 2)
 
     def test_post_login_baddata(self):
         """POST rquest to /login with invalid data returns 400."""
@@ -420,120 +442,54 @@ class TestLoginLogoutRoutes(TestCase):
         # Werkzeug should keep the cookies around for the next request.
         response = client.post('/login', data=form_data)
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-        self.assertIn(self.app.config['AUTH_SESSION_COOKIE_NAME'], cookies,
-                      "Sets cookie for authn session.")
-        self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
-                      "Sets cookie for classic sessions.")
+
+        cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
+        self.assertIn(cookie_name, cookies, "Sets cookie for authn session.")
+
+        classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+        self.assertIn(classic_cookie_name, cookies, "Sets classic cookie")
+
+        cookie = cookies[cookie_name]
+        classic_cookie = cookies[classic_cookie_name]
+
+        # Verify that the domain is correct.
+        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
+        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+                         'Domain is set')
+
+        # Verify that the correct expiry is set.
+        self.assertEqual(int(cookie['Max-Age']), self.expiry - 1)
+        self.assertEqual(int(classic_cookie['Max-Age']), self.expiry - 1)
+
+        expires_in = (parse(cookie['Expires']) - datetime.now(UTC)).seconds
+        classic_expires_in = (parse(classic_cookie['Expires'])
+                              - datetime.now(UTC)).seconds
+        self.assertLess(expires_in - self.expiry, 2)
+        self.assertLess(classic_expires_in - self.expiry, 2)
 
         response = client.get('/logout')
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
-        self.assertEqual(
-            logout_cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['value'],
-            '',
-            'Session cookie is unset'
-        )
-        self.assertEqual(
-            logout_cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['Max-Age'],
-            '0',
-            'Session cookie is expired'
-        )
-        self.assertEqual(
-            logout_cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value'],
-            '',
-            'Classic cookie is unset'
-        )
-        self.assertEqual(
-            logout_cookies[self.app.config['CLASSIC_COOKIE_NAME']]['Max-Age'],
-            '0',
-            'Classic session cookie is expired'
-        )
+        cookie = logout_cookies[cookie_name]
+        classic_cookie = logout_cookies[classic_cookie_name]
+
+        self.assertEqual(cookie['value'], '', 'Session cookie is unset')
+        self.assertEqual(cookie['Max-Age'], '0', 'Session cookie is expired')
+        self.assertLessEqual(parse(cookie['Expires']), datetime.now(UTC),
+                             "Session cookie is expired")
+        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
+
+        self.assertEqual(classic_cookie['value'], '',
+                         'Classic cookie is unset')
+        self.assertEqual(classic_cookie['Max-Age'], '0',
+                         'Classic session cookie is expired')
+        self.assertLessEqual(parse(classic_cookie['Expires']),
+                             datetime.now(UTC),
+                             'Classic session cookie is expired')
+        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+                         'Domain is set')
 
 
-class TestLogoutLegacySubmitCookie(TestCase):
-    """The legacy system has a submission session cookie that must be unset."""
-
-    @classmethod
-    def setUpClass(self):
-        """Spin up redis."""
-        # self.redis = subprocess.run(
-        #     "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
-        #     " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
-        #     " --hostname=server grokzen/redis-cluster:4.0.9",
-        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        # )
-        # time.sleep(10)    # In case it takes a moment to start.
-        # if self.redis.returncode > 0:
-        #     raise RuntimeError('Could not start redis. Is Docker running?')
-        #
-        # self.container = self.redis.stdout.decode('ascii').strip()
-        self.secret = 'bazsecret'
-        self.db = 'db.sqlite'
-        try:
-            self.app = create_web_app()
-            self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-            self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
-            self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
-            self.app.config['JWT_SECRET'] = self.secret
-            self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
-            self.app.config['REDIS_HOST'] = os.environ.get('REDIS_HOST', 'localhost')
-            self.app.config['REDIS_PORT'] = os.environ.get('REDIS_PORT', '6379')
-            self.app.config['REDIS_CLUSTER'] = os.environ.get('REDIS_CLUSTER', '0')
-
-            with self.app.app_context():
-                from accounts.services import legacy, users
-                legacy.create_all()
-                users.create_all()
-
-                with users.transaction() as session:
-                    # We have a good old-fashioned user.
-                    db_user = users.models.DBUser(
-                        user_id=1,
-                        first_name='first',
-                        last_name='last',
-                        suffix_name='iv',
-                        email='first@last.iv',
-                        policy_class=2,
-                        flag_edit_users=1,
-                        flag_email_verified=1,
-                        flag_edit_system=0,
-                        flag_approved=1,
-                        flag_deleted=0,
-                        flag_banned=0,
-                        tracking_cookie='foocookie',
-                    )
-                    db_nick = users.models.DBUserNickname(
-                        nick_id=1,
-                        nickname='foouser',
-                        user_id=1,
-                        user_seq=1,
-                        flag_valid=1,
-                        role=0,
-                        policy=0,
-                        flag_primary=1
-                    )
-                    salt = b'fdoo'
-                    password = b'thepassword'
-                    hashed = hashlib.sha1(salt + b'-' + password).digest()
-                    encrypted = b64encode(salt + hashed)
-                    db_password = users.models.DBUserPassword(
-                        user_id=1,
-                        password_storage=2,
-                        password_enc=encrypted
-                    )
-                    session.add(db_user)
-                    session.add(db_password)
-                    session.add(db_nick)
-
-        except Exception as e:
-            stop_container(self.container)
-            raise
-
-    @classmethod
-    def tearDownClass(self):
-        """Tear down redis and the test DB."""
-        # stop_container(self.container)
-        os.remove(self.db)
 
     def test_logout_clears_legacy_submit_cookie(self):
         """When the user logs out, the legacy submit cookie is unset."""
@@ -545,37 +501,52 @@ class TestLogoutLegacySubmitCookie(TestCase):
         response = client.post('/login', data=form_data)
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
+        cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
+        classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+
         client.set_cookie('', 'submit_session', '12345678')
-        self.assertIn(self.app.config['AUTH_SESSION_COOKIE_NAME'], cookies,
-                      "Sets cookie for authn session.")
-        self.assertIn(self.app.config['CLASSIC_COOKIE_NAME'], cookies,
+        self.assertIn(cookie_name, cookies, "Sets cookie for authn session.")
+        self.assertIn(classic_cookie_name, cookies,
                       "Sets cookie for classic sessions.")
 
+        cookie = cookies[cookie_name]
+        classic_cookie = cookies[classic_cookie_name]
+
+        # Verify that the domain is correct.
+        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
+        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+                         'Domain is set')
+
+        # Verify that the correct expiry is set.
+        self.assertEqual(int(cookie['Max-Age']), self.expiry - 1)
+        self.assertEqual(int(classic_cookie['Max-Age']), self.expiry - 1)
+
+        expires_in = (parse(cookie['Expires']) - datetime.now(UTC)).seconds
+        classic_expires_in = (parse(classic_cookie['Expires'])
+                              - datetime.now(UTC)).seconds
+        self.assertLess(expires_in - self.expiry, 2)
+        self.assertLess(classic_expires_in - self.expiry, 2)
+
+        # Now log out.
         response = client.get('/logout')
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
-        self.assertEqual(
-            logout_cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['value'],
-            '',
-            'Session cookie is unset'
-        )
-        self.assertEqual(
-            logout_cookies[self.app.config['AUTH_SESSION_COOKIE_NAME']]['Max-Age'],
-            '0',
-            'Session cookie is expired'
-        )
-        self.assertEqual(
-            logout_cookies[self.app.config['CLASSIC_COOKIE_NAME']]['value'],
-            '',
-            'Classic cookie is unset'
-        )
-        self.assertEqual(
-            logout_cookies[self.app.config['CLASSIC_COOKIE_NAME']]['Max-Age'],
-            '0',
-            'Classic session cookie is expired'
-        )
-        self.assertEqual(
-            logout_cookies['submit_session']['Max-Age'],
-            '0',
-            'Legacy submission cookie is expired'
-        )
+        cookie = logout_cookies[cookie_name]
+        classic_cookie = logout_cookies[classic_cookie_name]
+
+        self.assertEqual(cookie['value'], '', 'Session cookie is unset')
+        self.assertEqual(cookie['Max-Age'], '0', 'Session cookie is expired')
+        self.assertLessEqual(parse(cookie['Expires']), datetime.now(UTC),
+                             "Session cookie is expired")
+        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
+        self.assertEqual(classic_cookie['value'], '',
+                         'Classic cookie is unset')
+        self.assertEqual(classic_cookie['Max-Age'], '0',
+                         'Classic cookie is expired')
+        self.assertLessEqual(parse(classic_cookie['Expires']),
+                             datetime.now(UTC),
+                             "Classic cookie is expired")
+        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+                         'Classic cookie domain is set')
+        self.assertEqual(logout_cookies['submit_session']['Max-Age'], '0',
+                         'Legacy submission cookie is expired')

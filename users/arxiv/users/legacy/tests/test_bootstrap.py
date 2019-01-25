@@ -46,7 +46,7 @@ class TestBootstrap(TestCase):
         util.init_app(cls.app)
         cls.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         cls.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
-        cls.app.config['CLASSIC_SESSION_TIMEOUT'] = '36000'
+        cls.app.config['SESSION_DURATION'] = '36000'
 
         with cls.app.app_context():
             util.create_all()
