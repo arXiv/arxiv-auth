@@ -5,7 +5,7 @@ import time
 import jwt
 import json
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, UTC
 from redis.exceptions import ConnectionError
 
 from .... import domain
@@ -134,7 +134,7 @@ class TestGetSession(TestCase):
         }
         mock_redis = mock.MagicMock()
         mock_get_redis.return_value = mock_redis
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         end_time = start_time + timedelta(seconds=7200)
         claims = {
             'user_id': '1234',
@@ -158,7 +158,7 @@ class TestGetSession(TestCase):
             'REDIS_DATABASE': 4
         }
         mock_redis = mock.MagicMock()
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         mock_redis.get.return_value = json.dumps({
             'user_id': '1234',
             'session_id': 'ajx9043jjx00s',
@@ -181,7 +181,7 @@ class TestGetSession(TestCase):
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_forged_token(self, mock_get_redis, mock_get_config):
         """A JWT with the wrong nonce is passed."""
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         end_time = start_time + timedelta(seconds=7200)
 
         secret = 'barsecret'
@@ -219,7 +219,7 @@ class TestGetSession(TestCase):
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_other_forged_token(self, mock_get_redis, mock_get_config):
         """A JWT with the wrong user_id is passed."""
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         end_time = start_time + timedelta(seconds=7200)
 
         secret = 'barsecret'
@@ -255,7 +255,7 @@ class TestGetSession(TestCase):
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_empty_session(self, mock_get_redis, mock_get_config):
         """Session has been removed, or may never have existed."""
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         end_time = start_time + timedelta(seconds=7200)
 
         secret = 'barsecret'
@@ -283,7 +283,7 @@ class TestGetSession(TestCase):
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
     def test_valid_token(self, mock_get_redis, mock_get_config):
         """A valid token is passed."""
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         end_time = start_time + timedelta(seconds=7200)
 
         secret = 'barsecret'
@@ -296,7 +296,7 @@ class TestGetSession(TestCase):
         mock_redis = mock.MagicMock()
         mock_redis.get.return_value = jwt.encode({
             'session_id': 'ajx9043jjx00s',
-            'start_time': datetime.now(tz=EASTERN).isoformat(),
+            'start_time': datetime.now(tz=UTC).isoformat(),
             'nonce': '0039299290098',
             'user': {
                 'user_id': '1234',

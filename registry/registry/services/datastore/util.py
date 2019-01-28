@@ -1,6 +1,6 @@
 from typing import Generator, Tuple, List
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 from contextlib import contextmanager
 
 from sqlalchemy.engine import Engine

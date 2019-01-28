@@ -43,7 +43,7 @@ or `ModHeader <https://chrome.google.com/webstore/detail/modheader/idgpnmonknjno
 import click
 
 import os
-from pytz import timezone
+from pytz import timezone, UTC
 import uuid
 from datetime import timedelta, datetime
 from arxiv.users import auth, domain

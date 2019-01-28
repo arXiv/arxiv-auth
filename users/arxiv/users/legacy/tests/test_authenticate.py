@@ -2,7 +2,7 @@
 
 from unittest import TestCase, mock
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 import tempfile
 import os
 import shutil
@@ -69,7 +69,7 @@ class TestAuthenticateWithPermanentToken(TestCase):
                 password_storage=2,
                 password_enc=hashed
             )
-            n = util.epoch(datetime.now(tz=EASTERN))
+            n = util.epoch(datetime.now(tz=UTC))
             self.secret = 'foosecret'
             self.db_token = models.DBPermanentToken(
                 user_id=self.user_id,
