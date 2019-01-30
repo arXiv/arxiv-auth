@@ -34,6 +34,8 @@ def authenticate():
         logger.debug('Got auth token: %s', auth_token)
         try:
             jwt_encoded = _authenticate_from_header(auth_token)
+        except Unauthorized as e:
+            raise e
         except Exception as e:
             logger.error('Unhandled exception: %s', e)
             return jsonify({}), status.HTTP_200_OK, {}
@@ -41,6 +43,8 @@ def authenticate():
         logger.debug('Got auth cookie: %s', auth_cookie)
         try:
             jwt_encoded = _authenticate_from_cookie(auth_cookie)
+        except Unauthorized as e:
+            raise e
         except Exception as e:
             logger.error('Unhandled exception: %s', e)
             return jsonify({}), status.HTTP_200_OK, {}

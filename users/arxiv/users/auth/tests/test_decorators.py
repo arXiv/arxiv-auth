@@ -3,7 +3,7 @@
 import os
 from unittest import TestCase, mock
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 import json
 
 from flask import Flask, Blueprint
@@ -38,7 +38,7 @@ class TestScoped(TestCase):
         """A valid legacy session is available."""
         mock_request.session = domain.Session(
             session_id='fooid',
-            start_time=datetime.now(tz=EASTERN),
+            start_time=datetime.now(tz=UTC),
             user=domain.User(
                 user_id='235678',
                 email='foo@foo.com',
@@ -61,7 +61,7 @@ class TestScoped(TestCase):
         """Session does not have required scope."""
         mock_request.session = domain.Session(
             session_id='fooid',
-            start_time=datetime.now(tz=EASTERN),
+            start_time=datetime.now(tz=UTC),
             user=domain.User(
                 user_id='235678',
                 email='foo@foo.com',
@@ -84,7 +84,7 @@ class TestScoped(TestCase):
         """Session does not user nor client information."""
         mock_request.session = domain.Session(
             session_id='fooid',
-            start_time=datetime.now(tz=EASTERN),
+            start_time=datetime.now(tz=UTC),
             authorizations=domain.Authorizations(
                 scopes=[scopes.CREATE_SUBMISSION]
             )
@@ -102,7 +102,7 @@ class TestScoped(TestCase):
         """Session has required scope, but authorizer func returns false."""
         mock_request.session = domain.Session(
             session_id='fooid',
-            start_time=datetime.now(tz=EASTERN),
+            start_time=datetime.now(tz=UTC),
             user=domain.User(
                 user_id='235678',
                 email='foo@foo.com',
@@ -128,7 +128,7 @@ class TestScoped(TestCase):
         """Session has required scope, and authorizer func returns true."""
         mock_request.session = domain.Session(
             session_id='fooid',
-            start_time=datetime.now(tz=EASTERN),
+            start_time=datetime.now(tz=UTC),
             user=domain.User(
                 user_id='235678',
                 email='foo@foo.com',
@@ -153,7 +153,7 @@ class TestScoped(TestCase):
         """Session has global scope, and authorizer func returns false."""
         mock_request.session = domain.Session(
             session_id='fooid',
-            start_time=datetime.now(tz=EASTERN),
+            start_time=datetime.now(tz=UTC),
             user=domain.User(
                 user_id='235678',
                 email='foo@foo.com',
@@ -178,7 +178,7 @@ class TestScoped(TestCase):
         """Session has resource scope, and authorizer func returns false."""
         mock_request.session = domain.Session(
             session_id='fooid',
-            start_time=datetime.now(tz=EASTERN),
+            start_time=datetime.now(tz=UTC),
             user=domain.User(
                 user_id='235678',
                 email='foo@foo.com',

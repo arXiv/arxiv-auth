@@ -3,7 +3,7 @@
 import ipaddress
 import json
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, UTC
 import hashlib
 from base64 import b64encode, b64decode
 
@@ -66,7 +66,7 @@ def load(cookie: str) -> domain.Session:
     logger.debug('Load session %s for user %s at %s',
                  session_id, user_id, ip)
 
-    if expires_at <= datetime.now(tz=EASTERN):
+    if expires_at <= datetime.now(tz=UTC):
         raise SessionExpired(f'Session {session_id} has expired')
 
     with util.transaction() as session:
@@ -140,7 +140,7 @@ def create(authorizations: domain.Authorizations,
         raise SessionCreationFailed('Legacy sessions require a user')
 
     logger.debug('create session for user %s', user.user_id)
-    start = datetime.now(tz=EASTERN)
+    start = datetime.now(tz=UTC)
     end = start + timedelta(seconds=util.get_session_duration())
     try:
         with util.transaction() as session:
@@ -223,7 +223,7 @@ def invalidate_by_id(session_id: str) -> None:
         The session could not be found, or the cookie was not valid.
 
     """
-    delta = datetime.now(tz=EASTERN) - datetime.fromtimestamp(0, tz=EASTERN)
+    delta = datetime.now(tz=UTC) - datetime.fromtimestamp(0, tz=EASTERN)
     end = (delta).total_seconds()
     try:
         with util.transaction() as session:

@@ -2,7 +2,7 @@
 
 from unittest import TestCase, mock
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 
 from werkzeug import MultiDict
 from werkzeug.exceptions import BadRequest
@@ -115,7 +115,7 @@ class TestPOSTLogin(TestCase):
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
         ip = '123.45.67.89'
         next_page = '/foo'
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         user = domain.User(
             user_id=42,
             username='foouser',
@@ -173,7 +173,7 @@ class TestPOSTLogin(TestCase):
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
         ip = '123.45.67.89'
         next_page = '/foo'
-        start_time = datetime.now(tz=EASTERN)
+        start_time = datetime.now(tz=UTC)
         user = domain.User(
             user_id=42,
             username='foouser',

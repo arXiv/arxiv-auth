@@ -3,7 +3,7 @@ import time
 from typing import Optional
 from unittest import mock, TestCase
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 
 from .. import exceptions, sessions, util, models, cookies
 
@@ -57,7 +57,7 @@ class TestInvalidateSession(TestCase):
         user_id = "12345"
         ip = "127.0.0.1"
         capabilities = 6
-        start = datetime.now(tz=EASTERN)
+        start = datetime.now(tz=UTC)
 
         with temporary_db() as db_session:
             cookie = cookies.pack(session_id, user_id, ip, start, capabilities)

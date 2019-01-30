@@ -15,7 +15,7 @@ import hashlib
 from typing import List
 import random
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 import click
 
 from authlib.common.security import generate_token

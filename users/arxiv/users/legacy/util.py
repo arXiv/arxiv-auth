@@ -2,7 +2,7 @@
 
 from typing import Generator, Tuple, List
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 from contextlib import contextmanager
 import secrets
 from base64 import b64encode, b64decode
@@ -26,7 +26,7 @@ EASTERN = timezone('US/Eastern')
 
 def now() -> int:
     """Get the current epoch/unix time."""
-    return epoch(datetime.now(tz=EASTERN))
+    return epoch(datetime.now(tz=UTC))
 
 
 def epoch(t: datetime) -> int:
@@ -151,5 +151,5 @@ def get_session_hash() -> str:
 def get_session_duration() -> int:
     """Get the session duration from the config."""
     config = get_application_config()
-    timeout: str = config['CLASSIC_SESSION_TIMEOUT']
+    timeout: str = config['SESSION_DURATION']
     return int(timeout)

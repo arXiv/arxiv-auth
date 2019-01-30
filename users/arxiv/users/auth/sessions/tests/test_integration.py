@@ -22,24 +22,30 @@ class TestDistributedSessionServiceIntegration(TestCase):
     @classmethod
     def setUpClass(self):
         """Spin up redis."""
-        # self.redis = subprocess.run(
-        #     "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
-        #     " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
-        #     " --hostname=server grokzen/redis-cluster:4.0.9",
-        #     stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        # )
-        # if self.redis.returncode > 0:
-        #     raise RuntimeError('Could not start redis. Is Docker running?')
-        # self.container = self.redis.stdout.decode('ascii').strip()
-        self.secret = 'bazsecret'
-        # time.sleep(10)    # In case it takes a moment to start.
+        try:
+            self.redis = subprocess.run(
+                "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
+                " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
+                " --hostname=server grokzen/redis-cluster:4.0.9",
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+            )
+            if self.redis.returncode > 0:
+                raise RuntimeError('Could not start redis. Is Docker running?')
+            self.container = self.redis.stdout.decode('ascii').strip()
+            self.secret = 'bazsecret'
+            time.sleep(10)    # In case it takes a moment to start.
+        except Exception:
+            subprocess.run(f"docker rm -f {self.container}",
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                           shell=True)
+            raise
 
     @classmethod
     def tearDownClass(self):
         """Tear down redis."""
-        # subprocess.run(f"docker rm -f {self.container}",
-        #                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        #                shell=True)
+        subprocess.run(f"docker rm -f {self.container}",
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       shell=True)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     def test_store_create(self, mock_get_config):
@@ -47,8 +53,8 @@ class TestDistributedSessionServiceIntegration(TestCase):
         mock_get_config.return_value = {
             'JWT_SECRET': self.secret,
             'REDIS_HOST': os.environ.get('REDIS_HOST', 'localhost'),
-            'REDIS_PORT': os.environ.get('REDIS_PORT', '6379'),
-            'REDIS_CLUSTER': os.environ.get('REDIS_CLUSTER', '0')
+            'REDIS_PORT': os.environ.get('REDIS_PORT', '7000'),
+            'REDIS_CLUSTER': os.environ.get('REDIS_CLUSTER', '1')
         }
         ip = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
@@ -70,16 +76,12 @@ class TestDistributedSessionServiceIntegration(TestCase):
         self.assertTrue(bool(session.session_id))
         self.assertIsNotNone(cookie)
 
-        # Are the expected values stored in Redis?
-        if os.environ.get('REDIS_CLUSTER') == '1':
-            r = rediscluster.StrictRedisCluster(
-                startup_nodes=[dict(host='localhost', port='7000')]
-            )
-        else:
-            r = redis.StrictRedis(host='localhost', port='6379')
+        r = rediscluster.StrictRedisCluster(
+            startup_nodes=[dict(host='localhost', port='7000')]
+        )
         raw = r.get(session.session_id)
-        stored_data = jwt.decode(raw, self.secret)
-        cookie_data = jwt.decode(cookie, self.secret)
+        stored_data = jwt.decode(raw, self.secret, algorithms=['HS256'])
+        cookie_data = jwt.decode(cookie, self.secret, algorithms=['HS256'])
         self.assertEqual(stored_data['nonce'], cookie_data['nonce'])
 
     # def test_invalidate_session(self):
@@ -108,15 +110,14 @@ class TestDistributedSessionServiceIntegration(TestCase):
         mock_get_config.return_value = {
             'JWT_SECRET': self.secret,
             'REDIS_HOST': os.environ.get('REDIS_HOST', 'localhost'),
-            'REDIS_PORT': os.environ.get('REDIS_PORT', '6379'),
-            'REDIS_CLUSTER': os.environ.get('REDIS_CLUSTER', '0')
+            'REDIS_PORT': os.environ.get('REDIS_PORT', '7000'),
+            'REDIS_CLUSTER': os.environ.get('REDIS_CLUSTER', '1')
         }
-        if os.environ.get('REDIS_CLUSTER') == '1':
-            r = rediscluster.StrictRedisCluster(
-                startup_nodes=[dict(host='localhost', port='7000')]
-            )
-        else:
-            r = redis.StrictRedis(host='localhost', port='6379')
+
+        r = rediscluster.StrictRedisCluster(
+            startup_nodes=[dict(host='localhost', port='7000')]
+        )
+
         r.set('fookey', b'foovalue')
         store.delete_by_id('fookey')
         self.assertIsNone(r.get('fookey'))

@@ -3,7 +3,7 @@
 from unittest import TestCase
 import io
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, UTC
 import jwt
 from . import new, unpack, render, check, InvalidCaptchaToken, \
     InvalidCaptchaValue
@@ -50,7 +50,7 @@ class TestCaptcha(TestCase):
 
         forged_token = jwt.encode({
             'value': 'foo',
-            'expires': (datetime.now(tz=EASTERN) + timedelta(seconds=3600)).isoformat()
+            'expires': (datetime.now(tz=UTC) + timedelta(seconds=3600)).isoformat()
         }, 'notthesecret').decode('ascii')
 
         with self.assertRaises(InvalidCaptchaToken):
@@ -71,7 +71,7 @@ class TestCaptcha(TestCase):
         ip_address = '127.0.0.1'
 
         malformed_token = jwt.encode({
-            'expires': (datetime.now(tz=EASTERN) + timedelta(seconds=3600)).isoformat()
+            'expires': (datetime.now(tz=UTC) + timedelta(seconds=3600)).isoformat()
         }, secret).decode('ascii')
 
         with self.assertRaises(InvalidCaptchaToken):

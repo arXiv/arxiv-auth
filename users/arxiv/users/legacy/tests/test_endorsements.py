@@ -3,7 +3,7 @@
 import os
 from unittest import TestCase, mock
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, UTC
 
 from flask import Flask
 from mimesis import Person, Internet, Datetime
@@ -165,7 +165,7 @@ class TestAutoEndorsement(TestCase):
                 session.add(models.DBDocuments(
                     document_id=1,
                     paper_id='2101.00123',
-                    dated=util.epoch(datetime.now(tz=EASTERN))
+                    dated=util.epoch(datetime.now(tz=UTC))
                 ))
                 session.add(models.DBDocumentInCategory(
                     document_id=1,
@@ -190,7 +190,7 @@ class TestAutoEndorsement(TestCase):
                 session.add(models.DBDocuments(
                     document_id=2,
                     paper_id='2101.00124',
-                    dated=util.epoch(datetime.now(tz=EASTERN))
+                    dated=util.epoch(datetime.now(tz=UTC))
                 ))
                 session.add(models.DBDocumentInCategory(
                     document_id=2,
@@ -215,7 +215,7 @@ class TestAutoEndorsement(TestCase):
                 session.add(models.DBDocuments(
                     document_id=3,
                     paper_id='2101.00125',
-                    dated=util.epoch(datetime.now(tz=EASTERN))
+                    dated=util.epoch(datetime.now(tz=UTC))
                 ))
                 # It has both a primary and a secondary classification.
                 session.add(models.DBDocumentInCategory(
