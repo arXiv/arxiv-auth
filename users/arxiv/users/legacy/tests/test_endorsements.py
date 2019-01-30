@@ -97,11 +97,11 @@ class TestEndorsement(TestCase):
 
                 for category, definition in taxonomy.CATEGORIES_ACTIVE.items():
                     if '.' in category:
-                        subject_class = category.split('.', 1)[1]
+                        archive, subject_class = category.split('.', 1)
                     else:
-                        subject_class = category
+                        archive, subject_class = category, ''
                     session.add(models.DBCategory(
-                        archive=definition['in_archive'],
+                        archive=archive,
                         subject_class=subject_class,
                         definitive=1,
                         active=1,
@@ -113,8 +113,28 @@ class TestEndorsement(TestCase):
         os.remove('./test.db')
 
     def test_get_endorsements(self):
+        """Test :func:`endoresement.get_endorsements`."""
         with self.app.app_context():
-            print(endorsements.get_endorsements(self.user))
+            all_endorsements = set(
+                endorsements.get_endorsements(self.user, compress=False)
+            )
+            all_possible = set(taxonomy.CATEGORIES_ACTIVE.keys())
+            self.assertEqual(all_endorsements, all_possible)
+            all_compressed = set(
+                endorsements.get_endorsements(self.user, compress=True)
+            )
+            self.assertEqual(all_compressed, {"*.*"})
+
+            # Exclude cs.NA, and verify compression output.
+            all_endorsements.remove('cs.NA')
+            print('???????')
+            some = endorsements.compress_endorsements(all_endorsements)
+            for archive in taxonomy.ARCHIVES_ACTIVE.keys():
+                if archive not in ['cs', 'test']:
+                    self.assertIn(f"{archive}.*", some)
+            for category, definition in taxonomy.CATEGORIES_ACTIVE.items():
+                if definition['in_archive'] == 'cs' and category != 'cs.NA':
+                    self.assertIn(category, some)
 
 
 class TestAutoEndorsement(TestCase):

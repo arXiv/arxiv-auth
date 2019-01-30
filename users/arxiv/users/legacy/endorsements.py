@@ -37,13 +37,16 @@ WINDOW_START = util.from_epoch(157783680)
 Endorsements = List[domain.Category]
 
 
-def get_endorsements(user: domain.User) -> Endorsements:
+def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
     """
     Get all endorsements (explicit and implicit) for a user.
 
     Parameters
     ----------
     user : :class:`.domain.User`
+    compress : bool
+        If True, if the entire set of categories in an archive are present,
+        they will be replaced with a wildcard category (e.g. `cs.*`).
 
     Returns
     -------
@@ -52,8 +55,11 @@ def get_endorsements(user: domain.User) -> Endorsements:
         either explicitly or implicitly endorsed.
 
     """
-    return list(set(explicit_endorsements(user))
-                | set(implicit_endorsements(user)))
+    endorsements = list(set(explicit_endorsements(user))
+                        | set(implicit_endorsements(user)))
+    if compress:
+        return compress_endorsements(endorsements)
+    return endorsements
 
 
 @memoize()
@@ -63,19 +69,61 @@ def _categories_in_archive(archive: str) -> Set[str]:
                if definition['in_archive'] == archive)
 
 
-def _compress_endorsements(endorsements: Endorsements) -> Endorsements:
+@memoize()
+def _category(archive: str, subject_class: str) -> domain.Category:
+    if subject_class:
+        return domain.Category(f'{archive}.{subject_class}')
+    return domain.Category(archive)
+
+
+@memoize()
+def _get_archive(category: taxonomy.Category) -> str:
+    if category.endswith(".*"):
+        return category.split(".", 1)[0]
+    return taxonomy.CATEGORIES_ACTIVE[category]['in_archive']
+
+
+def _all_archives(endorsements: Endorsements) -> bool:
+    archives = set(_get_archive(category) for category in endorsements
+                   if category.endswith(".*"))
+    missing = set(taxonomy.ARCHIVES_ACTIVE.keys()) - archives
+    return len(missing) == 0 or (len(missing) == 1 and 'test' in missing)
+
+
+def _all_subjects_in_archive(archive: str, endorsements: Endorsements) -> bool:
+    return len(_categories_in_archive(archive) - set(endorsements)) == 0
+
+
+def compress_endorsements(endorsements: Endorsements) -> Endorsements:
+    """
+    Compress endorsed categories using wildcard notation if possible.
+
+    We want to avoid simply enumerating all of the categories that exist. If
+    all subjects in an archive are present, we represent that as "{archive}.*".
+    If all subjects in all archives are present, we represent that as "*.*".
+
+    Parameters
+    ----------
+    endorsements : list
+        A list of endorsed categories.
+
+    Returns
+    -------
+    list
+        The same endorsed categories, compressed with wildcards where possible.
+
+    """
     compressed: Endorsements = []
-
-    def by_archive(endorsement: taxonomy.Category) -> str:
-        return endorsement.archive
-
-    for archive, arch_endorsements \
-            in groupby(sorted(endorsements, key=by_archive), key=by_archive):
-        if len(_categories_in_archive(archive) - set(arch_endorsements)) == 0:
-            compressed.append(domain.Category(archive, "*"))
+    grouped = groupby(sorted(endorsements, key=_get_archive), key=_get_archive)
+    for archive, archive_endorsements in grouped:
+        archive_endorsements = list(archive_endorsements)
+        if _all_subjects_in_archive(archive, archive_endorsements):
+            compressed.append(_category(archive, "*"))
         else:
-            for endorsement in arch_endorsements:
+            for endorsement in archive_endorsements:
                 compressed.append(endorsement)
+    if _all_archives(compressed):
+        return [taxonomy.Category("*.*")]
     return compressed
 
 
@@ -110,7 +158,7 @@ def explicit_endorsements(user: domain.User) -> Endorsements:
         )
     pooled: Counter = Counter()
     for archive, subject, points in data:
-        pooled[domain.Category(f'{archive}.{subject}')] += points
+        pooled[_category(archive, subject)] += points
     return [category for category, points in pooled.items() if points]
 
 
@@ -350,16 +398,16 @@ def category_policies() -> Dict[domain.Category, Dict]:
                     DBEndorsementDomain.endorsement_domain)
             .all()
         )
-    return {
-        domain.Category(f'{archive}.{subject}'): {
+    policies = {}
+    for arch, subj, endorse_all, endorse_email, min_papers, e_domain in data:
+        policies[_category(arch, subj)] = {
             'domain': e_domain,
             'endorse_all': endorse_all == 'y',
             'endorse_email': endorse_email == 'y',
             'min_papers': min_papers
         }
-        for archive, subject, endorse_all, endorse_email, min_papers, e_domain
-        in data
-    }
+
+    return policies
 
 
 def invalidated_autoendorsements(user: domain.User) -> Endorsements:
@@ -388,4 +436,4 @@ def invalidated_autoendorsements(user: domain.User) -> Endorsements:
             .filter(DBEndorsement.endorsement_type == 'auto')
             .all()
         )
-    return [domain.Category(f'{archive}.{subject}') for archive, subject in data]
+    return [_category(archive, subject) for archive, subject in data]

@@ -151,6 +151,30 @@ class Authorizations(NamedTuple):
     scopes: List[Scope] = []
     """Authorized :class:`.scope`s. See also :mod:`arxiv.users.auth.scopes`."""
 
+    def endorsed_for(self, category: Category) -> bool:
+        """
+        Check whether category is included in this endorsement authorization.
+
+        If a user/client is authorized for all categories in a particular
+        archive, the category names in :attr:`Authorization.endorsements` will
+        be compressed to a wilcard ``archive.*`` representation. If the
+        user/client is authorized for all categories in the system, this will
+        be compressed to "*.*".
+
+        Parameters
+        ----------
+        category : :class:`.Category`
+
+        Returns
+        -------
+        bool
+
+        """
+        archive = category.split(".", 1)[0] if "." in category else category
+        return category in self.endorsements \
+            or f"{archive}.*" in self.endorsements \
+            or "*.*" in self.endorsements
+
     @classmethod
     def before_init(cls, data: dict) -> None:
         """Make sure that endorsements are :class:`.Category` instances."""
