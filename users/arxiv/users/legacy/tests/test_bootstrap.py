@@ -213,8 +213,9 @@ class TestBootstrap(TestCase):
                                           "Authorizations data are returned")
                     if endorsement[2] > 0:
                         self.assertIn(
-                            domain.Category(archive=endorsement[0],
-                                            subject=endorsement[1]),
+                            domain.Category(
+                                f'{endorsement[0]}.{endorsement[1]}'
+                            ),
                             auths.endorsements,
                             "Endorsements are included in authorizations"
                         )

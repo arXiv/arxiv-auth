@@ -11,9 +11,11 @@ relevant policies can be found on the `arXiv help pages
 <https://arxiv.org/help/endorsement>`_.
 """
 
-from typing import List, Dict, Optional, Callable
+from typing import List, Dict, Optional, Callable, Set
 from collections import Counter
 from datetime import datetime
+from functools import lru_cache as memoize
+from itertools import groupby
 
 from sqlalchemy.sql.expression import literal
 
@@ -26,14 +28,16 @@ from .models import DBUser, DBEndorsement, DBPaperOwners, DBDocuments, \
 
 
 GENERAL_CATEGORIES = [
-    domain.Category('math', 'GM'),
-    domain.Category('physics', 'gen-ph')
+    domain.Category('math.GM'),
+    domain.Category('physics.gen-ph')
 ]
 
 WINDOW_START = util.from_epoch(157783680)
 
+Endorsements = List[domain.Category]
 
-def get_endorsements(user: domain.User) -> List[domain.Category]:
+
+def get_endorsements(user: domain.User) -> Endorsements:
     """
     Get all endorsements (explicit and implicit) for a user.
 
@@ -52,7 +56,30 @@ def get_endorsements(user: domain.User) -> List[domain.Category]:
                 | set(implicit_endorsements(user)))
 
 
-def explicit_endorsements(user: domain.User) -> List[domain.Category]:
+@memoize()
+def _categories_in_archive(archive: str) -> Set[str]:
+    return set(category for category, definition
+               in taxonomy.CATEGORIES_ACTIVE.items()
+               if definition['in_archive'] == archive)
+
+
+def _compress_endorsements(endorsements: Endorsements) -> Endorsements:
+    compressed: Endorsements = []
+
+    def by_archive(endorsement: taxonomy.Category) -> str:
+        return endorsement.archive
+
+    for archive, arch_endorsements \
+            in groupby(sorted(endorsements, key=by_archive), key=by_archive):
+        if len(_categories_in_archive(archive) - set(arch_endorsements)) == 0:
+            compressed.append(domain.Category(archive, "*"))
+        else:
+            for endorsement in arch_endorsements:
+                compressed.append(endorsement)
+    return compressed
+
+
+def explicit_endorsements(user: domain.User) -> Endorsements:
     """
     Load endorsed categories for a user.
 
@@ -68,6 +95,7 @@ def explicit_endorsements(user: domain.User) -> List[domain.Category]:
     list
         Each item is a :class:`.domain.Category` for which the user is
         explicitly endorsed.
+
     """
     with util.transaction() as session:
         data: List[DBEndorsement] = (
@@ -82,11 +110,11 @@ def explicit_endorsements(user: domain.User) -> List[domain.Category]:
         )
     pooled: Counter = Counter()
     for archive, subject, points in data:
-        pooled[domain.Category(archive, subject)] += points
+        pooled[domain.Category(f'{archive}.{subject}')] += points
     return [category for category, points in pooled.items() if points]
 
 
-def implicit_endorsements(user: domain.User) -> List[domain.Category]:
+def implicit_endorsements(user: domain.User) -> Endorsements:
     """
     Determine categories for which a user may be autoendorsed.
 
@@ -109,8 +137,9 @@ def implicit_endorsements(user: domain.User) -> List[domain.Category]:
     list
         Each item is a :class:`.domain.Category` for which the user may be
         auto-endorsed.
+
     """
-    candidates = [domain.Category.from_compound(category)
+    candidates = [domain.Category(category)
                   for category, data in taxonomy.CATEGORIES_ACTIVE.items()]
     policies = category_policies()
     invalidated = invalidated_autoendorsements(user)
@@ -139,6 +168,7 @@ def is_academic(user: domain.User) -> bool:
     Returns
     -------
     bool
+
     """
     with util.transaction() as session:
         in_whitelist = (
@@ -159,7 +189,7 @@ def is_academic(user: domain.User) -> bool:
 
 
 def _disqualifying_invalidations(category: domain.Category,
-                                 invalidated: List[domain.Category]) -> bool:
+                                 invalidated: Endorsements) -> bool:
     """
     Evaluate whether endorsement invalidations are disqualifying.
 
@@ -177,6 +207,7 @@ def _disqualifying_invalidations(category: domain.Category,
     Returns
     -------
     bool
+
     """
     return bool((category in GENERAL_CATEGORIES and category in invalidated)
                 or (category not in GENERAL_CATEGORIES and invalidated))
@@ -204,6 +235,7 @@ def _endorse_by_email(category: domain.Category,
     Returns
     -------
     bool
+
     """
     policy = policies.get(category)
     if policy is None or 'endorse_email' not in policy:
@@ -235,6 +267,7 @@ def _endorse_by_papers(category: domain.Category,
     Returns
     -------
     bool
+
     """
     N_papers = papers.get(policies[category]['domain'], 0)
     min_papers = policies[category]['min_papers']
@@ -318,7 +351,7 @@ def category_policies() -> Dict[domain.Category, Dict]:
             .all()
         )
     return {
-        domain.Category(archive, subject): {
+        domain.Category(f'{archive}.{subject}'): {
             'domain': e_domain,
             'endorse_all': endorse_all == 'y',
             'endorse_email': endorse_email == 'y',
@@ -329,7 +362,7 @@ def category_policies() -> Dict[domain.Category, Dict]:
     }
 
 
-def invalidated_autoendorsements(user: domain.User) -> List[domain.Category]:
+def invalidated_autoendorsements(user: domain.User) -> Endorsements:
     """
     Load any invalidated (revoked) auto-endorsements for a user.
 
@@ -342,6 +375,7 @@ def invalidated_autoendorsements(user: domain.User) -> List[domain.Category]:
     list
         Items are :class:`.domain.Category` for which the user has had past
         auto-endorsements revoked.
+
     """
     with util.transaction() as session:
         data: List[DBEndorsement] = (
@@ -354,4 +388,4 @@ def invalidated_autoendorsements(user: domain.User) -> List[domain.Category]:
             .filter(DBEndorsement.endorsement_type == 'auto')
             .all()
         )
-    return [domain.Category(archive, subject) for archive, subject in data]
+    return [domain.Category(f'{archive}.{subject}') for archive, subject in data]
