@@ -312,7 +312,7 @@ class Session(NamedTuple):
         """
         if self.end_time is None:
             return None
-        duration = (self.end_time - datetime.now(tz=UTC)).delta.total_seconds()
+        duration = (self.end_time - datetime.now(tz=UTC)).total_seconds()
         return max(duration, 0)
 
 
