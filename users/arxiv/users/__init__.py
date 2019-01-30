@@ -14,7 +14,6 @@ system.
 
 Quick start
 -----------
-
 For typical use-cases, you will need to do the following:
 
 1. Install this package into your virtual environment.
@@ -45,6 +44,28 @@ Here's an example of how you might do #2 and #3:
 If you are not deplying this application in the cloud behind NGINX (and
 therefore will not support sessions from the distributed store), you do not
 need the auth middleware (step #3).
+
+Checking endorsements
+---------------------
+Endorsements for submission are represented as categories on the
+:class:`.Authorization` object (generally
+``session.authorizations.endorsements``). To avoid enumerating all of the
+categories and archives in the system, we compress endorsed categories wherever
+possible using wildcard notation. For example, ``cs.*`` represents an
+endorsement for all subjects in the ``cs`` archive. ``*.*`` represents an
+endorsement for all categories in the system.
+
+For convenience, endorsement authorizations can be checked with the
+:meth:`.Authorizations.endorsed_for` method. For example:
+
+.. code-block:: python
+
+   from flask import request
+
+   if request.session.authorizations.endorsed_for("cs.AI"):
+       print("This user/client is endorsed for cs.AI")
+
+
 """
 
 from .domain import Category, UserProfile, Authorizations, UserFullName, \
