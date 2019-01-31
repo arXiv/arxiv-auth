@@ -23,6 +23,7 @@ redis-py-cluster = "*"
 openapi-spec-validator = "*"
 "6c2b755" = {path = "./../users"}
 arxiv-auth = "*"
+bleach = "*"
 
 [dev-packages]
 mimesis = "==2.1.0"
