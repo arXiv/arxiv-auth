@@ -252,12 +252,17 @@ class DBProfile(Base):   # type: ignore
 
     def to_domain(self) -> domain.UserProfile:
         """Generate a domain representation from this database instance."""
+        if self.subject_class:
+            category = domain.Category(f'{self.archive}.{self.subject_class}')
+        else:
+            category = domain.Category(f'{self.archive}')
+
         return domain.UserProfile(  # type: ignore
             affiliation=self.affiliation,
             country=self.country,
             rank=self.rank,
             submission_groups=self.groups,
-            default_category=domain.Category(self.archive, self.subject_class),
+            default_category=category,
             homepage_url=self.url,
         )
 

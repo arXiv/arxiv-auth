@@ -22,7 +22,7 @@ EASTERN = timezone('US/Eastern')
 
 
 def _random_category() -> Tuple[str, str]:
-    category = random.choice(list(taxonomy.CATEGORIES.items()))
+    category = random.choice(list(taxonomy.CATEGORIES_ACTIVE.items()))
     archive = category[1]['in_archive']
     subject_class = category[0].split('.')[-1] if '.' in category[0] else ''
     return archive, subject_class
@@ -50,6 +50,27 @@ class TestBootstrap(TestCase):
 
         with cls.app.app_context():
             util.create_all()
+            with util.transaction() as session:
+                session.add(models.DBEndorsementDomain(
+                    endorsement_domain='test_domain',
+                    endorse_all='n',
+                    mods_endorse_all='n',
+                    endorse_email='y',
+                    papers_to_endorse=3
+                ))
+                for category in taxonomy.CATEGORIES_ACTIVE.keys():
+                    if '.' in category:
+                        archive, subject_class = category.split('.', 1)
+                    else:
+                        archive, subject_class = category, ''
+                    session.add(models.DBCategory(
+                        archive=archive,
+                        subject_class=subject_class,
+                        definitive=1,
+                        active=1,
+                        endorsement_domain='test_domain'
+                    ))
+
             COUNT = 50
 
             cls.users = []
@@ -185,6 +206,10 @@ class TestBootstrap(TestCase):
                         (approved, deleted, banned),
                     ))
 
+    @classmethod
+    def tearDownClass(cls):
+        os.remove('./test.db')
+
     def test_authenticate_and_use_session(self):
         """Attempt to authenticate users and create/load auth sessions."""
         with self.app.app_context():
@@ -212,12 +237,11 @@ class TestBootstrap(TestCase):
                     self.assertIsInstance(auths, domain.Authorizations,
                                           "Authorizations data are returned")
                     if endorsement[2] > 0:
-                        self.assertIn(
-                            domain.Category(archive=endorsement[0],
-                                            subject=endorsement[1]),
-                            auths.endorsements,
-                            "Endorsements are included in authorizations"
-                        )
+                        self.assertTrue(auths.endorsed_for(
+                            domain.Category(
+                                f'{endorsement[0]}.{endorsement[1]}'
+                            )
+                        ), "Endorsements are included in authorizations")
 
                 # Banned or deleted users may not log in.
                 elif deleted or banned:

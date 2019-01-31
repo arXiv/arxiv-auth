@@ -338,7 +338,7 @@ def get_endorsements(client: domain.Client) -> List[domain.Category]:
         Each item is a :class:`domain.Category`.
 
     """
-    return [domain.Category('*', '*')]
+    return [domain.Category('*')]
 
 
 def create_server() -> AuthorizationServer:

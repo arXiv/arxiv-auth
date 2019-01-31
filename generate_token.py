@@ -109,16 +109,14 @@ def generate_token(user_id: str, email: str, username: str,
                 affiliation=affiliation,
                 rank=int(rank),
                 country=country,
-                default_category=domain.Category(
-                    *default_category.split('.', 1)
-                ),
+                default_category=domain.Category(default_category),
                 submission_groups=submission_groups.split(',')
             )
         ),
         authorizations=domain.Authorizations(
             scopes=[domain.Scope(*s.split(':')) for s in scope.split()],
-            endorsements=[domain.Category(*cat.split('.', 1))
-                          for cat in endorsements.split(',')]
+            endorsements=[domain.Category(category)
+                          for category in endorsements.split(',')]
         )
     )
     token = auth.tokens.encode(session, os.environ['JWT_SECRET'])
