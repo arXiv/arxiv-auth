@@ -110,6 +110,9 @@ class Auth(object):
         if legacy.is_configured():
             logger.debug('No session; attempting to get legacy session')
             response = self.detect_and_clobber_dupe_cookies()
+
+            # Return that is anything other than None is treated as a response;
+            # request handling stops here.
             if response is not None:
                 return response
             session = self._get_legacy_session()
@@ -119,6 +122,18 @@ class Auth(object):
         request.session = session
 
     def detect_and_clobber_dupe_cookies(self) -> Optional[Response]:
+        """
+        Detect and discard duplicate cookies.
+
+        Legacy components have been known to generate dupe cookies, which
+        causes all kinds of havoc. Here we check the request for duplicates
+        of the session and permanent cookies and, if we find them, we blow
+        them away and redirect back to /login.
+        """
+        # By default, werkzeug uses a dict-based struct that supports only a
+        # single value per key. This isn't really up to speed with RFC 6265.
+        # Luckily we can just pass in an alternate struct to parse_cookie()
+        # that can cope with multiple values.
         raw_cookie = request.environ.get('HTTP_COOKIE', None)
         if raw_cookie is None:
             return None
@@ -126,22 +141,14 @@ class Auth(object):
         classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
         perm_cookie_name = self.app.config['CLASSIC_PERMANENT_COOKIE_NAME']
         domain = self.app.config['AUTH_SESSION_COOKIE_DOMAIN']
-        login_url = url_for('ui.login')
-        response = None
-        if len(cookies.getlist(classic_cookie_name)) > 1:
-            if response is None:
-                response = make_response(redirect(login_url))
-            response.set_cookie(classic_cookie_name, '', max_age=0, expires=0)
-            response.set_cookie(classic_cookie_name, '', max_age=0, expires=0,
-                                domain=domain.lstrip('.'))
-            response.set_cookie(classic_cookie_name, '', max_age=0, expires=0,
-                                domain=domain)
-        if len(cookies.getlist(perm_cookie_name)) > 1:
-            if response is None:
-                response = make_response(redirect(login_url))
-            response.set_cookie(perm_cookie_name, '', max_age=0, expires=0)
-            response.set_cookie(perm_cookie_name, '', max_age=0, expires=0,
-                                domain=domain.lstrip('.'))
-            response.set_cookie(perm_cookie_name, '', max_age=0, expires=0,
-                                domain=domain)
+
+        response = None     # If we return None, request is handled normally.
+        for name in [classic_cookie_name, perm_cookie_name]:
+            if len(cookies.getlist(name)) > 1:
+                response = make_response(redirect(url_for('ui.login')))
+                response.set_cookie(name, '', max_age=0, expires=0)
+                response.set_cookie(name, '', max_age=0, expires=0,
+                                    domain=domain.lstrip('.'))
+                response.set_cookie(name, '', max_age=0, expires=0,
+                                    domain=domain)
         return response
