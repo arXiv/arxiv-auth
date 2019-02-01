@@ -84,6 +84,15 @@ def unset_submission_cookie(response: Response) -> None:
     response.set_cookie('submit_session', '', max_age=0, httponly=True)
 
 
+def unset_permanent_cookie(response: Response) -> None:
+    """
+    Users who elect a permanent cookie expect it to be unset when they log out.
+
+    If it is not unset, legacy components will attempt to log them back in.
+    """
+    response.set_cookie('tapir_permanent', '', max_age=0, httponly=True)
+
+
 # @blueprint.route('/register', methods=['GET', 'POST'])
 @anonymous_only
 def register() -> Response:
@@ -175,6 +184,8 @@ def logout() -> Response:
         response = make_response(redirect(headers.get('Location'), code=code))
         set_cookies(response, data)
         unset_submission_cookie(response)    # Fix for ARXIVNG-1149.
+        # Partial fix for ARXIVNG-1653, ARXIVNG-1644
+        unset_permanent_cookie(response)
         return response
     return redirect(next_page, code=status.HTTP_302_FOUND)
 
