@@ -14,6 +14,8 @@ from arxiv.base import logging
 from accounts.controllers import captcha_image, registration, authentication
 
 from werkzeug.exceptions import BadRequest
+from werkzeug.http import parse_cookie
+from werkzeug import MultiDict
 
 EASTERN = timezone('US/Eastern')
 
@@ -90,7 +92,28 @@ def unset_permanent_cookie(response: Response) -> None:
 
     If it is not unset, legacy components will attempt to log them back in.
     """
-    response.set_cookie('tapir_permanent', '', max_age=0, httponly=True)
+    permanent_cookie_name = current_app.config['CLASSIC_PERMANENT_COOKIE_NAME']
+    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0,
+                        httponly=True)
+
+
+def detect_and_clobber_dupe_cookies(response: Response) -> None:
+    raw_cookie = request.environ.get('HTTP_COOKIE', None)
+    if raw_cookie is None:
+        return None
+    cookies = parse_cookie(raw_cookie, cls=MultiDict)
+    classic_cookie_name = current_app.config['CLASSIC_COOKIE_NAME']
+    permanent_cookie_name = current_app.config['CLASSIC_PERMANENT_COOKIE_NAME']
+    domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
+    print("!!", cookies)
+    if len(cookies.getlist(classic_cookie_name)) > 1:
+        response.set_cookie(classic_cookie_name, '', max_age=0, expires=0)
+        response.set_cookie(classic_cookie_name, '', max_age=0, expires=0, domain=domain.lstrip('.'))
+        response.set_cookie(classic_cookie_name, '', max_age=0, expires=0, domain=domain)
+    if len(cookies.getlist(permanent_cookie_name)) > 1:
+        response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0)
+        response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0, domain=domain.lstrip('.'))
+        response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0, domain=domain)
 
 
 # @blueprint.route('/register', methods=['GET', 'POST'])
@@ -163,7 +186,13 @@ def login() -> Response:
         return response
 
     # Form is invalid, or login failed.
-    return render_template("accounts/login.html", **data), code
+    response = Response(
+        render_template("accounts/login.html", **data),
+        status=code
+    )
+    if request.method == 'GET':
+        detect_and_clobber_dupe_cookies(response)
+    return response
 
 
 @blueprint.route('/logout', methods=['GET'])
