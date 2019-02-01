@@ -1,7 +1,9 @@
 """Provides tools for working with authenticated user/client sessions."""
 
 from typing import Optional, Union
-from flask import Flask, request
+from flask import Flask, request, Response, make_response, redirect, url_for
+from werkzeug.http import parse_cookie
+from werkzeug import MultiDict
 from . import decorators, middleware, scopes, tokens
 from .. import domain, legacy
 
@@ -107,8 +109,39 @@ class Auth(object):
         # the request.
         if legacy.is_configured():
             logger.debug('No session; attempting to get legacy session')
+            response = self.detect_and_clobber_dupe_cookies()
+            if response is not None:
+                return response
             session = self._get_legacy_session()
 
         # Attach the session to the request so that other
         # components can access it easily.
         request.session = session
+
+    def detect_and_clobber_dupe_cookies(self) -> Optional[Response]:
+        raw_cookie = request.environ.get('HTTP_COOKIE', None)
+        if raw_cookie is None:
+            return None
+        cookies = parse_cookie(raw_cookie, cls=MultiDict)
+        classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+        perm_cookie_name = self.app.config['CLASSIC_PERMANENT_COOKIE_NAME']
+        domain = self.app.config['AUTH_SESSION_COOKIE_DOMAIN']
+        login_url = url_for('ui.login')
+        response = None
+        if len(cookies.getlist(classic_cookie_name)) > 1:
+            if response is None:
+                response = make_response(redirect(login_url))
+            response.set_cookie(classic_cookie_name, '', max_age=0, expires=0)
+            response.set_cookie(classic_cookie_name, '', max_age=0, expires=0,
+                                domain=domain.lstrip('.'))
+            response.set_cookie(classic_cookie_name, '', max_age=0, expires=0,
+                                domain=domain)
+        if len(cookies.getlist(perm_cookie_name)) > 1:
+            if response is None:
+                response = make_response(redirect(login_url))
+            response.set_cookie(perm_cookie_name, '', max_age=0, expires=0)
+            response.set_cookie(perm_cookie_name, '', max_age=0, expires=0,
+                                domain=domain.lstrip('.'))
+            response.set_cookie(perm_cookie_name, '', max_age=0, expires=0,
+                                domain=domain)
+        return response
