@@ -91,8 +91,13 @@ def unset_permanent_cookie(response: Response) -> None:
     If it is not unset, legacy components will attempt to log them back in.
     """
     permanent_cookie_name = current_app.config['CLASSIC_PERMANENT_COOKIE_NAME']
+    domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
     response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0,
                         httponly=True)
+    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0,
+                        httponly=True, domain=domain)
+    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0,
+                        httponly=True, domain=domain.lstrip('.'))
 
 
 # @blueprint.route('/register', methods=['GET', 'POST'])
