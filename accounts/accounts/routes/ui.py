@@ -92,11 +92,12 @@ def unset_permanent_cookie(response: Response) -> None:
     """
     permanent_cookie_name = current_app.config['CLASSIC_PERMANENT_COOKIE_NAME']
     domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
-    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0,
+    now = datetime.now(UTC)
+    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=now,
                         httponly=True)
-    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0,
+    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=now,
                         httponly=True, domain=domain)
-    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=0,
+    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=now,
                         httponly=True, domain=domain.lstrip('.'))
 
 

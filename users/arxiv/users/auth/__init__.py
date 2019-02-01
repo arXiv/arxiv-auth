@@ -1,6 +1,8 @@
 """Provides tools for working with authenticated user/client sessions."""
 
 from typing import Optional, Union
+from datetime import datetime
+from pytz import UTC
 from flask import Flask, request, Response, make_response, redirect, url_for
 from werkzeug.http import parse_cookie
 from werkzeug import MultiDict
@@ -143,12 +145,14 @@ class Auth(object):
         domain = self.app.config['AUTH_SESSION_COOKIE_DOMAIN']
 
         response = None     # If we return None, request is handled normally.
+        now = datetime.now(UTC)
         for name in [classic_cookie_name, perm_cookie_name]:
             if len(cookies.getlist(name)) > 1:
-                response = make_response(redirect(url_for('ui.login')))
-                response.set_cookie(name, '', max_age=0, expires=0)
-                response.set_cookie(name, '', max_age=0, expires=0,
+                if response is None:
+                    response = make_response(redirect(url_for('ui.login')))
+                response.set_cookie(name, '', max_age=0, expires=now)
+                response.set_cookie(name, '', max_age=0, expires=now,
                                     domain=domain.lstrip('.'))
-                response.set_cookie(name, '', max_age=0, expires=0,
+                response.set_cookie(name, '', max_age=0, expires=now,
                                     domain=domain)
         return response
