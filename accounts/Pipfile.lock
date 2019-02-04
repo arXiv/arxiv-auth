@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "12808680ec8c4cce8c2c4cab0dce92dd6ce4a50931ac2d6fd9f9594e5e49a945"
+            "sha256": "c81017cbdc93af200c597bc3f98e1697f64d8033f7fb5a8a13755916c6be51f8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,8 +16,8 @@
         ]
     },
     "default": {
-        "4010dd8": {
-            "path": "./users"
+        "6c2b755": {
+            "path": "./../users"
         },
         "amqp": {
             "hashes": [
@@ -25,6 +25,13 @@
                 "sha256:c3d7126bfbc640d076a01f1f4f6e609c0e4348508150c1f61336b0d83c738d2b"
             ],
             "version": "==2.4.0"
+        },
+        "arxiv-auth": {
+            "hashes": [
+                "sha256:5e4d2e2155fde458653142613c614fced9f3bc6021d8e3e1c0dd2cd9b0279701"
+            ],
+            "index": "pypi",
+            "version": "==0.2.5"
         },
         "arxiv-base": {
             "hashes": [

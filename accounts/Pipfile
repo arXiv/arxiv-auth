@@ -18,10 +18,12 @@ sqlalchemy = "*"
 uwsgi = "*"
 wtforms = "*"
 arxiv-base = "==0.12.1"
-arxiv-auth = "==0.2.3"
 authlib = "*"
 redis-py-cluster = "*"
 openapi-spec-validator = "*"
+"6c2b755" = {path = "./../users"}
+arxiv-auth = "*"
+bleach = "*"
 
 [dev-packages]
 mimesis = "==2.1.0"

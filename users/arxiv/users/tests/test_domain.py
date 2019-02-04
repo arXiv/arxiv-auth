@@ -79,13 +79,13 @@ class TestDictCoercion(TestCase):
                     affiliation='FSU',
                     rank=3,
                     country='us',
-                    default_category=domain.Category('astro-ph', 'CO'),
+                    default_category=domain.Category('astro-ph.CO'),
                     submission_groups=['grp_physics']
                 )
             ),
             authorizations=domain.Authorizations(
                 scopes=[scopes.VIEW_SUBMISSION, scopes.CREATE_SUBMISSION],
-                endorsements=[domain.Category('astro-ph', 'CO')]
+                endorsements=[domain.Category('astro-ph.CO')]
             )
         )
         session_data = domain.to_dict(session)
@@ -101,7 +101,7 @@ class TestDictCoercion(TestCase):
                              'resource': None
                          }])
         self.assertEqual(session_data['authorizations']['endorsements'],
-                         [{'archive': 'astro-ph', 'subject': 'CO'}])
+                         ['astro-ph.CO'])
 
         self.assertEqual(
             session_data['user']['profile'],
@@ -110,7 +110,7 @@ class TestDictCoercion(TestCase):
                 'country': 'us',
                 'rank': 3,
                 'submission_groups': ['grp_physics'],
-                'default_category': {'archive': 'astro-ph', 'subject': 'CO'},
+                'default_category': 'astro-ph.CO',
                 'homepage_url': '',
                 'remember_me': True
             }

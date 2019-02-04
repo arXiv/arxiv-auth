@@ -6,56 +6,12 @@ import dateutil.parser
 from pytz import timezone, UTC
 from functools import partial
 from arxiv import taxonomy
+from arxiv.taxonomy import Category
 
 from arxiv.base import logging
 
 logger = logging.getLogger(__name__)
 EASTERN = timezone('US/Eastern')
-
-
-class Category(NamedTuple):
-    """Reprents a classification category."""
-
-    archive: str
-    """Archives group together related subjects in a domain."""
-
-    subject: Optional[str] = None
-    """Leaf-level classification in the arXiv taxonomy."""
-
-    @classmethod
-    def from_compound(cls, category: str) -> 'Category':
-        """
-        Create a :class:`.Category` from a compound classification slug.
-
-        E.g. "astro-ph.CO" -> Category(archive="astro-ph", subject="CO")
-
-        Parameters
-        ----------
-        category : str
-            A dot-delimited compound category slug.
-
-        Returns
-        -------
-        :class:`.Category`
-
-        """
-        parts = category.split('.')
-        if len(parts) == 2:
-            return cls(*parts)
-        return cls(category, '')
-
-    @property
-    def compound(self) -> str:
-        """Compound category name."""
-        if self.subject:
-            return f"{self.archive}.{self.subject}"
-        return self.archive
-
-    @property
-    def display(self) -> str:
-        """Display name for this category."""
-        name: str = taxonomy.CATEGORIES[self.compound]['name']
-        return name
 
 
 class UserProfile(NamedTuple):
@@ -108,18 +64,21 @@ class UserProfile(NamedTuple):
     @property
     def default_archive(self) -> str:
         """The archive of the default category."""
-        return self.default_category.archive
+        return taxonomy.CATEGORIES[self.default_category]['in_archive']
 
     @property
     def default_subject(self) -> Optional[str]:
         """The subject of the default category."""
-        return self.default_category.subject
+        if '.' in self.default_category:
+            return self.default_category.split('.', 1)[1]
+        return self.default_category
 
     @property
     def groups_display(self) -> str:
         """Display-ready representation of active groups for this profile."""
         return ", ".join([
-            taxonomy.definitions.GROUPS[group]['name'] for group in self.submission_groups
+            taxonomy.definitions.GROUPS[group]['name']
+            for group in self.submission_groups
         ])
 
 
@@ -192,6 +151,30 @@ class Authorizations(NamedTuple):
     scopes: List[Scope] = []
     """Authorized :class:`.scope`s. See also :mod:`arxiv.users.auth.scopes`."""
 
+    def endorsed_for(self, category: Category) -> bool:
+        """
+        Check whether category is included in this endorsement authorization.
+
+        If a user/client is authorized for all categories in a particular
+        archive, the category names in :attr:`Authorization.endorsements` will
+        be compressed to a wilcard ``archive.*`` representation. If the
+        user/client is authorized for all categories in the system, this will
+        be compressed to "*.*".
+
+        Parameters
+        ----------
+        category : :class:`.Category`
+
+        Returns
+        -------
+        bool
+
+        """
+        archive = category.split(".", 1)[0] if "." in category else category
+        return category in self.endorsements \
+            or f"{archive}.*" in self.endorsements \
+            or "*.*" in self.endorsements
+
     @classmethod
     def before_init(cls, data: dict) -> None:
         """Make sure that endorsements are :class:`.Category` instances."""
@@ -199,8 +182,7 @@ class Authorizations(NamedTuple):
         # than to implement a general-purpose coercsion.
         # if self.endorsements and type(self.endorsements[0]) is not Category:
         data['endorsements'] = [
-            Category(*obj) if isinstance(obj, tuple) else Category(**obj)
-            for obj in data.get('endorsements', [])
+            Category(obj) for obj in data.get('endorsements', [])
         ]
         if 'scopes' in data:
             if type(data['scopes']) is str:

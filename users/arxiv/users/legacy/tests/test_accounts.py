@@ -190,7 +190,7 @@ class TestRegister(SetUpUserMixin, TestCase):
             country='de',
             rank=1,
             submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs', 'DL'),
+            default_category=domain.Category('cs.DL'),
             homepage_url='https://google.com'
         )
         name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
@@ -236,7 +236,7 @@ class TestGetUserById(SetUpUserMixin, TestCase):
             country='de',
             rank=1,
             submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs', 'DL'),
+            default_category=domain.Category('cs.DL'),
             homepage_url='https://google.com'
         )
         name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
@@ -325,7 +325,7 @@ class TestUpdate(SetUpUserMixin, TestCase):
             country='de',
             rank=1,
             submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs', 'DL'),
+            default_category=domain.Category('cs.DL'),
             homepage_url='https://google.com'
         )
         name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
@@ -342,7 +342,7 @@ class TestUpdate(SetUpUserMixin, TestCase):
             country='us',
             rank=2,
             submission_groups=['grp_cs', 'grp_physics'],
-            default_category=domain.Category('cs', 'IR'),
+            default_category=domain.Category('cs.IR'),
             homepage_url='https://google.com'
         )
         updated_user = domain.User(user_id=user.user_id,

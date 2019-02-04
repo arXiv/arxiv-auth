@@ -15,7 +15,7 @@ def generate_token(user_id: str, email: str, username: str,
                    rank: int = 3,
                    country: str = 'us',
                    default_category: domain.Category = (
-                       domain.Category('astro-ph', 'GA')
+                       domain.Category('astro-ph.GA')
                    ),
                    submission_groups: str = 'grp_physics',
                    endorsements: List[domain.Category] = [],
