@@ -80,7 +80,12 @@ def _category(archive: str, subject_class: str) -> domain.Category:
 def _get_archive(category: taxonomy.Category) -> str:
     if category.endswith(".*"):
         return category.split(".", 1)[0]
-    return taxonomy.CATEGORIES_ACTIVE[category]['in_archive']
+    try:
+        return taxonomy.CATEGORIES_ACTIVE[category]['in_archive']
+    except KeyError:
+        if "." in category:
+            return category.split(".", 1)[0]
+        return ""
 
 
 def _all_archives(endorsements: Endorsements) -> bool:
