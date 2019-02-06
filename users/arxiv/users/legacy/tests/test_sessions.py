@@ -45,6 +45,24 @@ class TestCreateSession(TestCase):
                 self.assertEqual(tapir_session.end_time, 0,
                                  "End time is 0 (no end time)")
 
+            tapir_session_audit = sessions._load_audit(user_session.session_id)
+            self.assertIsNotNone(tapir_session_audit)
+            if tapir_session_audit is not None:
+                self.assertEqual(
+                    tapir_session_audit.session_id,
+                    int(user_session.session_id),
+                    "Returned session audit has correct session id."
+                )
+                self.assertEqual(
+                    tapir_session_audit.ip_addr,
+                    user_session.ip_address,
+                    "Returned session audit has correct ip address"
+                )
+                self.assertEqual(
+                    tapir_session_audit.remote_host,
+                    user_session.remote_host,
+                    "Returned session audit has correct remote host"
+                )
 
 class TestInvalidateSession(TestCase):
     """Tests for public function :func:`.invalidate`."""
