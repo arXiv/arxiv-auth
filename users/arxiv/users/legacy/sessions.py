@@ -163,7 +163,8 @@ def create(authorizations: domain.Authorizations,
 
     user_session = domain.Session(str(tapir_session.session_id), user=user,
                                   start_time=start, end_time=end,
-                                  authorizations=authorizations)
+                                  authorizations=authorizations,
+                                  ip_address=ip, remote_host=remote_host)
     logger.debug('created session %s', user_session.session_id)
     return user_session
 
