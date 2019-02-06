@@ -43,6 +43,18 @@ def _load(session_id: str) -> DBSession:
     return db_session
 
 
+def _load_audit(session_id: str) -> DBSessionsAudit:
+    """Get DBSessionsAudit from session id."""
+    with util.transaction() as session:
+        db_sessions_audit: DBSessionsAudit = session.query(DBSessionsAudit) \
+            .filter(DBSessionsAudit.session_id == session_id) \
+            .first()
+    if not db_sessions_audit:
+        logger.error(f'No session audit found with id {session_id}')
+        raise UnknownSession('No such session audit')
+    return db_sessions_audit
+
+
 def load(cookie: str) -> domain.Session:
     """
     Given a session cookie (from request), load the logged-in user.
