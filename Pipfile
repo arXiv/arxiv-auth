@@ -32,6 +32,7 @@ coverage = "*"
 coveralls = "*"
 astroid = "<2.2"
 pytest = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.6"
