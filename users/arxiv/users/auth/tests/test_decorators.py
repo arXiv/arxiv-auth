@@ -80,6 +80,29 @@ class TestScoped(TestCase):
             protected()
 
     @mock.patch(f'{decorators.__name__}.request')
+    def test_scope_is_present(self, mock_request):
+        """Session has required scope."""
+        mock_request.session = domain.Session(
+            session_id='fooid',
+            start_time=datetime.now(tz=UTC),
+            user=domain.User(
+                user_id='235678',
+                email='foo@foo.com',
+                username='foouser'
+            ),
+            authorizations=domain.Authorizations(
+                scopes=[scopes.VIEW_SUBMISSION, scopes.CREATE_SUBMISSION]
+            )
+        )
+
+        @decorators.scoped(scopes.CREATE_SUBMISSION)
+        def protected():
+            """A protected function."""
+
+        # with self.assertRaises(Forbidden):
+        protected()
+
+    @mock.patch(f'{decorators.__name__}.request')
     def test_user_and_client_are_missing(self, mock_request):
         """Session does not user nor client information."""
         mock_request.session = domain.Session(
