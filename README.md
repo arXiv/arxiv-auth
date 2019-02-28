@@ -34,6 +34,13 @@ TLS is considered an infrastructure concern, and is therefore out of scope
 - Clean up and document authenticator service.
 - Fuzz testing registration?
 
+## Updates
+
+- Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
+  application config to rename ``request.session`` to ``request.auth``.
+  ``request.auth`` will be the default name for the authenticated session
+  starting in v0.4.1.
+
 ## Dependencies
 
 We use pipenv to manage dependencies. To install the dependencies for this

@@ -57,9 +57,48 @@ class TestAuthExtension(TestCase):
         mock_legacy.sessions.load.return_value = session
 
         inst = auth.Auth(mock_app)
-        inst.load_session()
+        # ARXIVNG-1920 using request.session is deprecated.
+        with self.assertWarns(DeprecationWarning):
+            inst.load_session()
         self.assertEqual(mock_request.session, session,
                          "Session is attached to the request")
+
+    @mock.patch(f'{auth.__name__}.legacy')
+    @mock.patch(f'{auth.__name__}.request')
+    def test_auth_session_rename(self, mock_request, mock_legacy):
+        """
+        The auth session is accessed via ``request.auth``.
+
+        Per ARXIVNG-1920 using ``request.session`` is deprecated.
+        """
+        mock_request.environ = {'session': None}
+        mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
+        mock_app = mock.MagicMock(
+            config={'CLASSIC_COOKIE_NAME': 'foo_cookie',
+                    'AUTH_UPDATED_SESSION_REF': True}
+        )
+        mock_request.session = None
+        mock_request.auth = None
+        mock_legacy.is_configured.return_value = True
+        session = domain.Session(
+            session_id='fooid',
+            start_time=datetime.now(tz=UTC),
+            user=domain.User(
+                user_id='235678',
+                email='foo@foo.com',
+                username='foouser'
+            ),
+            authorizations=domain.Authorizations(
+                scopes=[auth.scopes.VIEW_SUBMISSION]
+            )
+        )
+        mock_legacy.sessions.load.return_value = session
+
+        inst = auth.Auth(mock_app)
+        inst.load_session()
+        self.assertEqual(mock_request.auth, session,
+                         "Session is attached to the request")
+        self.assertIsNone(mock_request.session, "request.session is not set")
 
     @mock.patch(f'{auth.__name__}.request')
     def test_middleware_exception(self, mock_request):
