@@ -2,6 +2,7 @@
 
 from typing import Optional, Union
 from datetime import datetime
+import warnings
 from pytz import UTC
 from flask import Flask, request, Response, make_response, redirect, url_for
 from werkzeug.http import parse_cookie
@@ -121,7 +122,19 @@ class Auth(object):
 
         # Attach the session to the request so that other
         # components can access it easily.
-        request.session = session
+        if self.app.config.get('AUTH_UPDATED_SESSION_REF'):
+            request.auth = session
+        else:
+            # This clobbers the built-in Flask session interface. This is a
+            # design flaw that's blocking other work. This is deprecated and
+            # will be removed in 0.4.1.
+            warnings.warn(
+                "Accessing the authenticated session via request.session is"
+                " deprecated, and will be removed in 0.4.1. Use request.auth"
+                " instead. ARXIVNG-1920.",
+                DeprecationWarning
+            )
+            request.session = session
 
     def detect_and_clobber_dupe_cookies(self) -> Optional[Response]:
         """
