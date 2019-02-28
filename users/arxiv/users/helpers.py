@@ -6,6 +6,7 @@ from pytz import timezone, UTC
 import uuid
 from datetime import timedelta, datetime
 from arxiv.users import auth, domain
+from arxiv.base.globals import get_application_config
 
 
 def generate_token(user_id: str, email: str, username: str,
@@ -19,7 +20,8 @@ def generate_token(user_id: str, email: str, username: str,
                    ),
                    submission_groups: str = 'grp_physics',
                    endorsements: List[domain.Category] = [],
-                   scope: List[domain.Scope] = []) -> None:
+                   scope: List[domain.Scope] = [],
+                   verified: bool = False) -> None:
     """Generate an auth token for dev/testing purposes."""
     # Specify the validity period for the session.
     start = datetime.now(tz=timezone('US/Eastern'))
@@ -40,10 +42,11 @@ def generate_token(user_id: str, email: str, username: str,
                 country=country,
                 default_category=default_category,
                 submission_groups=submission_groups.split(',')
-            )
+            ),
+            verified=verified
         ),
-        authorizations=domain.Authorizations(scopes=scope,
+        authorizations=domain.Authorizations(scopes=[str(s) for s in scope],
                                              endorsements=endorsements)
     )
-    token = auth.tokens.encode(session, os.environ['JWT_SECRET'])
+    token = auth.tokens.encode(session, get_application_config()['JWT_SECRET'])
     return token

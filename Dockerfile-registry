@@ -9,11 +9,11 @@ RUN pip install -U pip pipenv
 ENV LC_ALL en_US.utf-8
 ENV LANG en_US.utf-8
 
-ADD Pipfile /opt/arxiv/
+ADD Pipfile Pipfile.lock /opt/arxiv/
 RUN pipenv install
 
 ADD users/ /opt/arxiv/users/
-RUN pipenv install /opt/arxiv/users/
+RUN pipenv install /opt/arxiv/users/ --skip-lock
 
 ENV PATH "/opt/arxiv:${PATH}"
 
@@ -29,9 +29,8 @@ CMD ["uwsgi", "--http-socket", ":8000", \
      "-M", \
      "-t 3000", \
      "--manage-script-name", \
-     "--processes", "8", \
+     "--processes", "1", \
      "--threads", "1", \
-     "--async", "100", \
-     "--ugreen", \
-     "--mount", "/api=wsgi.py", \
+     "--queue", "0", \
+     "--mount", "/=wsgi.py", \
      "--logformat", "%(addr) %(addr) - %(user_id)|%(session_id) [%(rtime)] [%(uagent)] \"%(method) %(uri) %(proto)\" %(status) %(size) %(micros) %(ttfb)"]

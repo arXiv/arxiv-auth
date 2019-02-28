@@ -18,24 +18,21 @@ requests = "==2.20.0"
 sqlalchemy = "*"
 uwsgi = "*"
 wtforms = "*"
-arxiv-base = "==0.12.1"
+arxiv-base = "==0.14.3"
 authlib = "*"
 openapi-spec-validator = "*"
-"4010dd8" = {path = "./users"}
 bleach = "*"
 
 [dev-packages]
 mimesis = "==2.1.0"
-mypy = "*"
-pydocstyle = "*"
+mypy = "==0.670"
+pydocstyle = "==2.1.1"
 pylint = "*"
-sphinx = "*"
-sphinx-autodoc-typehints = "*"
 coverage = "*"
 coveralls = "*"
+astroid = "<2.2"
 pytest = "*"
 pytest-cov = "*"
-"nose2" = "*"
 
 [requires]
 python_version = "3.6"
