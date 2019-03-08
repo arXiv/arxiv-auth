@@ -125,6 +125,8 @@ class Scope(NamedTuple):
         """Submission interfaces and actions."""
         UPLOAD = 'upload'
         """File uploads, including those for submissions."""
+        COMPILE = 'compile'
+        """PDF compilation."""
         FULLTEXT = 'fulltext'
         """Fulltext extraction."""
 
@@ -296,6 +298,12 @@ class Session(NamedTuple):
 
     nonce: Optional[str] = None
     """A pseudo-random nonce generated when the session was created."""
+
+    def is_authorized(self, scope: Scope, resource: str) -> bool:
+        """Check whether this session is authorized for a specific resource."""
+        return (self.authorizations is not None and (
+                scope.as_global() in self.authorizations.scopes
+                or scope.for_resource(resource) in self.authorizations.scopes))
 
     @property
     def expired(self) -> bool:
