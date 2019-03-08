@@ -73,3 +73,5 @@ CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
 
 RELEASE_NOTES_URL = "https://confluence.cornell.edu/x/wtJyFQ"
 RELEASE_NOTES_TEXT = "Accounts v0.2 released 2018-09-05"
+
+AUTH_UPDATED_SESSION_REF=True

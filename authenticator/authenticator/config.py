@@ -9,3 +9,5 @@ REDIS_CLUSTER = os.environ.get('REDIS_CLUSTER', '1')
 AUTH_SESSION_COOKIE_NAME = os.environ.get('AUTH_SESSION_COOKIE_NAME',
                                           'ARXIVNG_SESSION_ID')
 JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
+
+AUTH_UPDATED_SESSION_REF=True
