@@ -60,7 +60,7 @@ class TestAuthExtension(TestCase):
         # ARXIVNG-1920 using request.auth is deprecated.
         with self.assertWarns(DeprecationWarning):
             inst.load_session()
-        self.assertEqual(mock_request.auth, session,
+        self.assertEqual(mock_request.session, session,
                          "Session is attached to the request")
 
     @mock.patch(f'{auth.__name__}.legacy')
