@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "eadef4b4122c34286d982764b0c4866d762cf9e630603b4082f79d0ce80753e0"
+            "sha256": "b67acd179e0ddaaa25957218957853b99325139fc68b2c07c4089857047dc144"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -61,17 +61,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:52a93f08096199b83eb8de787230dd65523fe21bf87e76fc15bdc2d0150655d4",
-                "sha256:9bd71622338f007f22c1192ecf8518bb5d5e3f0840adfeac847d40c18004b71d"
+                "sha256:084fcb90fb1a8d4834cff2fbd842ec546f5bad334acf740ed8a16fc0ebf47f61",
+                "sha256:1a1da1d9ec446e50ec04b21a6ec6eaf37f614161d24a8ba92b92e93ad78e18fc"
             ],
-            "version": "==1.9.109"
+            "version": "==1.9.110"
         },
         "botocore": {
             "hashes": [
-                "sha256:2da1a61785dde17b3bb18deb8e5fdfdd096033f5c3860c2a9117318af3969b2a",
-                "sha256:85c063a49cd24a8bf0c560b39d2738943c2adb48299ac42e283c243d78d63719"
+                "sha256:995c29b9913f8ae9dc95408db48034c7040fb1b5378a2e9e1e4030167c6b80ee",
+                "sha256:b18d7b0949a613331160af20e9517a3663e0009a2edb4cb1e1177ab4fdff6c9d"
             ],
-            "version": "==1.12.109"
+            "version": "==1.12.110"
         },
         "captcha": {
             "hashes": [
@@ -367,7 +367,6 @@
                 "sha256:c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"
             ],
             "index": "pypi",
-            "markers": "python_version >= '2.7'",
             "version": "==2.8.0"
         },
         "pytz": {
@@ -588,10 +587,10 @@
         },
         "isort": {
             "hashes": [
-                "sha256:89041186651a9a6159683098f337eed0994d9d94e006f891c6e8cbeb8e65f1c7",
-                "sha256:ba51a651505242b0b37ad94b281e1154301e221a40c623e62334ed863fc1c98c"
+                "sha256:38a74a5ccf3a15a7a99f975071164f48d4d10eed4154879009c18e6e8933e5aa",
+                "sha256:abbb2684aa234d5eb8a67ef36d4aa62ea080d46c2eba36ad09e2990ae52e4305"
             ],
-            "version": "==4.3.12"
+            "version": "==4.3.13"
         },
         "lazy-object-proxy": {
             "hashes": [
@@ -664,6 +663,13 @@
                 "sha256:b16cabe759f55e3409a7d231ebd2841378fb0c27a5d1994719e340e4f429ac3e"
             ],
             "version": "==0.4.1"
+        },
+        "nose2": {
+            "hashes": [
+                "sha256:9052f2b46807b63d9bdf68e0768da1f8386368889b50043fd5d0889c470258f3"
+            ],
+            "index": "pypi",
+            "version": "==0.8.0"
         },
         "pluggy": {
             "hashes": [

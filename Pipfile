@@ -33,6 +33,7 @@ coveralls = "*"
 pytest = "*"
 pytest-cov = "*"
 astroid = "*"
+"nose2" = "*"
 
 [requires]
 python_version = "3.6"
