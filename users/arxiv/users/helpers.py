@@ -5,7 +5,7 @@ from typing import List
 from pytz import timezone, UTC
 import uuid
 from datetime import timedelta, datetime
-from arxiv.users import auth, domain
+from . import auth, domain
 from arxiv.base.globals import get_application_config
 
 
