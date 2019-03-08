@@ -31,8 +31,8 @@ def anonymous_only(func: Callable) -> Callable:
     """Redirect logged-in users to their profile."""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if request.session:
-            user = request.session.user
+        if request.auth:
+            user = request.auth.user
             target = url_for('account')
             content = redirect(target, code=status.HTTP_303_SEE_OTHER)
             response = make_response(content)
@@ -127,7 +127,7 @@ def register() -> Response:
 # @scoped(scopes.VIEW_PROFILE, authorizer=user_is_owner)
 # def view_profile(user_id: str) -> Response:
 #     """User can view their account information."""
-#     data, code, headers = registration.view_profile(user_id, request.session)
+#     data, code, headers = registration.view_profile(user_id, request.auth)
 #     return render_template("accounts/profile.html", **data)
 
 
@@ -136,7 +136,7 @@ def register() -> Response:
 # def edit_profile(user_id: str) -> Response:
 #     """User can update their account information."""
 #     data, code, headers = registration.edit_profile(request.method, user_id,
-#                                                     request.session,
+#                                                     request.auth,
 #                                                     request.form,
 #                                                     request.remote_addr)
 #     if code is status.HTTP_303_SEE_OTHER:

@@ -26,7 +26,7 @@ class TestAuthExtension(TestCase):
         mock_legacy.sessions.load.return_value = None
 
         inst.load_session()
-        self.assertIsNone(mock_request.session)
+        self.assertIsNone(mock_request.auth)
 
         self.assertEqual(mock_legacy.sessions.load.call_count, 1,
                          "An attempt is made to load a legacy session")
@@ -40,7 +40,7 @@ class TestAuthExtension(TestCase):
         mock_app = mock.MagicMock(
             config={'CLASSIC_COOKIE_NAME': 'foo_cookie'}
         )
-        mock_request.session = None
+        mock_request.auth = None
         mock_legacy.is_configured.return_value = True
         session = domain.Session(
             session_id='fooid',
@@ -57,10 +57,10 @@ class TestAuthExtension(TestCase):
         mock_legacy.sessions.load.return_value = session
 
         inst = auth.Auth(mock_app)
-        # ARXIVNG-1920 using request.session is deprecated.
+        # ARXIVNG-1920 using request.auth is deprecated.
         with self.assertWarns(DeprecationWarning):
             inst.load_session()
-        self.assertEqual(mock_request.session, session,
+        self.assertEqual(mock_request.auth, session,
                          "Session is attached to the request")
 
     @mock.patch(f'{auth.__name__}.legacy')
@@ -69,7 +69,7 @@ class TestAuthExtension(TestCase):
         """
         The auth session is accessed via ``request.auth``.
 
-        Per ARXIVNG-1920 using ``request.session`` is deprecated.
+        Per ARXIVNG-1920 using ``request.auth`` is deprecated.
         """
         mock_request.environ = {'session': None}
         mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
@@ -77,8 +77,8 @@ class TestAuthExtension(TestCase):
             config={'CLASSIC_COOKIE_NAME': 'foo_cookie',
                     'AUTH_UPDATED_SESSION_REF': True}
         )
-        mock_request.session = None
         mock_request.auth = None
+        mock_request.session = None
         mock_legacy.is_configured.return_value = True
         session = domain.Session(
             session_id='fooid',

@@ -129,7 +129,7 @@ class Auth(object):
             # design flaw that's blocking other work. This is deprecated and
             # will be removed in 0.4.1.
             warnings.warn(
-                "Accessing the authenticated session via request.session is"
+                "Accessing the authenticated session via request.auth is"
                 " deprecated, and will be removed in 0.4.1. Use request.auth"
                 " instead. ARXIVNG-1920.",
                 DeprecationWarning

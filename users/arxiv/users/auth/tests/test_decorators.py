@@ -24,7 +24,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_no_session(self, mock_request):
         """No session is present on the request."""
-        mock_request.session = None
+        mock_request.auth = None
 
         @decorators.scoped(scopes.CREATE_SUBMISSION)
         def protected():
@@ -36,7 +36,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_legacy_is_valid(self, mock_request):
         """A valid legacy session is available."""
-        mock_request.session = domain.Session(
+        mock_request.auth = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             user=domain.User(
@@ -59,7 +59,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_scope_is_missing(self, mock_request):
         """Session does not have required scope."""
-        mock_request.session = domain.Session(
+        mock_request.auth = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             user=domain.User(
@@ -82,7 +82,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_scope_is_present(self, mock_request):
         """Session has required scope."""
-        mock_request.session = domain.Session(
+        mock_request.auth = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             user=domain.User(
@@ -105,7 +105,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_user_and_client_are_missing(self, mock_request):
         """Session does not user nor client information."""
-        mock_request.session = domain.Session(
+        mock_request.auth = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             authorizations=domain.Authorizations(
@@ -123,7 +123,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_authorizer_returns_false(self, mock_request):
         """Session has required scope, but authorizer func returns false."""
-        mock_request.session = domain.Session(
+        mock_request.auth = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             user=domain.User(
@@ -149,7 +149,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_authorizer_returns_true(self, mock_request):
         """Session has required scope, and authorizer func returns true."""
-        mock_request.session = domain.Session(
+        mock_request.auth = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             user=domain.User(
@@ -174,7 +174,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_session_has_global(self, mock_request):
         """Session has global scope, and authorizer func returns false."""
-        mock_request.session = domain.Session(
+        mock_request.auth = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             user=domain.User(
@@ -199,7 +199,7 @@ class TestScoped(TestCase):
     @mock.patch(f'{decorators.__name__}.request')
     def test_session_has_resource_scope(self, mock_request):
         """Session has resource scope, and authorizer func returns false."""
-        mock_request.session = domain.Session(
+        mock_request.auth = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             user=domain.User(

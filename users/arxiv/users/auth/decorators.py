@@ -71,7 +71,7 @@ When the decorated route function is called...
 - If an authorization function was provided, the function is called only if
   a required scope was not provided, or if only the generic scope was found.
 - Session data is added directly to the Flask request object as
-  ``request.session``, for ease of access elsewhere in the application.
+  ``request.auth``, for ease of access elsewhere in the application.
 - Finally, if no exceptions have been raised, the route is called with the
   original parameters.
 

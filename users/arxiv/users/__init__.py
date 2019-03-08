@@ -20,7 +20,7 @@ For typical use-cases, you will need to do the following:
 2. Install :class:`arxiv.users.auth.Auth` onto your application. This will make
    information about the current authenticated :class:`.domain.Session`
    available to you on the Flask request proxy object as
-   ``flask.request.session``.
+   ``flask.request.auth``.
 3. Install :class:`arxiv.users.auth.middleware.AuthMiddleware` onto your
    application. Optional (see below).
 
@@ -62,7 +62,7 @@ For convenience, endorsement authorizations can be checked with the
 
    from flask import request
 
-   if request.session.authorizations.endorsed_for("cs.AI"):
+   if request.auth.authorizations.endorsed_for("cs.AI"):
        print("This user/client is endorsed for cs.AI")
 
 
