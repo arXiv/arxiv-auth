@@ -10,4 +10,4 @@ AUTH_SESSION_COOKIE_NAME = os.environ.get('AUTH_SESSION_COOKIE_NAME',
                                           'ARXIVNG_SESSION_ID')
 JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
 
-AUTH_UPDATED_SESSION_REF=True
+AUTH_UPDATED_SESSION_REF = True
