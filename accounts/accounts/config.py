@@ -74,4 +74,8 @@ CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
 RELEASE_NOTES_URL = "https://confluence.cornell.edu/x/wtJyFQ"
 RELEASE_NOTES_TEXT = "Accounts v0.2 released 2018-09-05"
 
-AUTH_UPDATED_SESSION_REF=True
+# Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
+# application config to rename ``request.session`` to ``request.auth``.
+# ``request.auth`` will be the default name for the authenticated session
+# starting in v0.4.1.
+AUTH_UPDATED_SESSION_REF = True

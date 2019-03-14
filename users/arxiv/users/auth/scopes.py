@@ -116,6 +116,12 @@ _HUMAN_LABELS = {
     READ_UPLOAD: "Grants authorization to view the contents of your uploads.",
     WRITE_UPLOAD: "Grants authorization to add and delete files on your"
                   " behalf.",
+    READ_UPLOAD_LOGS: "Grants authorization to read logs of upload activity"
+                      " related to your submissions.",
+    READ_COMPILE: "Grants authorization to read a compilation task, product,"
+                  " and any log output, related to your submissions.",
+    CREATE_COMPILE: "Grants authorization to compile your submission source"
+                    " files, e.g. to produce a PDF."
 }
 
 
