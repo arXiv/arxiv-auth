@@ -22,7 +22,6 @@ arxiv-base = "==0.15.2"
 Authlib = "*"
 openapi-spec-validator = "*"
 bleach = "*"
-"4010dd8" = {path = "./users"}
 
 [dev-packages]
 mimesis = "==2.1.0"
