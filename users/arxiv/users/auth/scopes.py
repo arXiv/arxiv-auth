@@ -55,6 +55,9 @@ EDIT_SUBMISSION = Scope(Scope.domains.SUBMISSION, Scope.actions.UPDATE)
 VIEW_SUBMISSION = Scope(Scope.domains.SUBMISSION, Scope.actions.READ)
 """Authorizes viewing a submission."""
 
+DELETE_SUBMISSION = Scope(Scope.domains.SUBMISSION, Scope.actions.DELETE)
+"""Authorizes deleting a submission."""
+
 PROXY_SUBMISSION = Scope(Scope.domains.SUBMISSION, Scope.actions.PROXY)
 """
 Authorizes creating a submission on behalf of another user.
@@ -78,6 +81,9 @@ DELETE_UPLOAD_FILE = Scope(Scope.domains.UPLOAD, Scope.actions.DELETE)
 
 READ_UPLOAD_LOGS = Scope(Scope.domains.UPLOAD, 'read_logs')
 READ_UPLOAD_SERVICE_LOGS = Scope(Scope.domains.UPLOAD, 'read_service_logs')
+
+READ_COMPILE = Scope(Scope.domains.COMPILE, Scope.actions.READ)
+CREATE_COMPILE = Scope(Scope.domains.COMPILE, Scope.actions.CREATE)
 
 READ_FULLTEXT = Scope(Scope.domains.FULLTEXT, Scope.actions.READ)
 CREATE_FULLTEXT = Scope(Scope.domains.FULLTEXT, Scope.actions.CREATE)
@@ -110,8 +116,15 @@ _HUMAN_LABELS = {
     READ_UPLOAD: "Grants authorization to view the contents of your uploads.",
     WRITE_UPLOAD: "Grants authorization to add and delete files on your"
                   " behalf.",
+    READ_UPLOAD_LOGS: "Grants authorization to read logs of upload activity"
+                      " related to your submissions.",
+    READ_COMPILE: "Grants authorization to read a compilation task, product,"
+                  " and any log output, related to your submissions.",
+    CREATE_COMPILE: "Grants authorization to compile your submission source"
+                    " files, e.g. to produce a PDF."
 }
 
+
 def get_human_label(scope: str) -> Optional[str]:
-    """The the human-readable label for a scope, for display to end users."""
+    """Get a human-readable label for a scope, for display to end users."""
     return _HUMAN_LABELS.get(scope)

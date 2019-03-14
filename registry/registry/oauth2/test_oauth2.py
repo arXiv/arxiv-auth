@@ -82,7 +82,7 @@ class TestOAuth2Client(TestCase):
     @mock.patch(f'{oauth2.__name__}.request')
     def test_check_requested_scopes(self, mock_request):
         """:meth:`.check_requested_scopes` evaluates authorized scopes."""
-        mock_request.session = Session(
+        mock_request.auth = Session(
             session_id='1234-abcd',
             start_time=datetime.now(),
             user=User(
@@ -177,7 +177,7 @@ class TestGetClient(TestCase):
     @mock.patch(f'{oauth2.__name__}.datastore')
     def test_get_client(self, mock_datastore, mock_request):
         """:func:`.get_client` returns an :class:`OAuth2Client`."""
-        mock_request.session = Session(
+        mock_request.auth = Session(
             session_id='1234-abcd',
             start_time=datetime.now(),
             user=User(

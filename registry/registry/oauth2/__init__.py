@@ -153,9 +153,9 @@ class OAuth2Client(ClientMixin):
         # granting scopes for which the user themself is not authorized.
         logger.debug('Client requests scopes: %s', scopes)
 
-        if request.session and request.session.user:
+        if request.auth and request.auth.user:
             session_scopes = {
-                str(s) for s in request.session.authorizations.scopes
+                str(s) for s in request.auth.authorizations.scopes
             }
             logger.debug('Authorized scopes on user session: %s',
                          session_scopes)
