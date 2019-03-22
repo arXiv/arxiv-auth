@@ -1,32 +1,31 @@
 {%- extends "base/base.html" %}
 
 {% block addl_head %}
-<script type="text/javascript" src="https://arxiv-org.atlassian.net/s/d41d8cd98f00b204e9800998ecf8427e-T/l24at6/b/0/a44af77267a987a660377e5c46e0fb64/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=5812d748"></script>
-
-  <script type="text/javascript">window.ATL_JQ_PAGE_PROPS =  {
-"triggerFunction": function(showCollectorDialog) {
-  //Requires that jQuery is available!
-  jQuery("#myCustomTrigger").click(function(e) {
-    e.preventDefault();
-    showCollectorDialog();
-  });
-}};</script>
-<script type="text/javascript">
-    window.ATL_JQ_PAGE_PROPS =  {
-    	"triggerFunction": function(showCollectorDialog) {
-    		//Requires that jQuery is available!
-    		$("#feedback-button").click(function(e) {
-    			e.preventDefault();
-    			showCollectorDialog();
-    		});
-    	},
-      fieldValues: {
-        "components": ["16016"],  // Accounts component.
-        "versions": ["14119"],  // Release accounts-0.1
-        "customfield_11401": window.location.href
-      }
-    };
-    </script>
+{# <script type="text/javascript" src="https://arxiv-org.atlassian.net/s/d41d8cd98f00b204e9800998ecf8427e-T/l24at6/b/0/a44af77267a987a660377e5c46e0fb64/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=5812d748"></script> #}
+{#   <script type="text/javascript">window.ATL_JQ_PAGE_PROPS =  { #}
+{# "triggerFunction": function(showCollectorDialog) { #}
+{#   //Requires that jQuery is available! #}
+{#   jQuery("#myCustomTrigger").click(function(e) { #}
+{#     e.preventDefault(); #}
+{#     showCollectorDialog(); #}
+{#   }); #}
+{# }};</script> #}
+{# <script type="text/javascript"> #}
+{#     window.ATL_JQ_PAGE_PROPS =  { #}
+{#     	"triggerFunction": function(showCollectorDialog) { #}
+{#     		//Requires that jQuery is available! #}
+{#     		$("#feedback-button").click(function(e) { #}
+{#     			e.preventDefault(); #}
+{#     			showCollectorDialog(); #}
+{#     		}); #}
+{#     	}, #}
+{#       fieldValues: { #}
+{#         "components": ["16016"],  // Accounts component. #}
+{#         "versions": ["14119"],  // Release accounts-0.1 #}
+{#         "customfield_11401": window.location.href #}
+{#       } #}
+{#     }; #}
+{# </script> #}
 {% endblock addl_head %}
 
 {% block content %}
@@ -34,7 +33,7 @@
     <div class="level-left"></div>
     <div class="level-right">
       <span class="help" style="display: inline-block;"><a href="{{ config.RELEASE_NOTES_URL }}">{{ config.RELEASE_NOTES_TEXT }}</a>&nbsp;&nbsp;</span>
-      <button class="button is-small" id="feedback-button">Feedback?</button>
+{#      <button class="button is-small" id="feedback-button">Feedback?</button> #}
     </div>
   </div>
 <content>
