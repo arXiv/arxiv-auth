@@ -124,7 +124,7 @@ GENERAL_USER = [
 """
 The default scopes afforded to an authenticated user.
 
-This static list be deprecated by RBAC at a later milestone of arXiv-NG.
+This static list will be deprecated by role-based access control (RBAC) at a later milestone of arXiv-NG.
 """
 
 _HUMAN_LABELS = {
