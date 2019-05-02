@@ -95,10 +95,10 @@ CREATE_COMPILE = Scope(Scope.domains.COMPILE, Scope.actions.CREATE)
 """Can create new documents via the compilation service."""
 
 READ_FULLTEXT = Scope(Scope.domains.FULLTEXT, Scope.actions.READ)
-"""Can access plain text content extracted from e-prints."""
+"""Can access plain text extracted from compiled documents."""
 
 CREATE_FULLTEXT = Scope(Scope.domains.FULLTEXT, Scope.actions.CREATE)
-"""Can trigger new plain text extractions from e-prints."""
+"""Can trigger new plain text extractions from compiled documents."""
 
 GENERAL_USER = [
     READ_PUBLIC,    # Access to public APIs.
