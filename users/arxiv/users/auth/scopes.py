@@ -111,6 +111,7 @@ GENERAL_USER = [
     CREATE_SUBMISSION,
     EDIT_SUBMISSION,
     VIEW_SUBMISSION,
+    DELETE_SUBMISSION,
 
     # Allows usage of the compilation service during submission.
     READ_COMPILE,
