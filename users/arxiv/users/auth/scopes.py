@@ -137,7 +137,27 @@ GENERAL_USER = [
 """
 The default scopes afforded to an authenticated user.
 
-This static list will be deprecated by role-based access control (RBAC) at a later milestone of arXiv-NG.
+This static list will be deprecated by role-based access control (RBAC) at a
+later milestone of arXiv-NG.
+"""
+
+_ADMIN_USER = GENERAL_USER + [
+    CREATE_UPLOAD_CHECKPOINT,
+    DELETE_UPLOAD_CHECKPOINT,
+    READ_UPLOAD_CHECKPOINT,
+    RESTORE_UPLOAD_CHECKPOINT,
+    READ_FULLTEXT,
+    CREATE_FULLTEXT,
+    DELETE_UPLOAD_WORKSPACE,
+    READ_UPLOAD_LOGS,
+    READ_UPLOAD_SERVICE_LOGS
+]
+ADMIN_USER = [scope.as_global() for scope in _ADMIN_USER]
+"""
+Scopes afforded to an administrator.
+
+This static list will be deprecated by role-based access control (RBAC) at a
+later milestone of arXiv-NG.
 """
 
 _HUMAN_LABELS = {

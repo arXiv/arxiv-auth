@@ -130,6 +130,8 @@ def get_scopes(db_user: DBUser) -> List[str]:
     """Generate a list of authz scopes for a legacy user based on class."""
     if db_user.policy_class == DBPolicyClass.PUBLIC_USER:
         return scopes.GENERAL_USER
+    if db_user.policy_class == DBPolicyClass.ADMIN:
+        return scopes.ADMIN_USER
     return []
 
 
