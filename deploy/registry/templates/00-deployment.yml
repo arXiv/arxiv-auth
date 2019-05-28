@@ -1,0 +1,46 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ default "registry" .Values.deployment.name }}"
+  labels:
+    subsystem: "{{ .Values.labels.subsystem }}"
+    container: "{{ default "registry" .Values.deployment.name }}"
+    service-group: api
+    log-style: uwsgi
+spec:
+  replicas: {{ default 1 .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        subsystem: "{{ .Values.labels.subsystem }}"
+        container: "{{ default "registry" .Values.deployment.name }}"
+        service-group: api
+        log-style: uwsgi
+      # annotations:
+      #   prometheus.io/scrape: 'true'
+    spec:
+      containers:
+      - name: "{{ default "registry" .Values.deployment.name }}"
+        image: arxiv/registry:{{ .Values.imageTag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: LOGLEVEL
+          value: "{{ default "40" .Values.loglevel }}"
+        # - name: BASE_SERVER
+        #   value: api.arxiv.org
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt
+              key: secret
+        - name: REDIS_HOST
+          value: "{{ .Values.redis.host }}"
+        - name: REDIS_PORT
+          value: "{{ .Values.redis.port }}"
+        - name: REGISTRY_DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: api-registry-rds-credentials
+              key: database_uri

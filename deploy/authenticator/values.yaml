@@ -1,0 +1,14 @@
+namespace: development
+imageTag: 0.1.5
+labels:
+  subsystem: api-gateway
+redis:
+  host: localhost
+  port: 6379
+secrets:
+  jwt:
+    name: jwt-secret-name
+    key: jwt-secret-key
+replicas: 3
+service.name: changeme
+deployment.name: changeme

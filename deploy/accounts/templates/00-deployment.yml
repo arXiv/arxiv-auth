@@ -1,0 +1,50 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: arxiv-accounts
+  labels:
+    subsystem: "{{ .Values.labels.subsystem }}"
+    container: accounts
+    service-group: api
+    log-style: uwsgi
+    env: "{{ .Values.namespace }}"
+  namespace: "{{ .Values.namespace }}"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        subsystem: "{{ .Values.labels.subsystem }}"
+        container: accounts
+        service-group: api
+        log-style: uwsgi
+        env: "{{ .Values.namespace }}"
+      # annotations:
+      #   prometheus.io/scrape: 'true'
+    spec:
+      containers:
+      - name: arxiv-accounts
+        image: arxiv/accounts:{{ .Values.imageTag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: LOGLEVEL
+          value: "{{ default "40" .Values.loglevel }}"
+        - name: BASE_SERVER
+          value: "{{ .Values.base_server }}"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.secrets.jwt.name }}"
+              key: "{{ .Values.secrets.jwt.key }}"
+        - name: CLASSIC_DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.secrets.database.name }}"
+              key: "{{ .Values.secrets.database.key }}"
+        - name: CLASSIC_SESSION_HASH
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.secrets.hash.name }}"
+              key: "{{ .Values.secrets.hash.key }}"

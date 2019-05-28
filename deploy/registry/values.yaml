@@ -1,0 +1,17 @@
+
+loglevel: "40"
+imageTag: "0.1"
+labels:
+  subsystem: api-gateway
+redis:
+  host: localhost
+  port: 6379
+
+ingress:
+  host: api.arxiv.org
+  path: "/api"
+
+authenticator: authenticator
+service.name: changeme
+deployment.name: changeme
+ingress.name: changeme

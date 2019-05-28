@@ -1,0 +1,7 @@
+name: registry
+version: 0.1.1
+appVersion: 0.1.1
+description: arXiv API client registry
+sources:
+  - https://github.com/arxiv/arxiv-auth
+engine: gotpl

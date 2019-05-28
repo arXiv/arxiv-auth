@@ -1,0 +1,29 @@
+ingress:
+  host: some.where.org
+  path: /user
+
+loglevel: "40"
+imageTag: "0.2"
+labels:
+  subsystem: infrastructure
+auth:
+  url: http://someservice.default.svc.cluster.local/auth
+  signin: https://some.where.org/user/login
+  response_headers: Authorization
+
+base_server: some.where.org
+
+secrets:
+  database:
+    name: db-secret-name
+    key: database-key
+  hash:
+    name: hash-secret-name
+    key: hash-key
+  jwt:
+    name: jwt-secret-name
+    key: jwt-key
+tls:
+  secretName: tls-secret-name
+
+namespace: somespace

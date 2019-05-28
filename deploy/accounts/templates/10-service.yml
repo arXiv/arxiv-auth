@@ -1,0 +1,20 @@
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: 'true'
+  name: arxiv-accounts
+  labels:
+    subsystem: "{{ .Values.labels.subsystem }}"
+    container: accounts
+    service-group: api
+    log-style: uwsgi
+    env: "{{ .Values.namespace }}"
+  namespace: "{{ .Values.namespace }}"
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    subsystem: "{{ .Values.labels.subsystem }}"
+    container: accounts
