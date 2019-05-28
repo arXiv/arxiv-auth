@@ -25,7 +25,7 @@ from authlib.common.security import generate_token
 from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
 from arxiv import taxonomy
-from ..services import datastore, sessions
+from ..services import datastore, SessionStore
 from .. import domain
 
 logger = logging.getLogger(__name__)
@@ -316,6 +316,7 @@ def save_token(token: dict, oauth_request: OAuth2Request) -> None:
         scopes=client.scopes,
         endorsements=get_endorsements(client)
     )
+    sessions = SessionStore.current_session()
     session = sessions.create(authorizations, request.remote_addr,
                               request.remote_addr, user=user,
                               client=client._client, session_id=session_id)

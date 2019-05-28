@@ -18,3 +18,4 @@ create = legacy.sessions.create
 invalidate = legacy.sessions.invalidate
 load = legacy.sessions.load
 generate_cookie = legacy.sessions.generate_cookie
+is_available = legacy.is_available

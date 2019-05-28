@@ -4,6 +4,7 @@ from unittest import TestCase, mock
 from datetime import datetime
 from pytz import timezone, UTC
 
+from flask import Flask
 from werkzeug import MultiDict
 from werkzeug.exceptions import BadRequest
 
@@ -24,12 +25,13 @@ def raise_authentication_failed(*args, **kwargs):
 class TestLogout(TestCase):
     """Tests for :func:`.logout`."""
 
-    @mock.patch('accounts.controllers.authentication.sessions')
+    @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def test_logout(self, mock_legacy, mock_sessions):
+    def test_logout(self, mock_legacy, mock_SessionStore):
         """A logged-in user requests to log out."""
         mock_legacy.sessions.invalidate_session.return_value = None
-        mock_sessions.delete.return_value = None
+        mock_SessionStore.current_session.return_value \
+            .delete.return_value = None
         next_page = '/'
         session_id = 'foosession'
         classic_id = 'bazsession'
@@ -39,12 +41,13 @@ class TestLogout(TestCase):
         self.assertEqual(header['Location'], next_page,
                          "Redirects user to next page.")
 
-    @mock.patch('accounts.controllers.authentication.sessions')
+    @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def test_logout_anonymous(self, mock_legacy, mock_sessions):
+    def test_logout_anonymous(self, mock_legacy, mock_SessionStore):
         """An anonymous user requests to log out."""
         mock_legacy.sessions.invalidate_session.return_value = None
-        mock_sessions.delete.return_value = None
+        mock_SessionStore.current_session.return_value \
+            .delete.return_value = None
         next_page = '/'
         data, status_code, header = logout(None, None, next_page)
         self.assertEqual(status_code, status.HTTP_303_SEE_OTHER,
@@ -56,9 +59,16 @@ class TestLogout(TestCase):
 class TestGETLogin(TestCase):
     """Tests for :func:`.login`."""
 
-    def test_login(self):
+    def setUp(self):
+        """Create an app context."""
+        self.app = Flask('test')
+        self.app.config['JWT_SECRET'] = 'foosecret'
+
+    @mock.patch('accounts.controllers.authentication.SessionStore')
+    def test_login(self, mock_SessionStore):
         """User requests the login page."""
-        data, status_code, header = login('GET', {}, '', '')
+        with self.app.app_context():
+            data, status_code, header = login('GET', {}, '', '')
         self.assertIn('form', data)
         self.assertIsInstance(data['form'], LoginForm,
                               "Response includes a login form.")
@@ -68,12 +78,19 @@ class TestGETLogin(TestCase):
 class TestPOSTLogin(TestCase):
     """Tests for func:`.login`."""
 
-    def test_post_invalid_data(self):
+    def setUp(self):
+        """Create an app context."""
+        self.app = Flask('test')
+        self.app.config['JWT_SECRET'] = 'foosecret'
+
+    @mock.patch('accounts.controllers.authentication.SessionStore')
+    def test_post_invalid_data(self, mock_SessionStore):
         """User submits invalid data."""
         form_data = MultiDict({'username': 'foouser'})     # Missing password.
         next_page = '/next'
         ip = '123.45.67.89'
-        data, status_code, header = login('POST', form_data, ip, next_page)
+        with self.app.app_context():
+            data, status_code, header = login('POST', form_data, ip, next_page)
         self.assertIn('form', data)
         self.assertIsInstance(data['form'], LoginForm,
                               "Response includes a login form.")
@@ -83,8 +100,10 @@ class TestPOSTLogin(TestCase):
                          "Response status is 400 bad request")
 
     @mock.patch('accounts.controllers.authentication.users')
+    @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def test_post_valid_data_bad_credentials(self, mock_legacy, mock_users):
+    def test_post_valid_data_bad_credentials(self, mock_legacy,
+                                             mock_SessionStore, mock_users):
         """Form data are valid but don't check out."""
         mock_users.exceptions.AuthenticationFailed = \
             users.exceptions.AuthenticationFailed
@@ -96,20 +115,19 @@ class TestPOSTLogin(TestCase):
         next_page = '/next'
         ip = '123.45.67.89'
 
-        data, code, headers = login('POST', form_data, ip, next_page)
+        with self.app.app_context():
+            data, code, headers = login('POST', form_data, ip, next_page)
         self.assertEqual(code, status.HTTP_400_BAD_REQUEST)
         self.assertIsInstance(data['form'], LoginForm,
                               "Response includes a login form.")
 
     @mock.patch('accounts.controllers.authentication.users')
-    @mock.patch('accounts.controllers.authentication.sessions')
+    @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def test_post_great(self, mock_legacy, mock_sessions, mock_users):
+    def test_post_great(self, mock_legacy, mock_SessionStore, mock_users):
         """Form data are valid and check out."""
         mock_users.exceptions.AuthenticationFailed = \
             users.exceptions.AuthenticationFailed
-        mock_sessions.exceptions.SessionCreationFailed = \
-            sessions.exceptions.SessionCreationFailed
         mock_legacy.exceptions.SessionCreationFailed = \
             legacy.exceptions.SessionCreationFailed
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
@@ -145,8 +163,10 @@ class TestPOSTLogin(TestCase):
             )
         )
         cookie = 'foodata'
-        mock_sessions.create.return_value = session
-        mock_sessions.generate_cookie.return_value = cookie
+        mock_SessionStore.current_session.return_value \
+            .create.return_value = session
+        mock_SessionStore.current_session.return_value \
+            .generate_cookie.return_value = cookie
 
         data, status_code, header = login('POST', form_data, ip, next_page)
         self.assertEqual(status_code, status.HTTP_303_SEE_OTHER,
@@ -160,14 +180,13 @@ class TestPOSTLogin(TestCase):
                          "Classic session cookie is returned")
 
     @mock.patch('accounts.controllers.authentication.users')
-    @mock.patch('accounts.controllers.authentication.sessions')
+    @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def test_post_not_verified(self, mock_legacy, mock_sessions, mock_users):
+    def test_post_not_verified(self, mock_legacy, mock_SessionStore,
+                               mock_users):
         """Form data are valid and check out."""
         mock_users.exceptions.AuthenticationFailed = \
             users.exceptions.AuthenticationFailed
-        mock_sessions.exceptions.SessionCreationFailed = \
-            sessions.exceptions.SessionCreationFailed
         mock_legacy.exceptions.SessionCreationFailed = \
             legacy.exceptions.SessionCreationFailed
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
@@ -203,8 +222,10 @@ class TestPOSTLogin(TestCase):
             )
         )
         cookie = 'foodata'
-        mock_sessions.create.return_value = session
-        mock_sessions.generate_cookie.return_value = cookie
+        mock_SessionStore.current_session.return_value \
+            .create.return_value = session
+        mock_SessionStore.current_session.return_value \
+            .generate_cookie.return_value = cookie
 
         data, status_code, header = login('POST', form_data, ip, next_page)
         self.assertEqual(status_code, status.HTTP_400_BAD_REQUEST,

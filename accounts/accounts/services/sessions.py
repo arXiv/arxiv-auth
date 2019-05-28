@@ -6,10 +6,10 @@ corresponding objects in the :mod:`arxiv.users` package.
 """
 
 from arxiv.users.auth import sessions, exceptions
-
-init_app = sessions.store.init_app
-create = sessions.store.create
-generate_cookie = sessions.store.generate_cookie
-delete_by_id = sessions.store.delete_by_id
-delete = sessions.store.delete
-load = sessions.store.load
+from arxiv.users.auth.sessions import SessionStore
+# init_app = sessions.store.init_app
+# create = sessions.store.create
+# generate_cookie = sessions.store.generate_cookie
+# delete_by_id = sessions.store.delete_by_id
+# delete = sessions.store.delete
+# load = sessions.store.load

@@ -327,6 +327,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.app.config['SESSION_DURATION'] = self.expiry
         self.app.config['JWT_SECRET'] = self.secret
         self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
         self.app.config['REDIS_HOST'] = 'localhost'
         self.app.config['REDIS_PORT'] = '7000'
         self.app.config['REDIS_CLUSTER'] = '1'
@@ -519,8 +520,6 @@ class TestLoginLogoutRoutes(TestCase):
                     datetime.fromtimestamp(db_session.end_time, tz=UTC),
                     datetime.now(UTC)
                 )
-
-
 
     def test_logout_clears_legacy_submit_cookie(self):
         """When the user logs out, the legacy submit cookie is unset."""

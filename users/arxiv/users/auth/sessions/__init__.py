@@ -9,3 +9,4 @@ See :mod:`.store`.
 """
 
 from . import store
+from .store import SessionStore

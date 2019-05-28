@@ -15,7 +15,7 @@ from werkzeug.exceptions import BadRequest, InternalServerError
 from arxiv import status
 from arxiv.users import domain
 from arxiv.base import logging
-from accounts.services import legacy, sessions, users
+from accounts.services import legacy, SessionStore, users
 
 from wtforms import StringField, PasswordField, SelectField, \
     SelectMultipleField, BooleanField, Form, HiddenField
@@ -49,6 +49,7 @@ def _login_classic(user: domain.User, auth: domain.Authorizations,
 
 
 def _logout(session_id: str) -> None:
+    sessions = SessionStore.current_session()
     try:
         sessions.delete_by_id(session_id)
     except sessions.exceptions.SessionDeletionFailed as e:
@@ -59,6 +60,7 @@ def _logout(session_id: str) -> None:
 
 def _login(user: domain.User, auth: domain.Authorizations, ip: Optional[str]) \
         -> Tuple[domain.Session, str]:
+    sessions = SessionStore.current_session()
     try:
         session = sessions.create(auth, ip, ip, user=user)
         cookie = sessions.generate_cookie(session)
@@ -162,7 +164,8 @@ class ProfileForm(Form):
         [(country.alpha_2, country.name) for country in pycountry.countries]
     RANKS = [('', '')] + domain.UserProfile.RANKS
     GROUPS = [
-        (key, group['name']) for key, group in taxonomy.definitions.GROUPS.items()
+        (key, group['name'])
+        for key, group in taxonomy.definitions.GROUPS.items()
         if not group.get('is_test', False)
     ]
     CATEGORIES = [
