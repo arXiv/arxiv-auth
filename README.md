@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/travis/arxiv/arxiv-auth/master.svg)](https://travis-ci.org/arxiv/arxiv-auth) [![Coverage Status](https://img.shields.io/coveralls/github/arxiv/arxiv-auth/master.svg)](https://coveralls.io/github/arxiv/arxiv-auth?branch=master)
+[![Build Status](https://img.shields.io/travis/arxiv/arxiv-auth/master.svg)](https://travis-ci.org/arxiv/arxiv-auth) [![Coverage Status](https://img.shields.io/coveralls/github/arXiv/arxiv-auth/master.svg)](https://coveralls.io/github/arXiv/arxiv-auth?branch=master)
 
 # arXiv Accounts
 
