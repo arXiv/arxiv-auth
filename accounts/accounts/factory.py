@@ -32,6 +32,7 @@ def create_web_app() -> Flask:
         app.middlewares['VaultMiddleware'].update_secrets({})
 
     if app.config['CREATE_DB']:
-        legacy.create_all()
-        users.create_all()
+        with app.app_context():
+            legacy.create_all()
+            users.create_all()
     return app

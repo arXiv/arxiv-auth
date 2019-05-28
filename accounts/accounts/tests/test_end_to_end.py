@@ -38,8 +38,6 @@ def stop_container(container):
                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                    shell=True)
     from accounts.services import legacy, users
-    legacy.drop_all()
-    users.drop_all()
 
 
 # 2018-07-30 : Disabling everything except login and logout routes for accounts
@@ -333,6 +331,8 @@ class TestLoginLogoutRoutes(TestCase):
         self.app.config['REDIS_CLUSTER'] = '1'
 
         with self.app.app_context():
+            legacy.drop_all()
+            users.drop_all()
             legacy.create_all()
             users.create_all()
 
@@ -382,7 +382,13 @@ class TestLoginLogoutRoutes(TestCase):
         stop_container(cls.container)
 
     def tearDown(self):
-        os.remove(self.db)
+        with self.app.app_context():
+            legacy.drop_all()
+            users.drop_all()
+        try:
+            os.remove(self.db)
+        except FileNotFoundError:
+            pass
 
     def test_get_login(self):
         """GET request to /login returns the login form."""
