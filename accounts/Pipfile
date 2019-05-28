@@ -11,10 +11,11 @@ captcha = "*"
 redis = "*"
 celery = "*"
 flask = "*"
+Jinja2 = ">=2.10.1"     # CVE-2019-10906
 jsonschema = "*"
 pyjwt = "*"
 requests = "==2.20.0"
-sqlalchemy = "*"
+SQLAlchemy = ">=1.3.0"  # CVE-2019-7548, CVE-2019-7164
 uwsgi = "*"
 wtforms = "*"
 arxiv-base = "==0.12.1"
@@ -24,6 +25,8 @@ openapi-spec-validator = "*"
 "6c2b755" = {path = "./../users"}
 arxiv-auth = "*"
 bleach = "*"
+urllib3 = ">=1.24.2"    # CVE-2019-11324
+pyyaml = ">=4.2b1"      # CVE-2017-18342
 
 [dev-packages]
 mimesis = "==2.1.0"
