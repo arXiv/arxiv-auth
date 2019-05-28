@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/travis/cul-it/arxiv-accounts/master.svg)](https://travis-ci.org/cul-it/arxiv-accounts) [![Coverage Status](https://img.shields.io/coveralls/github/cul-it/arxiv-accounts/master.svg)](https://coveralls.io/github/cul-it/arxiv-accounts?branch=master)
+[![Build Status](https://img.shields.io/travis/arxiv/arxiv-auth/master.svg)](https://travis-ci.org/arxiv/arxiv-auth) [![Coverage Status](https://img.shields.io/coveralls/github/arxiv/arxiv-auth/master.svg)](https://coveralls.io/github/arxiv/arxiv-auth?branch=master)
 
 # arXiv Accounts
 
@@ -308,7 +308,7 @@ cd <project_root>/docs
 make html SPHINXBUILD=$(pipenv --venv)/bin/sphinx-build
 ```
 
-Point your browser to: ``file:///path/to/arxiv-accounts/docs/build/html/index.html``.
+Point your browser to: ``file:///path/to/arxiv-auth/docs/build/html/index.html``.
 
 There are other build targets available. Run ``make`` without any arguments
 for more info.
