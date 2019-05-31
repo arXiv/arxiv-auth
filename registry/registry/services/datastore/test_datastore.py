@@ -26,6 +26,7 @@ class TestRoundTrip(TestCase):
         """Set up a temporary DB."""
         self.app = Flask('test')
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+        datastore.init_app(self.app)
         with self.app.app_context():
             datastore.drop_all()
             datastore.create_all()
@@ -34,7 +35,6 @@ class TestRoundTrip(TestCase):
         """Tear down temporary DB."""
         with self.app.app_context():
             datastore.drop_all()
-        os.remove('test.db')
 
     @mock.patch(f'{datastore.__name__}.util.get_application_global', get_g)
     def test_save_load_new_client(self):
