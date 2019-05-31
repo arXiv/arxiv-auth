@@ -116,7 +116,10 @@ class TestAuthentication(TestCase):
         """Tear down redis."""
         with cls.app.app_context():
             stop_container(cls.container)
-        os.remove(cls.db)
+        try:
+            os.remove(cls.db)
+        except Exception:
+            pass
 
     def test_post_credentials(self):
         """POST request to /token returns auth token."""
