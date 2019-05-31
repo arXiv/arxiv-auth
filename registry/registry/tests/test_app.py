@@ -107,13 +107,15 @@ class TestAuthentication(TestCase):
                 )
 
         except Exception:
-            stop_container(cls.container)
+            with cls.app.app_context():
+                stop_container(cls.container)
             raise
 
     @classmethod
     def tearDownClass(cls):
         """Tear down redis."""
-        stop_container(cls.container)
+        with cls.app.app_context():
+            stop_container(cls.container)
         os.remove(cls.db)
 
     def test_post_credentials(self):
