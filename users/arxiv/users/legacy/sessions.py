@@ -21,7 +21,7 @@ from arxiv.base import logging
 from .. import domain
 from . import cookies, util
 
-from .models import Base, DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
+from .models import DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
     DBUserNickname
 from .exceptions import UnknownSession, SessionCreationFailed, \
     SessionDeletionFailed, SessionExpired, InvalidCookie

@@ -12,7 +12,6 @@ from arxiv import taxonomy
 from .. import domain
 
 db: SQLAlchemy = SQLAlchemy()
-Base = declarative_base()
 
 
 class DBSession(db.Model):  # type: ignore

@@ -89,7 +89,7 @@ class TestAuthentication(TestCase):
         try:
             os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
             cls.app = create_web_app()
-            cls.app.config['REGISTRY_DATABASE_URI'] = f'sqlite:///{cls.db}'
+            cls.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{cls.db}'
             cls.app.config['SERVER_NAME'] = 'local.host:5000'
             cls.app.config['REDIS_HOST'] = 'localhost'
             cls.app.config['REDIS_PORT'] = '7000'

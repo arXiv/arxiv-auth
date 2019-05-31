@@ -1,15 +1,16 @@
 # arxiv/authenticator
 
-FROM arxiv/base:latest
+FROM centos:centos7
 
 WORKDIR /opt/arxiv/
 
-RUN yum install -y which mysql mysql-devel
-ADD Pipfile Pipfile.lock /opt/arxiv/
-RUN pip install -U pip pipenv
+RUN yum install -y epel-release && yum install -y mysql mysql-devel ca-certificates gcc python36 python36-devel wget && yum clean all
+RUN wget https://bootstrap.pypa.io/get-pip.py && /usr/bin/python3.6 get-pip.py
+RUN pip install -U pipenv uwsgi
 ENV LC_ALL en_US.utf-8
 ENV LANG en_US.utf-8
-RUN pipenv install
+
+ADD Pipfile Pipfile.lock /opt/arxiv/
 ADD users/ /opt/arxiv/users/
 RUN pipenv install /opt/arxiv/users/ --skip-lock
 

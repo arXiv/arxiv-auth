@@ -23,6 +23,14 @@ spec:
       # annotations:
       #   prometheus.io/scrape: 'true'
     spec:
+      serviceAccount: authenticator
+      volumes:
+      - name: vault-certificate
+        secret:
+          secretName: vault-certificate
+      - name: vault-token
+        emptyDir: {}
+        
       # This should keep the pods from clustering together on the same node.
       affinity:
         podAntiAffinity:
@@ -37,10 +45,11 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: "{{ default "arxiv-authenticator" .Values.deployment.name }}"
-        image: arxiv/authenticator:{{ .Values.imageTag }}
+        image: arxiv/authenticator:{{ .Values.image.tag }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
+
         env:
         - name: LOGLEVEL
           value: "{{ default "40" .Values.loglevel }}"
@@ -48,11 +57,30 @@ spec:
           value: "{{ .Values.redis.host }}"
         - name: REDIS_PORT
           value: "{{ .Values.redis.port }}"
-        - name: JWT_SECRET
+        - name: VAULT_ENABLED
+          value: "1"
+        - name: VAULT_HOST
+          value: "{{ .Values.vault.host }}"
+        - name: VAULT_PORT
+          value: "{{ .Values.vault.port }}"
+        - name: VAULT_CERT
+          value: /etc/vault-certificate/vaulttls.cert.pem
+        - name: VAULT_ROLE
+          value: "{{ .Values.vault.role }}-{{ .Values.namespace }}"
+        - name: KUBE_TOKEN
+          value: /var/run/secrets/kubernetes.io/serviceaccount/token
+        - name: NAMESPACE
           valueFrom:
-            secretKeyRef:
-              name: "{{ .Values.secrets.jwt.name }}"
-              key: "{{ .Values.secrets.jwt.key }}"
+            fieldRef:
+              fieldPath: metadata.namespace
+
+        volumeMounts:
+        - name: vault-certificate
+          mountPath: /etc/vault-certificate
+          readOnly: true
+        - name: vault-token
+          mountPath: /etc/vault
+
         resources:
           limits:
             cpu: 300m

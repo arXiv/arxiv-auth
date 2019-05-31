@@ -1,8 +1,15 @@
-
+namespace: development
 loglevel: "40"
-imageTag: "0.1"
+service:
+  name: registry
+deployment:
+  name: registry
+image:
+  tag: "0.4.1-rc1"
+
 labels:
   subsystem: api-gateway
+
 redis:
   host: localhost
   port: 6379
@@ -10,8 +17,17 @@ redis:
 ingress:
   host: api.arxiv.org
   path: "/api"
+  name: registry
 
 authenticator: authenticator
-service.name: changeme
-deployment.name: changeme
-ingress.name: changeme
+
+vault:
+  role: registry
+  host: localhost
+  port: 8200
+
+database:
+  host: localhost
+  port: 3306
+  engine: mysql+mysqldb
+  name: registry

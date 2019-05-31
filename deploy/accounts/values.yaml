@@ -3,7 +3,7 @@ ingress:
   path: /user
 
 loglevel: "40"
-imageTag: "0.2"
+image.tag: "0.2"
 labels:
   subsystem: infrastructure
 auth:

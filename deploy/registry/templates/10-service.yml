@@ -3,6 +3,7 @@ metadata:
   annotations:
     prometheus.io/scrape: 'true'
   name: "{{ default "registry" .Values.service.name }}"
+  namespace: "{{ .Values.namespace }}"
   labels:
     subsystem: "{{ .Values.labels.subsystem }}"
     container: "{{ default "registry" .Values.deployment.name }}"

@@ -47,7 +47,9 @@ URLS = [
     ("lost_password", "/lost_password", BASE_SERVER),
 ]
 
-REGISTRY_DATABASE_URI = os.environ.get('REGISTRY_DATABASE_URI', 'sqlite://')
+SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI',
+                                         'sqlite://')
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
 
 # Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
@@ -86,17 +88,13 @@ VAULT_REQUESTS = [
      'path': 'jwt',
      'key': 'jwt-secret',
      'minimum_ttl': 3600},
-    {'type': 'aws',
-     'name': 'AWS_S3_CREDENTIAL',
-     'mount_point': f'aws{NS_AFFIX}/',
-     'role': os.environ.get('VAULT_CREDENTIAL')},
     {'type': 'database',
      'engine': os.environ.get('REGISTRY_DATABASE_ENGINE', 'mysql+mysqldb'),
      'host': os.environ.get('REGISTRY_DATABASE_HOST', 'localhost'),
-     'database': os.environ.get('REGISTRY_DATABASE', 'registry'),
+     'database': os.environ.get('REGISTRY_DATABASE_NAME', 'registry'),
      'params': 'charset=utf8mb4',
-     'port': '3306',
-     'name': 'REGISTRY_DATABASE_URI',
+     'port': os.environ.get('REGISTRY_DATABASE_PORT', '3306'),
+     'name': 'SQLALCHEMY_DATABASE_URI',
      'mount_point': f'database{NS_AFFIX}/',
      'role': 'registry-write'}
 ]

@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: arxiv-accounts
-        image: arxiv/accounts:{{ .Values.imageTag }}
+        image: arxiv/accounts:{{ .Values.image.tag }}
         imagePullPolicy: Always
         ports:
         - containerPort: 8000

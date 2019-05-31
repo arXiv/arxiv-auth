@@ -23,7 +23,7 @@ class TestRoundTrip(TestCase):
 
     def setUp(self):
         """Set up a temporary DB."""
-        os.environ['REGISTRY_DATABASE_URI'] = 'sqlite:///test.db'
+        os.environ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
         datastore.drop_all()
         datastore.create_all()
 
