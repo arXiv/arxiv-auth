@@ -80,6 +80,7 @@ class SessionStore(object):
         Returns
         -------
         :class:`.Session`
+
         """
         if session_id is None:
             session_id = str(uuid.uuid4())
@@ -121,6 +122,7 @@ class SessionStore(object):
         Parameters
         ----------
         cookie : str
+
         """
         cookie_data = self._unpack_cookie(cookie)
         self.delete_by_id(cookie_data['session_id'])
@@ -132,6 +134,7 @@ class SessionStore(object):
         Parameters
         ----------
         session_id : str
+
         """
         try:
             self.r.delete(session_id)
@@ -154,6 +157,7 @@ class SessionStore(object):
         ------
         :class:`InvalidToken`
             Raised if the data in the cookie does not match the session data.
+
         """
         cookie_data = self._unpack_cookie(cookie)
         if cookie_data['nonce'] != session.nonce \
@@ -216,82 +220,38 @@ class SessionStore(object):
         secret = self._secret
         return jwt.encode(cookie_data, secret).decode('ascii')
 
+    @classmethod
+    def init_app(cls, app: object = None) -> None:
+        """Set default configuration parameters for an application instance."""
+        config = get_application_config(app)
+        config.setdefault('REDIS_HOST', 'localhost')
+        config.setdefault('REDIS_PORT', '7000')
+        config.setdefault('REDIS_DATABASE', '0')
+        config.setdefault('REDIS_TOKEN', None)
+        config.setdefault('REDIS_CLUSTER', '1')
+        config.setdefault('JWT_SECRET', 'foosecret')
+        config.setdefault('SESSION_DURATION', '7200')
 
-def init_app(app: object = None) -> None:
-    """Set default configuration parameters for an application instance."""
-    config = get_application_config(app)
-    config.setdefault('REDIS_HOST', 'localhost')
-    config.setdefault('REDIS_PORT', '7000')
-    config.setdefault('REDIS_DATABASE', '0')
-    config.setdefault('REDIS_TOKEN', None)
-    config.setdefault('REDIS_CLUSTER', '1')
-    config.setdefault('JWT_SECRET', 'foosecret')
-    config.setdefault('SESSION_DURATION', '7200')
+    @classmethod
+    def get_session(cls, app: object = None) -> 'SessionStore':
+        """Get a new session with the search index."""
+        config = get_application_config(app)
+        host = config.get('REDIS_HOST', 'localhost')
+        port = int(config.get('REDIS_PORT', '7000'))
+        db = int(config.get('REDIS_DATABASE', '0'))
+        token = config.get('REDIS_TOKEN', None)
+        cluster = config.get('REDIS_CLUSTER', '1') == '1'
+        secret = config['JWT_SECRET']
+        duration = int(config.get('SESSION_DURATION', '7200'))
+        return cls(host, port, db, secret, duration, token=token,
+                   cluster=cluster)
 
-
-def get_redis_session(app: object = None) -> SessionStore:
-    """Get a new session with the search index."""
-    config = get_application_config(app)
-    host = config.get('REDIS_HOST', 'localhost')
-    port = int(config.get('REDIS_PORT', '7000'))
-    db = int(config.get('REDIS_DATABASE', '0'))
-    token = config.get('REDIS_TOKEN', None)
-    cluster = config.get('REDIS_CLUSTER', '1') == '1'
-    secret = config['JWT_SECRET']
-    duration = int(config.get('SESSION_DURATION', '7200'))
-    return SessionStore(host, port, db, secret, duration, token=token,
-                        cluster=cluster)
-
-
-def current_session() -> SessionStore:
-    """Get/create :class:`.SearchSession` for this context."""
-    g = get_application_global()
-    if not g:
-        return get_redis_session()
-    if 'redis' not in g:
-        g.redis = get_redis_session()
-    return g.redis      # type: ignore
-
-
-@wraps(SessionStore.create)
-def create(authorizations: domain.Authorizations,
-           ip_address: str, remote_host: str, tracking_cookie: str = '',
-           user: Optional[domain.User] = None,
-           client: Optional[domain.Client] = None,
-           session_id: Optional[str] = None) -> domain.Session:
-    """Create a new session."""
-    return current_session().create(authorizations, ip_address,
-                                    remote_host, tracking_cookie,
-                                    user=user, client=client,
-                                    session_id=session_id)
-
-
-@wraps(SessionStore.load)
-def load(cookie: str, decode: bool = True) -> Union[domain.Session, str]:
-    """Load a session by cookie value."""
-    return current_session().load(cookie, decode=decode)
-
-
-@wraps(SessionStore.load)
-def load_by_id(session_id: str, decode: bool = True) \
-        -> Union[domain.Session, str]:
-    """Load a session by session ID."""
-    return current_session().load_by_id(session_id, decode=decode)
-
-
-@wraps(SessionStore.delete)
-def delete(cookie: str) -> None:
-    """Delete a session in the key-value store."""
-    return current_session().delete(cookie)
-
-
-@wraps(SessionStore.delete_by_id)
-def delete_by_id(session_id: str) -> None:
-    """Delete a session in the key-value store by ID."""
-    return current_session().delete_by_id(session_id)
-
-
-@wraps(SessionStore.generate_cookie)
-def generate_cookie(session: domain.Session) -> str:
-    """Generate a cookie from a :class:`domain.Session`."""
-    return current_session().generate_cookie(session)
+    @classmethod
+    def current_session(cls) -> 'SessionStore':
+        """Get/create :class:`.SearchSession` for this context."""
+        g = get_application_global()
+        if not g:
+            return cls.get_session()
+        if 'redis' not in g:
+            g.redis = cls.get_session()
+        return g.redis      # type: ignore

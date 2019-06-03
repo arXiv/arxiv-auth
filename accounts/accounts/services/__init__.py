@@ -1,3 +1,4 @@
 """Provides modules for interacting with external services."""
 
-from . import legacy, sessions, users
+from . import legacy, users
+from .sessions import SessionStore

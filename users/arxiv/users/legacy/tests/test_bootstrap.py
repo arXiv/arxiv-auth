@@ -208,7 +208,10 @@ class TestBootstrap(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        os.remove('./test.db')
+        try:
+            os.remove('./test.db')
+        except FileNotFoundError:
+            pass
 
     def test_authenticate_and_use_session(self):
         """Attempt to authenticate users and create/load auth sessions."""

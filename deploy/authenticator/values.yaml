@@ -1,0 +1,22 @@
+namespace: development
+service:
+  name: authenticator
+deployment:
+  name: authenticator
+
+image:
+  tag: "0.4.1-rc1"
+
+labels:
+  subsystem: api-gateway
+
+redis:
+  host: localhost
+  port: 6379
+
+replicas: 3
+
+vault:
+  role: authenticator
+  host: localhost
+  port: 8200

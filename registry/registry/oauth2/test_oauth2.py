@@ -247,8 +247,8 @@ class TestSaveToken(TestCase):
     """Tests for :func:`oauth2.save_token`."""
 
     @mock.patch(f'{oauth2.__name__}.request')
-    @mock.patch(f'{oauth2.__name__}.sessions')
-    def test_save_token(self, mock_sessions, mock_request):
+    @mock.patch(f'{oauth2.__name__}.SessionStore')
+    def test_save_token(self, mock_SessionStore, mock_request):
         """Use the session store to persist a token as a session."""
         oa2request = mock.MagicMock(
             client=mock.MagicMock(scopes=[Scope('foo', 'bar')]),
@@ -257,8 +257,12 @@ class TestSaveToken(TestCase):
         mock_request.remote_addr = '127.0.0.1'
         oauth2.save_token({'access_token': 'footoken'}, oa2request)
 
-        self.assertEqual(mock_sessions.create.call_count, 1)
-        (auths, ip, radr), kwargs = mock_sessions.create.call_args
+        self.assertEqual(
+            mock_SessionStore.current_session.return_value.create.call_count,
+            1
+        )
+        (auths, ip, radr), kwargs \
+            = mock_SessionStore.current_session.return_value.create.call_args
         self.assertEqual(auths.scopes, [Scope('foo', 'bar')])
         self.assertEqual(ip, '127.0.0.1')
         self.assertEqual(radr, '127.0.0.1')

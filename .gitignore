@@ -116,3 +116,4 @@ default.nix
 .pytest*
 
 *.ttf
+*.sqlite

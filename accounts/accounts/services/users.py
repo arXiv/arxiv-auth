@@ -19,6 +19,7 @@ register = legacy.accounts.register
 username_exists = legacy.accounts.username_exists
 email_exists = legacy.accounts.email_exists
 update = legacy.accounts.update
+is_available = legacy.is_available
 
 
 def create_all() -> None:

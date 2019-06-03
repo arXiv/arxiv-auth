@@ -7,6 +7,7 @@ from pytz import UTC
 from flask import Flask, request, Response, make_response, redirect, url_for
 from werkzeug.http import parse_cookie
 from werkzeug import MultiDict
+from werkzeug.routing import BuildError
 from . import decorators, middleware, scopes, tokens
 from .. import domain, legacy
 
@@ -84,6 +85,10 @@ class Auth(object):
         """
         self.app = app
         self.app.before_request(self.load_session)
+        self.app.config.setdefault('DEFAULT_LOGOUT_REDIRECT_URL',
+                                   'https://arxiv.org')
+        self.app.config.setdefault('DEFAULT_LOGIN_REDIRECT_URL',
+                                   'https://arxiv.org')
 
     def load_session(self) -> None:
         """
@@ -162,7 +167,14 @@ class Auth(object):
         for name in [classic_cookie_name, perm_cookie_name]:
             if len(cookies.getlist(name)) > 1:
                 if response is None:
-                    response = make_response(redirect(url_for('ui.login')))
+                    # The ui.login route may not exist on an application using
+                    # this package, so we will fall back to the logout redirect
+                    # URL if the login route is missing. ARXIVNG-2063
+                    try:
+                        target = url_for('ui.login')
+                    except BuildError:
+                        target = self.app.config['DEFAULT_LOGOUT_REDIRECT_URL']
+                    response = make_response(redirect(target))
                 response.set_cookie(name, '', max_age=0, expires=now)
                 response.set_cookie(name, '', max_age=0, expires=now,
                                     domain=domain.lstrip('.'))

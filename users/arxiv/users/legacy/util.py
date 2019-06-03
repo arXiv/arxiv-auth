@@ -1,6 +1,6 @@
 """Helpers and Flask application integration."""
 
-from typing import Generator, Tuple, List
+from typing import Generator, Tuple, List, Optional, Any
 from datetime import datetime
 from pytz import timezone, UTC
 from contextlib import contextmanager
@@ -9,19 +9,23 @@ from base64 import b64encode, b64decode
 import hashlib
 from collections import Counter
 
+from werkzeug.local import LocalProxy
 from sqlalchemy.engine import Engine
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
+from arxiv.base import logging
 from arxiv.base.globals import get_application_config, get_application_global
 
 from ..auth import scopes
 from .. import domain
-from .models import Base, DBUser, DBPolicyClass, DBEndorsement, DBSession
+from .models import db, DBUser, DBPolicyClass, DBEndorsement, DBSession
 from .exceptions import UnknownSession, PasswordAuthenticationFailed
 
 EASTERN = timezone('US/Eastern')
+logger = logging.getLogger(__name__)
+logger.propagate = False
 
 
 def now() -> int:
@@ -43,63 +47,33 @@ def from_epoch(t: int) -> datetime:
 @contextmanager
 def transaction() -> Generator:
     """Context manager for database transaction."""
-    session = current_session()
     try:
-        yield session
-        session.commit()
+        yield db.session
+        db.session.commit()
     except Exception as e:
-        # logger.debug('Commit failed, rolling back: %s', str(e))
-        session.rollback()
+        logger.error('Commit failed, rolling back: %s', str(e))
+        db.session.rollback()
         raise
 
 
-def init_app(app: object = None) -> None:
-    """Set default configuration parameters for an application instance."""
-    config = get_application_config(app)
-    config.setdefault('CLASSIC_DATABASE_URI', 'sqlite://')
-
-
-def _get_engine(app: object = None) -> Engine:
-    """Get a new :class:`.Engine` for the classic database."""
-    config = get_application_config(app)
-    database_uri = config.get('CLASSIC_DATABASE_URI', 'sqlite://')
-    return create_engine(database_uri)
-
-
-def _get_session(app: object = None) -> Session:
-    """Get a new :class:`.Session` for the classic database."""
-    engine = _current_engine()
-    return sessionmaker(bind=engine)()
-
-
-def _current_engine() -> Engine:
-    """Get/create :class:`.Engine` for this context."""
-    g = get_application_global()
-    if not g:
-        return _get_engine()
-    if 'user_data_engine' not in g:
-        g.user_data_engine = _get_engine()
-    return g.user_data_engine
+def init_app(app: Optional[LocalProxy]) -> None:
+    """Set configuration defaults and attach session to the application."""
+    db.init_app(app)
 
 
 def current_session() -> Session:
     """Get/create database session for this context."""
-    g = get_application_global()
-    if not g:
-        return _get_session()
-    if 'user_data' not in g:
-        g.user_data = _get_session()
-    return g.user_data
+    return db.session
 
 
 def create_all() -> None:
     """Create all tables in the database."""
-    Base.metadata.create_all(_current_engine())
+    db.create_all()
 
 
 def drop_all() -> None:
     """Drop all tables in the database."""
-    Base.metadata.drop_all(_current_engine())
+    db.drop_all()
 
 
 def hash_password(password: str) -> str:
@@ -155,3 +129,13 @@ def get_session_duration() -> int:
     config = get_application_config()
     timeout: str = config['SESSION_DURATION']
     return int(timeout)
+
+
+def is_available(**kwargs: Any) -> bool:
+    """Check our connection to the database."""
+    try:
+        db.session.query("1").from_statement(text("SELECT 1")).all()
+    except Exception as e:
+        logger.error('Encountered an error talking to database: %s', e)
+        return False
+    return True

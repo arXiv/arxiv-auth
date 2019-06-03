@@ -14,7 +14,7 @@ from .. import domain
 from ..auth import scopes
 from arxiv.base import logging
 
-from .models import Base, DBUser, DBUserPassword, DBPermanentToken, \
+from .models import DBUser, DBUserPassword, DBPermanentToken, \
     DBUserNickname, DBProfile
 from .exceptions import NoSuchUser, AuthenticationFailed, \
     PasswordAuthenticationFailed

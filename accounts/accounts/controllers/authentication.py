@@ -26,7 +26,7 @@ import pycountry
 
 from arxiv import status
 from arxiv.base import logging
-from accounts.services import legacy, sessions, users
+from accounts.services import legacy, SessionStore, users
 
 from .util import MultiCheckboxField, OptGroupSelectField
 
@@ -60,6 +60,7 @@ def login(method: str, form_data: MultiDict, ip: str,
         Headers to add to the response.
 
     """
+    sessions = SessionStore.current_session()
     if method == 'GET':
         logger.debug('Request for login form')
         # TODO: If a permanent token is provided, attempt to log the user in,
@@ -93,7 +94,7 @@ def login(method: str, form_data: MultiDict, ip: str,
             'error': Markup(
                 'Your account has not yet been verified. Please contact '
                 '<a href="mailto:help@arxiv.org">help@arxiv.org</a> if '
-                 'you believe this to be in error.'
+                'you believe this to be in error.'
             )
         })
         return data, status.HTTP_400_BAD_REQUEST, {}
@@ -154,6 +155,7 @@ def logout(session_cookie: Optional[str],
 
     """
     logger.debug('Request to log out')
+    sessions = SessionStore.current_session()
     if session_cookie:
         try:
             sessions.delete(session_cookie)
