@@ -130,7 +130,7 @@ class TestEndorsement(TestCase):
 
             # Exclude cs.NA, and verify compression output.
             all_endorsements.remove('cs.NA')
-            print('???????')
+
             some = endorsements.compress_endorsements(all_endorsements)
             for archive in taxonomy.ARCHIVES_ACTIVE.keys():
                 if archive not in ['cs', 'test']:

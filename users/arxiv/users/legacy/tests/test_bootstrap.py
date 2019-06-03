@@ -192,6 +192,7 @@ class TestBootstrap(TestCase):
                                 surname=db_user.last_name,
                                 suffix=db_user.suffix_name
                             ),
+                            profile=db_profile.to_domain(),
                             verified=bool(db_user.flag_email_verified)
                         ),
                         domain.Authorizations(
@@ -265,6 +266,8 @@ class TestBootstrap(TestCase):
                 cookie = sessions.generate_cookie(session)
 
                 session_loaded = sessions.load(cookie)
+                print(session.user.profile)
+                print(session_loaded.user.profile)
                 self.assertEqual(session.user, session_loaded.user,
                                  "Loaded the correct user")
                 self.assertEqual(session.session_id, session_loaded.session_id,

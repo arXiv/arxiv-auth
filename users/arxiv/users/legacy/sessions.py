@@ -22,7 +22,7 @@ from .. import domain
 from . import cookies, util
 
 from .models import DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
-    DBUserNickname
+    DBUserNickname, DBProfile
 from .exceptions import UnknownSession, SessionCreationFailed, \
     SessionDeletionFailed, SessionExpired, InvalidCookie
 from .endorsements import get_endorsements
@@ -82,19 +82,20 @@ def load(cookie: str) -> domain.Session:
         raise SessionExpired(f'Session {session_id} has expired')
 
     with util.transaction() as session:
-        data: Tuple[DBUser, DBSession, DBUserNickname] = (
-            session.query(DBUser, DBSession, DBUserNickname)
+        data: Tuple[DBUser, DBSession, DBUserNickname, DBProfile] = (
+            session.query(DBUser, DBSession, DBUserNickname, DBProfile)
             .filter(DBUser.user_id == user_id)
             .filter(DBUserNickname.user_id == user_id)
             .filter(DBSession.user_id == user_id)
             .filter(DBSession.session_id == session_id)
+            .filter(DBProfile.user_id == user_id)
             .first()
         )
 
         if not data:
             raise UnknownSession('No such user or session')
 
-        db_user, db_session, db_nick = data
+        db_user, db_session, db_nick, db_profile = data
 
         # Verify that the session is not expired.
         if db_session.end_time != 0 and db_session.end_time < util.now():
@@ -110,6 +111,7 @@ def load(cookie: str) -> domain.Session:
                 surname=db_user.last_name,
                 suffix=db_user.suffix_name
             ),
+            profile=db_profile.to_domain() if db_profile else None,
             verified=bool(db_user.flag_email_verified)
         )
 

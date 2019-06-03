@@ -203,7 +203,7 @@ class DBUserNickname(db.Model):  # type: ignore
 class DBProfile(db.Model):   # type: ignore
     """Legacy user profiles."""
 
-    __tablename__ = 'arxiv_demographics'
+    __tablename__ = 'arXiv_demographics'
 
     TYPE_CHOICES = [
         (1, 'Staff'),

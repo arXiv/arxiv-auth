@@ -95,7 +95,8 @@ class SessionStore(object):
             authorizations=authorizations,
             nonce=_generate_nonce()
         )
-
+        logger.debug('user has profile: %s', user.profile)
+        logger.debug('storing session %s', session)
         try:
             self.r.set(session_id, self._encode(domain.to_dict(session)),
                        ex=self._duration)
@@ -164,7 +165,8 @@ class SessionStore(object):
                 or session.user.user_id != cookie_data['user_id']:
             raise InvalidToken('Invalid token; likely a forgery')
 
-    def load(self, cookie: str, decode: bool = True) -> domain.Session:
+    def load(self, cookie: str, decode: bool = True) \
+            -> Union[domain.Session, bytes]:
         """Load a session using a session cookie."""
         try:
             cookie_data = self._unpack_cookie(cookie)
@@ -176,6 +178,8 @@ class SessionStore(object):
             raise InvalidToken('Session has expired')
 
         session = self.load_by_id(cookie_data['session_id'], decode=decode)
+        if not decode:
+            return session
         if session.expired:
             raise ExpiredToken('Session has expired')
         if session.user is None and session.client is None:
@@ -185,7 +189,7 @@ class SessionStore(object):
         return session
 
     def load_by_id(self, session_id: str, decode: bool = True) \
-            -> Union[domain.Session, str]:
+            -> Union[domain.Session, bytes]:
         """Get session data by session ID."""
         session_jwt: str = self.r.get(session_id)
         if not session_jwt:

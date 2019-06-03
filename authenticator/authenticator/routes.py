@@ -1,5 +1,6 @@
 """."""
 from flask import Blueprint, current_app, request, jsonify
+import traceback
 from werkzeug.exceptions import BadRequest, Unauthorized
 import jwt
 
@@ -39,6 +40,7 @@ def authenticate():
             raise e
         except Exception as e:
             logger.error('Unhandled exception: %s', e)
+            logger.error(traceback.format_exc())
             return jsonify({}), status.HTTP_200_OK, {}
     elif auth_cookie:   # Try the cookie second.
         logger.debug('Got auth cookie: %s', auth_cookie)
@@ -48,6 +50,7 @@ def authenticate():
             raise e
         except Exception as e:
             logger.error('Unhandled exception: %s', e)
+            logger.error(traceback.format_exc())
             return jsonify({}), status.HTTP_200_OK, {}
     else:
         logger.error('Auth token not found')

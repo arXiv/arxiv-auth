@@ -13,6 +13,7 @@ labels:
 redis:
   host: localhost
   port: 6379
+  cluster: 0
 
 replicas: 3
 

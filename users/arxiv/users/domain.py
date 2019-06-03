@@ -234,6 +234,14 @@ class User(NamedTuple):
     verified: bool = False
     """Whether or not the users' e-mail address has been verified."""
 
+    def asdict(self) -> dict:
+        data = super(User, self)._asdict()
+        if self.name is not None:
+            data['name'] = self.name._asdict()
+        if self.profile is not None:
+            data['profile'] = self.profile._asdict()
+        return data
+
     # TODO: consider whether this information is relevant beyond the
     # ``arxiv.users.legacy.authenticate`` module.
     #
@@ -360,7 +368,6 @@ def to_dict(obj: tuple) -> dict:
         return obj
 
     for key, value in data.items():
-
         _data[key] = _cast(value)
     return _data
 

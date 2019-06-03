@@ -30,7 +30,7 @@ spec:
           secretName: vault-certificate
       - name: vault-token
         emptyDir: {}
-        
+
       # This should keep the pods from clustering together on the same node.
       affinity:
         podAntiAffinity:
@@ -57,6 +57,9 @@ spec:
           value: "{{ .Values.redis.host }}"
         - name: REDIS_PORT
           value: "{{ .Values.redis.port }}"
+        - name: REDIS_CLUSTER
+          value: "{{ .Values.redis.cluster }}"
+
         - name: VAULT_ENABLED
           value: "1"
         - name: VAULT_HOST
