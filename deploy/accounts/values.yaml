@@ -1,29 +1,38 @@
+name: accounts
+namespace: development
+
 ingress:
-  host: some.where.org
-  path: /user
+  host: development.arxiv.org
+  path: "/user"
+  name: accounts
 
 loglevel: "40"
-image.tag: "0.2"
+image:
+  name: "arxiv/accounts"
+  tag: "0.4.1-rc1"
+
 labels:
   subsystem: infrastructure
+
 auth:
   url: http://someservice.default.svc.cluster.local/auth
   signin: https://some.where.org/user/login
   response_headers: Authorization
 
-base_server: some.where.org
+config:
+  wait_for_services: 1
+  wait_on_startup: 5
 
-secrets:
-  database:
-    name: db-secret-name
-    key: database-key
-  hash:
-    name: hash-secret-name
-    key: hash-key
-  jwt:
-    name: jwt-secret-name
-    key: jwt-key
-tls:
-  secretName: tls-secret-name
+authenticator:
+  service: authenticator
 
-namespace: somespace
+vault:
+  host: changeme
+  port: 8200
+  role: accounts
+  credential: accounts
+
+redis:
+  host: localhost
+  port: 6379
+  cluster: 0

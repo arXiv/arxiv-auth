@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: accounts-ingress
+  name: "{{ .Values.name }}"
   labels:
     subsystem: "{{ .Values.labels.subsystem }}"
     container: accounts-ingress
@@ -11,17 +11,18 @@ metadata:
   annotations:
     ingress.kubernetes.io/configuration-snippet: |
       more_set_headers "Request-Id: $req_id";
-    ingress.kubernetes.io/auth-url: "{{ .Values.auth.url }}"
+    ingress.kubernetes.io/auth-url: http://{{ .Values.authenticator.service }}.{{ .Values.namespace }}.svc.cluster.local/auth
     ingress.kubernetes.io/auth-signin: "{{ .Values.auth.signin }}"
     ingress.kubernetes.io/auth-response-headers: "{{ .Values.auth.response_headers }}"
 spec:
-  tls:
-  - secretName: "{{ .Values.tls.secretName }}"
+  tls:  # This will use the default certificate for the ingress controller.
+  - hosts:
+    - "{{ .Values.ingress.host }}"
   rules:
   - host: "{{ .Values.ingress.host }}"
     http:
       paths:
       - path: "{{ default "/user" .Values.ingress.path }}"
         backend:
-          service.name: arxiv-accounts
+          serviceName: "{{ .Values.name }}"
           servicePort: 80

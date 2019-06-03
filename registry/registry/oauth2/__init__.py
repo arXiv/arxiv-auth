@@ -18,7 +18,7 @@ import hashlib
 from datetime import timedelta, datetime
 from flask import Request, Flask, current_app, request
 from authlib.flask.oauth2 import AuthorizationServer
-from authlib.specs.rfc6749 import ClientMixin, grants, OAuth2Request, \
+from authlib.oauth2.rfc6749 import ClientMixin, grants, OAuth2Request, \
     OAuth2Error
 from authlib.common.security import generate_token
 

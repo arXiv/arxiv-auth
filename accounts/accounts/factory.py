@@ -35,4 +35,5 @@ def create_web_app() -> Flask:
         with app.app_context():
             legacy.create_all()
             users.create_all()
+
     return app

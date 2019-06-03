@@ -10,6 +10,8 @@ NAMESPACE = os.environ.get('NAMESPACE')
 SECRET_KEY = os.environ.get('SECRET_KEY', 'asdf1234')
 SERVER_NAME = os.environ.get('ACCOUNTS_SERVER_NAME')
 
+APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
+
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', 'nope')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', 'nope')
 AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
