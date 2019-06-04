@@ -18,6 +18,8 @@ auth:
   url: http://someservice.default.svc.cluster.local/auth
   signin: https://some.where.org/user/login
   response_headers: Authorization
+  default_login_redirect: https://arxiv.org/user
+  default_logout_redirect: https://arxiv.org
 
 config:
   wait_for_services: 1

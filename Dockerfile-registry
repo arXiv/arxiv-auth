@@ -19,6 +19,8 @@ ENV PATH "/opt/arxiv:${PATH}"
 ADD registry/wsgi.py registry/uwsgi.ini registry/create_client.py registry/create_db.py /opt/arxiv/
 ADD registry/registry/ /opt/arxiv/registry/
 
+ENV APPLICATION_ROOT "/"
+
 EXPOSE 8000
 
 ENTRYPOINT ["pipenv", "run"]

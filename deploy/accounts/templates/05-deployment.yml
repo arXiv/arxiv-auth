@@ -73,7 +73,10 @@ spec:
 
         - name: APPLICATION_ROOT
           value: "{{ .Values.ingress.path }}"
-
+        - name: DEFAULT_LOGIN_REDIRECT_URL
+          value: "{{ .Values.auth.default_login_redirect }}"
+        - name: DEFAULT_LOGOUT_REDIRECT_URL
+          value: "{{ .Values.auth.default_logout_redirect }}"
 
 
         volumeMounts:

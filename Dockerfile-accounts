@@ -21,8 +21,9 @@ ADD accounts/accounts/ /opt/arxiv/accounts/
 ADD fonts/montserrat.ttf /opt/arxiv/fonts/montserrat.ttf
 
 ENV CAPTCHA_FONT "/opt/arxiv/fonts/montserrat.ttf"
+ENV APPLICATION_ROOT "/"
 
 EXPOSE 8000
 
-ENTRYPOINT ["pipenv", "run", "uwsgi"]
+ENTRYPOINT ["pipenv", "run"]
 CMD ["uwsgi", "--ini", "/opt/arxiv/uwsgi.ini"]

@@ -18,8 +18,9 @@ ENV PATH "/opt/arxiv:${PATH}"
 
 ADD authenticator/wsgi.py authenticator/uwsgi.ini /opt/arxiv/
 ADD authenticator/authenticator/ /opt/arxiv/authenticator/
+ENV APPLICATION_ROOT "/"
 
 EXPOSE 8000
 
-ENTRYPOINT ["pipenv", "run", "uwsgi"]
+ENTRYPOINT ["pipenv", "run"]
 CMD ["uwsgi", "--ini", "/opt/arxiv/uwsgi.ini"]
