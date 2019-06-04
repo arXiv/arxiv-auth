@@ -10,7 +10,7 @@ from base64 import b64encode, b64decode
 from typing import Optional, Generator, Tuple, List
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
@@ -25,7 +25,7 @@ from . import cookies, util
 from .models import DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
     DBUserNickname, DBProfile
 from .exceptions import UnknownSession, SessionCreationFailed, \
-    SessionDeletionFailed, SessionExpired, InvalidCookie
+    SessionDeletionFailed, SessionExpired, InvalidCookie, Unavailable
 from .endorsements import get_endorsements
 
 logger = logging.getLogger(__name__)
@@ -80,15 +80,17 @@ def load(cookie: str) -> domain.Session:
     if expires_at <= datetime.now(tz=UTC):
         raise SessionExpired(f'Session {session_id} has expired')
 
-    data: Tuple[DBUser, DBSession, DBUserNickname, DBProfile] = (
-        db.session.query(DBUser, DBSession, DBUserNickname, DBProfile)
-        .filter(DBUser.user_id == user_id)
-        .filter(DBUserNickname.user_id == user_id)
-        .filter(DBSession.user_id == user_id)
-        .filter(DBSession.session_id == session_id)
-        .filter(DBProfile.user_id == user_id)
-        .first()
-    )
+    data: Tuple[DBUser, DBSession, DBUserNickname, DBProfile]
+    try:
+        data = db.session.query(DBUser, DBSession, DBUserNickname, DBProfile) \
+            .filter(DBUser.user_id == user_id) \
+            .filter(DBUserNickname.user_id == user_id) \
+            .filter(DBSession.user_id == user_id) \
+            .filter(DBSession.session_id == session_id) \
+            .filter(DBProfile.user_id == user_id) \
+            .first()
+    except OperationalError as e:
+        raise Unavailable('Database is temporarily unavailable') from e
 
     if not data:
         raise UnknownSession('No such user or session')

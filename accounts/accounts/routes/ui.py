@@ -32,8 +32,8 @@ def anonymous_only(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.auth:
-            user = request.auth.user
-            target = url_for('account')
+            # user = request.auth.user
+            target = current_app.config['DEFAULT_LOGIN_REDIRECT_URL']
             content = redirect(target, code=status.HTTP_303_SEE_OTHER)
             response = make_response(content)
             return response

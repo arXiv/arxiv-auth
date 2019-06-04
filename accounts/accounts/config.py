@@ -63,6 +63,8 @@ CLASSIC_DATABASE_URI = os.environ.get('CLASSIC_DATABASE_URI')
 
 SQLALCHEMY_DATABASE_URI = CLASSIC_DATABASE_URI
 
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', 'foocaptcha')
 """Used to encrypt captcha answers, so that we don't need to store them."""
 

@@ -3,11 +3,14 @@
 from typing import Optional, Union
 from datetime import datetime
 import warnings
+
 from pytz import UTC
 from flask import Flask, request, Response, make_response, redirect, url_for
 from werkzeug.http import parse_cookie
 from werkzeug import MultiDict
 from werkzeug.routing import BuildError
+from retry import retry
+
 from . import decorators, middleware, scopes, tokens
 from .. import domain, legacy
 
@@ -51,6 +54,7 @@ class Auth(object):
         if app is not None:
             self.init_app(app)
 
+    @retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
     def _get_legacy_session(self) -> Optional[domain.Session]:
         """
         Attempt to load a legacy auth session.

@@ -19,7 +19,7 @@ requests = ">=2.21.0"
 SQLAlchemy = ">=1.3.0"  # CVE-2019-7548, CVE-2019-7164
 uWSGI = "*"
 WTForms = "*"
-arxiv-base = "==0.15.8rc4"
+arxiv-base = "==0.15.8rc7"
 Authlib = "*"
 openapi-spec-validator = "*"
 bleach = "*"

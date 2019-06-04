@@ -93,3 +93,9 @@ spec:
           requests:
             cpu: 200m
             memory: 256Mi
+
+        readinessProbe:
+          periodSeconds: 5
+          httpGet:
+            path: "{{ .Values.ingress.path }}/login"
+            port: 8000
