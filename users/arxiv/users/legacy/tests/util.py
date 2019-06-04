@@ -19,8 +19,9 @@ def temporary_db(database_url: str = 'sqlite:///:memory:',
         if create:
             util.create_all()
         try:
-            yield util.current_session()
-        except Exception:
+            with util.transaction():
+                yield util.current_session()
+        except Exception as e:
             raise
         finally:
             if drop:

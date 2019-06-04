@@ -95,7 +95,6 @@ class SessionStore(object):
             authorizations=authorizations,
             nonce=_generate_nonce()
         )
-        logger.debug('user has profile: %s', user.profile)
         logger.debug('storing session %s', session)
         try:
             self.r.set(session_id, self._encode(domain.to_dict(session)),

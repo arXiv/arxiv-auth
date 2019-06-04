@@ -266,8 +266,6 @@ class TestBootstrap(TestCase):
                 cookie = sessions.generate_cookie(session)
 
                 session_loaded = sessions.load(cookie)
-                print(session.user.profile)
-                print(session_loaded.user.profile)
                 self.assertEqual(session.user, session_loaded.user,
                                  "Loaded the correct user")
                 self.assertEqual(session.session_id, session_loaded.session_id,

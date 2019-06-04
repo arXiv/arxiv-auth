@@ -23,9 +23,11 @@ from wtforms.validators import DataRequired, Email, Length, URL, optional
 from wtforms.widgets import ListWidget, CheckboxInput, Select
 
 import pycountry
+from retry import retry
 
 from arxiv import status
 from arxiv.base import logging
+from arxiv.users.domain import User, Authorizations
 from accounts.services import legacy, SessionStore, users
 
 from .util import MultiCheckboxField, OptGroupSelectField
@@ -77,19 +79,15 @@ def login(method: str, form_data: MultiDict, ip: str,
         return data, status.HTTP_400_BAD_REQUEST, {}
 
     logger.debug('Login form is valid')
-    # Attempt to authenticate the user with the credentials provided.
-    try:
-        userdata, auths = users.authenticate(
-            username_or_email=form.username.data,
-            password=form.password.data
-        )
+
+    try:    # Attempt to authenticate the user with the credentials provided.
+        user, auths = _do_authn(form.username.data, form.password.data)
     except users.exceptions.AuthenticationFailed as e:
-        logger.debug('Authentication failed for %s with %s',
-                     form.username.data, form.password.data)
+        logger.debug('Authentication failed for %s: %s', form.username.data, e)
         data.update({'error': 'Invalid username or password.'})
         return data, status.HTTP_400_BAD_REQUEST, {}
 
-    if not userdata.verified:
+    if not user.verified:
         data.update({
             'error': Markup(
                 'Your account has not yet been verified. Please contact '
@@ -99,9 +97,8 @@ def login(method: str, form_data: MultiDict, ip: str,
         })
         return data, status.HTTP_400_BAD_REQUEST, {}
 
-    # Create a session in the distributed session store.
-    try:
-        session = sessions.create(auths, ip, ip, track, user=userdata)
+    try:    # Create a session in the distributed session store.
+        session = sessions.create(auths, ip, ip, track, user=user)
         cookie = sessions.generate_cookie(session)
         logger.debug('Created session: %s', session.session_id)
     except sessions.exceptions.SessionCreationFailed as e:
@@ -109,11 +106,11 @@ def login(method: str, form_data: MultiDict, ip: str,
         logger.info('Could not create session: %s', e)
         raise InternalServerError('Cannot log in') from e  # type: ignore
 
-    # Create a session in the legacy session store.
-    try:
-        c_session = legacy.create(auths, ip, ip, track, user=userdata)
-        c_cookie = legacy.generate_cookie(c_session)
-        logger.debug('Created classic session: %s', c_session.session_id)
+    try:    # Create a session in the legacy session store.
+        with legacy.transaction():
+            c_session = legacy.create(auths, ip, ip, track, user=user)
+            c_cookie = legacy.generate_cookie(c_session)
+            logger.debug('Created classic session: %s', c_session.session_id)
     except legacy.exceptions.SessionCreationFailed as e:
         logger.debug('Could not create legacy session: %s', e)
         logger.info('Could not create legacy session: %s', e)
@@ -164,7 +161,8 @@ def logout(session_cookie: Optional[str],
 
     if classic_session_cookie:
         try:
-            legacy.invalidate(classic_session_cookie)
+            with legacy.transaction():
+                _do_logout(classic_session_cookie)
         except legacy.exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
         except legacy.exceptions.UnknownSession as e:
@@ -184,3 +182,13 @@ class LoginForm(Form):
 
     username = StringField('Username or e-mail', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
+
+
+@retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
+def _do_authn(username: str, password: str) -> Tuple[User, Authorizations]:
+    return users.authenticate(username_or_email=username, password=password)
+
+
+@retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
+def _do_logout(classic_session_cookie: str) -> None:
+    legacy.invalidate(classic_session_cookie)

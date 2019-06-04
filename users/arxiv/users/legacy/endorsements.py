@@ -24,7 +24,7 @@ from .. import domain
 from arxiv import taxonomy
 from .models import DBUser, DBEndorsement, DBPaperOwners, DBDocuments, \
     DBDocumentInCategory, DBCategory, DBEndorsementDomain, DBEmailWhitelist, \
-    DBEmailBlacklist
+    DBEmailBlacklist, db
 
 
 GENERAL_CATEGORIES = [
@@ -150,17 +150,16 @@ def explicit_endorsements(user: domain.User) -> Endorsements:
         explicitly endorsed.
 
     """
-    with util.transaction() as session:
-        data: List[DBEndorsement] = (
-            session.query(
-                DBEndorsement.archive,
-                DBEndorsement.subject_class,
-                DBEndorsement.point_value,
-            )
-            .filter(DBEndorsement.endorsee_id == user.user_id)
-            .filter(DBEndorsement.flag_valid == 1)
-            .all()
+    data: List[DBEndorsement] = (
+        db.session.query(
+            DBEndorsement.archive,
+            DBEndorsement.subject_class,
+            DBEndorsement.point_value,
         )
+        .filter(DBEndorsement.endorsee_id == user.user_id)
+        .filter(DBEndorsement.flag_valid == 1)
+        .all()
+    )
     pooled: Counter = Counter()
     for archive, subject, points in data:
         pooled[_category(archive, subject)] += points
@@ -223,21 +222,21 @@ def is_academic(user: domain.User) -> bool:
     bool
 
     """
-    with util.transaction() as session:
-        in_whitelist = (
-            session.query(DBEmailWhitelist)
-            .filter(literal(user.email).like(DBEmailWhitelist.pattern))
-            .first()
-        )
-        if in_whitelist:
-            return True
-        in_blacklist = (
-            session.query(DBEmailBlacklist)
-            .filter(literal(user.email).like(DBEmailBlacklist.pattern))
-            .first()
-        )
-        if in_blacklist:
-            return False
+
+    in_whitelist = (
+        db.session.query(DBEmailWhitelist)
+        .filter(literal(user.email).like(DBEmailWhitelist.pattern))
+        .first()
+    )
+    if in_whitelist:
+        return True
+    in_blacklist = (
+        db.session.query(DBEmailBlacklist)
+        .filter(literal(user.email).like(DBEmailBlacklist.pattern))
+        .first()
+    )
+    if in_blacklist:
+        return False
     return True
 
 
@@ -347,28 +346,20 @@ def domain_papers(user: domain.User,
         in each respective domain (int).
 
     """
-    with util.transaction() as session:
-        query = (
-            session.query(
-                DBPaperOwners.document_id,
-                DBDocuments.document_id,
-                DBDocumentInCategory.document_id,
-                DBCategory.endorsement_domain
-            )
-            .filter(DBPaperOwners.user_id == user.user_id)
-            # Lots of joins...
-            .filter(DBDocuments.document_id == DBPaperOwners.document_id)
-            .filter(
-                DBDocumentInCategory.document_id == DBDocuments.document_id
-            )
-            .filter(DBCategory.archive == DBDocumentInCategory.archive)
-            .filter(
-                DBCategory.subject_class == DBDocumentInCategory.subject_class
-            )
-        )
-        if start_date:
-            query = query.filter(DBDocuments.dated > util.epoch(start_date))
-        data = query.all()
+
+    query = db.session.query(DBPaperOwners.document_id,
+                             DBDocuments.document_id,
+                             DBDocumentInCategory.document_id,
+                             DBCategory.endorsement_domain) \
+        .filter(DBPaperOwners.user_id == user.user_id) \
+        .filter(DBDocuments.document_id == DBPaperOwners.document_id) \
+        .filter(DBDocumentInCategory.document_id == DBDocuments.document_id) \
+        .filter(DBCategory.archive == DBDocumentInCategory.archive) \
+        .filter(DBCategory.subject_class == DBDocumentInCategory.subject_class)
+
+    if start_date:
+        query = query.filter(DBDocuments.dated > util.epoch(start_date))
+    data = query.all()
     return dict(Counter(domain for _, _, _, domain in data).items())
 
 
@@ -387,22 +378,18 @@ def category_policies() -> Dict[domain.Category, Dict]:
         policiy details.
 
     """
-    with util.transaction() as session:
-        data = (
-            session.query(
-                DBCategory.archive,
-                DBCategory.subject_class,
-                DBEndorsementDomain.endorse_all,
-                DBEndorsementDomain.endorse_email,
-                DBEndorsementDomain.papers_to_endorse,
-                DBEndorsementDomain.endorsement_domain
-            )
-            .filter(DBCategory.definitive == 1)
-            .filter(DBCategory.active == 1)
-            .filter(DBCategory.endorsement_domain ==
-                    DBEndorsementDomain.endorsement_domain)
-            .all()
-        )
+    data = db.session.query(DBCategory.archive,
+                            DBCategory.subject_class,
+                            DBEndorsementDomain.endorse_all,
+                            DBEndorsementDomain.endorse_email,
+                            DBEndorsementDomain.papers_to_endorse,
+                            DBEndorsementDomain.endorsement_domain) \
+        .filter(DBCategory.definitive == 1) \
+        .filter(DBCategory.active == 1) \
+        .filter(DBCategory.endorsement_domain
+                == DBEndorsementDomain.endorsement_domain) \
+        .all()
+
     policies = {}
     for arch, subj, endorse_all, endorse_email, min_papers, e_domain in data:
         policies[_category(arch, subj)] = {
@@ -430,15 +417,10 @@ def invalidated_autoendorsements(user: domain.User) -> Endorsements:
         auto-endorsements revoked.
 
     """
-    with util.transaction() as session:
-        data: List[DBEndorsement] = (
-            session.query(
-                DBEndorsement.archive,
-                DBEndorsement.subject_class
-            )
-            .filter(DBEndorsement.endorsee_id == user.user_id)
-            .filter(DBEndorsement.flag_valid == 0)
-            .filter(DBEndorsement.endorsement_type == 'auto')
-            .all()
-        )
+    data: List[DBEndorsement] = db.session.query(DBEndorsement.archive,
+                                                 DBEndorsement.subject_class) \
+        .filter(DBEndorsement.endorsee_id == user.user_id) \
+        .filter(DBEndorsement.flag_valid == 0) \
+        .filter(DBEndorsement.endorsement_type == 'auto') \
+        .all()
     return [_category(archive, subject) for archive, subject in data]

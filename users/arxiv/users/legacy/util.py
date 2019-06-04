@@ -49,7 +49,11 @@ def transaction() -> Generator:
     """Context manager for database transaction."""
     try:
         yield db.session
-        db.session.commit()
+        # The caller may have explicitly committed already, in order to
+        # implement exception handling logic. We only want to commit here if
+        # there is anything remaining that is not flushed.
+        if db.session.new or db.session.dirty or db.session.deleted:
+            db.session.commit()
     except Exception as e:
         logger.error('Commit failed, rolling back: %s', str(e))
         db.session.rollback()

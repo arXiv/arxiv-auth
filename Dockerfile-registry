@@ -16,18 +16,10 @@ RUN pipenv install /opt/arxiv/users/ --skip-lock
 
 ENV PATH "/opt/arxiv:${PATH}"
 
-ADD registry/wsgi.py registry/create_client.py registry/create_db.py /opt/arxiv/
+ADD registry/wsgi.py registry/uwsgi.ini registry/create_client.py registry/create_db.py /opt/arxiv/
 ADD registry/registry/ /opt/arxiv/registry/
 
 EXPOSE 8000
 
 ENTRYPOINT ["pipenv", "run"]
-CMD ["uwsgi", "--http-socket", ":8000", \
-     "-M", \
-     "-t 3000", \
-     "--manage-script-name", \
-     "--processes", "1", \
-     "--threads", "1", \
-     "--queue", "0", \
-     "--mount", "/=wsgi.py", \
-     "--logformat", "%(addr) %(addr) - %(user_id)|%(session_id) [%(rtime)] [%(uagent)] \"%(method) %(uri) %(proto)\" %(status) %(size) %(micros) %(ttfb)"]
+CMD ["uwsgi", "--ini", "/opt/arxiv/uwsgi.ini"]
