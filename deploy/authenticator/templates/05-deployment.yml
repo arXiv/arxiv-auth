@@ -91,3 +91,9 @@ spec:
           requests:
             cpu: 100m
             memory: 128Mi
+
+        readinessProbe:
+          periodSeconds: 5
+          httpGet:
+            path: "/auth"
+            port: 8000
