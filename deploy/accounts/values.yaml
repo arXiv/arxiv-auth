@@ -1,6 +1,9 @@
 name: accounts
 namespace: development
 
+scaling:
+  replicas: "3"
+
 ingress:
   host: development.arxiv.org
   path: "/user"
