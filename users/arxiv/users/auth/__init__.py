@@ -1,6 +1,6 @@
 """Provides tools for working with authenticated user/client sessions."""
 
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from datetime import datetime
 import warnings
 
@@ -72,11 +72,11 @@ class Auth(object):
             with legacy.transaction():
                 return legacy.sessions.load(classic_cookie)
         except legacy.exceptions.UnknownSession as e:
-            logger.debug('No legacy session available')
+            logger.debug('No legacy session available: %s', e)
         except legacy.exceptions.InvalidCookie as e:
-            logger.debug('Invalid legacy cookie')
+            logger.debug('Invalid legacy cookie: %s', e)
         except legacy.exceptions.SessionExpired as e:
-            logger.debug('Legacy session is expired')
+            logger.debug('Legacy session is expired: %s', e)
         return None
 
     def init_app(self, app: Flask) -> None:
@@ -94,6 +94,19 @@ class Auth(object):
                                    'https://arxiv.org')
         self.app.config.setdefault('DEFAULT_LOGIN_REDIRECT_URL',
                                    'https://arxiv.org')
+
+        @self.app.teardown_request
+        def teardown_request(exception: Optional[Exception]) -> None:
+            session = legacy.current_session()
+            if exception:
+                session.rollback()
+            session.remove()
+
+        @self.app.teardown_appcontext
+        def teardown_appcontext(*args: Any, **kwargs: Any) -> None:
+            session = legacy.current_session()
+            session.rollback()
+            session.remove()
 
     def load_session(self) -> None:
         """
