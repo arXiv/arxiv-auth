@@ -69,7 +69,8 @@ class Auth(object):
         if classic_cookie is None:
             return None
         try:
-            return legacy.sessions.load(classic_cookie)
+            with legacy.transaction():
+                return legacy.sessions.load(classic_cookie)
         except legacy.exceptions.UnknownSession as e:
             logger.debug('No legacy session available')
         except legacy.exceptions.InvalidCookie as e:
