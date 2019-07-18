@@ -6,16 +6,14 @@ from flask import Flask
 from arxiv import status
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
-from .. import auth, helpers
+from .. import auth, helpers, legacy
 
 
 class TestGenerateToken(TestCase):
     """Tests for :func:`.helpers.generate_token`."""
 
-    @mock.patch(f'{helpers.__name__}.get_application_config')
-    def test_token_is_usable(self, mock_get_config):
+    def test_token_is_usable(self):
         """Verify that :func:`.helpers.generate_token` makes usable tokens."""
-        mock_get_config.return_value = {'JWT_SECRET': 'thesecret'}
         os.environ['JWT_SECRET'] = 'thesecret'
         scope = [auth.scopes.VIEW_SUBMISSION, auth.scopes.EDIT_SUBMISSION,
                  auth.scopes.CREATE_SUBMISSION]
@@ -23,7 +21,12 @@ class TestGenerateToken(TestCase):
                                        scope=scope)
 
         app = Flask('test')
-        app.config['JWT_SECRET'] = 'thesecret'
+        legacy.init_app(app)
+        app.config.update({
+            'JWT_SECRET': 'thesecret',
+            'SQLALCHEMY_TRACK_MODIFICATIONS': False,
+            'SQLALCHEMY_DATABASE_URI': 'sqlite:///'
+        })
         Base(app)
         auth.Auth(app)    # <- Install the Auth extension.
         wrap(app, [auth.middleware.AuthMiddleware])    # <- Install middleware.

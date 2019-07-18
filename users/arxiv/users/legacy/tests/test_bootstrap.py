@@ -10,14 +10,13 @@ from typing import List
 import random
 from datetime import datetime
 from pytz import timezone, UTC
-from mimesis import Person, Internet, Datetime
-from mimesis import config as mimesis_config
+from mimesis import Person, Internet, Datetime, locales
 
 from arxiv import taxonomy
 from .. import models, util, sessions, authenticate, exceptions
 from ... import domain
 
-LOCALES = list(mimesis_config.SUPPORTED_LOCALES.keys())
+LOCALES = list(locales.LIST_OF_LOCALES)
 EASTERN = timezone('US/Eastern')
 
 
