@@ -11,6 +11,7 @@ setup(
     install_requires=[
         "pycountry",
         "sqlalchemy",
+        "mimesis",
         "mysqlclient",
         "python-dateutil",
         "arxiv-base",
