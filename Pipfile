@@ -28,6 +28,7 @@ pyyaml = ">=4.2b1"      # CVE-2017-18342
 arxiv-vault = "==0.1.1rc14"
 pytz = "*"
 arxiv-auth = {path = "./users"}
+mimesis = "*"
 
 [dev-packages]
 mimesis = "==2.1.0"

@@ -7,6 +7,7 @@ setup(
     version='0.4.1',
     packages=[f'arxiv.{package}' for package
               in find_packages('./arxiv', exclude=['*test*'])],
+    scripts=['bin/generate-token'],
     install_requires=[
         "pycountry",
         "sqlalchemy",
