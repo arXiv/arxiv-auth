@@ -195,6 +195,11 @@ def generate_cookie(session: domain.Session) -> str:
     str
 
     """
+    if session.user is None \
+            or session.user.user_id is None \
+            or session.ip_address is None \
+            or session.authorizations is None:
+        raise RuntimeError('Cannot generate cookie without an authorized user')
     return cookies.pack(str(session.session_id), session.user.user_id,
                         session.ip_address, session.start_time,
                         str(session.authorizations.classic))

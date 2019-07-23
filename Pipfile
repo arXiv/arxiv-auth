@@ -32,7 +32,7 @@ mimesis = "*"
 
 [dev-packages]
 mimesis = "==2.1.0"
-mypy = "==0.670"
+mypy = "==0.720"
 pydocstyle = "==2.1.1"
 pylint = "*"
 coverage = "*"

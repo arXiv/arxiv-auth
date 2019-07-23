@@ -21,7 +21,7 @@ def generate_token(user_id: str, email: str, username: str,
                    submission_groups: str = 'grp_physics',
                    endorsements: List[domain.Category] = [],
                    scope: List[domain.Scope] = [],
-                   verified: bool = False) -> None:
+                   verified: bool = False) -> str:
     """Generate an auth token for dev/testing purposes."""
     # Specify the validity period for the session.
     start = datetime.now(tz=timezone('US/Eastern'))
@@ -45,7 +45,7 @@ def generate_token(user_id: str, email: str, username: str,
             ),
             verified=verified
         ),
-        authorizations=domain.Authorizations(scopes=[str(s) for s in scope],
+        authorizations=domain.Authorizations(scopes=scope,
                                              endorsements=endorsements)
     )
     token = auth.tokens.encode(session, get_application_config()['JWT_SECRET'])

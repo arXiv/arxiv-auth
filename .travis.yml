@@ -14,11 +14,13 @@ before_install:
 - pipenv install --dev
 script:
 - pipenv install ./users --skip-lock
-- "./lintstats.sh"
 - WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov=users/arxiv --cov=registry
   --cov=authenticator --cov-report=term-missing accounts users/arxiv registry authenticator
 after_success:
 - coveralls
+- "./tests/lint.sh users/arxiv"
+- "./tests/style.sh users/arxiv"
+- "./tests/type-check.sh users/arxiv"
 notifications:
   slack:
     secure: NKJ5xxJaalJJWQAbVQLgajheoT9y0mIDTR/vndMgZJ2EGBO3xH5KbC2bUVjfm8RcvkuOrL18Szyc1xtSnLx+FNYdfDmbWdhXQA0srPFoSnj/FTYzDz8PLNEGy+//qRT4bvRfAsxuTKsTnZlzD0u2TXCYsQuILSvn+J4nL900RO2o+kAjgUu9aC81wvNrOB3eHS41IB9XNXzXAfgwiUZ8ysALsZvMZ4qLlEXGdPyRK972x4lj0p/QzuFD51Gt2Dnm/dehjZQrab0k4vwaR+Wo9wi0JTSyXwL2dZWnCn/OoqGII8mjBHxuFgU5nskDFKwVsZrSWvqfeHO2o4Ht1mCApj8u8tF+NWbhX9txRZ3y5hj2eLEIRKSHASIlM/O8TQ9f0GM/AbX/3a2czO9v8zs+eX2WaxXEcZZCjYH5bfNj89nThd6omug9WMLCFu3pMw/0ppkXhEzUQFbup25ROM+5j9IUUDmrka1YZHmEmTEVkn4Nwe3nysqCePCX/U5u46LBixF2+EvUyZ8GVwyLE1fEpTcNZ1r6uF5TDKrl5GtZ5fUqRE/HEkCP+5RUvyM7sTbb0bO/zeR9bYzvw7tbgforIyR7za4NL3DThG2b7dTGXtEYx+XCl/GUMDQEeJpBynh/Rfaw5BIOmECkiNsyVRKzDeMjxBbHVprWVjau+5QIy4E=

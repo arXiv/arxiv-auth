@@ -11,7 +11,7 @@ relevant policies can be found on the `arXiv help pages
 <https://arxiv.org/help/endorsement>`_.
 """
 
-from typing import List, Dict, Optional, Callable, Set
+from typing import List, Dict, Optional, Callable, Set, Iterable
 from collections import Counter
 from datetime import datetime
 from functools import lru_cache as memoize
@@ -78,14 +78,18 @@ def _category(archive: str, subject_class: str) -> domain.Category:
 
 @memoize()
 def _get_archive(category: taxonomy.Category) -> str:
+    archive: str
     if category.endswith(".*"):
-        return category.split(".", 1)[0]
-    try:
-        return taxonomy.CATEGORIES_ACTIVE[category]['in_archive']
-    except KeyError:
-        if "." in category:
-            return category.split(".", 1)[0]
-        return ""
+        archive = category.split(".", 1)[0]
+    else:
+        try:
+            archive = taxonomy.CATEGORIES_ACTIVE[category]['in_archive']
+        except KeyError:
+            if "." in category:
+                archive = category.split(".", 1)[0]
+            else:
+                archive = ""
+    return archive
 
 
 def _all_archives(endorsements: Endorsements) -> bool:
@@ -121,11 +125,11 @@ def compress_endorsements(endorsements: Endorsements) -> Endorsements:
     compressed: Endorsements = []
     grouped = groupby(sorted(endorsements, key=_get_archive), key=_get_archive)
     for archive, archive_endorsements in grouped:
-        archive_endorsements = list(archive_endorsements)
-        if _all_subjects_in_archive(archive, archive_endorsements):
+        archive_endorsements_list = list(archive_endorsements)
+        if _all_subjects_in_archive(archive, archive_endorsements_list):
             compressed.append(_category(archive, "*"))
         else:
-            for endorsement in archive_endorsements:
+            for endorsement in archive_endorsements_list:
                 compressed.append(endorsement)
     if _all_archives(compressed):
         return [taxonomy.Category("*.*")]
@@ -222,7 +226,6 @@ def is_academic(user: domain.User) -> bool:
     bool
 
     """
-
     in_whitelist = (
         db.session.query(DBEmailWhitelist)
         .filter(literal(user.email).like(DBEmailWhitelist.pattern))
@@ -346,7 +349,6 @@ def domain_papers(user: domain.User,
         in each respective domain (int).
 
     """
-
     query = db.session.query(DBPaperOwners.document_id,
                              DBDocuments.document_id,
                              DBDocumentInCategory.document_id,

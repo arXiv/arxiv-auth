@@ -14,7 +14,7 @@ from .. import domain
 db: SQLAlchemy = SQLAlchemy()
 
 
-class DBSession(db.Model):  # type: ignore
+class DBSession(db.Model):
     """
     Legacy arXiv session table.
 
@@ -43,7 +43,7 @@ class DBSession(db.Model):  # type: ignore
     user = relationship('DBUser')
 
 
-class DBSessionsAudit(db.Model):  # type: ignore
+class DBSessionsAudit(db.Model):
     """Legacy arXiv session audit table. Notably has a tracking cookie."""
 
     __tablename__ = 'tapir_sessions_audit'
@@ -62,7 +62,7 @@ class DBSessionsAudit(db.Model):  # type: ignore
     session = relationship('DBSession')
 
 
-class DBUser(db.Model):  # type: ignore
+class DBUser(db.Model):
     """Legacy user data table."""
 
     __tablename__ = 'tapir_users'
@@ -96,7 +96,7 @@ class DBUser(db.Model):  # type: ignore
     flag_allow_tex_produced = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBPolicyClass(db.Model):  # type: ignore
+class DBPolicyClass(db.Model):
     """Legacy authorization table."""
 
     __tablename__ = 'tapir_policy_classes'
@@ -121,7 +121,7 @@ class DBPolicyClass(db.Model):  # type: ignore
                              server_default=text("'0'"))
 
 
-class DBUserPassword(db.Model):  # type: ignore
+class DBUserPassword(db.Model):
     """Legacy password table."""
 
     __tablename__ = 'tapir_users_password'
@@ -135,7 +135,7 @@ class DBUserPassword(db.Model):  # type: ignore
     user = relationship('DBUser')
 
 
-class DBPermanentToken(db.Model):  # type: ignore
+class DBPermanentToken(db.Model):
     """
     Bearer token for user authentication.
 
@@ -166,7 +166,7 @@ class DBPermanentToken(db.Model):  # type: ignore
     session_id = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBUserNickname(db.Model):  # type: ignore
+class DBUserNickname(db.Model):
     """
     Users' usernames (because why not have a separate table).
 
@@ -200,7 +200,7 @@ class DBUserNickname(db.Model):  # type: ignore
 
 
 # TODO: update based on recent schema changes.
-class DBProfile(db.Model):   # type: ignore
+class DBProfile(db.Model):
     """Legacy user profiles."""
 
     __tablename__ = 'arXiv_demographics'
@@ -258,7 +258,7 @@ class DBProfile(db.Model):   # type: ignore
         else:
             category = domain.Category(f'{self.archive}')
 
-        return domain.UserProfile(  # type: ignore
+        return domain.UserProfile(
             affiliation=self.affiliation,
             country=self.country,
             rank=self.rank,
@@ -268,7 +268,7 @@ class DBProfile(db.Model):   # type: ignore
         )
 
 
-class DBEndorsement(db.Model):  # type: ignore
+class DBEndorsement(db.Model):
     """
     Category endorsements for arXiv users.
 
@@ -306,7 +306,7 @@ class DBEndorsement(db.Model):  # type: ignore
     endorsee = relationship('DBUser')
 
 
-class DBEndorsementDomain(db.Model):  # type: ignore
+class DBEndorsementDomain(db.Model):
     """
     Encodes some policies about endorsement.
 
@@ -331,7 +331,7 @@ class DBEndorsementDomain(db.Model):  # type: ignore
                                server_default=text("'4'"))
 
 
-class DBCategory(db.Model):  # type: ignore
+class DBCategory(db.Model):
     """
     Metadata about arXiv categories.
 
@@ -359,7 +359,7 @@ class DBCategory(db.Model):  # type: ignore
     endorsement_domain = Column(String(32), nullable=True)
 
 
-class DBPaperOwners(db.Model):  # type: ignore
+class DBPaperOwners(db.Model):
     """
     Relates arXiv users to their owned papers.
 
@@ -383,7 +383,7 @@ class DBPaperOwners(db.Model):  # type: ignore
     valid = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBDocuments(db.Model):  # type: ignore
+class DBDocuments(db.Model):
     """
     Represents an arXiv paper.
 
@@ -409,7 +409,7 @@ class DBDocuments(db.Model):  # type: ignore
     dated = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBDocumentInCategory(db.Model):  # type: ignore
+class DBDocumentInCategory(db.Model):
     """
     M2M intermediate table for documents and their categories.
 
@@ -431,7 +431,7 @@ class DBDocumentInCategory(db.Model):  # type: ignore
     is_primary = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBEmailWhitelist(db.Model):  # type: ignore
+class DBEmailWhitelist(db.Model):
     """
     Patterns for identifying academic addresses.
 
@@ -443,7 +443,7 @@ class DBEmailWhitelist(db.Model):  # type: ignore
     pattern = Column(String(64), primary_key=True)
 
 
-class DBEmailBlacklist(db.Model):  # type: ignore
+class DBEmailBlacklist(db.Model):
     """
     Patterns for identifying non-academic addresses.
 

@@ -45,7 +45,7 @@ class SessionStore(object):
     """
 
     def __init__(self, host: str, port: int, db: int, secret: str,
-                 duration: int = 7200, token: str = None,
+                 duration: int = 7200, token: Optional[str] = None,
                  cluster: bool = True) -> None:
         """Open the connection to Redis."""
         # params = #, db=db)
@@ -108,6 +108,10 @@ class SessionStore(object):
 
     def generate_cookie(self, session: domain.Session) -> str:
         """Generate a cookie from a :class:`domain.Session`."""
+        if session.end_time is None:
+            raise RuntimeError('Session has no expiry')
+        if session.user is None:
+            raise RuntimeError('Session user is not set')
         return self._pack_cookie({
             'user_id': session.user.user_id,
             'session_id': session.session_id,
@@ -161,16 +165,17 @@ class SessionStore(object):
         """
         cookie_data = self._unpack_cookie(cookie)
         if cookie_data['nonce'] != session.nonce \
+                or session.user is None \
                 or session.user.user_id != cookie_data['user_id']:
             raise InvalidToken('Invalid token; likely a forgery')
 
     def load(self, cookie: str, decode: bool = True) \
-            -> Union[domain.Session, bytes]:
+            -> Union[domain.Session, str, bytes]:
         """Load a session using a session cookie."""
         try:
             cookie_data = self._unpack_cookie(cookie)
             expires = dateutil.parser.parse(cookie_data['expires'])
-        except (KeyError, jwt.exceptions.DecodeError) as e:    # type: ignore
+        except (KeyError, jwt.exceptions.DecodeError) as e:
             raise InvalidToken('Token payload malformed') from e
 
         if expires <= datetime.now(tz=UTC):
@@ -178,7 +183,9 @@ class SessionStore(object):
 
         session = self.load_by_id(cookie_data['session_id'], decode=decode)
         if not decode:
+            assert isinstance(session, str) or isinstance(session, bytes)
             return session
+        assert isinstance(session, domain.Session)
         if session.expired:
             raise ExpiredToken('Session has expired')
         if session.user is None and session.client is None:
@@ -188,7 +195,7 @@ class SessionStore(object):
         return session
 
     def load_by_id(self, session_id: str, decode: bool = True) \
-            -> Union[domain.Session, bytes]:
+            -> Union[domain.Session, str, bytes]:
         """Get session data by session ID."""
         session_jwt: str = self.r.get(session_id)
         if not session_jwt:
@@ -198,7 +205,7 @@ class SessionStore(object):
             return self._decode(session_jwt)
         return session_jwt
 
-    def _encode(self, session_data: dict) -> str:
+    def _encode(self, session_data: dict) -> bytes:
         return jwt.encode(session_data, self._secret)
 
     def _decode(self, session_jwt: str) -> domain.Session:
@@ -215,7 +222,7 @@ class SessionStore(object):
         secret = self._secret
         try:
             data = dict(jwt.decode(cookie, secret, algorithms=['HS256']))
-        except jwt.exceptions.DecodeError as e:   # type: ignore
+        except jwt.exceptions.DecodeError as e:
             raise InvalidToken('Session cookie is malformed') from e
         return data
 

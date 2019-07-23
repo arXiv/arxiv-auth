@@ -183,7 +183,6 @@ def _get_user_by_username(username_or_email: str) -> PassData:
         Raised when the user cannot be found.
 
     """
-
     tapir_user: DBUser = db.session.query(DBUser) \
         .filter(DBUser.email == username_or_email) \
         .filter(DBUser.flag_approved == 1) \
@@ -235,7 +234,6 @@ def _invalidate_token(user_id: str, secret: str) -> None:
         Raised when the token or user cannot be found.
 
     """
-
     _, db_token, _, _ = _get_token(user_id, secret)
     db_token.valid = 0
     db.session.add(db_token)

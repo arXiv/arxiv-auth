@@ -9,7 +9,7 @@ from .exceptions import InvalidCookie
 from . import util
 
 
-def unpack(cookie: str) -> Tuple[str, str, str, datetime, str]:
+def unpack(cookie: str) -> Tuple[str, str, str, datetime, datetime, str]:
     """
     Unpack the legacy session cookie.
 
