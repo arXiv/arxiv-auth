@@ -10,9 +10,10 @@ if [ $PYDOCSTYLE_STATUS -ne 0 ]; then PYDOCSTYLE_STATE="failure" && echo "pydocs
 
 if [ -z ${GITHUB_TOKEN} ]; then
     echo "Github token not set; will not report results";
-else 
+else
     curl -u $USERNAME:$GITHUB_TOKEN \
         -d '{"state": "'$PYDOCSTYLE_STATE'", "target_url": "https://travis-ci.org/'$TRAVIS_REPO_SLUG'/builds/'$TRAVIS_BUILD_ID'", "description": "", "context": "code-quality/pydocstyle"}' \
         -XPOST https://api.github.com/repos/$TRAVIS_REPO_SLUG/statuses/$SHA \
         > /dev/null 2>&1;
+    echo "Sent pydocstyle results to Github"
 fi

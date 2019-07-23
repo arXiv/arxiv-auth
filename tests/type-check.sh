@@ -15,4 +15,5 @@ else
         -d '{"state": "'$MYPY_STATE'", "target_url": "https://travis-ci.org/'$TRAVIS_REPO_SLUG'/builds/'$TRAVIS_BUILD_ID'", "description": "", "context": "code-quality/mypy"}' \
         -XPOST https://api.github.com/repos/$TRAVIS_REPO_SLUG/statuses/$SHA \
         > /dev/null 2>&1;
+    echo "Sent mypy results to Github"
 fi

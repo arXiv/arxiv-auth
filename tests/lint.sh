@@ -13,9 +13,10 @@ if [ "$PYLINT_PASS" ]; then PYLINT_STATE="success" &&  echo "pylint passed with 
 
 if [ -z ${GITHUB_TOKEN} ]; then
     echo "Github token not set; will not report results";
-else 
+else
     curl -u $USERNAME:$GITHUB_TOKEN \
         -d '{"state": "'$PYLINT_STATE'", "target_url": "https://travis-ci.org/'$TRAVIS_REPO_SLUG'/builds/'$TRAVIS_BUILD_ID'", "description": "'$PYLINT_SCORE'/10", "context": "code-quality/pylint"}' \
         -XPOST https://api.github.com/repos/$TRAVIS_REPO_SLUG/statuses/$SHA \
         > /dev/null 2>&1;
+    echo "Sent lint results to Github"
 fi
