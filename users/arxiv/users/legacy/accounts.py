@@ -45,7 +45,7 @@ def username_exists(username: str) -> bool:
     return False
 
 
-def email_exists(email: str) -> bool:
+def does_email_exist(email: str) -> bool:
     """
     Determine whether a user with a particular address already exists.
 

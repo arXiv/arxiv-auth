@@ -17,7 +17,7 @@ authenticate = legacy.authenticate.authenticate
 get_user_by_id = legacy.accounts.get_user_by_id
 register = legacy.accounts.register
 username_exists = legacy.accounts.username_exists
-email_exists = legacy.accounts.email_exists
+does_email_exist = legacy.accounts.does_email_exist
 update = legacy.accounts.update
 is_available = legacy.is_available
 

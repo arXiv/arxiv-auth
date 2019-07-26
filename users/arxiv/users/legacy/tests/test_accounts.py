@@ -123,17 +123,17 @@ class TestUsernameExists(SetUpUserMixin, TestCase):
 
 
 class TestEmailExists(SetUpUserMixin, TestCase):
-    """Tests for :mod:`accounts.email_exists`."""
+    """Tests for :mod:`accounts.does_email_exist`."""
 
     def test_with_nonexistant_email(self):
         """There is no user with the passed email."""
         with temporary_db(self.db_uri, create=False, drop=False):
-            self.assertFalse(accounts.email_exists('foo@bar.com'))
+            self.assertFalse(accounts.does_email_exist('foo@bar.com'))
 
     def test_with_existant_email(self):
         """There is a user with the passed email."""
         with temporary_db(self.db_uri, create=False, drop=False):
-            self.assertTrue(accounts.email_exists('first@last.iv'))
+            self.assertTrue(accounts.does_email_exist('first@last.iv'))
 
 
 class TestRegister(SetUpUserMixin, TestCase):

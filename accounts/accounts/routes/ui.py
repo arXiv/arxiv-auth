@@ -122,32 +122,6 @@ def register() -> Response:
     return response
 
 
-# @blueprint.route('/<string:user_id>/profile', methods=['GET'])
-# @scoped(scopes.VIEW_PROFILE, authorizer=user_is_owner)
-# def view_profile(user_id: str) -> Response:
-#     """User can view their account information."""
-#     data, code, headers = registration.view_profile(user_id, request.auth)
-#     return render_template("accounts/profile.html", **data)
-
-
-# @blueprint.route('/<string:user_id>/profile/edit', methods=['GET', 'POST'])
-# @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)
-# def edit_profile(user_id: str) -> Response:
-#     """User can update their account information."""
-#     data, code, headers = registration.edit_profile(request.method, user_id,
-#                                                     request.auth,
-#                                                     request.form,
-#                                                     request.remote_addr)
-#     if code is status.HTTP_303_SEE_OTHER:
-#         target = url_for('ui.view_profile', user_id=user_id)
-#         response = make_response(redirect(target, code=code))
-#         set_cookies(response, data)
-#         return response
-#     content = render_template("accounts/edit_profile.html", **data)
-#     response = make_response(content, code, headers)
-#     return response
-
-
 @blueprint.route('/login', methods=['GET', 'POST'])
 @anonymous_only
 def login() -> Response:
