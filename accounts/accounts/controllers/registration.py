@@ -162,7 +162,7 @@ class ProfileForm(Form):
 
     COUNTRIES = [('', '')] + \
         [(country.alpha_2, country.name) for country in pycountry.countries]
-    RANKS = [('', '')] + domain.UserProfile.RANKS
+    RANKS = [('', '')] + domain.RANKS
     GROUPS = [
         (key, group['name'])
         for key, group in taxonomy.definitions.GROUPS.items()

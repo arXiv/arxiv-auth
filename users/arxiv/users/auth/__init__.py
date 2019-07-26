@@ -89,6 +89,7 @@ class Auth(object):
 
         """
         self.app = app
+        legacy.init_app(app)
         self.app.before_request(self.load_session)
         self.app.config.setdefault('DEFAULT_LOGOUT_REDIRECT_URL',
                                    'https://arxiv.org')
@@ -108,7 +109,7 @@ class Auth(object):
             session.rollback()
             session.remove()
 
-    def load_session(self) -> None:
+    def load_session(self) -> Optional[Response]:
         """
         Look for an active session, and attach it to the request.
 
@@ -158,6 +159,7 @@ class Auth(object):
                 DeprecationWarning
             )
             request.session = session
+        return None
 
     def detect_and_clobber_dupe_cookies(self) -> Optional[Response]:
         """

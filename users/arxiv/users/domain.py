@@ -13,18 +13,16 @@ from arxiv.base import logging
 logger = logging.getLogger(__name__)
 EASTERN = timezone('US/Eastern')
 
+STAFF = ('1', 'Staff')
+PROFESSOR = ('2', 'Professor')
+POST_DOC = ('3', 'Post doc')
+GRAD_STUDENT = ('4', 'Grad student')
+OTHER = ('5', 'Other')
+RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]
+
 
 class UserProfile(NamedTuple):
     """User profile data."""
-
-    # mypy (oddly) does not support class attributes:
-    #  https://github.com/python/mypy/issues/3959
-    STAFF = ('1', 'Staff')  # type: ignore
-    PROFESSOR = ('2', 'Professor')  # type: ignore
-    POST_DOC = ('3', 'Post doc')  # type: ignore
-    GRAD_STUDENT = ('4', 'Grad student')  # type: ignore
-    OTHER = ('5', 'Other')  # type: ignore
-    RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]  # type: ignore
 
     affiliation: str
     """Institutional affiliation."""
@@ -33,7 +31,7 @@ class UserProfile(NamedTuple):
     """Should be an ISO 3166-1 alpha-2 country code."""
 
     rank: int
-    """Academic rank. Must be one of :attr:`UserProfile.RANKS`."""
+    """Academic rank. Must be one of :const:`.RANKS`."""
 
     submission_groups: List[str]
     """
@@ -58,20 +56,24 @@ class UserProfile(NamedTuple):
     @property
     def rank_display(self) -> str:
         """The display name of the user's rank."""
-        _rank: str = dict(self.RANKS)[str(self.rank)]
+        _rank: str = dict(RANKS)[str(self.rank)]
         return _rank
 
     @property
     def default_archive(self) -> str:
         """The archive of the default category."""
-        return taxonomy.CATEGORIES[self.default_category]['in_archive']
+        archive: str = taxonomy.CATEGORIES[self.default_category]['in_archive']
+        return archive
 
     @property
     def default_subject(self) -> Optional[str]:
         """The subject of the default category."""
+        subject: str
         if '.' in self.default_category:
-            return self.default_category.split('.', 1)[1]
-        return self.default_category
+            subject = self.default_category.split('.', 1)[1]
+        else:
+            subject = self.default_category
+        return subject
 
     @property
     def groups_display(self) -> str:
@@ -114,7 +116,9 @@ class Scope(NamedTuple):
         """Create a copy of this scope with a global resource."""
         return self.for_resource('*')
 
-    class domains:
+    # mypy has difficulty with inner classes on namedtuples. This is valid,
+    # however.
+    class domains:  # type: ignore
         """Known authorization domains."""
 
         PUBLIC = 'public'
@@ -130,7 +134,7 @@ class Scope(NamedTuple):
         FULLTEXT = 'fulltext'
         """Fulltext extraction."""
 
-    class actions:
+    class actions:  # type: ignore
         """Known authorization actions."""
 
         UPDATE = 'update'
@@ -235,6 +239,7 @@ class User(NamedTuple):
     """Whether or not the users' e-mail address has been verified."""
 
     def asdict(self) -> dict:
+        """Generate a dict representation of this :class:`.User`."""
         data = super(User, self)._asdict()
         if self.name is not None:
             data['name'] = self.name._asdict()
@@ -329,7 +334,7 @@ class Session(NamedTuple):
         if self.end_time is None:
             return None
         duration = (self.end_time - datetime.now(tz=UTC)).total_seconds()
-        return max(duration, 0)
+        return int(max(duration, 0))
 
 
 # Helpers and private functions.
@@ -407,7 +412,7 @@ def from_dict(cls: type, data: dict) -> Any:
             value = target_type(value)
         _data[field] = value
     if hasattr(cls, 'before_init'):
-        cls.before_init(_data)
+        cls.before_init(_data)  # type: ignore
     return cls(**_data)
 
 

@@ -230,7 +230,7 @@ def _get_user_data(user_id: str) -> Tuple[DBUser, DBUserNickname, DBProfile]:
     return db_user, db_nick, db_profile
 
 
-def _create_profile(user: domain.User, db_user: DBUser):
+def _create_profile(user: domain.User, db_user: DBUser) -> DBProfile:
     def _has_group(group: str) -> int:
         if user.profile is None:
             return 0
@@ -238,12 +238,12 @@ def _create_profile(user: domain.User, db_user: DBUser):
 
     db_profile = DBProfile(
         user=db_user,
-        country=user.profile.country,
-        affiliation=user.profile.affiliation,
-        url=user.profile.homepage_url,
-        rank=user.profile.rank,
-        archive=user.profile.default_archive,
-        subject_class=user.profile.default_subject,
+        country=user.profile.country if user.profile else None,
+        affiliation=user.profile.affiliation if user.profile else None,
+        url=user.profile.homepage_url if user.profile else None,
+        rank=user.profile.rank if user.profile else None,
+        archive=user.profile.default_archive if user.profile else None,
+        subject_class=user.profile.default_subject if user.profile else None,
         original_subject_classes='',
         flag_group_physics=_has_group('grp_physics'),
         flag_group_math=_has_group('grp_math'),
@@ -288,6 +288,7 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
     )
     db.session.add(db_nick)
 
+    db_profile: Optional[DBProfile]
     if user.profile is not None:
         db_profile = _create_profile(user, db_user)
     else:

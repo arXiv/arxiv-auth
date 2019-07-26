@@ -81,7 +81,7 @@ from typing import Optional, Union, Callable, Any, List
 from functools import wraps
 from flask import request
 from werkzeug.exceptions import BadRequest, Unauthorized, Forbidden
-from arxiv import status
+
 from arxiv.base import logging
 from .. import domain
 
@@ -93,7 +93,7 @@ logger = logging.getLogger(__name__)
 logger.propagate = False
 
 
-def scoped(required: Optional[str] = None,
+def scoped(required: Optional[domain.Scope] = None,
            resource: Optional[Callable] = None,
            authorizer: Optional[Callable] = None,
            unauthorized: Optional[Callable] = None) -> Callable:
@@ -170,7 +170,7 @@ def scoped(required: Optional[str] = None,
                     response = unauthorized(*args, **kwargs)
                     if response is not None:
                         return response
-                raise Unauthorized('Not a valid session')  # type: ignore
+                raise Unauthorized('Not a valid session')
 
             if session.authorizations is not None:
                 scopes = session.authorizations.scopes
@@ -236,7 +236,7 @@ def scoped(required: Optional[str] = None,
 
             if not authorized:
                 logger.debug('Session is not authorized')
-                raise Forbidden('Access denied')  # type: ignore
+                raise Forbidden('Access denied')
 
             logger.debug('Request is authorized, proceeding')
             return func(*args, **kwargs)

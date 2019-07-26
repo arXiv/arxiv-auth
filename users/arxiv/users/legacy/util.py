@@ -9,7 +9,7 @@ from base64 import b64encode, b64decode
 import hashlib
 from collections import Counter
 
-from werkzeug.local import LocalProxy
+from flask import Flask
 from sqlalchemy.engine import Engine
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -60,7 +60,7 @@ def transaction() -> Generator:
         raise
 
 
-def init_app(app: Optional[LocalProxy]) -> None:
+def init_app(app: Flask) -> None:
     """Set configuration defaults and attach session to the application."""
     db.init_app(app)
 
@@ -104,7 +104,7 @@ def compute_capabilities(tapir_user: DBUser) -> int:
                     8 * tapir_user.flag_edit_system]))
 
 
-def get_scopes(db_user: DBUser) -> List[str]:
+def get_scopes(db_user: DBUser) -> List[domain.Scope]:
     """Generate a list of authz scopes for a legacy user based on class."""
     if db_user.policy_class == DBPolicyClass.PUBLIC_USER:
         return scopes.GENERAL_USER

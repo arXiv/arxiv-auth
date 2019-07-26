@@ -20,7 +20,7 @@ semantics of code, and reduces the risk of programming errors. For an example,
 see :mod:`arxiv.users.auth.decorators`.
 
 """
-from typing import Optional
+from typing import Optional, Dict
 from ..domain import Scope
 
 READ_PUBLIC = Scope(Scope.domains.PUBLIC, Scope.actions.READ)
@@ -160,7 +160,7 @@ This static list will be deprecated by role-based access control (RBAC) at a
 later milestone of arXiv-NG.
 """
 
-_HUMAN_LABELS = {
+_HUMAN_LABELS: Dict[Scope, str] = {
     EDIT_PROFILE: "Grants authorization to change the contents of your user"
                   " profile. This includes your affiliation, preferred name,"
                   " default submission category, etc.",
@@ -189,6 +189,7 @@ _HUMAN_LABELS = {
 }
 
 
-def get_human_label(scope: str) -> Optional[str]:
+def get_human_label(scope: Scope) -> Optional[str]:
     """Get a human-readable label for a scope, for display to end users."""
-    return _HUMAN_LABELS.get(scope)
+    label: Optional[str] = _HUMAN_LABELS.get(scope, None)
+    return label
