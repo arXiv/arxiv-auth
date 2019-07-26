@@ -299,7 +299,7 @@ class RegistrationForm(Form):
 
     def validate_username(self, field: StringField) -> None:
         """Ensure that the username is unique."""
-        if users.username_exists(field.data):
+        if users.does_username_exist(field.data):
             raise ValidationError(Markup(
                 f'An account with that email already exists. You can try'
                 f' <a href="{url_for("ui.login")}?next_page={self.next_page}">'
@@ -309,7 +309,7 @@ class RegistrationForm(Form):
 
     def validate_email(self, field: StringField) -> None:
         """Ensure that the email address is unique."""
-        if users.email_exists(field.data):
+        if users.does_email_exist(field.data):
             raise ValidationError(Markup(
                 f'An account with that email already exists. You can try'
                 f' <a href="{url_for("ui.login")}?next_page={self.next_page}">'

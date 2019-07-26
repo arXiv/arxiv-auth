@@ -21,7 +21,7 @@ from .models import DBUser, DBUserPassword, DBPermanentToken, \
 logger = logging.getLogger(__name__)
 
 
-def username_exists(username: str) -> bool:
+def does_username_exist(username: str) -> bool:
     """
     Determine whether a user with a particular username already exists.
 
@@ -45,7 +45,7 @@ def username_exists(username: str) -> bool:
     return False
 
 
-def email_exists(email: str) -> bool:
+def does_email_exist(email: str) -> bool:
     """
     Determine whether a user with a particular address already exists.
 
