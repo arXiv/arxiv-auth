@@ -109,17 +109,17 @@ class SetUpUserMixin(object):
 
 
 class TestUsernameExists(SetUpUserMixin, TestCase):
-    """Tests for :mod:`accounts.username_exists`."""
+    """Tests for :mod:`accounts.does_username_exist`."""
 
     def test_with_nonexistant_user(self):
         """There is no user with the passed username."""
         with temporary_db(self.db_uri, create=False, drop=False):
-            self.assertFalse(accounts.username_exists('baruser'))
+            self.assertFalse(accounts.does_username_exist('baruser'))
 
     def test_with_existant_user(self):
         """There is a user with the passed username."""
         with temporary_db(self.db_uri, create=False, drop=False):
-            self.assertTrue(accounts.username_exists('foouser'))
+            self.assertTrue(accounts.does_username_exist('foouser'))
 
 
 class TestEmailExists(SetUpUserMixin, TestCase):
