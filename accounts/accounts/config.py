@@ -134,3 +134,10 @@ VAULT_REQUESTS = [
      'minimum_ttl': 360000}
 ]
 """Requests for Vault secrets."""
+
+FLASKS3_BUCKET_NAME = os.environ.get('FLASKS3_BUCKET_NAME', 'some_bucket')
+FLASKS3_CDN_DOMAIN = os.environ.get('FLASKS3_CDN_DOMAIN', 'static.arxiv.org')
+FLASKS3_USE_HTTPS = os.environ.get('FLASKS3_USE_HTTPS', 1)
+FLASKS3_FORCE_MIMETYPE = os.environ.get('FLASKS3_FORCE_MIMETYPE', 1)
+FLASKS3_ACTIVE = os.environ.get('FLASKS3_ACTIVE', 0)
+"""Flask-S3 plugin settings."""
