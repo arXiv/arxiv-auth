@@ -3,8 +3,7 @@
 from accounts.factory import create_web_app
 import os
 
-__flask_app__ = create_web_app()
-
+__flask_app__ = None
 
 def application(environ, start_response):    # type: ignore
     """WSGI application."""
@@ -17,5 +16,7 @@ def application(environ, start_response):    # type: ignore
         if key == 'SERVER_NAME':
             continue
         os.environ[key] = str(value)
-        __flask_app__.config[key] = str(value)
+    global __flask_app__
+    if __flask_app__ is None:
+        __flask_app__ = create_web_app()
     return __flask_app__(environ, start_response)
