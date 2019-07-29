@@ -2,7 +2,9 @@
 
 import os
 
-VERSION = '0.2'
+VERSION = '0.4'
+APP_VERSION = '0.4'
+"""The application version."""
 
 NAMESPACE = os.environ.get('NAMESPACE')
 """Namespace in which this service is deployed; to qualify keys for secrets."""
