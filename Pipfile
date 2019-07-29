@@ -29,6 +29,7 @@ arxiv-vault = "==0.1.1rc14"
 pytz = "*"
 arxiv-auth = {path = "./users"}
 mimesis = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
 mimesis = "==2.1.0"
