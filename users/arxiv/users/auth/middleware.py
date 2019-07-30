@@ -96,7 +96,7 @@ class AuthMiddleware(BaseMiddleware):
             environ['token'] = token
         except InvalidToken as e:   # Let the application decide what to do.
             logger.error(f'Auth token not valid: {token}')
-            exception = Unauthorized('Invalid auth token')  # type: ignore
+            exception = Unauthorized('Invalid auth token')
             environ['session'] = exception
         except Exception as e:
             logger.error(f'Unhandled exception: {e}')

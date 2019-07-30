@@ -1,0 +1,7 @@
+name: authenticator
+version: 0.1.6
+appVersion: 0.1.6
+description: Authenticator service for protected ingress endpoints.
+sources:
+  - https://github.com/arxiv/arxiv-auth
+engine: gotpl

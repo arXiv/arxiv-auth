@@ -1,0 +1,88 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ default "registry" .Values.deployment.name }}"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    subsystem: "{{ .Values.labels.subsystem }}"
+    container: "{{ default "registry" .Values.deployment.name }}"
+    service-group: api
+    log-style: uwsgi
+spec:
+  replicas: {{ default 1 .Values.replicas }}
+  template:
+    metadata:
+      namespace: "{{ .Values.namespace }}"
+      labels:
+        subsystem: "{{ .Values.labels.subsystem }}"
+        container: "{{ default "registry" .Values.deployment.name }}"
+        service-group: api
+        log-style: uwsgi
+      # annotations:
+      #   prometheus.io/scrape: 'true'
+    spec:
+      serviceAccount: registry
+      volumes:
+      - name: vault-certificate
+        secret:
+          secretName: vault-certificate
+      - name: vault-token
+        emptyDir: {}
+
+      containers:
+      - name: "{{ default "registry" .Values.deployment.name }}"
+        image: arxiv/registry:{{ .Values.image.tag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: LOGLEVEL
+          value: "{{ default "40" .Values.loglevel }}"
+
+        - name: REDIS_HOST
+          value: "{{ .Values.redis.host }}"
+        - name: REDIS_PORT
+          value: "{{ .Values.redis.port }}"
+        - name: REDIS_CLUSTER
+          value: "{{ .Values.redis.cluster }}"
+
+        - name: REGISTRY_DATABASE_HOST
+          value: "{{ .Values.database.host }}"
+        - name: REGISTRY_DATABASE_PORT
+          value: "{{ .Values.database.port }}"
+        - name: REGISTRY_DATABASE_ENGINE
+          value: "{{ .Values.database.engine }}"
+        - name: REGISTRY_DATABASE_NAME
+          value: "{{ .Values.database.name }}"
+
+        - name: VAULT_ENABLED
+          value: "1"
+        - name: VAULT_HOST
+          value: "{{ .Values.vault.host }}"
+        - name: VAULT_PORT
+          value: "{{ .Values.vault.port }}"
+        - name: VAULT_CERT
+          value: /etc/vault-certificate/vaulttls.cert.pem
+        - name: VAULT_ROLE
+          value: "{{ .Values.vault.role }}-{{ .Values.namespace }}"
+        - name: KUBE_TOKEN
+          value: /var/run/secrets/kubernetes.io/serviceaccount/token
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
+        volumeMounts:
+        - name: vault-certificate
+          mountPath: /etc/vault-certificate
+          readOnly: true
+        - name: vault-token
+          mountPath: /etc/vault
+
+        resources:
+          limits:
+            cpu: 300m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi

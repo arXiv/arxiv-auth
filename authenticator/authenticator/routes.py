@@ -1,12 +1,14 @@
 """."""
 from flask import Blueprint, current_app, request, jsonify
+import traceback
 from werkzeug.exceptions import BadRequest, Unauthorized
 import jwt
 
 from arxiv import status
 import arxiv.users.domain
 from arxiv.base import logging
-from .services import sessions
+from .services.sessions import InvalidToken, ExpiredToken, UnknownSession
+from .services import SessionStore
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,7 @@ def authenticate():
             raise e
         except Exception as e:
             logger.error('Unhandled exception: %s', e)
+            logger.error(traceback.format_exc())
             return jsonify({}), status.HTTP_200_OK, {}
     elif auth_cookie:   # Try the cookie second.
         logger.debug('Got auth cookie: %s', auth_cookie)
@@ -47,6 +50,7 @@ def authenticate():
             raise e
         except Exception as e:
             logger.error('Unhandled exception: %s', e)
+            logger.error(traceback.format_exc())
             return jsonify({}), status.HTTP_200_OK, {}
     else:
         logger.error('Auth token not found')
@@ -59,13 +63,12 @@ def authenticate():
 
 def _authenticate_from_cookie(auth_cookie: str) -> str:
     """Authenticate the request based on an auth cookie."""
+    sessions = SessionStore.current_session()
     try:
-        session_token = sessions.load(auth_cookie)
-    except (sessions.exceptions.InvalidToken,
-            sessions.exceptions.ExpiredToken,
-            sessions.exceptions.UnknownSession):
+        session_token = sessions.load(auth_cookie, decode=False)
+    except (InvalidToken, ExpiredToken, UnknownSession) as e:
         logger.error('Invalid user session token')
-        raise Unauthorized('Not a valid user session token')
+        raise Unauthorized('Not a valid user session token') from e
     # claims = arxiv.users.domain.to_dict(session)
     # return claims
     return session_token
@@ -73,13 +76,12 @@ def _authenticate_from_cookie(auth_cookie: str) -> str:
 
 def _authenticate_from_header(auth_token: str) -> str:
     """Authenticate the request based on an auth token."""
+    sessions = SessionStore.current_session()
     try:
-        session_token = sessions.load_by_id(auth_token)
-    except (sessions.exceptions.InvalidToken,
-            sessions.exceptions.ExpiredToken,
-            sessions.exceptions.UnknownSession) as e:
+        session_token = sessions.load_by_id(auth_token, decode=False)
+    except (InvalidToken, ExpiredToken, UnknownSession) as e:
         logger.error('Invalid auth token: %s: %s', type(e), e)
-        raise Unauthorized('Not a valid auth token')
+        raise Unauthorized('Not a valid auth token') from e
     return session_token
     # claims = arxiv.users.domain.to_dict(session)
     # return claims

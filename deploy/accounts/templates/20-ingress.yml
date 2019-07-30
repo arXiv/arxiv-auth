@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ .Values.name }}"
+  labels:
+    subsystem: "{{ .Values.labels.subsystem }}"
+    container: accounts-ingress
+    service-group: api
+    env: "{{ .Values.namespace }}"
+  namespace: "{{ .Values.namespace }}"
+  annotations:
+    ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Request-Id: $req_id";
+    ingress.kubernetes.io/auth-url: http://{{ .Values.authenticator.service }}.{{ .Values.namespace }}.svc.cluster.local/auth
+    ingress.kubernetes.io/auth-signin: "{{ .Values.auth.signin }}"
+    ingress.kubernetes.io/auth-response-headers: "{{ .Values.auth.response_headers }}"
+spec:
+  tls:  # This will use the default certificate for the ingress controller.
+  - hosts:
+    - "{{ .Values.ingress.host }}"
+  rules:
+  - host: "{{ .Values.ingress.host }}"
+    http:
+      paths:
+      - path: "{{ default "/user" .Values.ingress.path }}"
+        backend:
+          serviceName: "{{ .Values.name }}"
+          servicePort: 80

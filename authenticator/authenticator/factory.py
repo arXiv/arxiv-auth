@@ -1,8 +1,15 @@
+"""Provides an app factory for the authenticator app."""
+
+from arxiv import vault
+from arxiv.base import Base
+from arxiv.base.middleware import wrap
+
 from flask import Flask, jsonify, make_response
 from werkzeug.exceptions import BadRequest, NotFound, BadRequest, Forbidden, \
     Unauthorized
-from arxiv.base import Base
+
 from . import routes
+from .services import SessionStore
 
 
 def jsonify_exception(error):
@@ -16,6 +23,13 @@ def create_app() -> Flask:
     """Initialize an instance of the authenticator service."""
     app = Flask('authenticator')
     app.config.from_pyfile('config.py')
+
+    Base(app)
+    SessionStore.init_app(app)
+
+    if app.config['VAULT_ENABLED']:
+        wrap(app, [vault.middleware.VaultMiddleware])
+        app.middlewares['VaultMiddleware'].update_secrets({})
 
     app.register_blueprint(routes.blueprint)
     app.errorhandler(NotFound)(jsonify_exception)

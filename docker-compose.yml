@@ -28,6 +28,8 @@ services:
       MYSQL_ROOT_PASSWORD: foorootpassword
       MYSQL_DATABASE: accounts
     command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    # logging:
+    #   driver: none
 
   registry-maria:
     image: mariadb:10.3
@@ -40,6 +42,19 @@ services:
       MYSQL_ROOT_PASSWORD: foorootpassword
       MYSQL_DATABASE: registry
     command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    # logging:
+    #   driver: none
+
+  mock-auth-vault:
+    image: arxiv/mock-auth-vault
+    build:
+      context: .
+      dockerfile: Dockerfile-mock-vault
+    container_name: mock-auth-vault
+    environment:
+      JWT_SECRET: foosecret
+    networks:
+      - arxiv-accounts
 
   accounts:
     build:
@@ -55,11 +70,13 @@ services:
       CAPTCHA_SECRET: foocaptchasecret
       CAPTCHA_FONT: /opt/arxiv/fonts/montserrat.ttf
       CREATE_DB: 1
+
     networks:
       - arxiv-accounts
     depends_on:
       - accounts-redis-sessions
       - accounts-maria
+      - mock-auth-vault
 
   registry:
     build:
@@ -71,13 +88,19 @@ services:
       REDIS_PORT: "7000"
       LOGLEVEL: 10
       CLASSIC_DATABASE_URI: "mysql+mysqldb://foouser:foopass@registry-maria:3306/registry?charset=utf8"
-      JWT_SECRET: foosecret
       CREATE_DB: 1
+      VAULT_ENABLED: "1"
+      NAMESPACE: "production"
+      KUBE_TOKEN: "fookubetoken"
+      VAULT_HOST: "mock-auth-vault"
+      VAULT_PORT: "8200"
+      VAULT_SCHEME: "http"
     networks:
       - arxiv-accounts
     depends_on:
       - accounts-redis-sessions
       - registry-maria
+      - mock-auth-vault
 
   authenticator:
     build:
@@ -88,11 +111,18 @@ services:
       LOGLEVEL: 10
       REDIS_HOST: "accounts-redis-sessions"
       REDIS_PORT: "7000"
-      JWT_SECRET: foosecret
+
+      VAULT_ENABLED: "1"
+      NAMESPACE: "production"
+      KUBE_TOKEN: "fookubetoken"
+      VAULT_HOST: "mock-auth-vault"
+      VAULT_PORT: "8200"
+      VAULT_SCHEME: "http"
     networks:
       - arxiv-accounts
     depends_on:
       - accounts-redis-sessions
+      - mock-auth-vault
 
   gateway:
     build:

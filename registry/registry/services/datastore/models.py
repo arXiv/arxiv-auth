@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import BigInteger, Column, DateTime, Enum, \
     ForeignKey, Index, Integer, SmallInteger, String, Text, text
 from sqlalchemy.orm import relationship
@@ -10,10 +11,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from arxiv import taxonomy
 from ... import domain
 
-Base = declarative_base()
+db: SQLAlchemy = SQLAlchemy()
 
 
-class DBClient(Base):
+class DBClient(db.Model):
     """Persistence for :class:`domain.Client`."""
 
     __tablename__ = 'client'
@@ -38,7 +39,7 @@ class DBClient(Base):
                                        lazy='joined')
 
 
-class DBClientCredential(Base):
+class DBClientCredential(db.Model):
     """Persistence for :class:`domain.ClientCredential`."""
 
     __tablename__ = 'client_credential'
@@ -52,7 +53,7 @@ class DBClientCredential(Base):
                           uselist=False)
 
 
-class DBClientAuthorization(Base):
+class DBClientAuthorization(db.Model):
     """Persistence for :class:`domain.ClientAuthorization`."""
 
     __tablename__ = 'client_authorization'
@@ -65,7 +66,7 @@ class DBClientAuthorization(Base):
     client = relationship('DBClient', back_populates='authorizations')
 
 
-class DBClientGrantType(Base):
+class DBClientGrantType(db.Model):
     """Persistence for :class:`domain.ClientGrantType`."""
 
     __tablename__ = 'client_grant_type'
@@ -78,7 +79,7 @@ class DBClientGrantType(Base):
     client = relationship('DBClient', back_populates='grant_types')
 
 
-class DBAuthorizationCode(Base):
+class DBAuthorizationCode(db.Model):
     """Persistence for :class:`domain.AuthorizationCode`."""
 
     __tablename__ = 'authorization_code'

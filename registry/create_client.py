@@ -36,8 +36,9 @@ DEFAULT_SCOPES = " ".join(([
     "upload:create",
     "upload:update",
     "upload:read",
-    "upload:read_logs"
+    "upload:read_logs",
 ]))
+
 
 @click.command()
 @click.option('--name', prompt='Brief client name')
@@ -53,42 +54,42 @@ def create_client(name: str, url: str, description: str, scopes: str,
     with app.app_context():
         datastore.create_all()
 
-    with datastore.util.transaction() as session:
-        db_client = datastore.models.DBClient(
-            name=name,
-            url=url,
-            description=description,
-            redirect_uri=redirect_uri
-        )
-        secret = generate_token(48)
-        hashed = hashlib.sha256(secret.encode('utf-8')).hexdigest()
-        db_cred = datastore.models.DBClientCredential(client=db_client,
-                                                      client_secret=hashed)
-        db_scopes = [
-            datastore.models.DBClientAuthorization(
-                client=db_client, authorized=datetime.now(), scope=scope
-            ) for scope in scopes.split()
-        ]
-        db_grant_type = datastore.models.DBClientGrantType(
-            client=db_client,
-            grant_type='client_credentials',
-            authorized=datetime.now()
-        )
-        db_grant_type = datastore.models.DBClientGrantType(
-            client=db_client,
-            grant_type='authorization_code',
-            authorized=datetime.now()
-        )
+        with datastore.util.transaction() as session:
+            db_client = datastore.models.DBClient(
+                name=name,
+                url=url,
+                description=description,
+                redirect_uri=redirect_uri
+            )
+            secret = generate_token(48)
+            hashed = hashlib.sha256(secret.encode('utf-8')).hexdigest()
+            db_cred = datastore.models.DBClientCredential(client=db_client,
+                                                          client_secret=hashed)
+            db_scopes = [
+                datastore.models.DBClientAuthorization(
+                    client=db_client, authorized=datetime.now(), scope=scope
+                ) for scope in scopes.split()
+            ]
+            db_grant_type = datastore.models.DBClientGrantType(
+                client=db_client,
+                grant_type='client_credentials',
+                authorized=datetime.now()
+            )
+            db_grant_type = datastore.models.DBClientGrantType(
+                client=db_client,
+                grant_type='authorization_code',
+                authorized=datetime.now()
+            )
 
-        session.add(db_client)
-        session.add(db_cred)
-        session.add(db_grant_type)
-        for db_scope in db_scopes:
-            session.add(db_scope)
+            session.add(db_client)
+            session.add(db_cred)
+            session.add(db_grant_type)
+            for db_scope in db_scopes:
+                session.add(db_scope)
 
-        session.commit()
-    click.echo(f'Created client {name} with ID {db_client.client_id}'
-               f' and secret {secret}')
+            session.commit()
+        click.echo(f'Created client {name} with ID {db_client.client_id}'
+                   f' and secret {secret}')
 
 
 if __name__ == '__main__':

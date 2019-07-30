@@ -109,31 +109,31 @@ class SetUpUserMixin(object):
 
 
 class TestUsernameExists(SetUpUserMixin, TestCase):
-    """Tests for :mod:`accounts.username_exists`."""
+    """Tests for :mod:`accounts.does_username_exist`."""
 
     def test_with_nonexistant_user(self):
         """There is no user with the passed username."""
         with temporary_db(self.db_uri, create=False, drop=False):
-            self.assertFalse(accounts.username_exists('baruser'))
+            self.assertFalse(accounts.does_username_exist('baruser'))
 
     def test_with_existant_user(self):
         """There is a user with the passed username."""
         with temporary_db(self.db_uri, create=False, drop=False):
-            self.assertTrue(accounts.username_exists('foouser'))
+            self.assertTrue(accounts.does_username_exist('foouser'))
 
 
 class TestEmailExists(SetUpUserMixin, TestCase):
-    """Tests for :mod:`accounts.email_exists`."""
+    """Tests for :mod:`accounts.does_email_exist`."""
 
     def test_with_nonexistant_email(self):
         """There is no user with the passed email."""
         with temporary_db(self.db_uri, create=False, drop=False):
-            self.assertFalse(accounts.email_exists('foo@bar.com'))
+            self.assertFalse(accounts.does_email_exist('foo@bar.com'))
 
     def test_with_existant_email(self):
         """There is a user with the passed email."""
         with temporary_db(self.db_uri, create=False, drop=False):
-            self.assertTrue(accounts.email_exists('first@last.iv'))
+            self.assertTrue(accounts.does_email_exist('first@last.iv'))
 
 
 class TestRegister(SetUpUserMixin, TestCase):
@@ -166,9 +166,9 @@ class TestRegister(SetUpUserMixin, TestCase):
             u, _ = accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
             db_user, db_nick, db_profile = get_user(session, u.user_id)
 
-        self.assertEqual(db_user.first_name, name.forename)
-        self.assertEqual(db_user.last_name, name.surname)
-        self.assertEqual(db_user.suffix_name, name.suffix)
+            self.assertEqual(db_user.first_name, name.forename)
+            self.assertEqual(db_user.last_name, name.surname)
+            self.assertEqual(db_user.suffix_name, name.suffix)
 
     def test_register_with_bare_minimum(self):
         """Registration includes only a username, email address, password."""
@@ -179,9 +179,9 @@ class TestRegister(SetUpUserMixin, TestCase):
             u, _ = accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
             db_user, db_nick, db_profile = get_user(session, u.user_id)
 
-        self.assertEqual(db_user.flag_email_verified, 0)
-        self.assertEqual(db_nick.nickname, user.username)
-        self.assertEqual(db_user.email, user.email)
+            self.assertEqual(db_user.flag_email_verified, 0)
+            self.assertEqual(db_nick.nickname, user.username)
+            self.assertEqual(db_user.email, user.email)
 
     def test_register_with_profile(self):
         """Registration includes profile information."""
@@ -202,14 +202,14 @@ class TestRegister(SetUpUserMixin, TestCase):
             u, _ = accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
             db_user, db_nick, db_profile = get_user(session, u.user_id)
 
-        self.assertEqual(db_profile.affiliation, profile.affiliation)
-        self.assertEqual(db_profile.country, profile.country),
-        self.assertEqual(db_profile.rank, profile.rank),
-        self.assertEqual(db_profile.flag_group_cs, 1)
-        self.assertEqual(db_profile.flag_group_q_bio, 1)
-        self.assertEqual(db_profile.flag_group_physics, 0)
-        self.assertEqual(db_profile.archive, 'cs')
-        self.assertEqual(db_profile.subject_class, 'DL')
+            self.assertEqual(db_profile.affiliation, profile.affiliation)
+            self.assertEqual(db_profile.country, profile.country),
+            self.assertEqual(db_profile.rank, profile.rank),
+            self.assertEqual(db_profile.flag_group_cs, 1)
+            self.assertEqual(db_profile.flag_group_q_bio, 1)
+            self.assertEqual(db_profile.flag_group_physics, 0)
+            self.assertEqual(db_profile.archive, 'cs')
+            self.assertEqual(db_profile.subject_class, 'DL')
 
     def test_can_authenticate_after_registration(self):
         """A may authenticate a bare-minimum user after registration."""
@@ -355,11 +355,12 @@ class TestUpdate(SetUpUserMixin, TestCase):
             u, _ = accounts.update(updated_user)
             db_user, db_nick, db_profile = get_user(session, u.user_id)
 
-        self.assertEqual(db_profile.affiliation, updated_profile.affiliation)
-        self.assertEqual(db_profile.country, updated_profile.country),
-        self.assertEqual(db_profile.rank, updated_profile.rank),
-        self.assertEqual(db_profile.flag_group_cs, 1)
-        self.assertEqual(db_profile.flag_group_q_bio, 0)
-        self.assertEqual(db_profile.flag_group_physics, 1)
-        self.assertEqual(db_profile.archive, 'cs')
-        self.assertEqual(db_profile.subject_class, 'IR')
+            self.assertEqual(db_profile.affiliation,
+                             updated_profile.affiliation)
+            self.assertEqual(db_profile.country, updated_profile.country),
+            self.assertEqual(db_profile.rank, updated_profile.rank),
+            self.assertEqual(db_profile.flag_group_cs, 1)
+            self.assertEqual(db_profile.flag_group_q_bio, 0)
+            self.assertEqual(db_profile.flag_group_physics, 1)
+            self.assertEqual(db_profile.archive, 'cs')
+            self.assertEqual(db_profile.subject_class, 'IR')

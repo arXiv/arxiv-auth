@@ -89,7 +89,7 @@ class TestAuthentication(TestCase):
         try:
             os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
             cls.app = create_web_app()
-            cls.app.config['REGISTRY_DATABASE_URI'] = f'sqlite:///{cls.db}'
+            cls.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{cls.db}'
             cls.app.config['SERVER_NAME'] = 'local.host:5000'
             cls.app.config['REDIS_HOST'] = 'localhost'
             cls.app.config['REDIS_PORT'] = '7000'
@@ -107,14 +107,19 @@ class TestAuthentication(TestCase):
                 )
 
         except Exception:
-            stop_container(cls.container)
+            with cls.app.app_context():
+                stop_container(cls.container)
             raise
 
     @classmethod
     def tearDownClass(cls):
         """Tear down redis."""
-        stop_container(cls.container)
-        os.remove(cls.db)
+        with cls.app.app_context():
+            stop_container(cls.container)
+        try:
+            os.remove(cls.db)
+        except Exception:
+            pass
 
     def test_post_credentials(self):
         """POST request to /token returns auth token."""

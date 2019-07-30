@@ -25,8 +25,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #     def test_post_minimum(self, captcha, sessions, legacy, users):
 #         """POST request with minimum required data."""
 #         captcha.return_value = None     # No exception -> OK.
-#         users.username_exists.return_value = False
-#         users.email_exists.return_value = False
+#         users.does_username_exist.return_value = False
+#         users.does_email_exist.return_value = False
 #         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
 #
 #         registration_data = {
@@ -72,8 +72,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #     @mock.patch('accounts.controllers.registration.users')
 #     def test_missing_data(self, users):
 #         """POST request missing a required field."""
-#         users.username_exists.return_value = False
-#         users.email_exists.return_value = False
+#         users.does_username_exist.return_value = False
+#         users.does_email_exist.return_value = False
 #
 #         registration_data = {
 #             'email': 'foo@bar.edu',
@@ -100,8 +100,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #     @mock.patch('accounts.controllers.registration.users')
 #     def test_password_mismatch(self, users):
 #         """POST with all required data, but passwords don't match."""
-#         users.username_exists.return_value = False
-#         users.email_exists.return_value = False
+#         users.does_username_exist.return_value = False
+#         users.does_email_exist.return_value = False
 #         registration_data = {
 #             'email': 'foo@bar.edu',
 #             'username': 'foouser',
@@ -128,8 +128,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #     def test_existing_username(self, captcha, sessions, legacy, users):
 #         """POST valid data, but username already exists."""
 #         captcha.return_value = None     # No exception -> OK.
-#         users.username_exists.return_value = True
-#         users.email_exists.return_value = False
+#         users.does_username_exist.return_value = True
+#         users.does_email_exist.return_value = False
 #         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
 #
 #         registration_data = {
@@ -159,8 +159,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #     def test_existing_email(self, captcha, sessions, legacy, users):
 #         """POST valid data, but email already exists."""
 #         captcha.return_value = None     # No exception -> OK.
-#         users.username_exists.return_value = False
-#         users.email_exists.return_value = True
+#         users.does_username_exist.return_value = False
+#         users.does_email_exist.return_value = True
 #         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
 #         legacy.return_value = (mock.MagicMock(), mock.MagicMock())
 #         sessions.return_value = (mock.MagicMock(), mock.MagicMock())
@@ -195,8 +195,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #             raise InvalidCaptchaValue('Nope')
 #
 #         captcha.side_effect = raise_invalid_value
-#         users.username_exists.return_value = False
-#         users.email_exists.return_value = False
+#         users.does_username_exist.return_value = False
+#         users.does_email_exist.return_value = False
 #         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
 #         legacy.return_value = (mock.MagicMock(), mock.MagicMock())
 #         sessions.return_value = (mock.MagicMock(), mock.MagicMock())
@@ -231,8 +231,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #             raise InvalidCaptchaToken('Nope')
 #
 #         captcha.side_effect = raise_invalid_token
-#         users.username_exists.return_value = False
-#         users.email_exists.return_value = False
+#         users.does_username_exist.return_value = False
+#         users.does_email_exist.return_value = False
 #         users.register.return_value = (mock.MagicMock(), mock.MagicMock())
 #
 #         registration_data = {
@@ -275,8 +275,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #     def test_post_minimum(self, users, create, invalidate):
 #         """POST request with minimum required data."""
 #         users.get_user_by_id.return_value = mock.MagicMock(user_id=1)
-#         users.username_exists.return_value = False
-#         users.email_exists.return_value = False
+#         users.does_username_exist.return_value = False
+#         users.does_email_exist.return_value = False
 #         users.update.return_value = (mock.MagicMock(), mock.MagicMock())
 #         current_session = mock.MagicMock(session_id='52')
 #
@@ -347,8 +347,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #     def test_existing_username(self, users):
 #         """POST valid data, but username already exists."""
 #         users.get_user_by_id.return_value = mock.MagicMock(user_id=1)
-#         users.username_exists.return_value = True
-#         users.email_exists.return_value = False
+#         users.does_username_exist.return_value = True
+#         users.does_email_exist.return_value = False
 #         users.update.return_value = (mock.MagicMock(), mock.MagicMock())
 #         current_session = mock.MagicMock(session_id='52')
 #
@@ -374,8 +374,8 @@ from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken
 #     def test_existing_email(self, users):
 #         """POST valid data, but email already exists."""
 #         users.get_user_by_id.return_value = mock.MagicMock(user_id=1)
-#         users.username_exists.return_value = False
-#         users.email_exists.return_value = True
+#         users.does_username_exist.return_value = False
+#         users.does_email_exist.return_value = True
 #         users.update.return_value = (mock.MagicMock(), mock.MagicMock())
 #         current_session = mock.MagicMock(session_id='52')
 #

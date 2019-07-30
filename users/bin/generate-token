@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Helper script for generating an auth JWT.
 
@@ -8,7 +9,7 @@ the same secret is always used.
 
 .. code-block:: bash
 
-   $ JWT_SECRET=foosecret pipenv run python generate_token.py
+   $ JWT_SECRET=foosecret generate-token
    Numeric user ID: 4
    Email address: joe@bloggs.com
    Username: jbloggs1
@@ -30,7 +31,7 @@ Start the dev server with:
 
 .. code-block:: bash
 
-   $ JWT_SECRET=foosecret FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+   $ JWT_SECRET=foosecret FLASK_APP=app.py FLASK_DEBUG=1 flask run
 
 
 Use the (rather long) token in your requests to authorized endpoints. Set the
@@ -40,39 +41,42 @@ or `ModHeader <https://chrome.google.com/webstore/detail/modheader/idgpnmonknjno
 
 """
 
-import click
-
-from typing import Optional
 import os
-from pytz import timezone, UTC
 import uuid
+import random
+from typing import Optional
 from datetime import timedelta, datetime
+
+import click
+from pytz import timezone, UTC
+from mimesis import Person, locales, Address
+
 from arxiv.users import auth, domain
 
 DEFAULT_SCOPES = " ".join(([
     "public:read",
-    "submission:create",
-    "submission:update",
-    "submission:read",
-    "upload:create",
-    "upload:update",
-    "upload:read",
-    "upload:delete",
-    "upload:read_logs"
 ]))
+
+__locale__ = locales.LIST_OF_LOCALES[
+    random.randint(0, len(locales.LIST_OF_LOCALES) - 1)
+]
+__person__ = Person(__locale__)
+__address__ = Address(__locale__)
+__secret__: Optional[str] = os.environ.get('JWT_SECRET', None)
 
 
 @click.command()
-@click.option('--user_id', prompt='Numeric user ID')
-@click.option('--email', prompt='Email address')
-@click.option('--username', prompt='Username')
-@click.option('--first_name', prompt='First name', default='Jane')
-@click.option('--last_name', prompt='Last name', default='Doe')
-@click.option('--suffix_name', prompt='Name suffix', default='IV')
+@click.option('--user_id', prompt='Numeric user ID', default=1)
+@click.option('--email', prompt='Email address', default=__person__.email)
+@click.option('--username', prompt='Username', default=__person__.username)
+@click.option('--first_name', prompt='First name', default=__person__.name)
+@click.option('--last_name', prompt='Last name', default=__person__.surname)
+@click.option('--suffix_name', prompt='Name suffix', default='')
 @click.option('--affiliation', prompt='Affiliation',
-              default='Cornell University')
+              default=__person__.university)
 @click.option('--rank', prompt='Numeric rank', default=3)
-@click.option('--country', prompt='Alpha-2 country code', default='us')
+@click.option('--country', prompt='Alpha-2 country code',
+              default=__address__.country_code)
 @click.option('--default_category', prompt='Default category',
               default='astro-ph.GA')
 @click.option('--submission_groups', prompt='Submission groups (comma delim)',
@@ -81,17 +85,19 @@ DEFAULT_SCOPES = " ".join(([
               default='')
 @click.option('--scope', prompt='Authorization scope (space delim)',
               default=DEFAULT_SCOPES)
-def generate_token(user_id: str, email: str, username: str,
-                   first_name: str = 'Jane', last_name: str = 'Doe',
-                   suffix_name: str = 'IV',
-                   affiliation: str = 'Cornell University',
-                   rank: int = 3,
-                   country: str = 'us',
-                   default_category: str = 'astro-ph.GA',
-                   submission_groups: str = 'grp_physics',
-                   endorsements: Optional[str] = None,
-                   scope: str = DEFAULT_SCOPES) \
-        -> None:
+def generate_token(user_id: str,
+                   email: str,
+                   username: str,
+                   first_name: str,
+                   last_name: str,
+                   suffix_name: str,
+                   affiliation: str,
+                   rank: int,
+                   country: str,
+                   default_category: str,
+                   submission_groups: str,
+                   endorsements: str,
+                   scope: str) -> None:
     """Generate an auth token for dev/testing purposes."""
     # Specify the validity period for the session.
     start = datetime.now(tz=timezone('US/Eastern'))
@@ -124,9 +130,15 @@ def generate_token(user_id: str, email: str, username: str,
             endorsements=these_endorsements
         )
     )
-    token = auth.tokens.encode(session, os.environ['JWT_SECRET'])
+    token = auth.tokens.encode(session, __secret__)
+    click.echo('===================== AUTH TOKEN BELOW =====================')
     click.echo(token)
+    click.echo('===================== AUTH TOKEN ABOVE =====================')
 
 
 if __name__ == '__main__':
+    __secret__ = os.environ.get('JWT_SECRET', None)
+    if __secret__ is None:
+        print('JWT_SECRET must be set in your environment')
+        exit(1)
     generate_token()

@@ -18,14 +18,14 @@ import hashlib
 from datetime import timedelta, datetime
 from flask import Request, Flask, current_app, request
 from authlib.flask.oauth2 import AuthorizationServer
-from authlib.specs.rfc6749 import ClientMixin, grants, OAuth2Request, \
+from authlib.oauth2.rfc6749 import ClientMixin, grants, OAuth2Request, \
     OAuth2Error
 from authlib.common.security import generate_token
 
 from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
 from arxiv import taxonomy
-from ..services import datastore, sessions
+from ..services import datastore, SessionStore
 from .. import domain
 
 logger = logging.getLogger(__name__)
@@ -153,9 +153,9 @@ class OAuth2Client(ClientMixin):
         # granting scopes for which the user themself is not authorized.
         logger.debug('Client requests scopes: %s', scopes)
 
-        if request.session and request.session.user:
+        if request.auth and request.auth.user:
             session_scopes = {
-                str(s) for s in request.session.authorizations.scopes
+                str(s) for s in request.auth.authorizations.scopes
             }
             logger.debug('Authorized scopes on user session: %s',
                          session_scopes)
@@ -316,6 +316,7 @@ def save_token(token: dict, oauth_request: OAuth2Request) -> None:
         scopes=client.scopes,
         endorsements=get_endorsements(client)
     )
+    sessions = SessionStore.current_session()
     session = sessions.create(authorizations, request.remote_addr,
                               request.remote_addr, user=user,
                               client=client._client, session_id=session_id)

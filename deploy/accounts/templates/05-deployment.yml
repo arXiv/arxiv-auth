@@ -1,0 +1,101 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ .Values.name }}"
+  labels:
+    subsystem: "{{ .Values.labels.subsystem }}"
+    container: "{{ .Values.name }}"
+    service-group: api
+    log-style: uwsgi
+    env: "{{ .Values.namespace }}"
+  namespace: "{{ .Values.namespace }}"
+spec:
+  replicas: {{  int .Values.scaling.replicas }}
+  template:
+    metadata:
+      labels:
+        subsystem: "{{ .Values.labels.subsystem }}"
+        container: "{{ .Values.name }}"
+        service-group: api
+        log-style: uwsgi
+        env: "{{ .Values.namespace }}"
+      # annotations:
+      #   prometheus.io/scrape: 'true'
+    spec:
+      serviceAccount: accounts
+      volumes:
+      - name: vault-token
+        emptyDir: {}
+      - name: vault-certificate
+        secret:
+          secretName: vault-certificate
+
+      containers:
+      - name: "{{ .Values.name }}"
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: REDIS_HOST
+          value: "{{ .Values.redis.host }}"
+        - name: REDIS_PORT
+          value: "{{ .Values.redis.port }}"
+        - name: REDIS_CLUSTER
+          value: "{{ .Values.redis.cluster }}"
+
+        - name: LOGLEVEL
+          value: "{{ .Values.loglevel }}"
+        - name: VAULT_ENABLED
+          value: "1"
+        - name: VAULT_HOST
+          value: "{{ .Values.vault.host }}"
+        - name: VAULT_PORT
+          value: "{{ .Values.vault.port }}"
+        - name: VAULT_CERT
+          value: /etc/vault-certificate/vaulttls.cert.pem
+        - name: VAULT_ROLE
+          value: "{{ .Values.vault.role }}-{{ .Values.namespace }}"
+        - name: VAULT_CREDENTIAL
+          value: "{{ .Values.vault.credential }}"
+        - name: KUBE_TOKEN
+          value: /var/run/secrets/kubernetes.io/serviceaccount/token
+        - name: NAMESPACE
+          value: "{{ .Values.namespace }}"
+
+        - name: WAIT_FOR_SERVICES
+          value: "{{ .Values.config.wait_for_services }}"
+        - name: WAIT_ON_STARTUP
+          value: "{{ .Values.config.wait_on_startup }}"
+
+        - name: BASE_SERVER
+          value: "{{ .Values.ingress.host }}"
+
+        - name: APPLICATION_ROOT
+          value: "{{ .Values.ingress.path }}"
+        - name: DEFAULT_LOGIN_REDIRECT_URL
+          value: "{{ .Values.auth.default_login_redirect }}"
+        - name: DEFAULT_LOGOUT_REDIRECT_URL
+          value: "{{ .Values.auth.default_logout_redirect }}"
+
+
+        volumeMounts:
+          - name: vault-certificate
+            mountPath: /etc/vault-certificate
+            readOnly: true
+          - name: vault-token
+            mountPath: /etc/vault
+
+        resources:
+          limits:
+            cpu: 300m
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+
+        readinessProbe:
+          periodSeconds: 5
+          httpGet:
+            path: "{{ .Values.ingress.path }}/login"
+            port: 8000

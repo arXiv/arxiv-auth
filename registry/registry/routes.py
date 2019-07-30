@@ -51,12 +51,12 @@ def authorize():
     server = current_app.server
     if request.method == 'GET':
         try:
-            grant_user = oauth2.OAuth2User(request.session.user)
+            grant_user = oauth2.OAuth2User(request.auth.user)
             grant = server.validate_consent_request(end_user=grant_user)
             return render_template(
                 'registry/authorize.html',
                 grant=grant,
-                user=request.session.user
+                user=request.auth.user
             )
         except oauth2.OAuth2Error as e:
             logger.debug('Got OAuth2Error: %s', e)
@@ -64,7 +64,7 @@ def authorize():
     elif request.method == 'POST':
         if request.form['confirm'] == 'ok':
             logger.debug('User authorizes client')
-            grant_user = oauth2.OAuth2User(request.session.user)
+            grant_user = oauth2.OAuth2User(request.auth.user)
         else:
             logger.debug('User has not authorized client')
             grant_user = None

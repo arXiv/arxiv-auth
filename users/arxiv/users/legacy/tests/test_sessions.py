@@ -32,6 +32,7 @@ class TestCreateSession(TestCase):
             user_session = sessions.create(auths, ip_address, remote_host,
                                            tracking, user=user)
             self.assertIsInstance(user_session, sessions.domain.Session)
+            
             tapir_session = sessions._load(user_session.session_id)
             self.assertIsNotNone(user_session, 'verifying we have a session')
             if tapir_session is not None:
@@ -63,6 +64,7 @@ class TestCreateSession(TestCase):
                     user_session.remote_host,
                     "Returned session audit has correct remote host"
                 )
+
 
 class TestInvalidateSession(TestCase):
     """Tests for public function :func:`.invalidate`."""

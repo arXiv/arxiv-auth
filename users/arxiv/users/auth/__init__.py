@@ -1,12 +1,16 @@
 """Provides tools for working with authenticated user/client sessions."""
 
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from datetime import datetime
 import warnings
+
 from pytz import UTC
 from flask import Flask, request, Response, make_response, redirect, url_for
 from werkzeug.http import parse_cookie
 from werkzeug import MultiDict
+from werkzeug.routing import BuildError
+from retry import retry
+
 from . import decorators, middleware, scopes, tokens
 from .. import domain, legacy
 
@@ -50,6 +54,7 @@ class Auth(object):
         if app is not None:
             self.init_app(app)
 
+    @retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
     def _get_legacy_session(self) -> Optional[domain.Session]:
         """
         Attempt to load a legacy auth session.
@@ -64,13 +69,14 @@ class Auth(object):
         if classic_cookie is None:
             return None
         try:
-            return legacy.sessions.load(classic_cookie)
+            with legacy.transaction():
+                return legacy.sessions.load(classic_cookie)
         except legacy.exceptions.UnknownSession as e:
-            logger.debug('No legacy session available')
+            logger.debug('No legacy session available: %s', e)
         except legacy.exceptions.InvalidCookie as e:
-            logger.debug('Invalid legacy cookie')
+            logger.debug('Invalid legacy cookie: %s', e)
         except legacy.exceptions.SessionExpired as e:
-            logger.debug('Legacy session is expired')
+            logger.debug('Legacy session is expired: %s', e)
         return None
 
     def init_app(self, app: Flask) -> None:
@@ -83,9 +89,27 @@ class Auth(object):
 
         """
         self.app = app
+        legacy.init_app(app)
         self.app.before_request(self.load_session)
+        self.app.config.setdefault('DEFAULT_LOGOUT_REDIRECT_URL',
+                                   'https://arxiv.org')
+        self.app.config.setdefault('DEFAULT_LOGIN_REDIRECT_URL',
+                                   'https://arxiv.org')
 
-    def load_session(self) -> None:
+        @self.app.teardown_request
+        def teardown_request(exception: Optional[Exception]) -> None:
+            session = legacy.current_session()
+            if exception:
+                session.rollback()
+            session.remove()
+
+        @self.app.teardown_appcontext
+        def teardown_appcontext(*args: Any, **kwargs: Any) -> None:
+            session = legacy.current_session()
+            session.rollback()
+            session.remove()
+
+    def load_session(self) -> Optional[Response]:
         """
         Look for an active session, and attach it to the request.
 
@@ -129,12 +153,13 @@ class Auth(object):
             # design flaw that's blocking other work. This is deprecated and
             # will be removed in 0.4.1.
             warnings.warn(
-                "Accessing the authenticated session via request.session is"
+                "Accessing the authenticated session via request.auth is"
                 " deprecated, and will be removed in 0.4.1. Use request.auth"
                 " instead. ARXIVNG-1920.",
                 DeprecationWarning
             )
             request.session = session
+        return None
 
     def detect_and_clobber_dupe_cookies(self) -> Optional[Response]:
         """
@@ -162,7 +187,14 @@ class Auth(object):
         for name in [classic_cookie_name, perm_cookie_name]:
             if len(cookies.getlist(name)) > 1:
                 if response is None:
-                    response = make_response(redirect(url_for('ui.login')))
+                    # The ui.login route may not exist on an application using
+                    # this package, so we will fall back to the logout redirect
+                    # URL if the login route is missing. ARXIVNG-2063
+                    try:
+                        target = url_for('ui.login')
+                    except BuildError:
+                        target = self.app.config['DEFAULT_LOGOUT_REDIRECT_URL']
+                    response = make_response(redirect(target))
                 response.set_cookie(name, '', max_age=0, expires=now)
                 response.set_cookie(name, '', max_age=0, expires=now,
                                     domain=domain.lstrip('.'))

@@ -1,5 +1,6 @@
 [run]
 omit =
+    mock_vault.py
     */app.py
     */wsgi.py
     */config.py

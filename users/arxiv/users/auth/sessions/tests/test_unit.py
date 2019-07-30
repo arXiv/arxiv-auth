@@ -84,7 +84,7 @@ class TestDistributedSessionService(TestCase):
 
 
 class TestGetSession(TestCase):
-    """Tests for :func:`store.load`."""
+    """Tests for :func:`store.SessionStore.current_session().load`."""
 
     @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
@@ -99,7 +99,7 @@ class TestGetSession(TestCase):
         mock_redis = mock.MagicMock()
         mock_get_redis.return_value = mock_redis
         with self.assertRaises(store.InvalidToken):
-            store.load('notatoken')
+            store.SessionStore.current_session().load('notatoken')
 
     @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
@@ -119,7 +119,7 @@ class TestGetSession(TestCase):
             claims = {claim: '' for claim in required_claims if claim != exc}
             malformed_token = jwt.encode(claims, secret).decode('ascii')
             with self.assertRaises(store.InvalidToken):
-                store.load(malformed_token)
+                store.SessionStore.current_session().load(malformed_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
@@ -144,7 +144,7 @@ class TestGetSession(TestCase):
         }
         bad_token = jwt.encode(claims, 'nottherightsecret').decode('ascii')
         with self.assertRaises(store.InvalidToken):
-            store.load(bad_token)
+            store.SessionStore.current_session().load(bad_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
@@ -175,7 +175,7 @@ class TestGetSession(TestCase):
         }
         expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
-            store.load(expired_token)
+            store.SessionStore.current_session().load(expired_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
@@ -213,7 +213,7 @@ class TestGetSession(TestCase):
         }
         expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
-            store.load(expired_token)
+            store.SessionStore.current_session().load(expired_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
@@ -249,7 +249,7 @@ class TestGetSession(TestCase):
         }
         expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.InvalidToken):
-            store.load(expired_token)
+            store.SessionStore.current_session().load(expired_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
@@ -277,7 +277,7 @@ class TestGetSession(TestCase):
         }
         expired_token = jwt.encode(claims, secret).decode('ascii')
         with self.assertRaises(store.UnknownSession):
-            store.load(expired_token)
+            store.SessionStore.current_session().load(expired_token)
 
     @mock.patch(f'{store.__name__}.get_application_config')
     @mock.patch(f'{store.__name__}.rediscluster.StrictRedisCluster')
@@ -314,5 +314,5 @@ class TestGetSession(TestCase):
         }
         valid_token = jwt.encode(claims, secret).decode('ascii')
 
-        session = store.load(valid_token)
+        session = store.SessionStore.current_session().load(valid_token)
         self.assertIsInstance(session, domain.Session, "Returns a session")

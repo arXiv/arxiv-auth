@@ -11,6 +11,7 @@ def temporary_db(database_url: str = 'sqlite:///:memory:',
     """Provide an in-memory sqlite database for testing purposes."""
     app = Flask('foo')
     app.config['CLASSIC_DATABASE_URI'] = database_url
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['CLASSIC_SESSION_HASH'] = 'foohash'
     with app.app_context():
@@ -18,8 +19,9 @@ def temporary_db(database_url: str = 'sqlite:///:memory:',
         if create:
             util.create_all()
         try:
-            yield util.current_session()
-        except Exception:
+            with util.transaction():
+                yield util.current_session()
+        except Exception as e:
             raise
         finally:
             if drop:

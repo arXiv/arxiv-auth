@@ -31,8 +31,7 @@ def anonymous_only(func: Callable) -> Callable:
     """Redirect logged-in users to their profile."""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if request.session:
-            user = request.session.user
+        if request.auth:
             target = url_for('account')
             content = redirect(target, code=status.HTTP_303_SEE_OTHER)
             response = make_response(content)
@@ -123,39 +122,14 @@ def register() -> Response:
     return response
 
 
-# @blueprint.route('/<string:user_id>/profile', methods=['GET'])
-# @scoped(scopes.VIEW_PROFILE, authorizer=user_is_owner)
-# def view_profile(user_id: str) -> Response:
-#     """User can view their account information."""
-#     data, code, headers = registration.view_profile(user_id, request.session)
-#     return render_template("accounts/profile.html", **data)
-
-
-# @blueprint.route('/<string:user_id>/profile/edit', methods=['GET', 'POST'])
-# @scoped(scopes.EDIT_PROFILE, authorizer=user_is_owner)
-# def edit_profile(user_id: str) -> Response:
-#     """User can update their account information."""
-#     data, code, headers = registration.edit_profile(request.method, user_id,
-#                                                     request.session,
-#                                                     request.form,
-#                                                     request.remote_addr)
-#     if code is status.HTTP_303_SEE_OTHER:
-#         target = url_for('ui.view_profile', user_id=user_id)
-#         response = make_response(redirect(target, code=code))
-#         set_cookies(response, data)
-#         return response
-#     content = render_template("accounts/edit_profile.html", **data)
-#     response = make_response(content, code, headers)
-#     return response
-
-
 @blueprint.route('/login', methods=['GET', 'POST'])
 @anonymous_only
 def login() -> Response:
     """User can log in with username and password, or permanent token."""
     ip_address = request.remote_addr
     form_data = request.form
-    next_page = request.args.get('next_page', url_for('account'))
+    default_next_page = current_app.config['DEFAULT_LOGIN_REDIRECT_URL']
+    next_page = request.args.get('next_page', default_next_page)
     logger.debug('Request to log in, then redirect to %s', next_page)
     data, code, headers = authentication.login(request.method,
                                                form_data, ip_address,
@@ -185,7 +159,8 @@ def logout() -> Response:
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_key, None)
     classic_cookie = request.cookies.get(classic_cookie_key, None)
-    next_page = request.args.get('next_page', url_for('ui.login'))
+    default_next_page = current_app.config['DEFAULT_LOGOUT_REDIRECT_URL']
+    next_page = request.args.get('next_page', default_next_page)
     logger.debug('Request to log out, then redirect to %s', next_page)
     data, code, headers = authentication.logout(session_cookie, classic_cookie,
                                                 next_page)

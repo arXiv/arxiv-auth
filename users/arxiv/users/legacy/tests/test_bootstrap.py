@@ -10,14 +10,13 @@ from typing import List
 import random
 from datetime import datetime
 from pytz import timezone, UTC
-from mimesis import Person, Internet, Datetime
-from mimesis import config as mimesis_config
+from mimesis import Person, Internet, Datetime, locales
 
 from arxiv import taxonomy
 from .. import models, util, sessions, authenticate, exceptions
 from ... import domain
 
-LOCALES = list(mimesis_config.SUPPORTED_LOCALES.keys())
+LOCALES = list(locales.LIST_OF_LOCALES)
 EASTERN = timezone('US/Eastern')
 
 
@@ -192,6 +191,7 @@ class TestBootstrap(TestCase):
                                 surname=db_user.last_name,
                                 suffix=db_user.suffix_name
                             ),
+                            profile=db_profile.to_domain(),
                             verified=bool(db_user.flag_email_verified)
                         ),
                         domain.Authorizations(
@@ -208,7 +208,10 @@ class TestBootstrap(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        os.remove('./test.db')
+        try:
+            os.remove('./test.db')
+        except FileNotFoundError:
+            pass
 
     def test_authenticate_and_use_session(self):
         """Attempt to authenticate users and create/load auth sessions."""
