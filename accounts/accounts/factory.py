@@ -1,6 +1,7 @@
 """Application factory for accounts app."""
 
 from flask import Flask
+from flask_s3 import FlaskS3
 
 from arxiv import vault
 from arxiv.base import Base
@@ -9,6 +10,8 @@ from arxiv.users import auth
 
 from accounts.routes import ui
 from accounts.services import SessionStore, legacy, users
+
+s3 = FlaskS3()
 
 
 def create_web_app() -> Flask:
@@ -23,6 +26,7 @@ def create_web_app() -> Flask:
     app.register_blueprint(ui.blueprint)
     Base(app)    # Gives us access to the base UI templates and resources.
     auth.Auth(app)  # Handless sessions and authn/z.
+    s3.init_app(app)
 
     middleware = [auth.middleware.AuthMiddleware]
     if app.config['VAULT_ENABLED']:
