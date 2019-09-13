@@ -1,1 +1,0 @@
-# arXiv Mail Service Integration
