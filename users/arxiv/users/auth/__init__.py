@@ -98,16 +98,18 @@ class Auth(object):
 
         @self.app.teardown_request
         def teardown_request(exception: Optional[Exception]) -> None:
-            session = legacy.current_session()
-            if exception:
-                session.rollback()
-            session.remove()
+            if legacy.is_configured():
+                session = legacy.current_session()
+                if exception:
+                    session.rollback()
+                session.remove()
 
         @self.app.teardown_appcontext
         def teardown_appcontext(*args: Any, **kwargs: Any) -> None:
-            session = legacy.current_session()
-            session.rollback()
-            session.remove()
+            if legacy.is_configured():
+                session = legacy.current_session()
+                session.rollback()
+                session.remove()
 
     def load_session(self) -> Optional[Response]:
         """

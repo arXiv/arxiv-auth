@@ -7,7 +7,7 @@ The accounts and authorization subsystem is responsible for providing user
 accounts and profiles as well as mechanisms for authentication and
 authorization. This subsystem also provides the API client portal, which
 supports generation of application tokens, OAuth2 workflows, and a public
-API client application portal that end-users can use to discover tools and
+API client application registry that end-users can use to discover tools and
 services built on top of arXiv APIs.
 
 The arXiv platform provides both anonymous and authenticated interfaces to
