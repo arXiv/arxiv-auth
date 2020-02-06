@@ -1,7 +1,7 @@
 """Provides the captcha image controller."""
 
 from typing import Tuple, Optional
-from werkzeug import MultiDict
+from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import BadRequest
 from arxiv.users import domain
 from arxiv import status

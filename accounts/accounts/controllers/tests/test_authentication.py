@@ -5,7 +5,7 @@ from datetime import datetime
 from pytz import timezone, UTC
 
 from flask import Flask
-from werkzeug import MultiDict
+from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import BadRequest
 
 from arxiv import status

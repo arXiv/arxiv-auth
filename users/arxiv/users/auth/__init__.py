@@ -7,7 +7,7 @@ import warnings
 from pytz import UTC
 from flask import Flask, request, Response, make_response, redirect, url_for
 from werkzeug.http import parse_cookie
-from werkzeug import MultiDict
+from werkzeug.datastructures import MultiDict
 from werkzeug.routing import BuildError
 from retry import retry
 
