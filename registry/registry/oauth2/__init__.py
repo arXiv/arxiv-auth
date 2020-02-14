@@ -16,15 +16,14 @@ The current implementation supports the `client_credentials` and
 from typing import List, Optional, Any
 import hashlib
 from datetime import timedelta, datetime
-from flask import Request, Flask, current_app, request
-from authlib.flask.oauth2 import AuthorizationServer
+from flask import Flask, request
+from authlib.integrations.flask_oauth2 import AuthorizationServer
 from authlib.oauth2.rfc6749 import ClientMixin, grants, OAuth2Request, \
     OAuth2Error
+from authlib.oauth2.rfc6749.util import list_to_scope
 from authlib.common.security import generate_token
 
-from arxiv.base.globals import get_application_config, get_application_global
 from arxiv.base import logging
-from arxiv import taxonomy
 from ..services import datastore, SessionStore
 from .. import domain
 
@@ -117,7 +116,7 @@ class OAuth2Client(ClientMixin):
 
     @property
     def scopes(self) -> List[str]:
-        """Authorized scopes as a list."""
+        """Return authorized scopes as a list."""
         return list(self._scopes)
 
     @property
@@ -129,6 +128,17 @@ class OAuth2Client(ClientMixin):
     def client_id(self) -> str:
         """Get the client ID."""
         return self._client.client_id
+
+    def get_allowed_scope(self, scope: str) -> str:
+        """Get list of scopes supported by client as string."""
+        logger.debug('Get allowed scope: %s in %s',
+                     scope, list_to_scope(self.scopes))
+        if not scope:
+            return ''
+        allowed = set(self.scopes)
+        l_allowed = list_to_scope([sc for sc in scope.split() if sc in allowed])
+        logger.debug('Allowed scope: %s', l_allowed)
+        return l_allowed
 
     def check_client_secret(self, client_secret: str) -> bool:
         """Check that the provided client secret is correct."""
@@ -235,7 +245,7 @@ class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
             code_grant = OAuth2AuthorizationCode(
                 datastore.load_auth_code(code, client.client_id)
             )
-        except datastore.NoSuchAuthCode as e:
+        except datastore.NoSuchAuthCode:
             logger.debug(f'No such auth code: {code}')
             return
 
