@@ -17,7 +17,7 @@ from typing import List, Optional, Any
 import hashlib
 from datetime import timedelta, datetime
 from flask import Flask, request
-from authlib.integrations.flask_oauth2 import AuthorizationServer
+from authlib.flask.oauth2 import AuthorizationServer
 from authlib.oauth2.rfc6749 import ClientMixin, grants, OAuth2Request, \
     OAuth2Error
 from authlib.oauth2.rfc6749.util import list_to_scope
