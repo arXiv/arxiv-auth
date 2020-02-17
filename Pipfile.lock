@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3d962ecf2aa898027a8352225c55eecf1844701560b9f7caa34b54789b2ba25f"
+            "sha256": "f0212d43d81f802bbb04aa2bc41415a567f0ccbba9bddebde29a7230bb044719"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -49,11 +49,11 @@
         },
         "authlib": {
             "hashes": [
-                "sha256:89d55b14362f8acee450f9d153645e438e3a38be99b599190718c4406f575b05",
-                "sha256:b6d3f59f609d352bff26dce2c7969cff7204213fae1c21742037b7aa8d7360a6"
+                "sha256:3a226f231e962a16dd5f6fcf0c113235805ba206e294717a64fa8e04ae3ad9c4",
+                "sha256:9741db6de2950a0a5cefbdb72ec7ab12f7e9fd530ff47219f1530e79183cbaaf"
             ],
             "index": "pypi",
-            "version": "==0.14.1"
+            "version": "==0.11"
         },
         "backports-datetime-fromisoformat": {
             "hashes": [
@@ -78,17 +78,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:3f02c5ec585fe0c7c843026f0f3db3a7bb98a830072b0eb151456ed07ba8e46d",
-                "sha256:435fc7220e76894228f9ceebc19ab226de78f515652f8643e3e22581a7e08ed7"
+                "sha256:33462a79d57c9c4a215e075472509537d03545f54566fc4f776fb0f4cfa616f6",
+                "sha256:34f9a04f529dc849f0e427782d6f3c6b62f7fb734d8f4859b17e5dee0855323e"
             ],
-            "version": "==1.11.17"
+            "version": "==1.12.0"
         },
         "botocore": {
             "hashes": [
-                "sha256:02fe4673ab0c62393dc81c85fe0c65ae84f66cf55b0e0dbda785cf3e68b25762",
-                "sha256:75c759fcd89c4b2c717b40c2bd43915716bf15cfb7fb5bfccdc9bd9f697ac75f"
+                "sha256:055da4826f6c9158e4a61549d57a2ce449c27d44ce34ab4c96c7bb7b5c993efc",
+                "sha256:1f7cecfcd38c7cac17b5386014eb04626d1c7559ee8d8ec1526058cd23f6d1d4"
             ],
-            "version": "==1.14.17"
+            "version": "==1.15.0"
         },
         "captcha": {
             "hashes": [
@@ -630,11 +630,11 @@
         },
         "coveralls": {
             "hashes": [
-                "sha256:0a102a9326933e23213f29103b08f148c97fc3128292c3aa24fae1e773940650",
-                "sha256:b4b21b15f4a5297794b5393cc40f720ef70c50f20772325d26965d96000ce0ca"
+                "sha256:4b6bfc2a2a77b890f556bc631e35ba1ac21193c356393b66c84465c06218e135",
+                "sha256:67188c7ec630c5f708c31552f2bcdac4580e172219897c4136504f14b823132f"
             ],
             "index": "pypi",
-            "version": "==1.11.0"
+            "version": "==1.11.1"
         },
         "docopt": {
             "hashes": [
