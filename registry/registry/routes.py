@@ -53,14 +53,15 @@ def authorize():
         try:
             grant_user = oauth2.OAuth2User(request.auth.user)
             grant = server.validate_consent_request(end_user=grant_user)
+            logger.debug('Granted user')
             return render_template(
                 'registry/authorize.html',
                 grant=grant,
                 user=request.auth.user
             )
-        except oauth2.OAuth2Error as e:
-            logger.debug('Got OAuth2Error: %s', e)
-            raise BadRequest(str(e)) from e
+        except oauth2.OAuth2Error as ex:
+            logger.debug('Got OAuth2Error: %s', ex)
+            raise BadRequest(str(ex)) from ex
     elif request.method == 'POST':
         if request.form['confirm'] == 'ok':
             logger.debug('User authorizes client')
