@@ -112,6 +112,12 @@ READ_FULLTEXT = Scope(Scope.domains.FULLTEXT, Scope.actions.READ)
 CREATE_FULLTEXT = Scope(Scope.domains.FULLTEXT, Scope.actions.CREATE)
 """Can trigger new plain text extractions from compiled documents."""
 
+READ_PREVIEW = Scope(Scope.domains.PREVIEW, Scope.actions.READ)
+"""Can view a submission preview."""
+
+CREATE_PREVIEW = Scope(Scope.domains.PREVIEW, Scope.actions.CREATE)
+"""Can create a new submission preview."""
+
 GENERAL_USER = [
     READ_PUBLIC,    # Access to public APIs.
 
@@ -132,7 +138,11 @@ GENERAL_USER = [
     # Allows usage of the file management service during submission.
     READ_UPLOAD,
     WRITE_UPLOAD,
-    DELETE_UPLOAD_FILE
+    DELETE_UPLOAD_FILE,
+
+    # Ability to create and view submission previews.
+    READ_PREVIEW,
+    CREATE_PREVIEW,
 ]
 """
 The default scopes afforded to an authenticated user.
@@ -185,7 +195,11 @@ _HUMAN_LABELS: Dict[Scope, str] = {
     READ_COMPILE: "Grants authorization to read a compilation task, product,"
                   " and any log output, related to your submissions.",
     CREATE_COMPILE: "Grants authorization to compile your submission source"
-                    " files, e.g. to produce a PDF."
+                    " files, e.g. to produce a PDF.",
+    READ_PREVIEW: "Grants authorization to retrieve the preview (e.g. PDF) of"
+                  " your submission.",
+    CREATE_PREVIEW: "Grants authorization to update the preview (e.g. PDF) of"
+                    " your submission.",
 }
 
 

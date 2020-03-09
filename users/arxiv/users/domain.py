@@ -133,6 +133,8 @@ class Scope(NamedTuple):
         """PDF compilation."""
         FULLTEXT = 'fulltext'
         """Fulltext extraction."""
+        PREVIEW = 'preview'
+        """Submission previews."""
 
     class actions:  # type: ignore
         """Known authorization actions."""

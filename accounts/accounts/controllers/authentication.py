@@ -13,7 +13,7 @@ authorization information.
 from typing import Dict, Tuple, Any, Optional
 import uuid
 
-from werkzeug import MultiDict, ImmutableMultiDict
+from werkzeug.datastructures import MultiDict, ImmutableMultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
 from flask import url_for, Markup
 

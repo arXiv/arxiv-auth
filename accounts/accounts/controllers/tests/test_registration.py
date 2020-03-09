@@ -1,7 +1,7 @@
 """Tests for :mod:`accounts.controllers.registration`."""
 
 from unittest import TestCase, mock
-from werkzeug import MultiDict
+from werkzeug.datastructures import MultiDict
 from arxiv import status
 from ..registration import register, edit_profile, view_profile
 from ...stateless_captcha import InvalidCaptchaValue, InvalidCaptchaToken

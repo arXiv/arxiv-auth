@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='arxiv-auth',
-    version='0.4.1',
+    version='0.4.2',
     packages=[f'arxiv.{package}' for package
               in find_packages('./arxiv', exclude=['*test*'])],
     scripts=['bin/generate-token'],

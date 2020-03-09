@@ -11,7 +11,7 @@ python:
 - '3.6'
 before_install:
 - pip install pipenv
-- pipenv install --dev
+- pipenv sync --dev
 script:
 - pipenv install ./users --skip-lock
 - WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov=users/arxiv --cov=registry
