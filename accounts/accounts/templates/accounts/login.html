@@ -5,6 +5,19 @@
   <div class="column is-half">
     <h1>Log in to arXiv.org</h1>
 
+    <div class="message-special dark">
+      <span class="label">#STRIKE4BLACKLIVES</span>
+      <p>
+        arXiv staff is pausing business-as-usual to join scientists participating in the #strike4blacklives and #shutdownSTEM.
+        There will be no announcement on the evening of Tuesday, June 9, 2020.
+        Article submissions received at or after 14:00 ET Monday, June 8 and before 14:00 ET Wednesday, June 10 will be announced at 20:00 ET Wednesday, June 10.
+        We encourage arXiv readers to use the time they would normally spend reading the daily announcement or submitting an article to instead <a href="https://www.particlesforjustice.org/resources">read about racism</a> and <a href="https://www.shutdownstem.com/action">discuss how they will work in their own local and professional communities to address it</a>.
+        For more information, <a href="https://bit.ly/arXivStrike4BlackLives">read our staff statement here</a>.
+      </p>
+    </div>
+  </div>
+
+  <div class="column is-half">
     <form name="user-login" action="{{ url_for('ui.login') }}?next_page={{ next_page|urlencode }}" method="POST" class="breathe-vertical">
       {{ form.csrf_token }}
       <fieldset class="fieldset {% if error %}is-danger{% endif %}">
@@ -50,4 +63,42 @@
       <p>Registration is required to submit or update papers, but is not necessary to view them.</p>
   </div>
 </div>
+
+<style>
+.message-special {
+  border: 2px solid #b31a1a;
+  border-radius: 10px;
+  background-color: #fef6f6;
+  padding: .5em 1em;
+  margin: 2em 1% 1em 1%;
+  width: 100%;
+}
+.message-special span.label {
+  display: block;
+  background-color: #b31a1a;
+  width: 160px;
+  text-align: center;
+  margin-top: -1.5em;
+  color: #ffffff;
+  padding: .25em 0;
+  font-size: 12px;
+}
+.message-special p {
+  margin-bottom: .5em;
+}
+.message-special.dark {
+  border: 2px solid #000000;
+  background-color: #000000;
+  color: #949494;
+  margin-right: 0;
+}
+.message-special.dark a {
+  color: #ffffff;
+}
+.message-special.dark span.label {
+  background-color: #595959;
+  color: #ffffff;
+}
+</style>
+
 {% endblock inner_content %}
