@@ -105,7 +105,7 @@ def apply_response_headers(response: Response) -> Response:
     """Apply response headers to all responses."""
     """Prevent UI redress attacks."""
     response.headers['Content-Security-Policy'] = "frame-ancestors 'none'"
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-Frame-Options'] = 'DENY'
 
     return response
 
