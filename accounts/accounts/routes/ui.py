@@ -100,6 +100,15 @@ def unset_permanent_cookie(response: Response) -> None:
                         httponly=True, domain=domain.lstrip('.'))
 
 
+@blueprint.after_request
+def apply_response_headers(response: Response) -> Response:
+    """Apply response headers to all responses."""
+    """Prevent UI redress attacks."""
+    response.headers['Content-Security-Policy'] = "frame-ancestors 'none'"
+    response.headers['X-Frame-Options'] = 'DENY'
+
+    return response
+
 # @blueprint.route('/register', methods=['GET', 'POST'])
 @anonymous_only
 def register() -> Response:
