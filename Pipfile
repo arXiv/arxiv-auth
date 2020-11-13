@@ -8,7 +8,7 @@ pycountry = "*"
 mysqlclient = "*"
 python-dateutil = "*"
 captcha = "*"
-celery = "*"
+celery = ">=4.4.7"
 Flask = "*"
 Jinja2 = ">=2.10.1"     # CVE-2019-10906
 jsonschema = "*"
@@ -25,17 +25,16 @@ urllib3 = ">=1.24.2"    # CVE-2019-11324
 pyyaml = ">=4.2b1"      # CVE-2017-18342
 arxiv-vault = "==0.1.1rc14"
 pytz = "*"
-arxiv-auth = {path = "./users"}
 mimesis = "*"
 flask-sqlalchemy = "*"
 "flask-s3" = "*"
-redis = "==2.10.6"
-redis-py-cluster = "==1.3.6"
+redis = ">=3.5.3"
+redis-py-cluster = ">=2.1.0"
 email-validator = "*"
 
 [dev-packages]
 mimesis = "==2.1.0"
-mypy = "==0.720"
+mypy = "*"
 pydocstyle = "==2.1.1"
 pylint = "*"
 coverage = "*"
