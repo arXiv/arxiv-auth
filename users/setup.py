@@ -16,8 +16,8 @@ setup(
         "python-dateutil",
         "arxiv-base",
         "pyjwt",
-        "redis==2.10.6",
-        "redis-py-cluster==1.3.6",
+        "redis>=2.10.6",
+        "redis-py-cluster>=1.3.6",
         "flask-sqlalchemy"
     ],
     zip_safe=False
