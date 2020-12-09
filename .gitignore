@@ -117,3 +117,5 @@ default.nix
 
 *.ttf
 *.sqlite
+
+accounts/deploy/env_values.txt

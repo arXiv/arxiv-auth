@@ -2,21 +2,20 @@
 
 # arXiv Accounts
 
-The arXiv platform provides both anonymous and authenticated interfaces to
-end-users (including moderators), API clients, and the arXiv operations team.
 This project provides applications and libraries to support authentication and
 authorization, including account creation and login, user sessions, and API
 token management.
 
-There are currently three pieces of software in this repository:
+There are currently four pieces of software in this repository:
 
-1. [``users/``](users/) contains the ``arxiv.users`` package, which provides
-   core authentication and authorization functionality and domain classes.
-   This includes integrations with the legacy database for user accounts and
-   sessions.
-2. [``accounts/``](accounts/) contains the user accounts service, which
-   provides the main UIs for registration, login/logout, profile management,
-   etc.
+1. [``users/``](users/) contains the ``arxiv.users``
+   package which provides core authentication and authorization
+   functionality and domain classes.  This includes integrations with
+   the legacy database for user accounts and sessions. This is
+   intended to be used by NG systems to ensure consistency and avoid
+   code reuse.
+2. [``accounts/``](accounts/) contains a service that provides the
+   main UIs for registration, the login/logout pages, profile management, etc.
 3. [``authenticator/``](authenticator/) contains the authenticator service.
    Handles authentication requests from NGINX in a cloud deployment scenario.
 4. [``registry/``](registry/) contains the API client registry application.
@@ -28,11 +27,15 @@ TLS is considered an infrastructure concern, and is therefore out of scope
 
 ## TODO
 
+- Fix conflicts handling this and legacy systems. Logging into
+  beta.arxiv.org requires the client to delete all cookies from
+  arxiv.org. The source of these bugs may be this repo, catalyst
+  arxiv-submit or php tapir.
 - Password reset in ``arxiv.users.legacy.accounts`` and in the accounts
   service.
 - Support for permanent login token.
 - Clean up and document authenticator service.
-- Fuzz testing registration?
+- Fuzz testing.
 
 ## Updates
 
@@ -42,15 +45,17 @@ TLS is considered an infrastructure concern, and is therefore out of scope
   starting in v0.4.1.
 
 ## Dependencies
-
 We use pipenv to manage dependencies. To install the dependencies for this
 project, run ``pipenv install`` in the root of this repository.
 
-Note that the ``Pipfile`` does not contain a reference to the ``arxiv.users``
-package, which is located in ``users/``. To test against the code in your
-current branch, install the package directly with ``pipenv install ./users``.
-Otherwise, you can install the latest release with
-``pipenv install arxiv-users``.
+Note that the ``Pipfile`` does contain a reference to the
+``arxiv.users`` package, which is located in ``users/``. This allows
+you to test against the code in your current branch, install the
+package directly with ``pipenv install ./users``.
+
+In the past it did not contain a reference to ``arxiv.users`` and you
+could either install this from pypi or from ./users. This was changed
+by Erick P. in 2019-06.
 
 ## Testing
 
@@ -90,10 +95,6 @@ pipenv run pytest --cov=users/arxiv --cov-report=term-missing users/arxiv
 
 ### Accounts service
 
-Note that in order to run the accounts service, you will need to install
-``arxiv.users`` (not included in the Pipfile). See
-[#dependencies](dependencies), above.
-
 You can run tests for the accounts service with:
 
 ```bash
@@ -108,7 +109,6 @@ WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov-report=term-missing ac
 
 Note that this requires Docker to be running, and port 7000 to be free on your
 machine.
-
 
 ## Local development + manual testing
 
@@ -126,10 +126,6 @@ Redis instance.
 
 Note: we're running Redis in cluster mode; the image used in this example
 is for dev/test purposes only.
-
-To start the application itself, first make sure that all dependencies are
-installed. You'll need to install the ``arxiv.users`` package; see
-[#dependencies](dependencies).
 
 ```bash
 pipenv install --dev
@@ -318,27 +314,6 @@ for more info.
 Architectural documentation is located at
 [``docs/source/architecture.rst``](docs/source/architecture.rst). This can be
 exploded into multiple files, if necessary.
-
-This architecture documentation is based on the [arc42](http://arc42.org/)
-documentation model, and also draws heavily on the [C4 software architecture
-model](https://www.structurizr.com/help/c4>). The C4 model describes an
-architecture at four hierarchical levels, from the business context of the
-system to the internal architecture of small parts of the system.
-
-In document for arXiv NG services, we have departed slightly from the original
-language of C4 in order to avoid collision with names in adjacent domains.
-Specifically, we describe the system at three levels:
-
-1. **Context**: This includes both the business and technical contexts in the
-   arc42 model. It describes the interactions between a service and
-   other services and systems.
-2. **Building block**: This is similar to the "container" concept in the C4
-   model. A building block is a part of the system that is developed, tested,
-   and deployed quasi-independently. This might be a single application, or
-   a data store.
-3. **Component**: A component is an internal part of a building block. In the
-   case of a Flask application, this might be a module or submodule that has
-   specific responsibilities, behaviors, and interactions.
 
 ### Code API documentation
 
