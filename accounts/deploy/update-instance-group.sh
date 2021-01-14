@@ -9,7 +9,7 @@ TEMPLATE="accounts-template-$(date +%Y%M%d-%H%M%S)"
 
 # create a new template with a new name
 gcloud compute instance-templates create-with-container $TEMPLATE \
-       --machine-type e2-small \
+       --machine-type e2-medium \
        --tags=allow-accounts-health-check \
        --container-image $IMAGE_URL \
        --container-env-file=env_values.txt

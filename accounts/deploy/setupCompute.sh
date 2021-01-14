@@ -24,7 +24,7 @@ TEMPLATE="accounts-template-$(date +%Y%m%d-%H%M%S)"
 # make template
 #https://cloud.google.com/compute/docs/instance-templates/create-instance-templates#with-container
 gcloud compute instance-templates create-with-container $TEMPLATE \
-       --machine-type e2-small \
+       --machine-type e2-medium \
        --tags=allow-accounts-health-check \
        --container-image $IMAGE_URL \
        --container-env-file=env_values.txt
@@ -32,7 +32,9 @@ gcloud compute instance-templates create-with-container $TEMPLATE \
 # Make health check for instance group
 # Host is mandatory since Flask will mysteriously 404 if it deosn't match SERVER_NAME
 gcloud compute health-checks create http accounts-health-check \
-       --check-interval=10s \
+       --check-interval=45s \
+       --timeout=15s \
+       --unhealthy-threshold=3 \
        --host=phoenix.arxiv.org \
        --request-path=/login \
        --port=$PORT

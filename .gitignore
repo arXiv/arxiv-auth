@@ -119,3 +119,5 @@ default.nix
 *.sqlite
 
 accounts/deploy/env_values.txt
+*.key
+*.cer
