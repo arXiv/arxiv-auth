@@ -78,7 +78,7 @@ class AuthMiddleware(BaseMiddleware):
         environ['token'] = None
         token = environ.get('HTTP_AUTHORIZATION')    # We may not have a token.
         if token is None:
-            logger.info('No auth token')
+            logger.debug('No auth token')
             return environ, start_response
 
         # The token secret should be set in the WSGI environ, or in os.environ.

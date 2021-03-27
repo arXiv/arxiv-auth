@@ -318,6 +318,8 @@ class TestLoginLogoutRoutes(TestCase):
         self.expiry = 500
 
     def setUp(self):
+        self.ip_address = '10.1.2.3'
+        self.environ_base = {'REMOTE_ADDR': self.ip_address}
         self.app = create_web_app()
         self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
         self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
@@ -400,10 +402,10 @@ class TestLoginLogoutRoutes(TestCase):
     def test_post_login(self):
         """POST request to /login with valid form data returns redirect."""
         client = self.app.test_client()
+        client.environ_base = self.environ_base
         form_data = {'username': 'foouser', 'password': 'thepassword'}
         next_page = '/foo'
-        response = client.post(f'/login?next_page={next_page}',
-                               data=form_data)
+        response = client.post(f'/login?next_page={next_page}', data=form_data)
         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
         self.assertTrue(response.headers['Location'].endswith(next_page),
                         "Redirect should point at value of `next_page` param")
@@ -453,6 +455,7 @@ class TestLoginLogoutRoutes(TestCase):
     def test_login_logout(self):
         """User logs in and then logs out."""
         client = self.app.test_client()
+        client.environ_base = self.environ_base
         form_data = {'username': 'foouser', 'password': 'thepassword'}
 
         # Werkzeug should keep the cookies around for the next request.
