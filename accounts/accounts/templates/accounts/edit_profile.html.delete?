@@ -1,3 +1,11 @@
+{% extends "accounts/base.html" %}
+
+{% set pagetitle %}Edit my profile{% endset %}
+{#- build breadcrumb items as link : label pairs, excluding home and current page -#}
+{% set breadcrumb = {
+  'link here' : 'My Account',
+} %}
+
 {% macro render_field(field) %}
 <div class="control">
   {{ field.label }}
@@ -21,9 +29,7 @@
 </div>
 {% endmacro %}
 
-{% extends "accounts/base.html" %}
-
-{% block inner_content %}
+{% block content %}
 
 <div class="columns">
   <div class="column">
@@ -293,7 +299,7 @@
             {% endif %}
           </div>
           <div class="box">
-            
+
           </div>
 
           <div class="control">
@@ -309,4 +315,4 @@
 
   </div>
 </div>
-{% endblock inner_content %}
+{% endblock content %}

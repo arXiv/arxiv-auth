@@ -1,21 +1,17 @@
-
-
 {% extends "accounts/base.html" %}
 
-{% block inner_content %}
+{% set pagetitle %}Register an arXiv account{% endset %}
 
+{% block content %}
+
+<h1>Register for the first time</h1>
 <div class="columns">
-  <div class="column">
+  <div class="column is-half">
+    <p>We associate papers that you have submitted with your user account. Please take care to only register with arXiv once.</p>
+  </div>
+</div>
 
-    <h1>Register for the first time</h1>
-      <div class="columns">
-        <div class="column is-half">
-          <p>
-            We associate papers that you have submitted with your user account.
-            Please take care to only register with arXiv once.
-          </p>
-        </div>
-      </div>
+
       <form action="{{ url_for('ui.register') }}?next_page={{ next_page|urlencode }}" method="POST">
         {{ form.csrf_token }}
 
@@ -199,6 +195,5 @@
 
       </div>
     </form>
-  </div>
-</div>
-{% endblock inner_content %}
+
+{% endblock content %}
