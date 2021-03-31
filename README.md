@@ -142,7 +142,7 @@ dev/testing purposes only, and should never be used on a production DB ever
 under any circumstances with no exceptions.
 
 ```bash
-CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 pipenv run python create_user.py
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=accounts/app.py FLASK_DEBUG=1 pipenv run python accounts/create_user.py
 ```
 
 You should be prompted to enter some profile details. Note that this currently
@@ -151,7 +151,7 @@ selects your default category and groups at random.
 Then start the Flask dev server with:
 
 ```bash
-CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=accounts/app.py FLASK_DEBUG=1 pipenv run flask run
 ```
 
 To use MySQL/MariaDB:
