@@ -3,49 +3,47 @@
 {% set pagetitle %}arXiv Login{% endset %}
 
 {% block content %}
-<h1>Log in to arXiv.org</h1>
-
-<div class="row border-bottom">
-  <form class="" name="user-login" action="{{ url_for('ui.login') }}?next_page={{ next_page|urlencode }}" method="POST">
-    {{ form.csrf_token }}
-    {% if error %}
-      <div class="alert alert-danger">
-        <p>{{ error }}</p>
-      </div>
-    {% endif %}
-    <div class="row g-3">
-      <div class="col">
-        {{ form.username.label(class="form-label") }}
-        {% if error %}
-          {{ form.username(class="form-control is-danger")|safe }}
-        {% else %}
-          {{ form.username(class="form-control")|safe }}
-        {% endif %}
-      </div>
-      <div class="col">
-        {{ form.password.label(class="form-label") }}
-        {% if error %}
-          {{ form.password(class="form-control is-danger")|safe }}
-        {% else %}
-          {{ form.password(class="form-control")|safe }}
-        {% endif %}
-      </div>
-    </div>
-    <div class="row g-3 d-flex justify-content-between"">
-      <div class="col">
-        <p class="small"><a href="{{ url_for('lost_password') }}">Forgot your password?</a></p>
-      </div>
-      <div class="col">
-        <button type="submit" value="Submit" class="btn btn-primary mb-3">Submit</button>
-      </div>
-    </div>
-  </form>
-</div>
-<div class="row">
+<h1>Welcome!</h1>
+<p>Login below to submit papers and manage your account. Dont have an account yet? <a href="{{ url_for('register') }}?submit=Register+for+the+first+time">Register for the first time</a>. Registration is required to submit or update papers, but is not necessary to view them.</p>
+<div class="row row-cols-1 row-cols-sm-2 g-5 mt-3 mb-5 mx-5 d-flex justify-content-center">
   <div class="col">
-    <h2>Don't have an account?</h2>
-    <a class="btn btn-primary" href="{{ url_for('register') }}?submit=Register+for+the+first+time">Register for the first time</a>
-    <p>Registration is required to submit or update papers, but is not necessary to view them.</p>
+    <h3>Already have an account:</h3>
+    <form class="" name="user-login" action="{{ url_for('ui.login') }}?next_page={{ next_page|urlencode }}" method="POST">
+      {{ form.csrf_token }}
+      {% if error %}
+        <div class="alert alert-danger">
+          <p>{{ error }}</p>
+        </div>
+      {% endif %}
+
+      {{ form.username.label(class="form-label mt-1 mb-0") }}
+      {% if error %}
+        {{ form.username(class="form-control is-danger")|safe }}
+      {% else %}
+        {{ form.username(class="form-control")|safe }}
+      {% endif %}
+
+      {{ form.password.label(class="form-label mt-1 mb-0") }}
+      {% if error %}
+        {{ form.password(class="form-control is-danger")|safe }}
+      {% else %}
+        {{ form.password(class="form-control")|safe }}
+      {% endif %}
+
+      <div class="row mt-2">
+        <div class="col">
+          <p class="small"><a href="{{ url_for('lost_password') }}">Forgot your password?</a></p>
+        </div>
+        <div class="col d-flex justify-content-end">
+          <button type="submit" value="Submit" class="btn btn-primary btn-lg">Login</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="col border-left">
+    <h3>Don't have an account?</h3>
+    <a class="btn btn-outline-primary my-2" href="{{ url_for('register') }}?submit=Register+for+the+first+time">Register for the first time</a>
   </div>
 </div>
 {% endblock content %}

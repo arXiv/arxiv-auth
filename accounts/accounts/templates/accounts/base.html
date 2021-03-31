@@ -1,8 +1,10 @@
 {%- extends "base/base.html" %}
 
 {% block content_extra %}
-<aside>
-  <p class="small"><a href="{{ config.RELEASE_NOTES_URL }}">{{ config.RELEASE_NOTES_TEXT }}</a>&nbsp;&nbsp;<p>
-  {# <button class="btn btn-outline-secondary btn-tiny" id="feedback-button">Feedback?</button> #}
-</aside>
+<div class="container container-wide mt-5">
+  <aside>
+    <p class="small"><a href="{{ config.RELEASE_NOTES_URL }}">{{ config.RELEASE_NOTES_TEXT }}</a>&nbsp;&nbsp;<p>
+    {# <button class="btn btn-outline-secondary btn-tiny" id="feedback-button">Feedback?</button> #}
+  </aside>
+</div>
 {% endblock content_extra %}
