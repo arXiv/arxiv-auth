@@ -134,10 +134,6 @@ class Auth(object):
                                   map(self._get_legacy_session,
                                       self.legacy_cookies())),
                            None)
-            # session = next(iter([ses for ses in
-            #                      map(self._get_legacy_session,
-            #                          self.getLegacyCookies())
-            #                      if ses]), None)
 
         # Attach the session to the request so that other
         # components can access it easily.
