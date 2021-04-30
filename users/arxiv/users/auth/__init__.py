@@ -1,17 +1,13 @@
 """Provides tools for working with authenticated user/client sessions."""
 
-from typing import Optional, Union, Any
-from datetime import datetime
+from typing import Optional, Union, Any, List
 import warnings
 
-from pytz import UTC
-from flask import Flask, request, Response, make_response, redirect, url_for
+from flask import Flask, request, Response
 from werkzeug.http import parse_cookie
 from werkzeug.datastructures import MultiDict
-from werkzeug.routing import BuildError
 from retry import retry
 
-from . import decorators, middleware, scopes, tokens
 from .. import domain, legacy
 
 from arxiv.base import logging
@@ -55,7 +51,8 @@ class Auth(object):
             self.init_app(app)
 
     @retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
-    def _get_legacy_session(self) -> Optional[domain.Session]:
+    def _get_legacy_session(self,
+                            cookie_value: str) -> Optional[domain.Session]:
         """
         Attempt to load a legacy auth session.
 
@@ -64,13 +61,12 @@ class Auth(object):
         :class:`domain.Session` or None
 
         """
-        classic_cookie_key = self.app.config['CLASSIC_COOKIE_NAME']
-        classic_cookie = request.cookies.get(classic_cookie_key, None)
-        if classic_cookie is None:
+
+        if cookie_value is None:
             return None
         try:
             with legacy.transaction():
-                return legacy.sessions.load(classic_cookie)
+                return legacy.sessions.load(cookie_value)
         except legacy.exceptions.UnknownSession as e:
             logger.debug('No legacy session available: %s', e)
         except legacy.exceptions.InvalidCookie as e:
@@ -131,18 +127,17 @@ class Auth(object):
         if isinstance(session, Exception):
             logger.debug('Middleware passed an exception: %s', session)
             raise session
-
-        # If the legacy database is available, we should use it to authorize
-        # the request.
+        # use legacy DB to authorize request if available
         if legacy.is_configured():
-            logger.debug('No session; attempting to get legacy session')
-            response = self.detect_and_clobber_dupe_cookies()
-
-            # Return that is anything other than None is treated as a response;
-            # request handling stops here.
-            if response is not None:
-                return response
-            session = self._get_legacy_session()
+            logger.debug('No session; attempting to get legacy from cookies')
+            session = next(filter(bool,
+                                  map(self._get_legacy_session,
+                                      self.legacy_cookies())),
+                           None)
+            # session = next(iter([ses for ses in
+            #                      map(self._get_legacy_session,
+            #                          self.getLegacyCookies())
+            #                      if ses]), None)
 
         # Attach the session to the request so that other
         # components can access it easily.
@@ -161,14 +156,20 @@ class Auth(object):
             request.session = session
         return None
 
-    def detect_and_clobber_dupe_cookies(self) -> Optional[Response]:
-        """
-        Detect and discard duplicate cookies.
+    def legacy_cookies(self) -> List[str]:
+        """Gets list of legacy cookies.
 
-        Legacy components have been known to generate dupe cookies, which
-        causes all kinds of havoc. Here we check the request for duplicates
-        of the session and permanent cookies and, if we find them, we blow
-        them away and redirect back to /login.
+        Duplicate cookies occur due to the browser sending both the
+        cookies for both arxiv.org and sub.arxiv.org. If this is being
+        served at sub.arxiv.org, there is no response that will cause
+        the browser to alter its cookie store for arxiv.org. Duplicate
+        cookies must be handled gracefully to for the domain and
+        subdomain to coexist.
+
+        The standard way to avoid this problem is to append part of
+        the domain's name to the cookie key but this needs to work
+        even if the configuration is not ideal.
+
         """
         # By default, werkzeug uses a dict-based struct that supports only a
         # single value per key. This isn't really up to speed with RFC 6265.
@@ -176,28 +177,6 @@ class Auth(object):
         # that can cope with multiple values.
         raw_cookie = request.environ.get('HTTP_COOKIE', None)
         if raw_cookie is None:
-            return None
+            return []
         cookies = parse_cookie(raw_cookie, cls=MultiDict)
-        classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
-        perm_cookie_name = self.app.config['CLASSIC_PERMANENT_COOKIE_NAME']
-        domain = self.app.config['AUTH_SESSION_COOKIE_DOMAIN']
-
-        response = None     # If we return None, request is handled normally.
-        now = datetime.now(UTC)
-        for name in [classic_cookie_name, perm_cookie_name]:
-            if len(cookies.getlist(name)) > 1:
-                if response is None:
-                    # The ui.login route may not exist on an application using
-                    # this package, so we will fall back to the logout redirect
-                    # URL if the login route is missing. ARXIVNG-2063
-                    try:
-                        target = url_for('ui.login')
-                    except BuildError:
-                        target = self.app.config['DEFAULT_LOGOUT_REDIRECT_URL']
-                    response = make_response(redirect(target))
-                response.set_cookie(name, '', max_age=0, expires=now)
-                response.set_cookie(name, '', max_age=0, expires=now,
-                                    domain=domain.lstrip('.'))
-                response.set_cookie(name, '', max_age=0, expires=now,
-                                    domain=domain)
-        return response
+        return cookies.getlist(self.app.config['CLASSIC_COOKIE_NAME'])

@@ -7,6 +7,7 @@ from arxiv import vault
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
 from arxiv.users import auth
+from arxiv.users.auth.middleware import AuthMiddleware
 
 from accounts.routes import ui
 from accounts.services import SessionStore, legacy, users
@@ -28,7 +29,7 @@ def create_web_app() -> Flask:
     auth.Auth(app)  # Handless sessions and authn/z.
     s3.init_app(app)
 
-    middleware = [auth.middleware.AuthMiddleware]
+    middleware = [AuthMiddleware]
     if app.config['VAULT_ENABLED']:
         middleware.insert(0, vault.middleware.VaultMiddleware)
     wrap(app, middleware)
