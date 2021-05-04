@@ -23,6 +23,10 @@ REDIS_TOKEN = os.environ.get('REDIS_TOKEN', None)
 REDIS_CLUSTER = os.environ.get('REDIS_CLUSTER', '1')
 """If 1, expects a redis cluster; otherwise expects a single redis node."""
 
+REDIS_FAKE = os.environ.get('REDIS_FAKE', False)
+"""Use the FakeRedis library instead of a redis service.
+
+Useful for testing, dev, beta."""
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
 

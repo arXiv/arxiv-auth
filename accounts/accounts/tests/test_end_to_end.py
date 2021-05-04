@@ -1,20 +1,16 @@
 """End-to-end tests, via requests to the user interface."""
 
-from unittest import TestCase, mock
+from unittest import TestCase
 from datetime import datetime
-from pytz import timezone, UTC, UTC
+from pytz import timezone, UTC
 from dateutil.parser import parse
 import os
-import subprocess
-import time
 import hashlib
 from base64 import b64encode
 
 from arxiv import status
 from accounts.services import legacy, users
 from accounts.factory import create_web_app
-
-from accounts import stateless_captcha
 
 EASTERN = timezone('US/Eastern')
 
@@ -31,13 +27,6 @@ def _parse_cookies(cookie_data):
         }
         cookies[key] = dict(value=value, **extra)
     return cookies
-
-
-def stop_container(container):
-    subprocess.run(f"docker rm -f {container}",
-                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                   shell=True)
-    from accounts.services import legacy, users
 
 
 # 2018-07-30 : Disabling everything except login and logout routes for accounts
@@ -301,18 +290,6 @@ class TestLoginLogoutRoutes(TestCase):
 
     @classmethod
     def setUpClass(self):
-        """Spin up redis."""
-        self.redis = subprocess.run(
-            "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
-            " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
-            " --hostname=server grokzen/redis-cluster:4.0.9",
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
-        time.sleep(10)    # In case it takes a moment to start.
-        if self.redis.returncode > 0:
-            raise RuntimeError('Could not start redis. Is Docker running?')
-
-        self.container = self.redis.stdout.decode('ascii').strip()
         self.secret = 'bazsecret'
         self.db = 'db.sqlite'
         self.expiry = 500
@@ -328,9 +305,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.app.config['JWT_SECRET'] = self.secret
         self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
         self.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
-        self.app.config['REDIS_HOST'] = 'localhost'
-        self.app.config['REDIS_PORT'] = '7000'
-        self.app.config['REDIS_CLUSTER'] = '1'
+        self.app.config['REDIS_FAKE'] = True
 
         with self.app.app_context():
             legacy.drop_all()
@@ -377,11 +352,6 @@ class TestLoginLogoutRoutes(TestCase):
                 session.add(db_user)
                 session.add(db_password)
                 session.add(db_nick)
-
-    @classmethod
-    def tearDownClass(cls):
-        """Tear down redis and the test DB."""
-        stop_container(cls.container)
 
     def tearDown(self):
         with self.app.app_context():

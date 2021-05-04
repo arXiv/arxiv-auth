@@ -8,6 +8,7 @@ from arxiv import vault
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
 from arxiv.users import auth
+from arxiv.users.auth.middleware import AuthMiddleware
 
 # from registry.routes import ui
 from registry import filters
@@ -31,7 +32,7 @@ def create_web_app() -> Flask:
     oauth2.init_app(app)
     app.register_blueprint(blueprint)
 
-    middleware = [auth.middleware.AuthMiddleware]
+    middleware = [AuthMiddleware]
     if app.config['VAULT_ENABLED']:
         middleware.insert(0, vault.middleware.VaultMiddleware)
     wrap(app, middleware)
