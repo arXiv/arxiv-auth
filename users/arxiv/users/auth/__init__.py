@@ -130,10 +130,7 @@ class Auth(object):
         # use legacy DB to authorize request if available
         if legacy.is_configured():
             logger.debug('No session; attempting to get legacy from cookies')
-            session = next(filter(bool,
-                                  map(self._get_legacy_session,
-                                      self.legacy_cookies())),
-                           None)
+            session = self.first_valid(self.legacy_cookies())
 
         # Attach the session to the request so that other
         # components can access it easily.
@@ -151,6 +148,13 @@ class Auth(object):
             )
             request.session = session
         return None
+
+    def first_valid(self, cookies: List[str]) -> Optional[domain.Session]:
+        """First valid legacy session or None if there are none."""
+        return next(filter(bool,
+                           map(self._get_legacy_session,
+                               cookies)),
+                    None)
 
     def legacy_cookies(self) -> List[str]:
         """Gets list of legacy cookies.
