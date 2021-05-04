@@ -308,7 +308,7 @@ class TestLoginLogoutRoutes(TestCase):
             " --hostname=server grokzen/redis-cluster:4.0.9",
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
         )
-        time.sleep(10)    # In case it takes a moment to start.
+        time.sleep(15)    # In case it takes a moment to start.
         if self.redis.returncode > 0:
             raise RuntimeError('Could not start redis. Is Docker running?')
 
