@@ -18,32 +18,11 @@ from registry.domain import Client, ClientGrantType, ClientCredential, \
     ClientAuthorization, Scope
 
 
-def stop_container(container):
-    subprocess.run(f"docker rm -f {container}",
-                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                   shell=True)
-    from registry.services import datastore
-    datastore.drop_all()
-
-
 class TestAuthentication(TestCase):
     __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
 
     @classmethod
     def setUpClass(cls):
-        """Spin up redis."""
-        os.environ['JWT_SECRET'] = 'foosecret'
-        cls.redis = subprocess.run(
-            "docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003"
-            " -p 7004:7004 -p 7005:7005 -p 7006:7006 -e \"IP=0.0.0.0\""
-            " --hostname=server grokzen/redis-cluster:4.0.9",
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
-        time.sleep(10)    # In case it takes a moment to start.
-        if cls.redis.returncode > 0:
-            raise RuntimeError('Could not start redis. Is Docker running?')
-
-        cls.container = cls.redis.stdout.decode('ascii').strip()
         cls.db = 'db.sqlite'
 
         cls.client = Client(
@@ -54,6 +33,7 @@ class TestAuthentication(TestCase):
             redirect_uri='https://foo.com/bar'
         )
         cls.secret = 'foohashedsecret'
+        os.environ['JWT_SECRET'] = cls.secret
         cls.hashed_secret = sha256(cls.secret.encode('utf-8')).hexdigest()
         cls.cred = ClientCredential(client_secret=cls.hashed_secret)
         cls.auths = [
@@ -86,36 +66,30 @@ class TestAuthentication(TestCase):
             )
 
         ]
-        try:
-            os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
-            cls.app = create_web_app()
-            cls.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{cls.db}'
-            cls.app.config['SERVER_NAME'] = 'local.host:5000'
-            cls.app.config['REDIS_HOST'] = 'localhost'
-            cls.app.config['REDIS_PORT'] = '7000'
-            cls.app.config['REDIS_CLUSTER'] = '1'
 
-            cls.test_client = cls.app.test_client()
-            cls.user_agent = cls.app.test_client()
-            with cls.app.app_context():
-                datastore.create_all()
-                cls.client_id = datastore.save_client(
-                    cls.client,
-                    cls.cred,
-                    auths=cls.auths,
-                    grant_types=cls.grant_types
-                )
+        os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
+        cls.app = create_web_app()
+        cls.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{cls.db}'
+        cls.app.config['SERVER_NAME'] = 'local.host:5000'
+        cls.app.config['JWT_SECRET'] = cls.secret
+        cls.app.config['REDIS_FAKE'] = True
 
-        except Exception:
-            with cls.app.app_context():
-                stop_container(cls.container)
-            raise
+        cls.test_client = cls.app.test_client()
+        cls.user_agent = cls.app.test_client()
+        with cls.app.app_context():
+            datastore.create_all()
+            cls.client_id = datastore.save_client(
+                cls.client,
+                cls.cred,
+                auths=cls.auths,
+                grant_types=cls.grant_types
+            )
 
     @classmethod
     def tearDownClass(cls):
-        """Tear down redis."""
         with cls.app.app_context():
-            stop_container(cls.container)
+            from registry.services import datastore
+            datastore.drop_all()
         try:
             os.remove(cls.db)
         except Exception:
@@ -176,57 +150,58 @@ class TestAuthentication(TestCase):
 
     def test_auth_code_workflow(self):
         """Test authorization code workflow."""
-        user_token = generate_token('1234', 'foo@bar.com', 'foouser',
-                                    scope=[Scope('something', 'read'),
-                                           Scope('baz', 'bat')])
-        user_headers = {'Authorization': user_token}
-        params = {
-            'response_type': 'code',
-            'client_id': self.client_id,
-            'redirect_uri': self.client.redirect_uri,
-            'scope': 'something:read baz:bat'
-        }
-        response = self.user_agent.get('/authorize?%s' % urlencode(params),
-                                       headers=user_headers)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         'User can access authorization page')
+        with self.app.app_context():
+            user_token = generate_token('1234', 'foo@bar.com', 'foouser',
+                                        scope=[Scope('something', 'read'),
+                                               Scope('baz', 'bat')])
+            user_headers = {'Authorization': user_token}
+            params = {
+                'response_type': 'code',
+                'client_id': self.client_id,
+                'redirect_uri': self.client.redirect_uri,
+                'scope': 'something:read baz:bat'
+            }
+            response = self.user_agent.get('/authorize?%s' % urlencode(params),
+                                           headers=user_headers)
+            self.assertEqual(response.status_code, status.HTTP_200_OK,
+                             'User can access authorization page')
 
-        params['confirm'] = 'ok'    # Embedded in confirmation page.
-        response = self.user_agent.post('/authorize', data=params,
-                                        headers=user_headers)
+            params['confirm'] = 'ok'    # Embedded in confirmation page.
+            response = self.user_agent.post('/authorize', data=params,
+                                            headers=user_headers)
 
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND,
-                         'User is redirected to client redirect URI')
-        target = urlparse(response.headers.get('Location'))
-        code = parse_qs(target.query).get('code')
-        self.assertEqual(target.netloc,
-                         urlparse(self.client.redirect_uri).netloc,
-                         'User is redirected to client redirect URI')
-        self.assertEqual(target.path,
-                         urlparse(self.client.redirect_uri).path,
-                         'User is redirected to client redirect URI')
-        self.assertIsNotNone(code,
-                             'Authorization code is passed in redirect URL')
+            self.assertEqual(response.status_code, status.HTTP_302_FOUND,
+                             'User is redirected to client redirect URI')
+            target = urlparse(response.headers.get('Location'))
+            code = parse_qs(target.query).get('code')
+            self.assertEqual(target.netloc,
+                             urlparse(self.client.redirect_uri).netloc,
+                             'User is redirected to client redirect URI')
+            self.assertEqual(target.path,
+                             urlparse(self.client.redirect_uri).path,
+                             'User is redirected to client redirect URI')
+            self.assertIsNotNone(code,
+                                 'Authorization code is passed in redirect URL')
 
-        payload = {
-            'client_id': self.client_id,
-            'client_secret': self.secret,
-            'code': code,
-            'grant_type': 'authorization_code',
-            'redirect_uri': self.client.redirect_uri
-        }
-        response = self.test_client.post('/token', data=payload)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.content_type, 'application/json')
-        data = json.loads(response.data)
+            payload = {
+                'client_id': self.client_id,
+                'client_secret': self.secret,
+                'code': code,
+                'grant_type': 'authorization_code',
+                'redirect_uri': self.client.redirect_uri
+            }
+            response = self.test_client.post('/token', data=payload)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.content_type, 'application/json')
+            data = json.loads(response.data)
 
-        self.assertIn('access_token', data, 'Response contains access token')
-        self.assertIn('expires_in', data, 'Response contains expiration')
-        self.assertGreater(data['expires_in'], 0)
-        self.assertEqual(data['scope'], 'something:read baz:bat',
-                         'Requested code in granted')
-        self.assertEqual(data['token_type'], 'Bearer',
-                         'Access token is a bearer token')
+            self.assertIn('access_token', data, 'Response contains access token')
+            self.assertIn('expires_in', data, 'Response contains expiration')
+            self.assertGreater(data['expires_in'], 0)
+            self.assertEqual(data['scope'], 'something:read baz:bat',
+                             'Requested code in granted')
+            self.assertEqual(data['token_type'], 'Bearer',
+                             'Access token is a bearer token')
 
     def test_user_is_not_logged_in(self):
         """User is directed to an auth page and is not logged in."""
