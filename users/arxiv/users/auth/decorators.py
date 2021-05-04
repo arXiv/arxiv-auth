@@ -77,10 +77,10 @@ When the decorated route function is called...
 
 """
 
-from typing import Optional, Union, Callable, Any, List
+from typing import Optional, Callable, Any, List
 from functools import wraps
 from flask import request
-from werkzeug.exceptions import BadRequest, Unauthorized, Forbidden
+from werkzeug.exceptions import Unauthorized, Forbidden
 
 from arxiv.base import logging
 from .. import domain
@@ -119,6 +119,8 @@ def scoped(required: Optional[domain.Scope] = None,
         function. If the authorizer returns ``False``, an :class:`.`
         exception is raised.
     unauthorized : function
+        DEPRECATED: Do not use this parameter. It is likely it does not do
+        what you expect.
         A callback may be passed to handle cases in which the request is
         unauthorized. This function will be passed the same arguments as the
         original route function. If the callback returns anything other than

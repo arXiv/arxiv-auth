@@ -9,8 +9,8 @@ Environment
 -----------
 End users interact with the arXiv platform primarily via a web browser, on
 either a desktop or a mobile device. During the arXiv-NG project, users may
-interact with components deployed in on-premises infrastructure, or in our
-Kubernetes cluster running in AWS.
+interact with components deployed in on-premises infrastructure, or
+running in cloud providers.
 
 .. _figure-auth-overview:
 
@@ -22,7 +22,7 @@ Kubernetes cluster running in AWS.
 For the purposes of this analysis, we assume that:
 
 1. TLS between the client and the on-premises web server, and between the
-   client and the load balancer that proxies services in Kubernetes, is secure.
+   client and the load balancer that proxies services, is secure.
 2. The user has a baseline level of trust in their own web browser. This
    includes trusting that the web browser properly implements TLS protocols,
    will enforce cookie security, and will enforce common security policies
