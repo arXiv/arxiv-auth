@@ -4,17 +4,14 @@ Internal service API for the distributed session store.
 Used to create, delete, and verify user and client session.
 """
 
-import json
-import time
 import uuid
 import random
 from datetime import datetime, timedelta
 import dateutil.parser
 from pytz import timezone, UTC
 
-from typing import Any, Optional, Union, Tuple
+from typing import Optional, Union
 
-from functools import wraps
 import redis
 import rediscluster
 
@@ -42,23 +39,29 @@ class SessionStore(object):
     In fact, the StrictRedis instance is thread safe and connections are
     attached at the time a command is executed. This class simply provides a
     container for configuration.
+
+    Pass fake=True to use FakeRedis for testing of development. 
     """
 
     def __init__(self, host: str, port: int, db: int, secret: str,
                  duration: int = 7200, token: Optional[str] = None,
-                 cluster: bool = True) -> None:
+                 cluster: bool = True, fake: bool = False) -> None:
         """Open the connection to Redis."""
-        # params = #, db=db)
-        logger.debug('New Redis connection at %s, port %s', host, port)
-        if cluster:
-            self.r = rediscluster.StrictRedisCluster(
-                startup_nodes=[{'host': host, 'port': str(port)}],
-                skip_full_coverage_check=True
-            )
-        else:
-            self.r = redis.StrictRedis(host=host, port=port)
         self._secret = secret
         self._duration = duration
+        if fake:
+            logger.warn('Using FakeRedis')
+            import fakeredis # this is a dev dependency needed during testing
+            self.r = fakeredis.FakeStrictRedis()
+        else:
+            logger.debug('New Redis connection at %s, port %s', host, port)
+            if cluster:
+                self.r = rediscluster.StrictRedisCluster(
+                    startup_nodes=[{'host': host, 'port': str(port)}],
+                    skip_full_coverage_check=True
+                )
+            else:
+                self.r = redis.StrictRedis(host=host, port=port)
 
     def create(self, authorizations: domain.Authorizations,
                ip_address: str, remote_host: str, tracking_cookie: str = '',
@@ -241,6 +244,7 @@ class SessionStore(object):
         config.setdefault('REDIS_CLUSTER', '1')
         config.setdefault('JWT_SECRET', 'foosecret')
         config.setdefault('SESSION_DURATION', '7200')
+        config.setdefault('REDIS_FAKE', False)
 
     @classmethod
     def get_session(cls, app: object = None) -> 'SessionStore':
@@ -253,8 +257,9 @@ class SessionStore(object):
         cluster = config.get('REDIS_CLUSTER', '1') == '1'
         secret = config['JWT_SECRET']
         duration = int(config.get('SESSION_DURATION', '7200'))
+        fake = config.get('REDIS_FAKE', False)
         return cls(host, port, db, secret, duration, token=token,
-                   cluster=cluster)
+                   cluster=cluster, fake=fake)
 
     @classmethod
     def current_session(cls) -> 'SessionStore':
