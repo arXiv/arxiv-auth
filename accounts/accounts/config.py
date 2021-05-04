@@ -28,6 +28,11 @@ REDIS_TOKEN = os.environ.get('REDIS_TOKEN', None)
 """This is the token used in the AUTH procedure."""
 REDIS_CLUSTER = os.environ.get('REDIS_CLUSTER', '1')
 
+REDIS_FAKE = os.environ.get('REDIS_FAKE', False)
+"""Use the FakeRedis library instead of a redis service.
+
+Useful for testing, dev, beta."""
+
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
 

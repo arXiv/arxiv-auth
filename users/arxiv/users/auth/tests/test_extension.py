@@ -15,8 +15,8 @@ class TestAuthExtension(TestCase):
     @mock.patch(f'{auth.__name__}.request')
     def test_no_session_legacy_available(self, mock_request, mock_legacy):
         """No session is present on the request, but database is present."""
-        mock_request.environ = {'session': None}
-        mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
+        mock_request.environ = {'session': None,
+                                'HTTP_COOKIE': 'foo_cookie=sessioncookie123'}
         mock_app = mock.MagicMock(
             config={'CLASSIC_COOKIE_NAME': 'foo_cookie'}
         )
@@ -35,8 +35,8 @@ class TestAuthExtension(TestCase):
     @mock.patch(f'{auth.__name__}.request')
     def test_legacy_is_valid(self, mock_request, mock_legacy):
         """A valid legacy session is available."""
-        mock_request.environ = {'session': None}
-        mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
+        mock_request.environ = {'session': None,
+                                'HTTP_COOKIE': 'foo_cookie=sessioncookie123'}
         mock_app = mock.MagicMock(
             config={'CLASSIC_COOKIE_NAME': 'foo_cookie'}
         )
@@ -71,7 +71,8 @@ class TestAuthExtension(TestCase):
 
         Per ARXIVNG-1920 using ``request.auth`` is deprecated.
         """
-        mock_request.environ = {'session': None}
+        mock_request.environ = {'session': None,
+                                'HTTP_COOKIE': 'foo_cookie=sessioncookie123'}
         mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
         mock_app = mock.MagicMock(
             config={'CLASSIC_COOKIE_NAME': 'foo_cookie',
