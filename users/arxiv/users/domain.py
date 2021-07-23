@@ -242,12 +242,19 @@ class User(NamedTuple):
 
     def asdict(self) -> dict:
         """Generate a dict representation of this :class:`.User`."""
-        data = super(User, self)._asdict()
-        if self.name is not None:
-            data['name'] = self.name._asdict()
-        if self.profile is not None:
-            data['profile'] = self.profile._asdict()
-        return data
+        # data = super(User, self)._asdict()
+        # if self.name is not None:
+        #     data['name'] = self.name._asdict()
+        # if self.profile is not None:
+        #     data['profile'] = self.profile._asdict()
+        # return data
+        
+        # This does not seem to be used and was causing:
+        #
+        # RuntimeError: __class__ not set defining 'User' as <class
+        # 'arxiv.users.domain.User'>. >Was __classcell__ propagated to
+        # type.__new__?
+        raise RuntimeError("User.asdict is no longer supported")
 
     # TODO: consider whether this information is relevant beyond the
     # ``arxiv.users.legacy.authenticate`` module.
