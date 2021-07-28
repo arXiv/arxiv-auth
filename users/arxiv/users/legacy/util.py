@@ -117,6 +117,7 @@ def is_configured() -> bool:
     """Determine whether or not the legacy database is configured."""
     config = get_application_config()
     if 'CLASSIC_DATABASE_URI' in config and 'CLASSIC_SESSION_HASH' in config:
+        logging.debug("legacy is NOT configured, check CLASSIC_SESSION_HASH and CLASSIC_DATABASE_URI")
         return True
     return False
 
@@ -125,6 +126,9 @@ def get_session_hash() -> str:
     """Get the legacy hash secret."""
     config = get_application_config()
     session_hash: str = config['CLASSIC_SESSION_HASH']
+    if hasattr(session_hash, 'get_secret_value'): # handles pydantic SecretStr
+        session_hash=session_hash.get_secret_value()
+
     return session_hash
 
 
