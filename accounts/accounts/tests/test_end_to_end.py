@@ -304,6 +304,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.app.config['SESSION_DURATION'] = self.expiry
         self.app.config['JWT_SECRET'] = self.secret
         self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+        self.app.config['CLASSIC_SESSION_HASH'] = 'xyz1234'
         self.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
         self.app.config['REDIS_FAKE'] = True
 
@@ -377,6 +378,9 @@ class TestLoginLogoutRoutes(TestCase):
         next_page = '/foo'
         response = client.post(f'/login?next_page={next_page}', data=form_data)
         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+
+
+
         self.assertTrue(response.headers['Location'].endswith(next_page),
                         "Redirect should point at value of `next_page` param")
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
@@ -414,6 +418,22 @@ class TestLoginLogoutRoutes(TestCase):
                     .order_by(legacy.models.DBSession.session_id.desc()) \
                     .first()
                 self.assertEqual(db_session.end_time, 0)
+
+
+    def test_already_logged_in_redirect(self):
+        """User logs in, then reqeusts /login again and should be redirected"""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+        form_data = {'username': 'foouser', 'password': 'thepassword'}
+        response = client.post('/login', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+
+        next_page = 'https://arxiv.org/some_sort_of_next_page?cheeseburger=yes%20please'
+        response = client.get('/login',
+                              query_string={'next_page':next_page})
+        assert response.status_code == status.HTTP_303_SEE_OTHER
+        assert response.headers['Location'] == next_page
+
 
     def test_post_login_baddata(self):
         """POST rquest to /login with invalid data returns 400."""
