@@ -13,6 +13,7 @@ before_install:
 - pipenv sync --dev
 script:
 - pipenv install ./users --skip-lock
+- pip list
 - WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov=users/arxiv --cov=registry
   --cov=authenticator --cov-report=term-missing accounts users/arxiv registry authenticator
 after_success:
