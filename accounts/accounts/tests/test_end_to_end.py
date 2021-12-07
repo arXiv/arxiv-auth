@@ -1,5 +1,6 @@
 """End-to-end tests, via requests to the user interface."""
 
+from flask import request, Blueprint
 from unittest import TestCase
 from datetime import datetime
 from pytz import timezone, UTC
@@ -7,13 +8,14 @@ from dateutil.parser import parse
 import os
 import hashlib
 from base64 import b64encode
+from urllib.parse  import quote_plus
 
 from arxiv import status
 from accounts.services import legacy, users
 from accounts.factory import create_web_app
 
-EASTERN = timezone('US/Eastern')
 
+EASTERN = timezone('US/Eastern')
 
 def _parse_cookies(cookie_data):
     cookies = {}
@@ -28,6 +30,14 @@ def _parse_cookies(cookie_data):
         cookies[key] = dict(value=value, **extra)
     return cookies
 
+blueprint = Blueprint('testauth', __name__)
+
+@blueprint.route('/test_auth')
+def auth_check():
+    if hasattr(request, 'auth') and request.auth:
+        return {}, status.HTTP_200_OK, {}
+    else:
+        return {}, status.HTTP_401_UNAUTHORIZED, {}
 
 # 2018-07-30 : Disabling everything except login and logout routes for accounts
 #  v0.1. - Erick
@@ -298,6 +308,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.ip_address = '10.1.2.3'
         self.environ_base = {'REMOTE_ADDR': self.ip_address}
         self.app = create_web_app()
+        self.app.register_blueprint(blueprint)
         self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
         self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
         self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
@@ -341,6 +352,14 @@ class TestLoginLogoutRoutes(TestCase):
                     policy=0,
                     flag_primary=1
                 )
+                db_demo = users.models.DBProfile(
+                    user_id=1,
+                    country='US',
+                    affiliation='Cornell U.',
+                    url='http://example.com/bogus',
+                    rank=2,
+                    original_subject_classes='cs.OH',
+                    )
                 salt = b'fdoo'
                 password = b'thepassword'
                 hashed = hashlib.sha1(salt + b'-' + password).digest()
@@ -353,6 +372,7 @@ class TestLoginLogoutRoutes(TestCase):
                 session.add(db_user)
                 session.add(db_password)
                 session.add(db_nick)
+                session.add(db_demo)
 
     def tearDown(self):
         with self.app.app_context():
@@ -379,10 +399,7 @@ class TestLoginLogoutRoutes(TestCase):
         response = client.post(f'/login?next_page={next_page}', data=form_data)
         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
 
-
-
-        self.assertTrue(response.headers['Location'].endswith(next_page),
-                        "Redirect should point at value of `next_page` param")
+        assert next_page in response.headers['Location'] #  redirect should point at value of `next_page` param
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
         cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
@@ -419,21 +436,57 @@ class TestLoginLogoutRoutes(TestCase):
                     .first()
                 self.assertEqual(db_session.end_time, 0)
 
+    def test_login_get_something_protected(self):
+        """User logs in, then reqeusts an auth protected page"""
+        client = self.app.test_client()
+        response = client.get('/test_auth')
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+        form_data = {'username': 'foouser', 'password': 'thepassword'}
+        response = client.post('/login', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+        assert response.headers.getlist('Set-Cookie')
+
+        # the flask client should keep cookies but werkzeug won't let us set domain to
+        # localhost so we have to work around like this.
+        auth_cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
+        cookie = _parse_cookies(response.headers.getlist('Set-Cookie'))[auth_cookie_name]
+        client.set_cookie('localhost', auth_cookie_name, cookie['value'])
+
+        legacy_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+        cookie = _parse_cookies(response.headers.getlist('Set-Cookie'))[legacy_cookie_name]
+        client.set_cookie('localhost', legacy_cookie_name, cookie['value'])
+
+        next_page = 'https://arxiv.org/some_sort_of_next_page?cheeseburger=yes%20please'
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.status_code == status.HTTP_303_SEE_OTHER
+        assert response.headers['Location'] == next_page
+
+        response = client.get('/test_auth')
+        assert response.status_code == status.HTTP_200_OK
 
     def test_already_logged_in_redirect(self):
         """User logs in, then reqeusts /login again and should be redirected"""
         client = self.app.test_client()
-        client.environ_base = self.environ_base
         form_data = {'username': 'foouser', 'password': 'thepassword'}
         response = client.post('/login', data=form_data)
         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+        assert response.headers.getlist('Set-Cookie')
+
+        # the flask client should keep cookies but werkzeug won't let us set domain to
+        # localhost so we have to work around like this.
+        auth_cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
+        cookie = _parse_cookies(response.headers.getlist('Set-Cookie'))[auth_cookie_name]
+        client.set_cookie('localhost', auth_cookie_name, cookie['value'])
+
+        legacy_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+        cookie = _parse_cookies(response.headers.getlist('Set-Cookie'))[legacy_cookie_name]
+        client.set_cookie('localhost', legacy_cookie_name, cookie['value'])
 
         next_page = 'https://arxiv.org/some_sort_of_next_page?cheeseburger=yes%20please'
-        response = client.get('/login',
-                              query_string={'next_page':next_page})
+        response = client.get('/login?next_page=' + quote_plus(next_page))
         assert response.status_code == status.HTTP_303_SEE_OTHER
         assert response.headers['Location'] == next_page
-
 
     def test_post_login_baddata(self):
         """POST rquest to /login with invalid data returns 400."""

@@ -1,10 +1,13 @@
 """Flask configuration."""
 
 import os
+import re
 
 VERSION = '0.4'
 APP_VERSION = '0.4'
 """The application version."""
+
+BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 
 NAMESPACE = os.environ.get('NAMESPACE')
 """Namespace in which this service is deployed; to qualify keys for secrets."""
@@ -45,6 +48,18 @@ DEFAULT_LOGOUT_REDIRECT_URL = os.environ.get(
     'https://arxiv.org'
 )
 
+LOGIN_REDIRECT_REGEX = os.environ.get('LOGIN_REDIRECT_REGEX',
+                                      fr'(/.*)|(https://([a-zA-Z0-9\-.])*{re.escape(BASE_SERVER)}/.*)')
+"""Regex to check next_page of /login.
+
+Only next_page values that match this regex will be allowed. All
+others will go to the DEFAULT_LOGOUT_REDIRECT_URL. The default value
+for this allows relative URLs and URLs to subdomains of the
+BASE_SERVER.
+"""
+
+login_redirect_pattern = re.compile(LOGIN_REDIRECT_REGEX)
+
 AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
 AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', '.arxiv.org')
 AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))
@@ -77,7 +92,6 @@ CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', 'foocaptcha')
 
 CAPTCHA_FONT = os.environ.get('CAPTCHA_FONT', None)
 
-BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 URLS = [
     ("register", "/user/register", BASE_SERVER),
     ("lost_password", "/user/lost_password", BASE_SERVER),
