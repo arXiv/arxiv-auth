@@ -12,6 +12,7 @@ authorization information.
 
 from typing import Dict, Tuple, Any, Optional
 import uuid
+import re
 
 from werkzeug.datastructures import MultiDict, ImmutableMultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
@@ -29,6 +30,7 @@ from arxiv import status
 from arxiv.base import logging
 from arxiv.users.domain import User, Authorizations, Session
 from accounts.services import legacy, SessionStore, users
+from accounts import config
 
 from .util import MultiCheckboxField, OptGroupSelectField
 
@@ -68,8 +70,12 @@ def login(method: str, form_data: MultiDict, ip: str,
         # TODO: If a permanent token is provided, attempt to log the user in,
         # and redirect if successful. Otherwise, proceed as normal without
         # complaint.
-        response_data = {'form': LoginForm(), 'next_page': next_page}
-        return response_data, status.HTTP_200_OK, {}
+        if not next_page or good_next_page(next_page):
+            response_data = {'form': LoginForm(), 'next_page': next_page}
+            return response_data, status.HTTP_200_OK, {}
+        else:
+            response_data = {'form': LoginForm(), 'error':'next_page is invalid'}
+            return response_data, status.HTTP_400_BAD_REQUEST, {}
 
     logger.debug('Login form submitted')
     form = LoginForm(form_data)
@@ -120,6 +126,7 @@ def login(method: str, form_data: MultiDict, ip: str,
             'classic_cookie': (c_cookie, c_session.expires)
         }
     })
+    next_page = next_page if good_next_page(next_page) else config.DEFAULT_LOGIN_REDIRECT_URL
     return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
 
 
@@ -203,3 +210,9 @@ def _do_login(auths: Authorizations, ip: str, tracking_cookie: str,
 def _do_logout(classic_session_cookie: str) -> None:
     with legacy.transaction():
         legacy.invalidate(classic_session_cookie)
+
+
+def good_next_page(next_page: str) -> bool:
+    """True if next_page is a valid query parameter for use with the login page"""
+    return next_page == config.DEFAULT_LOGIN_REDIRECT_URL \
+        or re.search(config.login_redirect_pattern, next_page)

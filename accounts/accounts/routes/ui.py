@@ -4,16 +4,13 @@ from typing import Any, Callable
 from datetime import datetime, timedelta
 from functools import wraps
 from pytz import timezone, UTC
-from flask import Blueprint, render_template, url_for, abort, request, \
+from flask import Blueprint, render_template, url_for, request, \
     make_response, redirect, current_app, send_file, Response
+
 from arxiv import status
-from arxiv.users.auth.decorators import scoped
-from arxiv.users.auth import scopes
 from arxiv.users import domain
 from arxiv.base import logging
 from accounts.controllers import captcha_image, registration, authentication
-
-from werkzeug.exceptions import BadRequest
 
 EASTERN = timezone('US/Eastern')
 
@@ -32,11 +29,11 @@ def anonymous_only(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.auth:
-            target = url_for('account')
-            content = redirect(target, code=status.HTTP_303_SEE_OTHER)
-            response = make_response(content)
-            return response
-        return func(*args, **kwargs)
+            next_page = request.args.get('next_page',
+                                         current_app.config['DEFAULT_LOGIN_REDIRECT_URL'])
+            return make_response(redirect(next_page, code=status.HTTP_303_SEE_OTHER))
+        else:
+            return func(*args, **kwargs)
     return wrapper
 
 
