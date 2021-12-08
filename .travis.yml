@@ -4,6 +4,7 @@ services:
 - docker
 env:
 - MIN_SCORE=9
+- PIPENV_IGNORE_VIRTUALENVS=1
 - PIPENV_VENV_IN_PROJECT=1
 os:
 - linux
