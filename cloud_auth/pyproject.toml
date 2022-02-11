@@ -1,8 +1,11 @@
 [tool.poetry]
-name = "arxiv.cloud_auth"
+name = "arxiv-cloud-auth"
 version = "0.1.0"
 description = "Minimal auth for arxiv"
 authors = ["Brian D. Caruso <bdc34@cornell.edu>"]
+packages =  [
+                   { include = "arxiv" }
+            ]
 
 [tool.poetry.dependencies]
 python = ">3.8"
