@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "arxiv.cloud_auth"
+version = "0.1.0"
+description = "Minimal auth for arxiv"
+authors = ["Brian D. Caruso <bdc34@cornell.edu>"]
+
+[tool.poetry.dependencies]
+python = ">3.8"
+fastapi = { version = "^0.73", optional = true }
+SQLAlchemy = "^1.4"
+PyJWT = "^2.3"
+google-auth = "^2.6.0"
+CacheControl = "^0.12.10"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0.0"
+mypy = "^0.931"
+requests = "^2.27.1"
+pytest-asyncio = "^0.18.1"
+pytest-mock = "^3.7.0"
+asynctest = "^0.13.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
