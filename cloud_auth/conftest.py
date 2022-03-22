@@ -48,7 +48,7 @@ def engine():
 def user_db(engine):
     print("Making tables...")
     try:
-        import tests.test_tables as tables    
+        import arxiv.cloud_auth.userstore_test_tables as tables
         tables.metadata.create_all(bind=engine)
         print("Done making tables. Starting load of data.")
         tables.load_test_data( engine )

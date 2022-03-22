@@ -7,7 +7,7 @@ import google.oauth2.id_token
 from google.auth.transport import requests
 
 from arxiv.cloud_auth.fastapi import auth
-from tests.test_tables import tapir_users, tapir_nicknames
+from arxiv.cloud_auth.userstore_test_tables import tapir_users, tapir_nicknames
 
 auth.log.setLevel(logging.DEBUG)
 

@@ -172,7 +172,7 @@ python-versions = "*"
 name = "mypy"
 version = "0.931"
 description = "Optional static typing for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -189,7 +189,7 @@ python2 = ["typed-ast (>=1.4.0,<2)"]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -427,7 +427,7 @@ full = ["itsdangerous", "jinja2", "python-multipart", "pyyaml", "requests"]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -454,7 +454,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">3.8"
-content-hash = "c83d65604285a729386f8ecee9d3a732619b2b2b8b88b6f00a5f03174bf1d724"
+content-hash = "4f9599c666b133135ff9fb23363ba3f386c5bf61007808cde79391d64cd93181"
 
 [metadata.files]
 anyio = [

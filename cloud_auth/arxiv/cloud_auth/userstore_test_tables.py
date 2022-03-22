@@ -205,7 +205,9 @@ def load_test_data(engine):
 
         [tapir_users, {'user_id':7, 'first_name':'qa-tools-sq', 'last_name':'', 'email':'qa-tools-sa@arxiv-proj.iam.gserviceaccount.com', 'flag_edit_users': True }, "qa-tools-sa"],
         [tapir_nicknames, {'user_id':7, 'nick_id':107, 'nickname':'qa-tools-sq'}, "sa nickname"],
-        
+
+        [tapir_users, {'user_id':8, 'first_name':'Sara', 'last_name':'TheAdmin', 'email':'sara@example.com', 'flag_edit_users': True }, "admin user"],
+        [tapir_nicknames, {'user_id':8, 'nick_id':108, 'nickname':'saratheadmin'}, "admin nickname"],
     ]
 
     for idx, row in enumerate(rows):
@@ -217,3 +219,6 @@ def load_test_data(engine):
         
         
 USER_ID_NO_PRIV = 6
+USER_ID_MOD = 2
+USER_ID_ADMIN = 8
+USER_ID_SA_ADMIN = 7

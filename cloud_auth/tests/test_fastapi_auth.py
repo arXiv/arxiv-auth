@@ -1,7 +1,7 @@
 import pytest
 import logging
 
-from  tests.test_tables import USER_ID_NO_PRIV
+from  arxiv.cloud_auth.userstore_test_tables import USER_ID_NO_PRIV
 
 import arxiv.cloud_auth.fastapi.auth as auth
 from arxiv.cloud_auth.jwt import user_jwt
