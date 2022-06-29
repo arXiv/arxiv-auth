@@ -22,8 +22,7 @@ from ..exceptions import SessionCreationFailed, InvalidToken, \
     SessionDeletionFailed, UnknownSession, ExpiredToken
 
 from arxiv.base.globals import get_application_config, get_application_global
-#from arxiv.base import logging
-import logging
+from arxiv.base import logging
 
 logger = logging.getLogger(__name__)
 EASTERN = timezone('US/Eastern')
@@ -41,7 +40,7 @@ class SessionStore(object):
     attached at the time a command is executed. This class simply provides a
     container for configuration.
 
-    Pass fake=True to use FakeRedis for testing of development. 
+    Pass fake=True to use FakeRedis for testing of development.
     """
 
     def __init__(self, host: str, port: int, db: int, secret: str,

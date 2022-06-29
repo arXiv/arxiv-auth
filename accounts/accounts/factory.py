@@ -42,5 +42,4 @@ def create_web_app() -> Flask:
             legacy.create_all()
             users.create_all()
 
-    app.config['LOGLEVEL']=30
     return app

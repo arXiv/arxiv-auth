@@ -10,8 +10,7 @@ from retry import retry
 
 from .. import domain, legacy
 
-#from arxiv.base import logging
-import logging
+from arxiv.base import logging
 
 logger = logging.getLogger(__name__)
 

@@ -8,8 +8,7 @@ from functools import partial
 from arxiv import taxonomy
 from arxiv.taxonomy import Category
 
-#from arxiv.base import logging
-import logging
+from arxiv.base import logging
 
 logger = logging.getLogger(__name__)
 EASTERN = timezone('US/Eastern')

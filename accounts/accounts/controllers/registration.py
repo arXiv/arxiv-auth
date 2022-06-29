@@ -32,7 +32,6 @@ from .util import MultiCheckboxField, OptGroupSelectField
 from .. import stateless_captcha
 
 logger = logging.getLogger(__name__)
-logger.setLevel(30)
 
 ResponseData = Tuple[dict, int, dict]
 

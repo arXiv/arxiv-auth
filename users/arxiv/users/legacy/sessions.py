@@ -16,8 +16,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-#from arxiv.base import logging
-import logging
+from arxiv.base import logging
 
 from .. import domain
 from .models import db

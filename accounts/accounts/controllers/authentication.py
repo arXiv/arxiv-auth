@@ -27,8 +27,8 @@ import pycountry
 from retry import retry
 
 from arxiv import status
-#from arxiv.base import logging
-import logging
+from arxiv.base import logging
+
 from arxiv.users.domain import User, Authorizations, Session
 from accounts.services import legacy, SessionStore, users
 from accounts import config
@@ -37,7 +37,6 @@ from .util import MultiCheckboxField, OptGroupSelectField
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(30)
 
 ResponseData = Tuple[dict, int, dict]
 
