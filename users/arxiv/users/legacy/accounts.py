@@ -10,7 +10,8 @@ import secrets
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.orm.exc import NoResultFound
 
-from arxiv.base import logging
+#from arxiv.base import logging
+import logging
 from .. import domain
 from . import util, endorsements, exceptions, models
 from .exceptions import Unavailable

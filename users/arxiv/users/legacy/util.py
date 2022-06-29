@@ -15,7 +15,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from arxiv.base import logging
+#from arxiv.base import logging
+import logging
 from arxiv.base.globals import get_application_config, get_application_global
 
 from ..auth import scopes

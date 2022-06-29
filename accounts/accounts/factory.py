@@ -19,6 +19,7 @@ def create_web_app() -> Flask:
     """Initialize and configure the accounts application."""
     app = Flask('accounts')
     app.config.from_pyfile('config.py')
+    app.config['SERVER_NAME'] = None
 
     SessionStore.init_app(app)
     legacy.init_app(app)
@@ -41,4 +42,5 @@ def create_web_app() -> Flask:
             legacy.create_all()
             users.create_all()
 
+    app.config['LOGLEVEL']=30
     return app

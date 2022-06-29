@@ -36,6 +36,7 @@ from arxiv.base import logging
 
 EASTERN = timezone('US/Eastern')
 logger = logging.getLogger(__name__)
+logger.setLevel(30)
 
 
 class InvalidCaptchaToken(ValueError):

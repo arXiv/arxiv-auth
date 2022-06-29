@@ -40,13 +40,15 @@ import jwt
 from werkzeug.exceptions import Unauthorized, InternalServerError
 
 from arxiv.base.middleware import BaseMiddleware
-from arxiv.base import logging
+#from arxiv.base import logging
+import logging
 
 from . import tokens
 from .exceptions import InvalidToken, ConfigurationError, MissingToken
 from .. import domain
 
 logger = logging.getLogger(__name__)
+logger.setLevel(30)
 
 WSGIRequest = Tuple[dict, Callable]
 

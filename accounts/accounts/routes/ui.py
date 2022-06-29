@@ -9,13 +9,14 @@ from flask import Blueprint, render_template, url_for, request, \
 
 from arxiv import status
 from arxiv.users import domain
-from arxiv.base import logging
+#from arxiv.base import logging
+import logging
 from accounts.controllers import captcha_image, registration, authentication
 
 EASTERN = timezone('US/Eastern')
 
 logger = logging.getLogger(__name__)
-
+logger.setLevel(30)
 blueprint = Blueprint('ui', __name__, url_prefix='')
 
 
@@ -28,7 +29,9 @@ def anonymous_only(func: Callable) -> Callable:
     """Redirect logged-in users to their profile."""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
+        logger.debug("In anonymous_only()")
         if request.auth:
+            logger.debug("Redirect to next_page due to anonymous_only")
             next_page = request.args.get('next_page',
                                          current_app.config['DEFAULT_LOGIN_REDIRECT_URL'])
             return make_response(redirect(next_page, code=status.HTTP_303_SEE_OTHER))
@@ -132,6 +135,7 @@ def register() -> Response:
 @anonymous_only
 def login() -> Response:
     """User can log in with username and password, or permanent token."""
+    logger.error("HERE I login()")
     ip_address = request.remote_addr
     form_data = request.form
     default_next_page = current_app.config['DEFAULT_LOGIN_REDIRECT_URL']
@@ -192,3 +196,8 @@ def captcha() -> Response:
     token = request.args.get('token')
     data, code, headers = captcha_image.get(token, secret, request.remote_addr, font)
     return send_file(data['image'], mimetype=data['mimetype']), code, headers
+
+
+@blueprint.route('/auth_status', methods=['GET'])
+def auth_status() -> Response:
+    return make_response("THIS IS AN OK PAGE")
