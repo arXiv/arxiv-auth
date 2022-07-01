@@ -40,7 +40,7 @@ class SessionStore(object):
     attached at the time a command is executed. This class simply provides a
     container for configuration.
 
-    Pass fake=True to use FakeRedis for testing of development. 
+    Pass fake=True to use FakeRedis for testing of development.
     """
 
     def __init__(self, host: str, port: int, db: int, secret: str,

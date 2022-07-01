@@ -10,12 +10,12 @@ from flask import Blueprint, render_template, url_for, request, \
 from arxiv import status
 from arxiv.users import domain
 from arxiv.base import logging
+
 from accounts.controllers import captcha_image, registration, authentication
 
 EASTERN = timezone('US/Eastern')
 
 logger = logging.getLogger(__name__)
-
 blueprint = Blueprint('ui', __name__, url_prefix='')
 
 
@@ -192,3 +192,9 @@ def captcha() -> Response:
     token = request.args.get('token')
     data, code, headers = captcha_image.get(token, secret, request.remote_addr, font)
     return send_file(data['image'], mimetype=data['mimetype']), code, headers
+
+
+@blueprint.route('/auth_status', methods=['GET'])
+def auth_status() -> Response:
+    # TODO Test resurces like DB and redis
+    return make_response("OK")
