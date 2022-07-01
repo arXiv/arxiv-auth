@@ -28,40 +28,41 @@ DB_FILE = "./pytest.db"
 
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_FILE}"
 
-CONNECT_ARGS = {"check_same_thread": False} if 'sqlite' in SQLALCHEMY_DATABASE_URL  \
-    else {}
+CONNECT_ARGS = (
+    {"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
+)
 
 DELETE_DB_FILE_ON_EXIT = True
 
 
 def escape_bind(stmt):
-    return stmt.replace(r':0', '\:0')
+    return stmt.replace(r":0", "\:0")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def engine():
-    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=CONNECT_ARGS)        
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=CONNECT_ARGS)
     return engine
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def user_db(engine):
     print("Making tables...")
     try:
         import arxiv.cloud_auth.userstore_test_tables as tables
+
         tables.metadata.create_all(bind=engine)
         print("Done making tables. Starting load of data.")
-        tables.load_test_data( engine )
+        tables.load_test_data(engine)
         print("Done loading test data.")
         yield engine
-    finally: # cleanup
+    finally:  # cleanup
         if DELETE_DB_FILE_ON_EXIT:
             Path(DB_FILE).unlink(missing_ok=True)
             print(f"Cleaning up: Deleted test db file at {DB_FILE}.")
 
 
-
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def get_test_db(user_db):
     # See https://fastapi.tiangolo.com/advanced/testing-database
     engine = user_db
@@ -81,21 +82,23 @@ def get_test_db(user_db):
 def secret():
     return "testing_secret"
 
+
 @pytest.fixture
 def userstore(get_test_db):
-    _userstore = UserStoreDB()    
+    _userstore = UserStoreDB()
     return UserStore(_userstore, get_test_db)
 
 
 @pytest.fixture
-def api_auth(userstore, secret):    
+def api_auth(userstore, secret):
     return auth.AuthorizedUser(secret, "testingAudience", userstore)
 
-    
+
 @pytest_asyncio.fixture
 async def fastapi(api_auth):
     """Returns a fast-api app"""
-    app = FastAPI()    
+    app = FastAPI()
+
     @app.get("/")
     async def root(user: Optional[User] = Depends(api_auth)) -> str:
         return user

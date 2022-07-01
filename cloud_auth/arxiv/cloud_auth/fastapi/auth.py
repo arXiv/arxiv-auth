@@ -26,6 +26,7 @@ jwt_secret_config: Optional[str] = None
 audience: Optional[str] = None
 """Set this to configure the audience or Client ID this auth should accept"""
 
+
 async def jwt_secret() -> Optional[str]:
     """Gets the JWT secret"""
     if not jwt_secret_config:
@@ -83,7 +84,9 @@ async def ng_jwt_cookie(
         )
 
 
-async def jwt_header(Authorization: Optional[str] = Header(None),) -> Optional[RawAuth]:
+async def jwt_header(
+    Authorization: Optional[str] = Header(None),
+) -> Optional[RawAuth]:
     """Gets JWT from Authorization Bearer header."""
     if not Authorization:
         return None
@@ -99,7 +102,10 @@ async def jwt_header(Authorization: Optional[str] = Header(None),) -> Optional[R
         log.debug("Got header:Authorization with a JWT")
         log.debug("jwt_header(): %s", Authorization)
         return RawAuth(
-            rawjwt=parts[1], rawheader=Authorization, via="header", key="Authorization",
+            rawjwt=parts[1],
+            rawheader=Authorization,
+            via="header",
+            key="Authorization",
         )
 
 
@@ -113,7 +119,6 @@ async def rawauth(
         return cookie or header
 
 
-
 class AuthorizedUser:
     """Check ensure authenticatoin and user is a mod or admin and gets a
     User object.
@@ -124,6 +129,7 @@ class AuthorizedUser:
     Use this if you want the request authenticated and you want to
     ensure a mod or admin and you also want a User object.
     """
+
     def __init__(self, secret: str, audience: str, userstore: UserStore):
         self.secret = secret
         self.audience = audience
@@ -138,7 +144,9 @@ class AuthorizedUser:
                 user_id = data["user_id"]
                 user = self.userstore.getuser(user_id)
                 if not user:
-                    log.debug("decode_ng_jwt() Failed: user %s is does not exist", user_id)
+                    log.debug(
+                        "decode_ng_jwt() Failed: user %s is does not exist", user_id
+                    )
                     return None
                 else:
                     log.debug("decode_ng_jwt() User found in NG JWT")
@@ -146,8 +154,7 @@ class AuthorizedUser:
         except Exception as ex:
             log.debug("decode_ng_jwt() Exception during NG JWT %s", ex)
 
-
-    async def verify_gcp(self, jwt:str) -> Optional[User]:
+    async def verify_gcp(self, jwt: str) -> Optional[User]:
         try:
             idinfo = verify_token(self.audience, jwt)
             if not idinfo:
@@ -169,13 +176,14 @@ class AuthorizedUser:
         except Exception as ex:
             log.debug("verity_gcp() Exception during GCP JWT validation: %s", ex)
 
-
     async def __call__(self, header: RawAuth = Depends(rawauth)):
         try:
             if not header:
                 log.debug("auth() Failed, no rawauth")
                 raise Exception("No raw auth data ")
-            user = self.decode_ng_jwt(header.rawjwt) or await self.verify_gcp(header.rawjwt)
+            user = self.decode_ng_jwt(header.rawjwt) or await self.verify_gcp(
+                header.rawjwt
+            )
             if not user:
                 raise Exception("invaild auth data")
 
@@ -190,6 +198,3 @@ class AuthorizedUser:
                 raise Exception("User is not mod or admin")
         except Exception as ex:
             raise HTTPException(status_code=401, detail="Unauthorized") from ex
-
-
-

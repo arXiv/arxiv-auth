@@ -41,16 +41,18 @@ See https://google-auth.readthedocs.io/en/stable/reference/google.oauth2.id_toke
 _lock = RLock()
 """Lock for using the session. It doens't seem to be thread safe"""
 
+
 @contextmanager
 def locked_session():
-    """Get a session with caching of certs from Google""" 
+    """Get a session with caching of certs from Google"""
     global _sess
     with _lock:
         if not _sess:
             _sess = cachecontrol.CacheControl(requests.session())
         yield _sess
-    
-def verify_token(audience: str, token: Union[str,bytes]) -> Optional[dict]:
+
+
+def verify_token(audience: str, token: Union[str, bytes]) -> Optional[dict]:
     """Call out to GCP to verify a JWT token."""
     with locked_session() as session:
         request = google.auth.transport.requests.Request(session=session)
@@ -60,5 +62,6 @@ def verify_token(audience: str, token: Union[str,bytes]) -> Optional[dict]:
         else:
             return idinfo
 
+
 def email_from_idinfo(idinfo) -> Optional[str]:
-    return idinfo.get('azp',None)
+    return idinfo.get("azp", None)

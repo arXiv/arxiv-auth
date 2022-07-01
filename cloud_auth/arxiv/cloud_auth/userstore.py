@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 from pydantic import BaseModel
 
 
-class UserStoreDB():
+class UserStoreDB:
     """Userstore that does not fully handle categories or archives.
 
     In most cases ``UserStore`` should be used instead.
@@ -61,7 +61,6 @@ class UserStoreDB():
 
         return self._getfromdb_by_nick(nick, db)
 
-
     def getuser_by_email(self, email: str, db: Session) -> Optional[User]:
         by_email = [user for user in self._users.values() if user.email == email]
         if len(by_email) == 1:
@@ -71,7 +70,6 @@ class UserStoreDB():
             return None
 
         return self._getfromdb_by_email(email, db)
-
 
     def _getfromdb_by_email(self, email: str, db: Session) -> Optional[User]:
         query = """SELECT tapir_users.user_id FROM tapir_users
@@ -116,11 +114,13 @@ class UserStoreDB():
             return None
 
         cats, archives = self._cats_and_archives(user_id, db)
-        name = self.to_name(bytes.fromhex(rs[0]["first_name"]).decode("utf-8"),
-                            bytes.fromhex(rs[0]["last_name"]).decode("utf-8"))
+        name = self.to_name(
+            bytes.fromhex(rs[0]["first_name"]).decode("utf-8"),
+            bytes.fromhex(rs[0]["last_name"]).decode("utf-8"),
+        )
         ur = User(
             user_id=user_id,
-            name=name, 
+            name=name,
             username=rs[0]["nickname"],
             email=rs[0]["email"],
             is_admin=bool(rs[0]["flag_edit_users"]),
@@ -132,7 +132,6 @@ class UserStoreDB():
         self._users[ur.user_id] = ur
         return ur
 
-
     def _cats_and_archives(
         self, user_id: int, db: Session
     ) -> Tuple[List[str], List[str]]:
@@ -140,20 +139,20 @@ class UserStoreDB():
 
         NOTE: This only returns the raw results from arXiv_moderators
         and does not account for subsumed archive like categories.
-        
+
         This may need to be filtered to just ARCHIVES_ACTIVE or
         CATEGORIES_ACTIVE if that is what you need. Like if you want
         to show a moderator the list of areas they would consider
         themselves a moderator of.
 
          Code to do that would be, after installing arxiv-base:
-            
+
             from arxiv.taxonomy.definitions import ARCHIVES_ACTIVE, CATEGORIES, CATEGORIES_ACTIVE
             def active(user):
                 archives = [arch for arch in user.moderated_archives
                             if arch in ARCHIVES_ACTIVE]
                 # normal categories like cs.LG
-                cats = [cat for cat in usesr.moderated_categories 
+                cats = [cat for cat in usesr.moderated_categories
                         if cat in CATEGORIES_ACTIVE]
                 # Archive like categories. ex. hep-ph, gr-qc, nucl-ex, etc.
                 # Don't include inactive archives since they should have been
@@ -162,7 +161,7 @@ class UserStoreDB():
                              if arch in CATEGORIES_ACTIVE])
                return (archives, cats)
 
-        import 
+        import
         Returns
         -------
         Tuple of ( categories, archives)
@@ -179,34 +178,38 @@ class UserStoreDB():
         cat_mod_query = """SELECT archive as 'arch', subject_class as 'cat'
         FROM arXiv_moderators WHERE user_id = :userid"""
         mod_rs = list(db.execute(text(cat_mod_query), {"userid": user_id}))
-        
+
         archives = [row["arch"] for row in mod_rs if row["arch"] and not row["cat"]]
-        cats = [f"{row['arch']}.{row['cat']}" for row in mod_rs
-                if row["arch"] and row["cat"]]
+        cats = [
+            f"{row['arch']}.{row['cat']}"
+            for row in mod_rs
+            if row["arch"] and row["cat"]
+        ]
         return (cats, archives)
 
 
-
-class UserStore():
+class UserStore:
     """UserStoreDb with db partially applied.
 
     db can be either a Session or a function that returns Sessions."""
-    def __init__(self, userstore: UserStoreDB,
-                 db: Union[Session, Callable[[],Session]]):
 
+    def __init__(
+        self, userstore: UserStoreDB, db: Union[Session, Callable[[], Session]]
+    ):
 
         self.userstore = userstore
         if isinstance(db, Session):
-            self.get_db = lambda :db        
+            self.get_db = lambda: db
         else:
+
             def to_db():
                 xdb = db()
                 if isinstance(xdb, GeneratorType):
                     return next(xdb)
                 else:
                     return xdb
-            self.get_db = to_db
 
+            self.get_db = to_db
 
     def invalidate_user(self, user_id: int) -> bool:
         """Remove user id from cache. Returns bool if id was in cache"""

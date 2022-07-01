@@ -122,7 +122,11 @@ tapir_nicknames = Table(
     metadata,
     Column("nick_id", Integer(), primary_key=True),
     Column(
-        "nickname", String(20), nullable=False, unique=True, server_default=text("''"),
+        "nickname",
+        String(20),
+        nullable=False,
+        unique=True,
+        server_default=text("''"),
     ),
     Column(
         "user_id",
@@ -132,7 +136,11 @@ tapir_nicknames = Table(
     ),
     Column("user_seq", Integer(), nullable=False, server_default=text("'0'")),
     Column(
-        "flag_valid", Integer(), nullable=False, index=True, server_default=text("'0'"),
+        "flag_valid",
+        Integer(),
+        nullable=False,
+        index=True,
+        server_default=text("'0'"),
     ),
     Column("role", Integer(), nullable=False, index=True, server_default=text("'0'")),
     Column("policy", Integer(), nullable=False, index=True, server_default=text("'0'")),
@@ -144,7 +152,7 @@ arXiv_moderators = Table(
     "arXiv_moderators",
     metadata,
     Column(
-        "user_id",        
+        "user_id",
         ForeignKey("tapir_users.user_id"),
         nullable=False,
         index=True,
@@ -176,38 +184,154 @@ arXiv_moderators = Table(
     ),
 )
 
+
 def load_test_data(engine):
     rows = [
-        [tapir_users, {'user_id':1, 'first_name':'Paul', 'last_name':'Houle', 'email':'bh@com'}, "A user"],
-        [tapir_nicknames, {'user_id':1, 'nick_id':101, 'nickname':'paulhoule'}, "A user nickname"],
-
-        [tapir_users, {'user_id':2, 'first_name':'Skunk', 'last_name':'Skunk', 'email':'sk@s.org'}, "A skunk"],
-        [tapir_nicknames, {'user_id':2, 'nick_id':102, 'nickname':'skunk'}, "Skunk user nickname"],
-        [arXiv_moderators, {'user_id':2, 'archive':'bicycles', 'subject_class':'chopped'}, "Skunk mod1"],
-        [arXiv_moderators, {'user_id':2, 'archive':'bicycles', 'subject_class':'tall'}, "Skunk mod2"],
-
-        [tapir_users, {'user_id':3, 'first_name':'Gropo', 'last_name':'unknown', 'email':'gropo@s.org'}, "Gropo"],
-        [tapir_nicknames, {'user_id':3, 'nick_id':103, 'nickname':'gropo'}, "Gropo user nickname"],
-        [arXiv_moderators, {'user_id':3, 'archive':'music', 'subject_class':'ween'}, "gropo mod1"],
-        [arXiv_moderators, {'user_id':3, 'archive':'bicycles', 'subject_class':'tall'}, "gropo mod2"],
-        [arXiv_moderators, {'user_id':3, 'archive':'onions' }, "gropo mod3"],
-
-        [tapir_users, {'user_id':4, 'first_name':'Rockstar', 'last_name':'unknown', 'email':'rs@s.org'}, "A rockstar"],
-        [tapir_nicknames, {'user_id':4, 'nick_id':104, 'nickname':'rockstar'}, "Rockstar user nickname"],
-        [arXiv_moderators, {'user_id':4, 'archive':'crew'}, "Rockstar mod1"],
-
-        [tapir_users, {'user_id':5, 'first_name':'Jīngāng', 'last_name':'Jīng', 'email':'ds@s.org'}, "A user with UTF8"],
-        [tapir_nicknames, {'user_id':5, 'nick_id':105, 'nickname':'金剛經'}, "金剛經 user nickname"],
-        [arXiv_moderators, {'user_id':5, 'archive': '금강경'}, "金剛經 mod1"],
-
-        [tapir_users, {'user_id':6, 'first_name':'random', 'last_name':'reader', 'email':'rreader@example.com'}, "A reader, non mod user"],
-        [tapir_nicknames, {'user_id':6, 'nick_id':106, 'nickname':'randomreader'}, "A user nickname"],
-
-        [tapir_users, {'user_id':7, 'first_name':'qa-tools-sq', 'last_name':'', 'email':'qa-tools-sa@arxiv-proj.iam.gserviceaccount.com', 'flag_edit_users': True }, "qa-tools-sa"],
-        [tapir_nicknames, {'user_id':7, 'nick_id':107, 'nickname':'qa-tools-sq'}, "sa nickname"],
-
-        [tapir_users, {'user_id':8, 'first_name':'Sara', 'last_name':'TheAdmin', 'email':'sara@example.com', 'flag_edit_users': True }, "admin user"],
-        [tapir_nicknames, {'user_id':8, 'nick_id':108, 'nickname':'saratheadmin'}, "admin nickname"],
+        [
+            tapir_users,
+            {
+                "user_id": 1,
+                "first_name": "Paul",
+                "last_name": "Houle",
+                "email": "bh@com",
+            },
+            "A user",
+        ],
+        [
+            tapir_nicknames,
+            {"user_id": 1, "nick_id": 101, "nickname": "paulhoule"},
+            "A user nickname",
+        ],
+        [
+            tapir_users,
+            {
+                "user_id": 2,
+                "first_name": "Skunk",
+                "last_name": "Skunk",
+                "email": "sk@s.org",
+            },
+            "A skunk",
+        ],
+        [
+            tapir_nicknames,
+            {"user_id": 2, "nick_id": 102, "nickname": "skunk"},
+            "Skunk user nickname",
+        ],
+        [
+            arXiv_moderators,
+            {"user_id": 2, "archive": "bicycles", "subject_class": "chopped"},
+            "Skunk mod1",
+        ],
+        [
+            arXiv_moderators,
+            {"user_id": 2, "archive": "bicycles", "subject_class": "tall"},
+            "Skunk mod2",
+        ],
+        [
+            tapir_users,
+            {
+                "user_id": 3,
+                "first_name": "Gropo",
+                "last_name": "unknown",
+                "email": "gropo@s.org",
+            },
+            "Gropo",
+        ],
+        [
+            tapir_nicknames,
+            {"user_id": 3, "nick_id": 103, "nickname": "gropo"},
+            "Gropo user nickname",
+        ],
+        [
+            arXiv_moderators,
+            {"user_id": 3, "archive": "music", "subject_class": "ween"},
+            "gropo mod1",
+        ],
+        [
+            arXiv_moderators,
+            {"user_id": 3, "archive": "bicycles", "subject_class": "tall"},
+            "gropo mod2",
+        ],
+        [arXiv_moderators, {"user_id": 3, "archive": "onions"}, "gropo mod3"],
+        [
+            tapir_users,
+            {
+                "user_id": 4,
+                "first_name": "Rockstar",
+                "last_name": "unknown",
+                "email": "rs@s.org",
+            },
+            "A rockstar",
+        ],
+        [
+            tapir_nicknames,
+            {"user_id": 4, "nick_id": 104, "nickname": "rockstar"},
+            "Rockstar user nickname",
+        ],
+        [arXiv_moderators, {"user_id": 4, "archive": "crew"}, "Rockstar mod1"],
+        [
+            tapir_users,
+            {
+                "user_id": 5,
+                "first_name": "Jīngāng",
+                "last_name": "Jīng",
+                "email": "ds@s.org",
+            },
+            "A user with UTF8",
+        ],
+        [
+            tapir_nicknames,
+            {"user_id": 5, "nick_id": 105, "nickname": "金剛經"},
+            "金剛經 user nickname",
+        ],
+        [arXiv_moderators, {"user_id": 5, "archive": "금강경"}, "金剛經 mod1"],
+        [
+            tapir_users,
+            {
+                "user_id": 6,
+                "first_name": "random",
+                "last_name": "reader",
+                "email": "rreader@example.com",
+            },
+            "A reader, non mod user",
+        ],
+        [
+            tapir_nicknames,
+            {"user_id": 6, "nick_id": 106, "nickname": "randomreader"},
+            "A user nickname",
+        ],
+        [
+            tapir_users,
+            {
+                "user_id": 7,
+                "first_name": "qa-tools-sq",
+                "last_name": "",
+                "email": "qa-tools-sa@arxiv-proj.iam.gserviceaccount.com",
+                "flag_edit_users": True,
+            },
+            "qa-tools-sa",
+        ],
+        [
+            tapir_nicknames,
+            {"user_id": 7, "nick_id": 107, "nickname": "qa-tools-sq"},
+            "sa nickname",
+        ],
+        [
+            tapir_users,
+            {
+                "user_id": 8,
+                "first_name": "Sara",
+                "last_name": "TheAdmin",
+                "email": "sara@example.com",
+                "flag_edit_users": True,
+            },
+            "admin user",
+        ],
+        [
+            tapir_nicknames,
+            {"user_id": 8, "nick_id": 108, "nickname": "saratheadmin"},
+            "admin nickname",
+        ],
     ]
 
     for idx, row in enumerate(rows):
@@ -216,8 +340,8 @@ def load_test_data(engine):
             engine.execute(insert(table).values(**values))
         except Exception as ex:
             raise Exception(f"Error while inserting {comment}", ex)
-        
-        
+
+
 USER_ID_NO_PRIV = 6
 USER_ID_MOD = 2
 USER_ID_ADMIN = 8
