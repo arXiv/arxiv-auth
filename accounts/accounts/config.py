@@ -109,51 +109,7 @@ RELEASE_NOTES_TEXT = "Accounts v0.4.2 released 2020-03-10"
 # starting in v0.4.1.
 AUTH_UPDATED_SESSION_REF = True
 
-
-VAULT_ENABLED = bool(int(os.environ.get('VAULT_ENABLED', '0')))
-"""Enable/disable secret retrieval from Vault."""
-
-KUBE_TOKEN = os.environ.get('KUBE_TOKEN', 'fookubetoken')
-"""Service account token for authenticating with Vault. May be a file path."""
-
-VAULT_HOST = os.environ.get('VAULT_HOST', 'foovaulthost')
-"""Vault hostname/address."""
-
-VAULT_PORT = os.environ.get('VAULT_PORT', '1234')
-"""Vault API port."""
-
-VAULT_ROLE = os.environ.get('VAULT_ROLE', 'accounts')
-"""Vault role linked to this application's service account."""
-
-VAULT_CERT = os.environ.get('VAULT_CERT')
-"""Path to CA certificate for TLS verification when talking to Vault."""
-
-VAULT_SCHEME = os.environ.get('VAULT_SCHEME', 'https')
-"""Default is ``https``."""
-
 NS_AFFIX = '' if NAMESPACE == 'production' else f'-{NAMESPACE}'
-
-VAULT_REQUESTS = [
-    {'type': 'generic',
-     'name': 'JWT_SECRET',
-     'mount_point': f'secret{NS_AFFIX}/',
-     'path': 'jwt',
-     'key': 'jwt-secret',
-     'minimum_ttl': 3600},
-    {'type': 'generic',
-     'name': 'CLASSIC_SESSION_HASH',
-     'mount_point': f'secret{NS_AFFIX}/',
-     'path': 'classic/auth/sessions',
-     'key': 'hash',
-     'minimum_ttl': 360000},
-    {'type': 'generic',
-     'name': 'SQLALCHEMY_DATABASE_URI',
-     'mount_point': f'secret{NS_AFFIX}/',
-     'path': 'beta-mysql',
-     'key': 'uri',
-     'minimum_ttl': 360000}
-]
-"""Requests for Vault secrets."""
 
 FLASKS3_BUCKET_NAME = os.environ.get('FLASKS3_BUCKET_NAME', 'some_bucket')
 FLASKS3_CDN_DOMAIN = os.environ.get('FLASKS3_CDN_DOMAIN', 'static.arxiv.org')

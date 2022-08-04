@@ -3,7 +3,6 @@
 from flask import Flask
 from flask_s3 import FlaskS3
 
-from arxiv import vault
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
 from arxiv.users import auth
@@ -49,11 +48,7 @@ def create_web_app() -> Flask:
     s3.init_app(app)
 
     middleware = [AuthMiddleware]
-    if app.config['VAULT_ENABLED']:
-        middleware.insert(0, vault.middleware.VaultMiddleware)
     wrap(app, middleware)
-    if app.config['VAULT_ENABLED']:
-        app.middlewares['VaultMiddleware'].update_secrets({})
 
     if app.config['CREATE_DB']:
         with app.app_context():
