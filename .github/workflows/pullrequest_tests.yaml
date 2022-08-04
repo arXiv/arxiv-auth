@@ -22,11 +22,8 @@ jobs:
       - name: Run tests with pytest
         run:  pipenv run pytest --cov=accounts --cov=users/arxiv --cov=registry --cov=authenticator --cov-report=term-missing accounts users/arxiv registry authenticator
       - name: linter
-        run: ./tests/lint.sh users/arxiv
+        run: ./tests/lint.sh users/arxiv accounts
       - name: style check
-        run: ./tests/style.sh users/arxiv
-      - name: style check
-        run: |
-          cd users
-          ../tests/type-check.sh arxiv
+        run: ./tests/style.sh users/arxiv accounts
+
 
