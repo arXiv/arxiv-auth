@@ -61,7 +61,6 @@ class Auth(object):
         :class:`domain.Session` or None
 
         """
-
         if cookie_value is None:
             return None
         try:
