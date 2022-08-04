@@ -1,0 +1,37 @@
+name: Run Python Tests
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      WITH_INTEGRATION: 1
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Python 3
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pipenv
+          pipenv sync --dev
+          pipenv install ./users --skip-lock
+      - name: Run tests with pytest
+        run:  pipenv run pytest --cov=accounts --cov=users/arxiv --cov=registry --cov=authenticator --cov-report=term-missing accounts users/arxiv registry authenticator
+      - name: linter
+        run: ./tests/lint.sh users/arxiv
+      - name: style check
+        run: ./tests/style.sh users/arxiv
+      - name: style check
+        run: |
+          cd users
+          ../tests/type-check.sh arxiv
+
