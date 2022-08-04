@@ -196,5 +196,5 @@ def captcha() -> Response:
 
 @blueprint.route('/auth_status', methods=['GET'])
 def auth_status() -> Response:
-    # TODO Test resurces like DB and redis
+    """Get if the app is running."""
     return make_response("OK")

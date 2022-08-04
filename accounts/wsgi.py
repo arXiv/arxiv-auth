@@ -7,7 +7,6 @@ __flask_app__ = None
 
 def application(environ, start_response):    # type: ignore
     """WSGI application."""
-
     for key, value in environ.items():
         # In some deployment scenarios (e.g. uWSGI on k8s), uWSGI will pass in
         # the hostname as part of the request environ. This will usually just
