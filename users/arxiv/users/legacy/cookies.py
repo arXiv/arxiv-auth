@@ -40,8 +40,6 @@ def unpack(cookie: str) -> Tuple[str, str, str, datetime, datetime, str]:
 
     """
     parts = cookie.split(':')
-    payload: Tuple[str, str, str, datetime, str]
-
     if len(parts) < 5:
         raise InvalidCookie('Malformed cookie')
 
@@ -53,10 +51,13 @@ def unpack(cookie: str) -> Tuple[str, str, str, datetime, datetime, str]:
     capabilities = parts[4]
     try:
         expected = pack(session_id, user_id, ip, issued_at, capabilities)
-        assert expected == cookie
-    except (TypeError, AssertionError) as e:
-        raise InvalidCookie('Invalid session cookie; forged?') from e
-    return session_id, user_id, ip, issued_at, expires_at, capabilities
+    except Exception as e:
+        raise InvalidCookie('Invalid session cookie; problem while repacking') from e
+
+    if expected == cookie:
+        return session_id, user_id, ip, issued_at, expires_at, capabilities
+    else:
+        raise InvalidCookie('Invalid session cookie; not as expected')
 
 
 def pack(session_id: str, user_id: str, ip: str, issued_at: datetime,
