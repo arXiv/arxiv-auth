@@ -296,8 +296,6 @@ def auth_check():
 class TestLoginLogoutRoutes(TestCase):
     """Test logging in and logging out."""
 
-    __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
-
     @classmethod
     def setUpClass(self):
         self.secret = 'bazsecret'
@@ -435,6 +433,18 @@ class TestLoginLogoutRoutes(TestCase):
                     .order_by(legacy.models.DBSession.session_id.desc()) \
                     .first()
                 self.assertEqual(db_session.end_time, 0)
+
+
+    def test_post_login_bad_data(self):
+        """POST /login with bad form data ARXIVNG-4743"""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+        form_data = {'username':
+                     '\xd1\x85\xd1\x85\xd1\x85\xd1\x82\xd0\xb5\xd0\xbd\xd1\x82\xd0\xb0\xd1\x81\xd0\xbe\xd0\xbd',
+                     'password': 'thepassword'}
+        next_page = '/foo'
+        response = client.post(f'/login?next_page={next_page}', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_login_get_something_protected(self):
         """User logs in, then reqeusts an auth protected page"""
