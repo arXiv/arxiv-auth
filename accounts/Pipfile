@@ -27,7 +27,6 @@ arxiv-auth = "*"
 bleach = "*"
 urllib3 = ">=1.24.2"    # CVE-2019-11324
 pyyaml = "==5.4"      # CVE-2017-18342
-arxiv-vault = "==0.1.1rc14"
 pillow = "==8.1.1"
 
 [dev-packages]
