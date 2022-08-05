@@ -93,6 +93,11 @@ def login(method: str, form_data: MultiDict, ip: str,
         logger.debug('Authentication failed for %s: %s', form.username.data, e)
         data.update({'error': 'Invalid username or password.'})
         return data, status.HTTP_400_BAD_REQUEST, {}
+    except Exception as e:
+        logger.error('Error during Authentication for %s: %s', form.username.data, e)
+        # To the perspective of the attacker, same as AuthenticationFailed:
+        data.update({'error': 'Invalid username or password.'})
+        return data, status.HTTP_400_BAD_REQUEST, {}
 
     if not user.verified:
         data.update({

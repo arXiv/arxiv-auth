@@ -51,7 +51,8 @@ def authenticate(username_or_email: Optional[str] = None,
     ------
     :class:`AuthenticationFailed`
         Failed to authenticate user with provided credentials.
-
+    :class:`Unavailable`
+        Unable to connect to DB.
     """
     try:
         # Users may log in using either their username or their email address.
@@ -69,6 +70,8 @@ def authenticate(username_or_email: Optional[str] = None,
             raise AuthenticationFailed('Username+password or token required')
     except OperationalError as e:
         raise Unavailable('Database is temporarily unavailable') from e
+    except Exception as ex:
+        raise AuthenticationFailed() from ex
     logger.debug('authenticate: got profile %s', db_profile)
     user = domain.User(
         user_id=str(db_user.user_id),
@@ -143,9 +146,28 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
     ------
     :class:`AuthenticationFailed`
         Raised if the user does not exist or the password is incorrect.
+    :class:`RuntimeError`
+        Raised when other problems arise.
 
     """
     logger.debug(f'Authenticate with password, user: {username_or_email}')
+
+    if not password:
+        raise RuntimeError('Passed empty password')
+    if not isinstance(password, str):
+        raise RuntimeError('Passed non-str password: {type(password)}')
+    if not util.is_ascii(password):
+        raise RuntimeError('Password non-ascii password')
+
+    if not username_or_email:
+        raise RuntimeError('Passed empty username_or_email')
+    if not isinstance(password, str):
+        raise RuntimeError('Passed non-str username_or_email: {type(username_or_email)}')
+    if len(username_or_email) > 255:
+        raise RuntimeError(f'Passed username_or_email too long: len {len(username_or_email)}')
+    if not util.is_ascii(username_or_email):
+        raise RuntimeError('Passed non-ascii username_or_email')
+
     try:
         db_user, db_pass, db_nick, db_profile \
             = _get_user_by_username(username_or_email)
@@ -161,7 +183,6 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
     return db_user, db_pass, db_nick, db_profile
 
 
-# TODO: look at if/how we can optimize these queries.
 def _get_user_by_username(username_or_email: str) -> PassData:
     """
     Retrieve user data by username or email address.
@@ -181,6 +202,8 @@ def _get_user_by_username(username_or_email: str) -> PassData:
     ------
     :class:`NoSuchUser`
         Raised when the user cannot be found.
+    :class:`RuntimeError`
+        Raised when other problems arise.
 
     """
     tapir_user: DBUser = db.session.query(DBUser) \
@@ -194,7 +217,7 @@ def _get_user_by_username(username_or_email: str) -> PassData:
             .filter(DBUserNickname.user_id == tapir_user.user_id) \
             .filter(DBUserNickname.flag_primary == 1) \
             .first()
-    else:   # Usernames are stored in a separate table (!).
+    else:   # Usernames are stored in a separate table
         tapir_nick = db.session.query(DBUserNickname) \
             .filter(DBUserNickname.nickname == username_or_email) \
             .filter(DBUserNickname.flag_valid == 1) \
@@ -206,16 +229,17 @@ def _get_user_by_username(username_or_email: str) -> PassData:
                 .filter(DBUser.flag_deleted == 0) \
                 .filter(DBUser.flag_banned == 0) \
                 .first()
+
     if not tapir_user:
         raise NoSuchUser('User does not exist')
     tapir_password: DBUserPassword = db.session.query(DBUserPassword) \
         .filter(DBUserPassword.user_id == tapir_user.user_id) \
         .first()
+    if not tapir_password:
+        raise RuntimeError(f'Missing password for {username_or_email}')
     tapir_profile: DBProfile = db.session.query(DBProfile) \
         .filter(DBProfile.user_id == tapir_user.user_id) \
         .first()
-    if not tapir_password:
-        raise RuntimeError(f'Missing password for {username_or_email}')
     return tapir_user, tapir_password, tapir_nick, tapir_profile
 
 

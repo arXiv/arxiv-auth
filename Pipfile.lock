@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "15814426b0fc2a490a819c2689a35e3936fd68621b0cfb6b9bd5dd38ef7ea6a3"
+            "sha256": "7eddfe98a279808c4e2ea40e6283dec46f4a18083a45d66316732ace721985e5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -987,6 +987,14 @@
             "index": "pypi",
             "version": "==1.7.4"
         },
+        "hypothesis": {
+            "hashes": [
+                "sha256:d54be6a80b160ad5ea4209b01a0d72e31d910510ed7142fa9907861911800771",
+                "sha256:fbd31da5174f3da8d062017302071967b239a1b397d0e3181a44d43346bc6def"
+            ],
+            "index": "pypi",
+            "version": "==6.31.6"
+        },
         "idna": {
             "hashes": [
                 "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff",
@@ -1015,7 +1023,7 @@
                 "sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7",
                 "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"
             ],
-            "markers": "python_version < '4.0' and python_full_version >= '3.6.1'",
+            "markers": "python_version < '4' and python_full_version >= '3.6.1'",
             "version": "==5.10.1"
         },
         "lazy-object-proxy": {

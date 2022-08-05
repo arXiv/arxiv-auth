@@ -14,6 +14,12 @@ from arxiv import status
 from accounts.services import legacy, users
 from accounts.factory import create_web_app
 
+import urllib
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
+import string
+
 
 EASTERN = timezone('US/Eastern')
 
@@ -435,6 +441,16 @@ class TestLoginLogoutRoutes(TestCase):
                 self.assertEqual(db_session.end_time, 0)
 
 
+    def test_post_login_continuation_byte(self):
+        """POST with data that cannot be encoded as utf8 ARXIVNG-4743"""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+        form_data = {'username': 'foouser',
+                     'password': '\xD8\x01\xDC\x37'}
+        next_page = '/foo'
+        response = client.post(f'/login?next_page={next_page}', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_post_login_bad_data(self):
         """POST /login with bad form data ARXIVNG-4743"""
         client = self.app.test_client()
@@ -499,7 +515,7 @@ class TestLoginLogoutRoutes(TestCase):
         assert response.headers['Location'] == next_page
 
     def test_post_login_baddata(self):
-        """POST rquest to /login with invalid data returns 400."""
+        """POST request to /login with invalid data returns 400."""
         form_data = {'username': 'foouser', 'password': 'notthepassword'}
         client = self.app.test_client()
         response = client.post('/login', data=form_data)
@@ -642,3 +658,31 @@ class TestLoginLogoutRoutes(TestCase):
                          'Classic cookie domain is set')
         self.assertEqual(logout_cookies['submit_session']['Max-Age'], '0',
                          'Legacy submission cookie is expired')
+
+
+    def test_post_login_empty(self):
+        """Empty POST request to /login."""
+        form_data = {'username': 'foouser', 'password': ''}
+        client = self.app.test_client()
+        response = client.post('/login', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = client.post('/login', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = client.post('/login', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = client.post('/login', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @given(st.text()) #Limited to utf-8
+    @settings(max_examples=5000)
+    def test_post_login_fuzz(self, fuzzed_pw):
+        """Fuzz POST request to /login."""
+        if fuzzed_pw == 'thepassword':
+            return
+        form_data = {'username': 'foouser', 'password': fuzzed_pw}
+        client = self.app.test_client()
+        response = client.post('/login', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
