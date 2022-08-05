@@ -50,7 +50,7 @@ class SessionStore(object):
         self._secret = secret
         self._duration = duration
         if fake:
-            logger.warn('Using FakeRedis')
+            logger.warning('Using FakeRedis')
             import fakeredis # this is a dev dependency needed during testing
             self.r = fakeredis.FakeStrictRedis()
         else:
