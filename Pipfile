@@ -23,10 +23,8 @@ openapi-spec-validator = "*"
 bleach = "*"
 urllib3 = ">=1.24.2"    # CVE-2019-11324
 pyyaml = "==5.4"      # CVE-2017-18342
-arxiv-vault = "==0.1.1rc14"
 pytz = "*"
 arxiv-auth = {path = "./users"}
-mimesis = "*"
 flask-sqlalchemy = "*"
 "flask-s3" = "*"
 redis = "==2.10.6"

@@ -19,6 +19,7 @@ import click
 
 from arxiv import taxonomy
 from arxiv.users.legacy import models, util, sessions, authenticate, exceptions
+from arxiv.users.legacy.password import hash_password
 from arxiv.users import domain
 
 from accounts.factory import create_web_app
