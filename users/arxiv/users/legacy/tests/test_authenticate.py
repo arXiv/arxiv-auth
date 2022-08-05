@@ -15,6 +15,8 @@ from .. import authenticate, exceptions, models, util
 
 from .util import temporary_db
 
+from ..passwords import hash_password
+
 EASTERN = timezone('US/Eastern')
 
 
@@ -181,7 +183,7 @@ class TestAuthenticateWithPassword(TestCase):
             self.password = 'thepassword'
             # hashed = hashlib.sha1(self.salt + b'-' + self.password).digest()
 
-            hashed = util.hash_password(self.password)
+            hashed = hash_password(self.password)
             self.db_password = models.DBUserPassword(
                 user_id=self.user_id,
                 password_storage=2,

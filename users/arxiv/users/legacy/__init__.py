@@ -8,6 +8,6 @@ and maintaining them in both places would create too much duplication.
 """
 
 from . import sessions, exceptions, authenticate, models, accounts, util, \
-    endorsements
+    endorsements, passwords
 from .util import create_all, init_app, current_session, drop_all, \
     is_configured, is_available, transaction

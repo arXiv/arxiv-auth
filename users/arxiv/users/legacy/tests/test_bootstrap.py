@@ -14,6 +14,7 @@ from mimesis import Person, Internet, Datetime, locales
 
 from arxiv import taxonomy
 from .. import models, util, sessions, authenticate, exceptions
+from ..passwords import hash_password
 from ... import domain
 
 LOCALES = list(locales.LIST_OF_LOCALES)
@@ -149,7 +150,7 @@ class TestBootstrap(TestCase):
                     db_password = models.DBUserPassword(
                         user=db_user,
                         password_storage=2,
-                        password_enc=util.hash_password(password)
+                        password_enc=hash_password(password)
                     )
 
                     # Create some endorsements.
