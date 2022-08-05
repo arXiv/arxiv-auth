@@ -13,6 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from arxiv.base import logging
 from .. import domain
 from . import util, endorsements, exceptions, models
+from .passwords import hash_password
 from .exceptions import Unavailable
 from .models import DBUser, DBUserPassword, DBPermanentToken, \
     DBUserNickname, DBProfile, DBPolicyClass, db
@@ -296,7 +297,7 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
 
     db_pass = DBUserPassword(
         user=db_user,
-        password_enc=util.hash_password(password)
+        password_enc=hash_password(password)
     )
     db.session.add(db_pass)
     return db_user, db_nick, db_profile

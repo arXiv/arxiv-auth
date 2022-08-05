@@ -13,7 +13,7 @@ from . import util, endorsements
 from .. import domain
 from ..auth import scopes
 from arxiv.base import logging
-
+from . passwords import check_password, is_ascii
 from .models import DBUser, DBUserPassword, DBPermanentToken, \
     DBUserNickname, DBProfile, db
 from .exceptions import NoSuchUser, AuthenticationFailed, \
@@ -156,7 +156,7 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
         raise RuntimeError('Passed empty password')
     if not isinstance(password, str):
         raise RuntimeError('Passed non-str password: {type(password)}')
-    if not util.is_ascii(password):
+    if not is_ascii(password):
         raise RuntimeError('Password non-ascii password')
 
     if not username_or_email:
@@ -165,7 +165,7 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
         raise RuntimeError('Passed non-str username_or_email: {type(username_or_email)}')
     if len(username_or_email) > 255:
         raise RuntimeError(f'Passed username_or_email too long: len {len(username_or_email)}')
-    if not util.is_ascii(username_or_email):
+    if not is_ascii(username_or_email):
         raise RuntimeError('Passed non-ascii username_or_email')
 
     try:
@@ -177,7 +177,7 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
         raise AuthenticationFailed('Invalid username or password') from e
     logger.debug(f'Got user with user_id: {db_user.user_id}')
     try:
-        util.check_password(password, db_pass.password_enc)
+        check_password(password, db_pass.password_enc)
     except PasswordAuthenticationFailed as e:
         raise AuthenticationFailed('Invalid username or password') from e
     return db_user, db_pass, db_nick, db_profile

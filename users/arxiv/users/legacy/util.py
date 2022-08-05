@@ -1,27 +1,20 @@
 """Helpers and Flask application integration."""
 
-from typing import Generator, Tuple, List, Optional, Any
+from typing import Generator, List, Any
 from datetime import datetime
 from pytz import timezone, UTC
 from contextlib import contextmanager
-import secrets
-from base64 import b64encode, b64decode
-import hashlib
-from collections import Counter
 
 from flask import Flask
-from sqlalchemy.engine import Engine
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 
 from arxiv.base import logging
-from arxiv.base.globals import get_application_config, get_application_global
+from arxiv.base.globals import get_application_config
 
 from ..auth import scopes
 from .. import domain
-from .models import db, DBUser, DBPolicyClass, DBEndorsement, DBSession
-from .exceptions import UnknownSession, PasswordAuthenticationFailed
+from .models import db, DBUser, DBPolicyClass
 
 EASTERN = timezone('US/Eastern')
 logger = logging.getLogger(__name__)
@@ -80,36 +73,6 @@ def drop_all() -> None:
     db.drop_all()
 
 
-def _hash_salt_and_password(salt: bytes, password: str) -> bytes:
-    return hashlib.sha1(salt + b'-' + password.encode('ascii')).digest()
-
-
-def hash_password(password: str) -> str:
-    """Generate a secure hash of a password.
-
-    The password must be ascii.
-    """
-    salt = secrets.token_bytes(4)
-    hashed = _hash_salt_and_password(salt, password)
-    return b64encode(salt + hashed).decode('ascii')
-
-
-def check_password(password: str, encrypted: bytes):
-    """Check a password against an encrypted hash."""
-    try:
-        password.encode('ascii')
-    except UnicodeEncodeError:
-        raise PasswordAuthenticationFailed('could not encode utf-8 password')
-
-    decoded = b64decode(encrypted)
-    salt = decoded[:4]
-    enc_hashed = decoded[4:]
-    pass_hashed = _hash_salt_and_password(salt, password)
-    if pass_hashed != enc_hashed:
-        raise PasswordAuthenticationFailed('Incorrect password')
-    else:
-        return True
-
 def compute_capabilities(tapir_user: DBUser) -> int:
     """Calculate the privilege level code for a user."""
     return int(sum([2 * tapir_user.flag_edit_users,
@@ -156,12 +119,3 @@ def is_available(**kwargs: Any) -> bool:
         logger.error('Encountered an error talking to database: %s', e)
         return False
     return True
-
-
-def is_ascii(string):
-    """Returns true if the string is only ascii chars."""
-    try:
-        string.encode('ascii')
-        return True
-    except UnicodeEncodeError:
-        return False
