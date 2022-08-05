@@ -87,7 +87,8 @@ def _hash_salt_and_password(salt: bytes, password: str) -> bytes:
 def hash_password(password: str) -> str:
     """Generate a secure hash of a password.
 
-    The password must be ascii."""
+    The password must be ascii.
+    """
     salt = secrets.token_bytes(4)
     hashed = _hash_salt_and_password(salt, password)
     return b64encode(salt + hashed).decode('ascii')
