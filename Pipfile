@@ -48,6 +48,7 @@ pytest-cov = "*"
 astroid = "*"
 "nose2" = "*"
 fakeredis = "*"
+hypothesis = "*"
 
 [requires]
 python_version = "3.6"
