@@ -33,6 +33,7 @@ email-validator = "*"
 werkzeug = "==1.0.1"
 pillow = "==8.1.1"
 cryptography = "==3.3.2"
+retry = "*"
 
 [dev-packages]
 mimesis = "==2.1.0"
