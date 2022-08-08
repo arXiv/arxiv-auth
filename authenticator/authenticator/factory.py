@@ -1,6 +1,5 @@
 """Provides an app factory for the authenticator app."""
 
-from arxiv import vault
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
 
@@ -26,10 +25,6 @@ def create_app() -> Flask:
 
     Base(app)
     SessionStore.init_app(app)
-
-    if app.config['VAULT_ENABLED']:
-        wrap(app, [vault.middleware.VaultMiddleware])
-        app.middlewares['VaultMiddleware'].update_secrets({})
 
     app.register_blueprint(routes.blueprint)
     app.errorhandler(NotFound)(jsonify_exception)
