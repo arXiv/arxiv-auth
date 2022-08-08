@@ -1,7 +1,0 @@
-name: accounts
-version: 0.1
-appVersion: 0.1
-description: Accounts application.
-sources:
-  - https://github.com/arxiv/arxiv-auth/accounts
-engine: gotpl
