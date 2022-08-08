@@ -89,12 +89,12 @@ def login(method: str, form_data: MultiDict, ip: str,
 
     try:    # Attempt to authenticate the user with the credentials provided.
         user, auths = _do_authn(form.username.data, form.password.data)
-    except users.exceptions.AuthenticationFailed as e:
-        logger.debug('Authentication failed for %s: %s', form.username.data, e)
+    except users.exceptions.AuthenticationFailed as ex:
+        logger.debug('Authentication failed for %s: %s', form.username.data, ex)
         data.update({'error': 'Invalid username or password.'})
         return data, status.HTTP_400_BAD_REQUEST, {}
-    except Exception as e:
-        logger.error('Error during Authentication for %s: %s', form.username.data, e)
+    except Exception as ex:
+        logger.exception('Error during Authentication for %s', form.username.data)
         # To the perspective of the attacker, same as AuthenticationFailed:
         data.update({'error': 'Invalid username or password.'})
         return data, status.HTTP_400_BAD_REQUEST, {}
