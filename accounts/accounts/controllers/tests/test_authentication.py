@@ -230,3 +230,29 @@ class TestPOSTLogin(TestCase):
         data, status_code, header = login('POST', form_data, ip, next_page)
         self.assertEqual(status_code, status.HTTP_400_BAD_REQUEST,
                          "Bad request error is returned")
+
+
+    @mock.patch('accounts.controllers.authentication.users')
+    @mock.patch('accounts.controllers.authentication.SessionStore')
+    @mock.patch('accounts.controllers.authentication.legacy')
+    def testpost_db_unaval(self, mock_legacy, mock_SessionStore,
+                               mock_users):
+        """POST but DB is unavailable.
+
+        arxiv/users/legacy/authenticate.py", line 60, in authenticate
+        Raise MySQLdb._exceptions.OperationalError """
+        mock_users.exceptions.AuthenticationFailed = \
+            users.exceptions.AuthenticationFailed
+        mock_legacy.exceptions.SessionCreationFailed = \
+            legacy.exceptions.SessionCreationFailed
+        form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
+        ip = '123.45.67.89'
+        next_page = '/foo'
+
+        import MySQLdb
+        def rasie_db_op_err(*a, **k):
+            raise MySQLdb._exceptions.OperationalError(f"This is a mocked exceptions in {__file__}")
+        mock_users.authenticate.side_effect = rasie_db_op_err
+
+        data, status_code, header = login('POST', form_data, ip, next_page)
+        self.assertNotEqual(status_code, status.HTTP_303_SEE_OTHER, "should not login if db is down")
