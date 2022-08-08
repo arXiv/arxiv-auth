@@ -4,7 +4,6 @@ from flask import Flask, Response, jsonify
 from werkzeug.exceptions import HTTPException, Forbidden, Unauthorized, \
     BadRequest, MethodNotAllowed, InternalServerError, NotFound
 
-from arxiv import vault
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
 from arxiv.users import auth
@@ -33,11 +32,7 @@ def create_web_app() -> Flask:
     app.register_blueprint(blueprint)
 
     middleware = [AuthMiddleware]
-    if app.config['VAULT_ENABLED']:
-        middleware.insert(0, vault.middleware.VaultMiddleware)
     wrap(app, middleware)
-    if app.config['VAULT_ENABLED']:
-        app.middlewares['VaultMiddleware'].update_secrets({})
 
     app.jinja_env.filters['scope_label'] = filters.scope_label
 
