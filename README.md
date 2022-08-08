@@ -16,26 +16,22 @@ There are currently four pieces of software in this repository:
    code reuse.
 2. [``accounts/``](accounts/) contains a service that provides the
    main UIs for registration, the login/logout pages, profile management, etc.
-3. [``authenticator/``](authenticator/) contains the authenticator service.
-   Handles authentication requests from NGINX in a cloud deployment scenario.
-4. [``registry/``](registry/) contains the API client registry application.
-   This implements OAuth2 workflows, client registration, and the root API
-   landing page.
+3. [``authenticator/``](authenticator/) **Not in use** contains the
+   authenticator service.  Handles authentication requests from NGINX
+   in a cloud deployment scenario.
+4. [``registry/``](registry/) **Not in use** contains the API client
+   registry application.  This implements OAuth2 workflows, client
+   registration, and the root API landing page.
 
 TLS is considered an infrastructure concern, and is therefore out of scope
 (albeit critical) for this project.
 
 ## TODO
 
-- Fix conflicts handling this and legacy systems. Logging into
-  beta.arxiv.org requires the client to delete all cookies from
-  arxiv.org. The source of these bugs may be this repo, catalyst
-  arxiv-submit or php tapir.
 - Password reset in ``arxiv.users.legacy.accounts`` and in the accounts
   service.
 - Support for permanent login token.
 - Clean up and document authenticator service.
-- Fuzz testing.
 
 ## Updates
 
