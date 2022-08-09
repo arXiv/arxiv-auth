@@ -1,14 +1,12 @@
 """ORM models for legacy user and session tables."""
 
-from typing import Any, NewType, List
+from typing import  List
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import BigInteger, Column, DateTime, Enum, \
-    ForeignKey, Index, Integer, SmallInteger, String, Text, text
+from sqlalchemy import Column, Enum, \
+    ForeignKey, Integer, SmallInteger, String, Text, text
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 
-from arxiv import taxonomy
 from .. import domain
 
 db: SQLAlchemy = SQLAlchemy()

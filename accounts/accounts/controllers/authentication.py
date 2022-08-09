@@ -11,30 +11,27 @@ authorization information.
 """
 
 from typing import Dict, Tuple, Any, Optional
-import uuid
 import re
 
-from werkzeug.datastructures import MultiDict, ImmutableMultiDict
-from werkzeug.exceptions import BadRequest, InternalServerError
-from flask import url_for, Markup
+from werkzeug.datastructures import MultiDict
+from werkzeug.exceptions import InternalServerError
+from flask import Markup
 
-from wtforms import StringField, PasswordField, SelectField, \
-    SelectMultipleField, BooleanField, Form, HiddenField
-from wtforms.validators import DataRequired, Email, Length, URL, optional
-from wtforms.widgets import ListWidget, CheckboxInput, Select
+from wtforms import StringField, PasswordField, Form
+from wtforms.validators import DataRequired
 
-import pycountry
 from retry import retry
 
 from arxiv import status
 from arxiv.base import logging
 
 from arxiv.users.domain import User, Authorizations, Session
-from accounts.services import legacy, SessionStore, users
+from accounts.services import legacy, SessionStore
+
+from arxiv.users.legacy import exceptions
+from arxiv.users.legacy.authenticate import authenticate
+
 from accounts import config
-
-from .util import MultiCheckboxField, OptGroupSelectField
-
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +86,7 @@ def login(method: str, form_data: MultiDict, ip: str,
 
     try:    # Attempt to authenticate the user with the credentials provided.
         user, auths = _do_authn(form.username.data, form.password.data)
-    except users.exceptions.AuthenticationFailed as ex:
+    except exceptions.AuthenticationFailed as ex:
         logger.debug('Authentication failed for %s: %s', form.username.data, ex)
         data.update({'error': 'Invalid username or password.'})
         return data, status.HTTP_400_BAD_REQUEST, {}
@@ -198,8 +195,8 @@ class LoginForm(Form):
 @retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
 def _do_authn(username: str, password: str) -> Tuple[User, Authorizations]:
     with legacy.transaction():
-        return users.authenticate(username_or_email=username,
-                                  password=password)
+        return authenticate(username_or_email=username,
+                            password=password)
 
 
 @retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)

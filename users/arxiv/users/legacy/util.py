@@ -66,6 +66,13 @@ def current_session() -> Session:
 def create_all() -> None:
     """Create all tables in the database."""
     db.create_all()
+    with transaction() as session:
+        data = session.query(DBPolicyClass).all()
+        if data:
+            return
+
+        for datum in DBPolicyClass.POLICY_CLASSES:
+            session.add(DBPolicyClass(**datum))
 
 
 def drop_all() -> None:

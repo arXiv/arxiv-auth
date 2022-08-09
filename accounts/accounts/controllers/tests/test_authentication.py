@@ -10,6 +10,7 @@ from werkzeug.exceptions import BadRequest
 
 from arxiv import status
 from arxiv.users import domain
+from arxiv.users.legacy import exceptions
 from accounts.services import legacy, users, sessions
 from accounts.controllers.authentication import login, logout, LoginForm
 
@@ -19,7 +20,7 @@ EASTERN = timezone('US/Eastern')
 
 def raise_authentication_failed(*args, **kwargs):
     """Simulate a failed login attempt at the backend service."""
-    raise users.exceptions.AuthenticationFailed('nope')
+    raise exceptions.AuthenticationFailed('nope')
 
 
 class TestLogout(TestCase):
@@ -99,17 +100,15 @@ class TestPOSTLogin(TestCase):
         self.assertEqual(status_code, status.HTTP_400_BAD_REQUEST,
                          "Response status is 400 bad request")
 
-    @mock.patch('accounts.controllers.authentication.users')
     @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def test_post_valid_data_bad_credentials(self, mock_legacy,
-                                             mock_SessionStore, mock_users):
+    @mock.patch('accounts.controllers.authentication.authenticate')
+    def test_post_valid_data_bad_credentials(self, mock_authenticate, mock_legacy,
+                                             mock_SessionStore,):
         """Form data are valid but don't check out."""
-        mock_users.exceptions.AuthenticationFailed = \
-            users.exceptions.AuthenticationFailed
         mock_legacy.exceptions.SessionCreationFailed = \
             legacy.exceptions.SessionCreationFailed
-        mock_users.authenticate.side_effect = raise_authentication_failed
+        mock_authenticate.side_effect = raise_authentication_failed
 
         form_data = MultiDict({'username': 'foouser', 'password': 'barpass'})
         next_page = '/next'
@@ -121,13 +120,11 @@ class TestPOSTLogin(TestCase):
         self.assertIsInstance(data['form'], LoginForm,
                               "Response includes a login form.")
 
-    @mock.patch('accounts.controllers.authentication.users')
     @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def test_post_great(self, mock_legacy, mock_SessionStore, mock_users):
+    @mock.patch('accounts.controllers.authentication.authenticate')
+    def test_post_great(self, mock_authenticate, mock_legacy, mock_SessionStore):
         """Form data are valid and check out."""
-        mock_users.exceptions.AuthenticationFailed = \
-            users.exceptions.AuthenticationFailed
         mock_legacy.exceptions.SessionCreationFailed = \
             legacy.exceptions.SessionCreationFailed
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
@@ -144,7 +141,7 @@ class TestPOSTLogin(TestCase):
             classic=6,
             scopes=['public:read', 'submission:create']
         )
-        mock_users.authenticate.return_value = user, auths
+        mock_authenticate.return_value = user, auths
         c_session = domain.Session(
             session_id='barsession',
             user=user,
@@ -179,14 +176,11 @@ class TestPOSTLogin(TestCase):
         self.assertEqual(data['cookies']['classic_cookie'], (c_cookie, None),
                          "Classic session cookie is returned")
 
-    @mock.patch('accounts.controllers.authentication.users')
     @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def test_post_not_verified(self, mock_legacy, mock_SessionStore,
-                               mock_users):
+    @mock.patch('accounts.controllers.authentication.authenticate')
+    def test_post_not_verified(self, mock_authenticate, mock_legacy, mock_SessionStore):
         """Form data are valid and check out."""
-        mock_users.exceptions.AuthenticationFailed = \
-            users.exceptions.AuthenticationFailed
         mock_legacy.exceptions.SessionCreationFailed = \
             legacy.exceptions.SessionCreationFailed
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
@@ -203,7 +197,7 @@ class TestPOSTLogin(TestCase):
             classic=6,
             scopes=['public:read', 'submission:create']
         )
-        mock_users.authenticate.return_value = user, auths
+        mock_authenticate.return_value = user, auths
         c_session = domain.Session(
             session_id='barsession',
             user=user,
@@ -232,17 +226,15 @@ class TestPOSTLogin(TestCase):
                          "Bad request error is returned")
 
 
-    @mock.patch('accounts.controllers.authentication.users')
     @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy')
-    def testpost_db_unaval(self, mock_legacy, mock_SessionStore,
-                               mock_users):
+    @mock.patch('accounts.controllers.authentication.authenticate')
+    def testpost_db_unaval(self, mock_authenticate, mock_legacy, mock_SessionStore
+                               ):
         """POST but DB is unavailable.
 
         arxiv/users/legacy/authenticate.py", line 60, in authenticate
         Raise MySQLdb._exceptions.OperationalError """
-        mock_users.exceptions.AuthenticationFailed = \
-            users.exceptions.AuthenticationFailed
         mock_legacy.exceptions.SessionCreationFailed = \
             legacy.exceptions.SessionCreationFailed
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
@@ -252,7 +244,7 @@ class TestPOSTLogin(TestCase):
         import MySQLdb
         def rasie_db_op_err(*a, **k):
             raise MySQLdb._exceptions.OperationalError(f"This is a mocked exceptions in {__file__}")
-        mock_users.authenticate.side_effect = rasie_db_op_err
+        mock_authenticate.side_effect = rasie_db_op_err
 
         data, status_code, header = login('POST', form_data, ip, next_page)
         self.assertNotEqual(status_code, status.HTTP_303_SEE_OTHER, "should not login if db is down")
