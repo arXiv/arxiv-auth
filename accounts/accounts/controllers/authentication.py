@@ -26,10 +26,11 @@ from arxiv import status
 from arxiv.base import logging
 
 from arxiv.users.domain import User, Authorizations, Session
-from accounts.services import legacy, SessionStore
+from accounts.services import SessionStore
 
-from arxiv.users.legacy import exceptions
+from arxiv.users.legacy import exceptions, sessions as legacy_sessions
 from arxiv.users.legacy.authenticate import authenticate
+from arxiv.users.legacy.util import transaction
 
 from accounts import config
 
@@ -117,7 +118,7 @@ def login(method: str, form_data: MultiDict, ip: str,
 
     try:    # Create a session in the legacy session store.
         c_session, c_cookie = _do_login(auths, ip, track, user)
-    except legacy.exceptions.SessionCreationFailed as e:
+    except exceptions.SessionCreationFailed as e:
         logger.debug('Could not create legacy session: %s', e)
         logger.info('Could not create legacy session: %s', e)
         raise InternalServerError('Cannot log in') from e  # type: ignore
@@ -168,11 +169,11 @@ def logout(session_cookie: Optional[str],
 
     if classic_session_cookie:
         try:
-            with legacy.transaction():
+            with transaction():
                 _do_logout(classic_session_cookie)
-        except legacy.exceptions.SessionDeletionFailed as e:
+        except exceptions.SessionDeletionFailed as e:
             logger.debug('Logout failed: %s', e)
-        except legacy.exceptions.UnknownSession as e:
+        except exceptions.UnknownSession as e:
             logger.debug('Unknown session: %s', e)
 
     data = {
@@ -192,27 +193,27 @@ class LoginForm(Form):
 
 
 # These are broken out to add retry and transaction logic.
-@retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
+@retry(exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
 def _do_authn(username: str, password: str) -> Tuple[User, Authorizations]:
-    with legacy.transaction():
+    with transaction():
         return authenticate(username_or_email=username,
                             password=password)
 
 
-@retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
+@retry(exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
 def _do_login(auths: Authorizations, ip: str, tracking_cookie: str,
               user: User = None) -> Tuple[Session, str]:
-    with legacy.transaction():
-        c_session = legacy.create(auths, ip, ip, tracking_cookie, user=user)
-        c_cookie = legacy.generate_cookie(c_session)
+    with transaction():
+        c_session = legacy_sessions.create(auths, ip, ip, tracking_cookie, user=user)
+        c_cookie = legacy_sessions.generate_cookie(c_session)
         logger.debug('Created classic session: %s', c_session.session_id)
         return c_session, c_cookie
 
 
-@retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
+@retry(exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
 def _do_logout(classic_session_cookie: str) -> None:
-    with legacy.transaction():
-        legacy.invalidate(classic_session_cookie)
+    with transaction():
+        legacy_sessions.invalidate(classic_session_cookie)
 
 
 def good_next_page(next_page: str) -> bool:

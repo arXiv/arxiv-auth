@@ -8,28 +8,30 @@ ORCID.
 """
 
 from typing import Dict, Tuple, Any, Optional
-import uuid
-from werkzeug.datastructures import MultiDict, ImmutableMultiDict
+from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
 
 from arxiv import status
 from arxiv.users import domain
 from arxiv.base import logging
-from accounts.services import legacy, SessionStore, users
+from arxiv.users import domain
+
+from accounts.services import SessionStore
 
 from wtforms import StringField, PasswordField, SelectField, \
-    SelectMultipleField, BooleanField, Form, HiddenField
+    BooleanField, Form, HiddenField
 from wtforms.validators import DataRequired, Email, Length, URL, optional, \
     ValidationError
-from wtforms.widgets import ListWidget, CheckboxInput, Select
 from flask import url_for, Markup
 import pycountry
 
-# from .. import domain
 from arxiv import taxonomy
 from .util import MultiCheckboxField, OptGroupSelectField
 
 from .. import stateless_captcha
+
+from arxiv.users.legacy import accounts
+from arxiv.users.legacy.exceptions import RegistrationFailed, SessionCreationFailed, SessionDeletionFailed
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +44,7 @@ def _login_classic(user: domain.User, auth: domain.Authorizations,
         c_session = legacy.create(auth, ip, ip, user=user)
         c_cookie = legacy.generate_cookie(c_session)
         logger.debug('Created classic session: %s', c_session.session_id)
-    except legacy.exceptions.SessionCreationFailed as e:
+    except SessionCreationFailed as e:
         logger.debug('Could not create classic session: %s', e)
         raise InternalServerError('Cannot log in') from e  # type: ignore
     return c_session, c_cookie
@@ -52,7 +54,7 @@ def _logout(session_id: str) -> None:
     sessions = SessionStore.current_session()
     try:
         sessions.delete_by_id(session_id)
-    except sessions.exceptions.SessionDeletionFailed as e:
+    except SessionDeletionFailed as e:
         logger.debug('Could not delete session %s', session_id)
         raise InternalServerError('Cannot logout') from e  # type: ignore
     return None
@@ -65,7 +67,7 @@ def _login(user: domain.User, auth: domain.Authorizations, ip: Optional[str]) \
         session = sessions.create(auth, ip, ip, user=user)
         cookie = sessions.generate_cookie(session)
         logger.debug('Created session: %s', session.session_id)
-    except legacy.exceptions.SessionCreationFailed as e:
+    except SessionCreationFailed as e:
         logger.debug('Could not create session: %s', e)
         raise InternalServerError('Cannot log in') from e  # type: ignore
     return session, cookie
@@ -96,8 +98,8 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str,
 
         # Perform the actual registration.
         try:
-            user, auth = users.register(form.to_domain(), password, ip, ip)
-        except users.exceptions.RegistrationFailed as e:
+            user, auth = accounts.register(form.to_domain(), password, ip, ip)
+        except RegistrationFailed as e:
             msg = 'Registration failed'
             raise InternalServerError(msg) from e  # type: ignore
 
@@ -117,7 +119,7 @@ def register(method: str, params: MultiDict, captcha_secret: str, ip: str,
 
 def view_profile(user_id: str, session: domain.Session) -> ResponseData:
     """Handle requests to view a user's profile."""
-    user = users.get_user_by_id(user_id)
+    user = accounts.get_user_by_id(user_id)
     return {'user': user}, status.HTTP_200_OK, {}
 
 
@@ -126,7 +128,7 @@ def edit_profile(method: str, user_id: str, session: domain.Session,
                  ip: Optional[str] = None) -> ResponseData:
     """Handle requests to update a user's profile."""
     if method == 'GET':
-        user = users.get_user_by_id(user_id)
+        user = accounts.get_user_by_id(user_id)
         form = ProfileForm.from_domain(user)
         data = {'form': form, 'user_id': user_id}
     elif method == 'POST':
@@ -142,7 +144,7 @@ def edit_profile(method: str, user_id: str, session: domain.Session,
 
         user = form.to_domain()
         try:
-            user, auth = users.update(user)
+            user, auth = accounts.update(user)
         except Exception as e:
             data['error'] = 'Could not save user profile; please try again'
             return data, status.HTTP_500_INTERNAL_SERVER_ERROR, {}
@@ -299,7 +301,7 @@ class RegistrationForm(Form):
 
     def validate_username(self, field: StringField) -> None:
         """Ensure that the username is unique."""
-        if users.does_username_exist(field.data):
+        if accounts.does_username_exist(field.data):
             raise ValidationError(Markup(
                 f'An account with that email already exists. You can try'
                 f' <a href="{url_for("ui.login")}?next_page={self.next_page}">'
@@ -309,7 +311,7 @@ class RegistrationForm(Form):
 
     def validate_email(self, field: StringField) -> None:
         """Ensure that the email address is unique."""
-        if users.does_email_exist(field.data):
+        if accounts.does_email_exist(field.data):
             raise ValidationError(Markup(
                 f'An account with that email already exists. You can try'
                 f' <a href="{url_for("ui.login")}?next_page={self.next_page}">'
