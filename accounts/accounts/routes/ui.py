@@ -11,6 +11,7 @@ from arxiv import status
 from arxiv.users import domain
 from arxiv.base import logging
 
+from accounts.next_page import good_next_page
 from accounts.controllers import captcha_image, registration, authentication
 
 EASTERN = timezone('US/Eastern')
@@ -29,8 +30,7 @@ def anonymous_only(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.auth:
-            next_page = request.args.get('next_page',
-                                         current_app.config['DEFAULT_LOGIN_REDIRECT_URL'])
+            next_page = good_next_page(request.args.get('next_page',None))
             return make_response(redirect(next_page, code=status.HTTP_303_SEE_OTHER))
         else:
             return func(*args, **kwargs)

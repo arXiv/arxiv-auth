@@ -48,7 +48,7 @@ DEFAULT_LOGOUT_REDIRECT_URL = os.environ.get(
 )
 
 LOGIN_REDIRECT_REGEX = os.environ.get('LOGIN_REDIRECT_REGEX',
-                                      fr'(/.*)|(https://([a-zA-Z0-9\-.])*{re.escape(BASE_SERVER)}/.*)')
+                                      fr'(^/.*)|(^https://([a-zA-Z0-9\-.])*{re.escape(BASE_SERVER)}/.*)')
 """Regex to check next_page of /login.
 
 Only next_page values that match this regex will be allowed. All

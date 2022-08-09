@@ -514,6 +514,31 @@ class TestLoginLogoutRoutes(TestCase):
         assert response.status_code == status.HTTP_303_SEE_OTHER
         assert response.headers['Location'] == next_page
 
+        next_page = 'https://somesubdomain.arxiv.org/some_sort_of_next_page?blt=yes%20please'
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.status_code == status.HTTP_303_SEE_OTHER
+        assert response.headers['Location'] == next_page, "/login should fowrward to arxiv subdomains"
+
+        next_page = '/some_relative_page'
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.status_code == status.HTTP_303_SEE_OTHER
+        assert response.headers['Location'].endswith(next_page), "/login should fowrward to relative pages"
+
+        next_page = 'https://scammy.example.com/whereisit?cheese=idontknow'
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.headers['Location'] != next_page, "/login should not forward to scammmy URLs"
+        assert response.headers['Location'] == self.app.config['DEFAULT_LOGIN_REDIRECT_URL']
+
+        next_page = '/whereisit?' + ','.join(30 * 'cheese=idontknow')
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.headers['Location'] != next_page, "/login should not forward to super long URL"
+        assert response.headers['Location'] == self.app.config['DEFAULT_LOGIN_REDIRECT_URL']
+
+        next_page = 'https://arxiv.org/whereisit?' + ','.join(30 * 'cheese=idontknow')
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.headers['Location'] != next_page, "/login should not forward to super long URL"
+        assert response.headers['Location'] == self.app.config['DEFAULT_LOGIN_REDIRECT_URL']
+
     def test_post_login_baddata(self):
         """POST request to /login with invalid data returns 400."""
         form_data = {'username': 'foouser', 'password': 'notthepassword'}
