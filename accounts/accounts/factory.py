@@ -5,11 +5,15 @@ from flask_s3 import FlaskS3
 
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
+
 from arxiv.users import auth
 from arxiv.users.auth.middleware import AuthMiddleware
 
 from accounts.routes import ui
-from accounts.services import SessionStore, legacy, users
+
+from arxiv.users.auth.sessions import SessionStore
+from arxiv.users.legacy.util import init_app as legacy_init_app
+from arxiv.users.legacy.util import create_all as legacy_create_all
 
 s3 = FlaskS3()
 
@@ -39,8 +43,7 @@ def create_web_app() -> Flask:
     app.config['SERVER_NAME'] = None
 
     SessionStore.init_app(app)
-    legacy.init_app(app)
-    users.init_app(app)
+    legacy_init_app(app)
 
     app.register_blueprint(ui.blueprint)
     Base(app)    # Gives us access to the base UI templates and resources.
@@ -52,7 +55,6 @@ def create_web_app() -> Flask:
 
     if app.config['CREATE_DB']:
         with app.app_context():
-            legacy.create_all()
-            users.create_all()
+            legacy_create_all()
 
     return app
