@@ -1,18 +1,14 @@
 """Tests for :mod:`arxiv.users.legacy.accounts`."""
 
-import os
 import tempfile
 from datetime import datetime
-import sys
 import shutil
 import hashlib
-from typing import Tuple
 from pytz import UTC
 from unittest import TestCase
-from flask import Flask
+from sqlalchemy import select
 
-from arxiv import taxonomy
-from .. import models, util, sessions, authenticate, exceptions
+from .. import models, util, authenticate, exceptions
 from .. import accounts
 from .util import temporary_db
 from ... import domain
@@ -44,14 +40,8 @@ class SetUpUserMixin(object):
         self.db_uri = f'sqlite:///{self.db_path}/test.db'
         self.user_id = '15830'
         with temporary_db(self.db_uri, drop=False) as session:
-            self.user_class = models.DBPolicyClass(
-                class_id=2,
-                name='Public user',
-                description='foo',
-                password_storage=2,
-                recovery_policy=3,
-                permanent_login=1
-            )
+            self.user_class = session.scalar(
+                select(models.DBPolicyClass).where(models.DBPolicyClass.class_id==2))
             self.email = 'first@last.iv'
             self.db_user = models.DBUser(
                 user_id=self.user_id,

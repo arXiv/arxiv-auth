@@ -21,8 +21,6 @@ def temporary_db(database_url: str = 'sqlite:///:memory:',
         try:
             with util.transaction():
                 yield util.current_session()
-        except Exception as e:
-            raise
         finally:
             if drop:
                 util.drop_all()

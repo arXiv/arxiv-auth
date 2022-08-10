@@ -4,12 +4,10 @@ from unittest import TestCase, mock
 from datetime import datetime
 from pytz import timezone, UTC
 import tempfile
-import os
 import shutil
 import hashlib
-from base64 import b64encode
-from contextlib import contextmanager
-from flask import Flask
+
+from sqlalchemy import select
 
 from .. import authenticate, exceptions, models, util
 
@@ -29,14 +27,8 @@ class TestAuthenticateWithPermanentToken(TestCase):
         self.db = f'sqlite:///{self.path}/test.db'
         self.user_id = '1'
         with temporary_db(self.db, drop=False) as session:
-            self.user_class = models.DBPolicyClass(
-                class_id=2,
-                name='Public user',
-                description='foo',
-                password_storage=2,
-                recovery_policy=3,
-                permanent_login=1
-            )
+            self.user_class = session.scalar(
+                select(models.DBPolicyClass).where(models.DBPolicyClass.class_id==2))
             self.email = 'first@last.iv'
             self.db_user = models.DBUser(
                 user_id=self.user_id,
@@ -145,14 +137,8 @@ class TestAuthenticateWithPassword(TestCase):
         self.user_id = '5'
         with temporary_db(self.db, drop=False) as session:
             # We have a good old-fashioned user.
-            self.user_class = models.DBPolicyClass(
-                class_id=2,
-                name='Public user',
-                description='foo',
-                password_storage=2,
-                recovery_policy=3,
-                permanent_login=1
-            )
+            self.user_class = session.scalar(
+                select(models.DBPolicyClass).where(models.DBPolicyClass.class_id==2))
             self.email = 'first@last.iv'
             self.db_user = models.DBUser(
                 user_id=self.user_id,

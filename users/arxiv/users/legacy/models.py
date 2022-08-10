@@ -118,6 +118,15 @@ class DBPolicyClass(db.Model):
     permanent_login = Column(Integer, nullable=False,
                              server_default=text("'0'"))
 
+    @staticmethod
+    def insert_policy_classes(session) -> None:
+        data = session.query(DBPolicyClass).all()
+        if data:
+            return
+
+        for datum in DBPolicyClass.POLICY_CLASSES:
+            session.add(DBPolicyClass(**datum))
+
 
 class DBUserPassword(db.Model):
     """Legacy password table."""
