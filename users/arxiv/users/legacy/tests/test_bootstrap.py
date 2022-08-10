@@ -71,7 +71,7 @@ class TestBootstrap(TestCase):
                         endorsement_domain='test_domain'
                     ))
 
-            COUNT = 50
+            COUNT = 100
 
             cls.users = []
 
@@ -204,7 +204,7 @@ class TestBootstrap(TestCase):
                     cls.users.append((
                         email, username, password, name,
                         (archive, subject_class, net_points),
-                        (approved, deleted, banned),
+                        (approved, deleted, banned, username_is_valid),
                     ))
 
     @classmethod
@@ -219,36 +219,11 @@ class TestBootstrap(TestCase):
         with self.app.app_context():
             for datum in self.users:
                 email, username, password, name, endorsement, status = datum
-                approved, deleted, banned = status
+                approved, deleted, banned, username_is_valid = status
 
-                # Approved users may log in.
-                if approved and not deleted and not banned:
-                    user, auths = authenticate.authenticate(email, password)
-                    self.assertIsInstance(user, domain.User,
-                                          "User data is returned")
-                    self.assertEqual(user.email, email,
-                                     "Email is set correctly")
-                    self.assertEqual(user.username, username,
-                                     "Username is set correctly")
-
-                    first_name, last_name, suffix_name = name
-                    self.assertEqual(user.name.forename, first_name,
-                                     "Forename is set correctly")
-                    self.assertEqual(user.name.surname, last_name,
-                                     "Surname is set correctly")
-                    self.assertEqual(user.name.suffix, suffix_name,
-                                     "Suffix is set correctly")
-                    self.assertIsInstance(auths, domain.Authorizations,
-                                          "Authorizations data are returned")
-                    if endorsement[2] > 0:
-                        self.assertTrue(auths.endorsed_for(
-                            domain.Category(
-                                f'{endorsement[0]}.{endorsement[1]}'
-                            )
-                        ), "Endorsements are included in authorizations")
 
                 # Banned or deleted users may not log in.
-                elif deleted or banned:
+                if deleted or banned:
                     with self.assertRaises(exceptions.AuthenticationFailed):
                         authenticate.authenticate(email, password)
                     continue
@@ -258,6 +233,39 @@ class TestBootstrap(TestCase):
                     with self.assertRaises(exceptions.AuthenticationFailed):
                         authenticate.authenticate(email, password)
                     continue
+
+                # username not valid may not log in
+                elif not username_is_valid:
+                    print( f"USERNAME_IS_VALID: {datum}")
+                    with self.assertRaises(exceptions.AuthenticationFailed):
+                        authenticate.authenticate(email, password)
+                    continue
+
+                # Approved users may log in.
+                assert approved and not deleted and not banned and username_is_valid
+                user, auths = authenticate.authenticate(email, password)
+                self.assertIsInstance(user, domain.User,
+                                      "User data is returned")
+                self.assertEqual(user.email, email,
+                                 "Email is set correctly")
+                self.assertEqual(user.username, username,
+                                 "Username is set correctly")
+
+                first_name, last_name, suffix_name = name
+                self.assertEqual(user.name.forename, first_name,
+                                 "Forename is set correctly")
+                self.assertEqual(user.name.surname, last_name,
+                                 "Surname is set correctly")
+                self.assertEqual(user.name.suffix, suffix_name,
+                                 "Suffix is set correctly")
+                self.assertIsInstance(auths, domain.Authorizations,
+                                      "Authorizations data are returned")
+                if endorsement[2] > 0:
+                    self.assertTrue(auths.endorsed_for(
+                        domain.Category(
+                            f'{endorsement[0]}.{endorsement[1]}'
+                        )
+                    ), "Endorsements are included in authorizations")
 
                 locale = _get_locale()
                 net = Internet(locale)

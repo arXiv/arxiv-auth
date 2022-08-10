@@ -8,6 +8,8 @@ import shutil
 import hashlib
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
+
 
 from .. import authenticate, exceptions, models, util
 
@@ -248,3 +250,32 @@ class TestAuthenticateWithPassword(TestCase):
         with temporary_db(self.db, create=False):
             with self.assertRaises(exceptions.AuthenticationFailed):
                 authenticate.authenticate('nobody', 'thepassword')
+
+
+    def test_bad_data(self):
+        """Test with bad data."""
+        with temporary_db(self.db, create=False):
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate('abc', '')
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate('abc', 234)
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate('abc', 'β')
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate('', 'password')
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate('β', 'password')
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate('long'*100, 'password')
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate(1234, 'password')
+
+
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate(None, None, 'abcc-something')
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate(None, None, '-something')
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate(None, None, ('long'*20) + '-something')
+            with self.assertRaises(exceptions.AuthenticationFailed):
+                authenticate.authenticate(None, None, '1234-' + 40 * 'long')

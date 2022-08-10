@@ -22,7 +22,6 @@ from .exceptions import NoSuchUser, AuthenticationFailed, \
 logger = logging.getLogger(__name__)
 
 PassData = Tuple[DBUser, DBUserPassword, DBUserNickname, DBProfile]
-TokenData = Tuple[DBUser, DBPermanentToken, DBUserNickname, DBProfile]
 
 
 def authenticate(username_or_email: Optional[str] = None,
@@ -55,24 +54,25 @@ def authenticate(username_or_email: Optional[str] = None,
         Unable to connect to DB.
     """
     try:
-        # Users may log in using either their username or their email address.
         if username_or_email and password:
-            db_user, _, db_nick, db_profile \
-                = _authenticate_password(username_or_email, password)
+            passdata = _authenticate_password(username_or_email, password)
         # The "tapir permanent token" is effectively a bearer token. If passed,
         # a new session will be "automatically" created (from the user's
         # perspective).
         elif token:
-            db_user, _, db_nick, db_profile = _authenticate_token(token)
-
+            db_token = _authenticate_token(token)
+            passdata = _get_user_by_user_id(db_token.user_id)
         else:
             logger.debug('Neither username/password nor token provided')
             raise AuthenticationFailed('Username+password or token required')
     except OperationalError as e:
+        # Note OperationalError can be a lot of different things and not just
+        # the DB being unavailable. So this message can be deceptive.
         raise Unavailable('Database is temporarily unavailable') from e
     except Exception as ex:
         raise AuthenticationFailed() from ex
-    logger.debug('authenticate: got profile %s', db_profile)
+
+    db_user, _, db_nick, db_profile = passdata
     user = domain.User(
         user_id=str(db_user.user_id),
         username=db_nick.nickname,
@@ -93,7 +93,7 @@ def authenticate(username_or_email: Optional[str] = None,
     return user, auths
 
 
-def _authenticate_token(token: str) -> TokenData:
+def _authenticate_token(token: str) -> DBPermanentToken:
     """
     Authenticate using a permanent token.
 
@@ -153,39 +153,80 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
     logger.debug(f'Authenticate with password, user: {username_or_email}')
 
     if not password:
-        raise RuntimeError('Passed empty password')
+        raise ValueError('Passed empty password')
     if not isinstance(password, str):
-        raise RuntimeError('Passed non-str password: {type(password)}')
+        raise ValueError('Passed non-str password: {type(password)}')
     if not is_ascii(password):
-        raise RuntimeError('Password non-ascii password')
+        raise ValueError('Password non-ascii password')
 
     if not username_or_email:
-        raise RuntimeError('Passed empty username_or_email')
+        raise ValueError('Passed empty username_or_email')
     if not isinstance(password, str):
-        raise RuntimeError('Passed non-str username_or_email: {type(username_or_email)}')
+        raise ValueError('Passed non-str username_or_email: {type(username_or_email)}')
     if len(username_or_email) > 255:
-        raise RuntimeError(f'Passed username_or_email too long: len {len(username_or_email)}')
+        raise ValueError(f'Passed username_or_email too long: len {len(username_or_email)}')
     if not is_ascii(username_or_email):
-        raise RuntimeError('Passed non-ascii username_or_email')
+        raise ValueError('Passed non-ascii username_or_email')
 
-    try:
-        db_user, db_pass, db_nick, db_profile \
-            = _get_user_by_username(username_or_email)
-        logger.debug('profile: %s', db_profile)
-    except NoSuchUser as e:
-        logger.debug(f'No such user: {username_or_email}')
-        raise AuthenticationFailed('Invalid username or password') from e
+    if '@' in username_or_email:
+        passdata = _get_user_by_email(username_or_email)
+    else:
+        passdata = _get_user_by_username(username_or_email)
+
+    db_user, db_pass, db_nick, db_profile = passdata
     logger.debug(f'Got user with user_id: {db_user.user_id}')
     try:
-        check_password(password, db_pass.password_enc)
+        if check_password(password, db_pass.password_enc):
+            return passdata
     except PasswordAuthenticationFailed as e:
         raise AuthenticationFailed('Invalid username or password') from e
-    return db_user, db_pass, db_nick, db_profile
 
 
-def _get_user_by_username(username_or_email: str) -> PassData:
+def _get_user_by_user_id(user_id: int) -> PassData:
+    tapir_user: DBUser = db.session.query(DBUser) \
+        .filter(DBUser.user_id == int(user_id)) \
+        .filter(DBUser.flag_approved == 1) \
+        .filter(DBUser.flag_deleted == 0) \
+        .filter(DBUser.flag_banned == 0) \
+        .first()
+    return _get_passdata(tapir_user)
+
+
+def _get_user_by_email(email: str) -> PassData:
+    if not email or '@' not in email:
+        raise ValueError("must be an email address")
+    tapir_user: DBUser = db.session.query(DBUser) \
+        .filter(DBUser.email == email) \
+        .filter(DBUser.flag_approved == 1) \
+        .filter(DBUser.flag_deleted == 0) \
+        .filter(DBUser.flag_banned == 0) \
+        .first()
+    return _get_passdata(tapir_user)
+
+
+def _get_user_by_username(username: str) -> PassData:
+    """Username is the tapir nickname."""
+    if not username or '@' in username:
+        raise ValueError("username must not contain a @")
+    tapir_nick = db.session.query(DBUserNickname) \
+            .filter(DBUserNickname.nickname == username) \
+            .filter(DBUserNickname.flag_valid == 1) \
+            .first()
+    if not tapir_nick:
+        raise NoSuchUser('User lacks a nickname')
+
+    tapir_user = db.session.query(DBUser) \
+                .filter(DBUser.user_id == tapir_nick.user_id) \
+                .filter(DBUser.flag_approved == 1) \
+                .filter(DBUser.flag_deleted == 0) \
+                .filter(DBUser.flag_banned == 0) \
+                .first()
+    return _get_passdata(tapir_user)
+
+
+def _get_passdata(tapir_user: DBUser) -> PassData:
     """
-    Retrieve user data by username or email address.
+    Retrieve password, nick name and profile data
 
     Parameters
     ----------
@@ -206,37 +247,22 @@ def _get_user_by_username(username_or_email: str) -> PassData:
         Raised when other problems arise.
 
     """
-    tapir_user: DBUser = db.session.query(DBUser) \
-        .filter(DBUser.email == username_or_email) \
-        .filter(DBUser.flag_approved == 1) \
-        .filter(DBUser.flag_deleted == 0) \
-        .filter(DBUser.flag_banned == 0) \
-        .first()
-    if tapir_user:
-        tapir_nick: DBUserNickname = db.session.query(DBUserNickname) \
-            .filter(DBUserNickname.user_id == tapir_user.user_id) \
-            .filter(DBUserNickname.flag_primary == 1) \
-            .first()
-    else:   # Usernames are stored in a separate table
-        tapir_nick = db.session.query(DBUserNickname) \
-            .filter(DBUserNickname.nickname == username_or_email) \
-            .filter(DBUserNickname.flag_valid == 1) \
-            .first()
-        if tapir_nick:
-            tapir_user = db.session.query(DBUser) \
-                .filter(DBUser.user_id == tapir_nick.user_id) \
-                .filter(DBUser.flag_approved == 1) \
-                .filter(DBUser.flag_deleted == 0) \
-                .filter(DBUser.flag_banned == 0) \
-                .first()
-
     if not tapir_user:
         raise NoSuchUser('User does not exist')
+
+    tapir_nick = db.session.query(DBUserNickname) \
+            .filter(DBUserNickname.user_id ==tapir_user.user_id) \
+            .filter(DBUserNickname.flag_valid == 1) \
+            .first()
+    if not tapir_nick:
+        raise NoSuchUser('User lacks a nickname')
+
     tapir_password: DBUserPassword = db.session.query(DBUserPassword) \
         .filter(DBUserPassword.user_id == tapir_user.user_id) \
         .first()
     if not tapir_password:
-        raise RuntimeError(f'Missing password for {username_or_email}')
+        raise RuntimeError(f'Missing password')
+
     tapir_profile: DBProfile = db.session.query(DBProfile) \
         .filter(DBProfile.user_id == tapir_user.user_id) \
         .first()
@@ -258,13 +284,13 @@ def _invalidate_token(user_id: str, secret: str) -> None:
         Raised when the token or user cannot be found.
 
     """
-    _, db_token, _, _ = _get_token(user_id, secret)
+    db_token = _get_token(user_id, secret)
     db_token.valid = 0
     db.session.add(db_token)
     db.session.commit()
 
 
-def _get_token(user_id: str, secret: str, valid: int = 1) -> TokenData:
+def _get_token(user_id: str, secret: str) -> DBPermanentToken:
     """
     Retrieve a user's permanent token.
 
@@ -279,10 +305,7 @@ def _get_token(user_id: str, secret: str, valid: int = 1) -> TokenData:
 
     Returns
     -------
-    :class:`.DBUser`
     :class:`.DBPermanentToken`
-    :class:`.DBUserNickname`
-    :class:`.DBProfile`
 
     Raises
     ------
@@ -290,24 +313,21 @@ def _get_token(user_id: str, secret: str, valid: int = 1) -> TokenData:
         Raised when the token or user cannot be found.
 
     """
+    if not user_id.isdigit():
+        raise ValueError("user_id must be digits")
+    if not user_id:
+        raise ValueError("user_id must not be empty")
+    if len(user_id) > 50:
+        raise ValueError("user_id too long")
+    if len(secret) > 40:
+        raise ValueError("secret too long")
+
     db_token: DBPermanentToken = db.session.query(DBPermanentToken) \
         .filter(DBPermanentToken.user_id == user_id) \
         .filter(DBPermanentToken.secret == secret) \
-        .filter(DBPermanentToken.valid == valid) \
+        .filter(DBPermanentToken.valid == 1) \
         .first()    # The token must still be valid.
     if not db_token:
         raise NoSuchUser('No such token')
-    if db_token:
-        db_user: DBUser = db.session.query(DBUser) \
-            .filter(DBUser.user_id == user_id) \
-            .first()
-    if not db_user:
-        raise NoSuchUser('No user with passed token exists')
-    db_nick: DBUserNickname = db.session.query(DBUserNickname) \
-        .filter(DBUserNickname.user_id == db_user.user_id) \
-        .filter(DBUserNickname.flag_primary == 1) \
-        .first()
-    tapir_profile: DBProfile = db.session.query(DBProfile) \
-        .filter(DBProfile.user_id == db_user.user_id) \
-        .first()
-    return db_user, db_token, db_nick, tapir_profile
+    else:
+        return db_token
