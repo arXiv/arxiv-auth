@@ -1,6 +1,8 @@
 """
 Controllers for registration and user profile management.
 
+WORK IN PROGRESS: not in use.
+
 Users are able to create a new arXiv account, and login using their username
 and password. Each user can create a personalized profile with contact and
 affiliation information, and links to external identities such as GitHub and
@@ -16,7 +18,7 @@ from arxiv.users import domain
 from arxiv.base import logging
 from arxiv.users import domain
 
-from accounts.services import SessionStore
+from arxiv.users.auth.sessions import SessionStore
 
 from wtforms import StringField, PasswordField, SelectField, \
     BooleanField, Form, HiddenField

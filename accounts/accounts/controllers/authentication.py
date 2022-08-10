@@ -26,7 +26,8 @@ from arxiv import status
 from arxiv.base import logging
 
 from arxiv.users.domain import User, Authorizations, Session
-from accounts.services import SessionStore
+
+from arxiv.users.auth.sessions import SessionStore
 
 from arxiv.users.legacy import exceptions, sessions as legacy_sessions
 from arxiv.users.legacy.authenticate import authenticate
