@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "arxiv-accounts"
+version = "1.0.0"
+description = "common auth parts of arXiv"
+authors = ["arxiv.org"]
+
+[tool.poetry.dependencies]
+python = "3.10"
+arxiv-base = "^1.0.0a2"
+arxiv-auth = { path = "./users", develop = true}
+bleach = "^3.3.0"
+captcha = "^0.4"
+celery = "^5.1.2"
+cryptography = "^3.3.2"
+email-validator = "^1.2.1"
+jsonschema = "^4.9.1"
+openapi-spec-validator = "^0.5.0a2"
+pillow = "^9.2.0"
+pycountry = "^22.3.5"
+python-dateutil = "^2.8.2"
+pyyaml = "^5.4"
+redis = "^2.10.6"
+redis-py-cluster = "^1.3.6"
+requests = "^2.28.1"
+urllib3 = "^1.26.11"
+
+[tool.poetry.dev-dependencies]
+mimesis = "*"
+mypy = "*"
+pydocstyle = "*"
+pylint = "*"
+coverage = "*"
+coveralls = "*"
+pytest = "*"
+pytest-cov = "*"
+astroid = "*"
+"nose2" = "*"
+
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
