@@ -97,7 +97,7 @@ def unpack(token: str, secret: str, ip_address: str) -> str:
     """
     logger.debug('Unpack captcha token, %s', token)
     try:
-        claims: Mapping[str, Any] = jwt.decode(token.encode('ascii'),
+        claims: Mapping[str, Any] = jwt.decode(token,
                                                _secret(secret, ip_address),
                                                algorithms=['HS256'])
         logger.debug('Unpacked captcha token: %s', claims)
@@ -139,7 +139,7 @@ def new(secret: str, ip_address: str, expires: int = 300) -> str:
         'value': _generate_random_string(),
         'expires': (datetime.now(tz=UTC) + timedelta(seconds=300)).isoformat()
     }
-    return jwt.encode(claims, _secret(secret, ip_address)).decode('ascii')
+    return jwt.encode(claims, _secret(secret, ip_address))
 
 
 def render(token: str, secret: str, ip_address: str,

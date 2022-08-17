@@ -11,7 +11,7 @@ from flask import Flask
 
 from arxiv import status
 
-from arxiv.users.legacy import util, models
+from arxiv_auth.legacy import util, models
 
 from accounts.factory import create_web_app
 

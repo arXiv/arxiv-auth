@@ -1,136 +1,69 @@
 [![Build Status](https://img.shields.io/travis/arxiv/arxiv-auth/master.svg)](https://travis-ci.org/arxiv/arxiv-auth) [![Coverage Status](https://img.shields.io/coveralls/github/arXiv/arxiv-auth/master.svg)](https://coveralls.io/github/arXiv/arxiv-auth?branch=master)
 
-# arXiv Accounts
+# arXiv Auth
 
-This project provides applications and libraries to support authentication and
+This repo provides applications and libraries to support authentication and
 authorization, including account creation and login, user sessions, and API
 token management.
 
 There are currently four pieces of software in this repository:
 
-1. [``users/``](users/) contains the ``arxiv.users``
+1. [``arxiv-auth/``](arxiv-auth/) contains the ``arxiv-auth``
    package which provides core authentication and authorization
-   functionality and domain classes.  This includes integrations with
+   functionality and domain classes. This includes integrations with
    the legacy database for user accounts and sessions. This is
    intended to be used by NG systems to ensure consistency and avoid
    code reuse.
 2. [``accounts/``](accounts/) contains a service that provides the
    main UIs for registration, the login/logout pages, profile management, etc.
 3. [``authenticator/``](authenticator/) **Not in use** contains the
-   authenticator service.  Handles authentication requests from NGINX
+   authenticator service. Handles authentication requests from NGINX
    in a cloud deployment scenario.
 4. [``registry/``](registry/) **Not in use** contains the API client
-   registry application.  This implements OAuth2 workflows, client
+   registry application. This implements OAuth2 workflows, client
    registration, and the root API landing page.
 
 TLS is considered an infrastructure concern, and is therefore out of scope
 (albeit critical) for this project.
 
-## TODO
-
-- Password reset in ``arxiv.users.legacy.accounts`` and in the accounts
-  service.
-- Support for permanent login token.
-- Clean up and document authenticator service.
-
-## Updates
-
-- Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
-  application config to rename ``request.session`` to ``request.auth``.
-  ``request.auth`` will be the default name for the authenticated session
-  starting in v0.4.1.
-
-## Dependencies
-We use pipenv to manage dependencies. To install the dependencies for this
-project, run ``pipenv install`` in the root of this repository.
-
-Note that the ``Pipfile`` does contain a reference to the
-``arxiv.users`` package, which is located in ``users/``. This allows
-you to test against the code in your current branch, install the
-package directly with ``pipenv install ./users``.
-
-In the past it did not contain a reference to ``arxiv.users`` and you
-could either install this from pypi or from ./users. This was changed
-by Erick P. in 2019-06.
-
-## Testing
-
-Each of the applications/packages in this repository has its own test suite.
-
-You can run everything together with:
-
+# How to get started
+## `arxiv-auth`
+The [``arxiv-auth/``](arxiv-auth/) directory contains the
+``arxiv-auth`` package that is uploaded to pypi. 
 ```bash
-pipenv run pytest \
-    --cov=accounts \
-    --cov=users/arxiv \
-    --cov-report=term-missing \
-    accounts users/arxiv
+cd arxiv-auth
+pip install poetry
+poetry install  # installs to a venv
+poetry shell    # activates the venv
+pytest 
 ```
 
-To enable integration + end-to-end tests with Redis, run:
+## `accounts`
+The [``accounts/``](accounts/) directory contains a flask web app for
+the `/login` and other pages.
+
 
 ```bash
-WITH_INTEGRATION=1 pipenv run pytest \
-    --cov=accounts \
-    --cov=users/arxiv \
-    --cov-report=term-missing \
-    accounts users/arxiv
+cd accounts/
+pip install poetry
+poetry install  # installs to a venv
+poetry shell    # activates the venv
+pytest 
 ```
 
-Note that this requires Docker to be running, and port 7000 to be free on your
-machine.
+### Local development + manual testing
 
+You can start the accounts service in a manner similar to other Flask
+apps. You will need to run Redis, which is most easily achieved using
+Docker. You'll need to start a local Redis instance, and map your
+host port 7000-7006 to the Redis instance. We're running Redis in
+cluster mode; the image used in this example is for dev/test purposes
+only.
 
-### ``arxiv.users``
-
-You can run the tests for the ``arxiv.users`` package with:
-
-```bash
-pipenv run pytest --cov=users/arxiv --cov-report=term-missing users/arxiv
-```
-
-### Accounts service
-
-You can run tests for the accounts service with:
-
-```bash
-pipenv run pytest --cov=accounts --cov-report=term-missing accounts
-```
-
-To run integration and end-to-end tests with a live Redis, use:
-
-```bash
-WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov-report=term-missing accounts
-```
-
-Note that this requires Docker to be running, and port 7000 to be free on your
-machine.
-
-## Local development + manual testing
-
-You can start the accounts service in a manner similar to other Flask apps.
-You will need to run Redis, which is most easily achieved using Docker:
-
-```bash
-docker run -d \
- -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003 -p 7004:7004 -p 7005:7005 -p 7006:7006 \
- -e "IP=0.0.0.0" --hostname=server grokzen/redis-cluster:4.0.9
-```
-
-This will start a local Redis instance, and map your host port 7000-7006 to the
-Redis instance.
-
-Note: we're running Redis in cluster mode; the image used in this example
-is for dev/test purposes only.
-
-```bash
-pipenv install --dev
-```
-
-You will also need to decide what you want to use for the legacy user and
-session database backend. For local development/testing purposes, it's fine to
-use an on-disk SQLite database. You should also be able to use a local MySQL
-instance with a clone of the legacy database.
+You will also need to decide what you want to use for the legacy user
+and session database backend. For local development/testing purposes,
+it's fine to use an on-disk SQLite database. You should also be able
+to use a local MySQL instance with a clone of the legacy database.
 
 If you are starting with SQLite and don't already have a DB with users in it,
 you can use the ``accounts/create_user.py`` script. Note that this is for local
@@ -138,7 +71,15 @@ dev/testing purposes only, and should never be used on a production DB ever
 under any circumstances with no exceptions.
 
 ```bash
-CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=accounts/app.py FLASK_DEBUG=1 pipenv run python accounts/create_user.py
+docker run -d \
+ -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7003:7003 -p 7004:7004 -p 7005:7005 -p 7006:7006 \
+ -e "IP=0.0.0.0" --hostname=server grokzen/redis-cluster:4.0.9
+
+poetry install
+poetry shell
+
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=accounts/app.py FLASK_DEBUG=1 \
+ python accounts/create_user.py
 ```
 
 You should be prompted to enter some profile details. Note that this currently
@@ -147,24 +88,26 @@ selects your default category and groups at random.
 Then start the Flask dev server with:
 
 ```bash
-CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=accounts/app.py FLASK_DEBUG=1 pipenv run flask run
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=accounts/app.py FLASK_DEBUG=1 \
+ flask run
 ```
 
 To use MySQL/MariaDB:
 
 ```bash
+poetry shell
 CLASSIC_DATABASE_URI=mysql+mysqldb://[USERNAME]:[PASSWORD]@localhost:3306/[DATABASE] \
- FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+ FLASK_APP=app.py FLASK_DEBUG=1 flask run
 ```
 
-Set the username, password, and database to whatever you're using. If the DB
-structure does not already exist, the user will need to be able to create
-tables. Otherwise conventional read/write access should be sufficient.
+Set the username, password, and database to whatever you're using. If
+the DB structure does not already exist, you will need to be able to
+create tables. Conventional read/write access should be sufficient.
 
 You should be able to register a new user at
 http://localhost:5000/register.
 
-## Generating auth tokens
+# Generating auth tokens
 
 Use the helper script ``generate_token.py`` to generate auth tokens for
 dev/testing purposes.
@@ -172,7 +115,6 @@ dev/testing purposes.
 Be sure that you are using the same secret when running this script as when you
 run the app. Set ``JWT_SECRET=somesecret`` in your environment to ensure that
 the same secret is always used.
-
 
 ```bash
 $ JWT_SECRET=foosecret pipenv run python generate_token.py
@@ -193,21 +135,33 @@ Authorization scope (comma delim) [upload:read,upload:write,upload:admin]:
 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiZTljMGQwMDUtMTk1My00YWRiLWE0YzEtYzdmNWY1OGM5YTk4Iiwic3RhcnRfdGltZSI6IjIwMTgtMDgtMDlUMTQ6NDg6MDguNzY2NjUzLTA0OjAwIiwidXNlciI6eyJ1c2VybmFtZSI6ImVyaWNrIiwiZW1haWwiOiJlcmlja0Bmb28uY29tIiwidXNlcl9pZCI6IjQiLCJuYW1lIjp7ImZvcmVuYW1lIjoiSmFuZSIsInN1cm5hbWUiOiJEb2UiLCJzdWZmaXgiOiJJViJ9LCJwcm9maWxlIjp7ImFmZmlsaWF0aW9uIjoiQ29ybmVsbCBVbml2ZXJzaXR5IiwiY291bnRyeSI6InVzIiwicmFuayI6Mywic3VibWlzc2lvbl9ncm91cHMiOlsiZ3JwX3BoeXNpY3MiXSwiZGVmYXVsdF9jYXRlZ29yeSI6eyJhcmNoaXZlIjoiYXN0cm8tcGgiLCJzdWJqZWN0IjoiR0EifSwiaG9tZXBhZ2VfdXJsIjoiIiwicmVtZW1iZXJfbWUiOnRydWV9fSwiY2xpZW50IjpudWxsLCJlbmRfdGltZSI6IjIwMTgtMDgtMTBUMDA6NDg6MDguNzY2NjUzLTA0OjAwIiwiYXV0aG9yaXphdGlvbnMiOnsiY2xhc3NpYyI6MCwiZW5kb3JzZW1lbnRzIjpbW1siYXN0cm8tcGgiLCJDTyJdLG51bGxdLFtbImFzdHJvLXBoIiwiR0EiXSxudWxsXV0sInNjb3BlcyI6W1sidXBsb2FkOnJlYWQiLCJ1cGxvYWQ6d3JpdGUiLCJ1cGxvYWQ6YWRtaW4iXV19LCJpcF9hZGRyZXNzIjpudWxsLCJyZW1vdGVfaG9zdCI6bnVsbCwibm9uY2UiOm51bGx9.aOgRj73TT-zsRvF7gnPPjplJzcnXkKzYzEvMB61jEsY
 ```
 
-
 Start the dev server with:
 
 ```bash
 $ JWT_SECRET=foosecret FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
 ```
 
-
 Use the (rather long) token in your requests to authorized endpoints. Set the
-header ``Authorization: [token]``.  There are apps that will do this for you.
-For Chrome, try [Requestly](https://chrome.google.com/webstore/detail/requestly-redirect-url-mo/mdnleldcmiljblolnjhpnblkcekpdkpa?hl=en>)
-or
-[ModHeader](https://chrome.google.com/webstore/detail/modheader/idgpnmonknjnojddfkpgkljpfnnfcklj?hl=en)
+header ``Authorization: [token]``. There are apps that will do this for you.
+For Chrome, try [Requestly](https://chrome.google.com/webstore/detail/requestly-redirect-url-mo/mdnleldcmiljblolnjhpnblkcekpdkpa?hl=en>) or [ModHeader](https://chrome.google.com/webstore/detail/modheader/idgpnmonknjnojddfkpgkljpfnnfcklj?hl=en)
 
-## Code style
+# TODO
+
+- Password reset in ``arxiv.users.legacy.accounts`` and in the accounts
+  service.
+- Support for permanent login token.
+- Investigate the state of the accounts user registration and clean up, test and document if useful.
+- Investigate the state of the authenticator service and clean up, test and document if useful.
+- Investigate the state of the registry service and clean up, test and document if useful.
+
+# Updates
+
+- Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
+  application config to rename ``request.session`` to ``request.auth``.
+  ``request.auth`` will be the default name for the authenticated session
+  starting in v0.4.1.
+
+# Code style
 
 All new code should adhere as closely as possible to
 [PEP008](https://www.python.org/dev/peps/pep-0008/).
@@ -215,7 +169,7 @@ All new code should adhere as closely as possible to
 Use the [Numpy style](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt)
 for docstrings.
 
-### Linting
+## Linting
 
 Use [Pylint](https://www.pylint.org/) to check your code prior to raising a
 pull request. The parameters below will be used when checking code  cleanliness
@@ -245,7 +199,7 @@ accounts/services/things.py:49: [E1101(no-member), get_a_thing] Instance of 'sco
 Your code has been rated at 9.49/10 (previous run: 9.41/10, +0.07)
 ```
 
-### Docstyle
+## Docstyle
 To verify the documentation style, use the tool
 [PyDocStyle](http://www.pydocstyle.org/en/2.1.1/)
 

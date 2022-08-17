@@ -82,13 +82,6 @@ def load(cookie: str) -> domain.Session:
 
     data: Tuple[DBUser, DBSession, DBUserNickname, DBProfile]
     try:
-        # data = db.session.query(DBUser, DBSession, DBUserNickname, DBProfile) \
-        #     .filter(DBUser.user_id == user_id) \
-        #     .filter(DBUserNickname.user_id == user_id) \
-        #     .filter(DBSession.user_id == user_id) \
-        #     .filter(DBSession.session_id == session_id) \
-        #     .filter(DBProfile.user_id == user_id) \
-        #     .first()
         data = db.session.query(DBUser, DBSession, DBUserNickname, DBProfile) \
             .join(DBSession).join(DBUserNickname).join(DBProfile) \
             .filter(DBUser.user_id == user_id) \
@@ -201,10 +194,11 @@ def generate_cookie(session: domain.Session) -> str:
 
     """
     if session.user is None \
-            or session.user.user_id is None \
-            or session.ip_address is None \
-            or session.authorizations is None:
+       or session.user.user_id is None \
+       or session.ip_address is None \
+       or session.authorizations is None:
         raise RuntimeError('Cannot generate cookie without an authorized user')
+
     return cookies.pack(str(session.session_id), session.user.user_id,
                         session.ip_address, session.start_time,
                         str(session.authorizations.classic))

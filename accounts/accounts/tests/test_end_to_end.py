@@ -12,7 +12,7 @@ from urllib.parse  import quote_plus
 
 from arxiv import status
 #from accounts.services import legacy, users
-from arxiv.users.legacy import util, models
+from arxiv_auth.legacy import util, models
 from accounts.factory import create_web_app
 
 

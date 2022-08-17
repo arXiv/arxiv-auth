@@ -25,13 +25,13 @@ from retry import retry
 from arxiv import status
 from arxiv.base import logging
 
-from arxiv.users.domain import User, Authorizations, Session
+from arxiv_auth.domain import User, Authorizations, Session
 
-from arxiv.users.auth.sessions import SessionStore
+from arxiv_auth.auth.sessions import SessionStore
 
-from arxiv.users.legacy import exceptions, sessions as legacy_sessions
-from arxiv.users.legacy.authenticate import authenticate
-from arxiv.users.legacy.util import transaction
+from arxiv_auth.legacy import exceptions, sessions as legacy_sessions
+from arxiv_auth.legacy.authenticate import authenticate
+from arxiv_auth.legacy.util import transaction
 
 from accounts import config
 

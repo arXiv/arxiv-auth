@@ -8,7 +8,7 @@ evolves.
 Environment
 -----------
 End users interact with the arXiv platform primarily via a web browser, on
-either a desktop or a mobile device. During the arXiv-NG project, users may
+either a desktop or a mobile device. During the arXiv project, users may
 interact with components deployed in on-premises infrastructure, or
 running in cloud providers.
 
@@ -119,7 +119,7 @@ protection functionality in :mod:`arxiv.forms.csrf`.
 
 Input sanitization
 ^^^^^^^^^^^^^^^^^^
-We use :mod:`wtforms` for all form-handling in arXiv-NG applications. By
+We use :mod:`wtforms` for all form-handling in arXiv applications. By
 default, WTForms uses `MarkupSafe <https://github.com/pallets/markupsafe>`_ to
 escape unsafe HTML in all form input. This means that form data accessed in
 templates and other locations should be safe for display without risk of
@@ -178,7 +178,7 @@ Discontinue use of permanent login tokens
 The legacy system supports a "remember me" token that is stored as a secure
 cookie on the user's browser. This permanent login token bypasses password
 authentication, and is valid at any IP address. The permanent login token will
-be discontinued in arXiv-NG.
+be discontinued in arXiv.
 
 Captcha
 ^^^^^^^

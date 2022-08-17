@@ -6,14 +6,14 @@ from flask_s3 import FlaskS3
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
 
-from arxiv.users import auth
-from arxiv.users.auth.middleware import AuthMiddleware
+from arxiv_auth import auth
+from arxiv_auth.auth.middleware import AuthMiddleware
 
 from accounts.routes import ui
 
-from arxiv.users.auth.sessions import SessionStore
-from arxiv.users.legacy.util import init_app as legacy_init_app
-from arxiv.users.legacy.util import create_all as legacy_create_all
+from arxiv_auth.auth.sessions import SessionStore
+from arxiv_auth.legacy.util import init_app as legacy_init_app
+from arxiv_auth.legacy.util import create_all as legacy_create_all
 
 s3 = FlaskS3()
 

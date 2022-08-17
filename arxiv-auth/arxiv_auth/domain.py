@@ -1,4 +1,4 @@
-"""Defines user concepts for use in arXiv-NG services."""
+"""Defines user concepts for use in arXiv services."""
 
 
 from typing import Any, Optional, List, NamedTuple

@@ -1,13 +1,6 @@
 """Integration tests for the session_store session store with Redis."""
 
 from unittest import TestCase, mock
-import subprocess
-import time
-import json
-
-import os
-import redis
-import rediscluster
 import jwt
 
 from .... import domain
@@ -16,8 +9,6 @@ from .. import store
 
 class TestDistributedSessionServiceIntegration(TestCase):
     """Test integration with Redis."""
-
-    __test__ = int(bool(os.environ.get('WITH_INTEGRATION', False)))
 
     @classmethod
     def setUpClass(self):

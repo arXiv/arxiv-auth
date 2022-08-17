@@ -1,7 +1,23 @@
-"""Provides functions for working with legacy session cookies."""
+"""Provides functions for working with legacy session cookies.
+
+The legacy cookie is 6 parts seperated with ':'.
+
+The parts are:
+1. session id
+2. tapir_users.user_id
+3. ip the session was started at
+4. time issued at as unix epoch
+5. 'capacilites'
+6. b64 encoced sha1 hash of parts 1-5
+
+In a way it is similar to a JWT where parts 1-5 are similar to the JWT
+payload, though fixed in strucutre, and part 6 forms the signature.
+
+Parts 1-5 are not b64 encoded.
+"""
 
 from typing import Tuple
-from base64 import b64encode, b64decode
+from base64 import b64encode
 import hashlib
 from datetime import datetime, timedelta
 

@@ -3,7 +3,7 @@
 from typing import Tuple, Optional
 from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import BadRequest
-from arxiv.users import domain
+from arxiv_auth import domain
 from arxiv import status
 from accounts import stateless_captcha
 

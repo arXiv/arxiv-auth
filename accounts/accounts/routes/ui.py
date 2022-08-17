@@ -8,7 +8,7 @@ from flask import Blueprint, render_template, url_for, request, \
     make_response, redirect, current_app, send_file, Response
 
 from arxiv import status
-from arxiv.users import domain
+from arxiv_auth import domain
 from arxiv.base import logging
 
 from accounts.controllers import captcha_image, registration, authentication

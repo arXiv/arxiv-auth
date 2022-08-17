@@ -18,9 +18,9 @@ from pytz import timezone, UTC
 import click
 
 from arxiv import taxonomy
-from arxiv.users.legacy import models, util, sessions, authenticate, exceptions
-from arxiv.users.legacy.password import hash_password
-from arxiv.users import domain
+from arxiv_auth.legacy import models, util, sessions, authenticate, exceptions
+from arxiv_auth.legacy.password import hash_password
+from arxiv_auth import domain
 
 from accounts.factory import create_web_app
 from accounts.services import legacy, users

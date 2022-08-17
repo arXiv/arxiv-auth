@@ -1,11 +1,11 @@
 """Helpers for :mod:`accounts.controllers`."""
 from typing import Dict, Any
 
-from wtforms.widgets import ListWidget, CheckboxInput, Select, HTMLString, \
+from wtforms.widgets import ListWidget, CheckboxInput, Select, \
     html_params
 from wtforms import StringField, PasswordField, SelectField, \
     SelectMultipleField, Form
-
+from markupsafe import Markup
 
 class MultiCheckboxField(SelectMultipleField):
     """Multi-select with checkbox inputs."""
@@ -35,7 +35,7 @@ class MultiCheckboxField(SelectMultipleField):
 class OptGroupSelectWidget(Select):
     """Select widget with optgroups."""
 
-    def __call__(self, field: SelectField, **kwargs: Any) -> HTMLString:
+    def __call__(self, field: SelectField, **kwargs: Any) -> Markup:
         """Render the `select` element with `optgroup`s."""
         kwargs.setdefault('id', field.id)
         if self.multiple:
@@ -49,7 +49,7 @@ class OptGroupSelectWidget(Select):
                 html.append(option)
             html.append('</optgroup>')
         html.append('</select>')
-        return HTMLString(''.join(html))
+        return Markup(''.join(html))
 
 
 class OptGroupSelectField(SelectField):

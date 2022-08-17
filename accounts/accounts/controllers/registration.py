@@ -14,11 +14,11 @@ from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
 
 from arxiv import status
-from arxiv.users import domain
+from arxiv_auth import domain
 from arxiv.base import logging
-from arxiv.users import domain
+from arxiv_auth import domain
 
-from arxiv.users.auth.sessions import SessionStore
+from arxiv_auth.auth.sessions import SessionStore
 
 from wtforms import StringField, PasswordField, SelectField, \
     BooleanField, Form, HiddenField
@@ -32,8 +32,8 @@ from .util import MultiCheckboxField, OptGroupSelectField
 
 from .. import stateless_captcha
 
-from arxiv.users.legacy import accounts
-from arxiv.users.legacy.exceptions import RegistrationFailed, SessionCreationFailed, SessionDeletionFailed
+from arxiv_auth.legacy import accounts
+from arxiv_auth.legacy.exceptions import RegistrationFailed, SessionCreationFailed, SessionDeletionFailed
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +137,10 @@ def edit_profile(method: str, user_id: str, session: domain.Session,
         form = ProfileForm(params)
         data = {'form': form, 'user_id': user_id}
 
-        if not form.validate():
+        try:
+            if not form.validate():
+                return data, status.HTTP_400_BAD_REQUEST, {}
+        except ValueError:
             return data, status.HTTP_400_BAD_REQUEST, {}
 
         if form.user_id.data != user_id:

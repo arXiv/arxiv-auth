@@ -178,7 +178,7 @@ GENERAL_USER = [
 The default scopes afforded to an authenticated user.
 
 This static list will be deprecated by role-based access control (RBAC) at a
-later milestone of arXiv-NG.
+later milestone of arXiv.
 """
 
 _ADMIN_USER = GENERAL_USER + [
@@ -197,7 +197,7 @@ ADMIN_USER = [str(Scope.from_str(scope).as_global()) for scope in _ADMIN_USER]
 Scopes afforded to an administrator.
 
 This static list will be deprecated by role-based access control (RBAC) at a
-later milestone of arXiv-NG.
+later milestone of arXiv.
 """
 
 _HUMAN_LABELS: Dict[Scope, str] = {

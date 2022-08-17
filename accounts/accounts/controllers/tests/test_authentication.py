@@ -14,8 +14,8 @@ from werkzeug.exceptions import BadRequest
 
 from arxiv import status
 
-from arxiv.users import domain
-from arxiv.users.legacy import exceptions, util, models
+from arxiv_auth import domain
+from arxiv_auth.legacy import exceptions, util, models
 
 from accounts.factory import create_web_app
 from accounts.controllers.authentication import login, logout, LoginForm
