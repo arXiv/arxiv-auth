@@ -5,7 +5,7 @@ description = "Auth libraries for arXiv."
 authors = ["arxiv.org"]
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = "3.10"
 arxiv-base = "~=1.0.0a1"
 pycountry = "*"
 flask = "*"
