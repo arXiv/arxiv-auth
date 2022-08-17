@@ -24,6 +24,7 @@ pytest = "*"
 hypothesis = "*"
 fakeredis = "*"
 pytest-mock = "^3.8.2"
+coverage = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

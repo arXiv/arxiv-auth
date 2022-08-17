@@ -21,13 +21,17 @@ jobs:
           poetry install
       - name: Test arxiv-auth
         working-directory: ./arxiv-auth
-        run:  poetry run pytest --cov=arxiv-auth --cov-report=term-missing arxiv-auth
+        run: |
+          poetry run coverage pytest arxiv-auth
+          poetry run coverage report -m
       - name: Install accounts dependencies
         working-directory: ./accounts
         run: poetry install
       - name: Test accounts
         working-directory: ./accounts
-        run:  poetry run pytest --cov=accounts --cov-report=term-missing accounts
+        run: |
+          poetry run coverage pytest accounts
+          poetry run coverage report -m
       - name: linter
         run: |
           pip install pylint
