@@ -120,6 +120,7 @@ class DBPolicyClass(db.Model):
 
     @staticmethod
     def insert_policy_classes(session) -> None:
+        """Insert all the policy classes for legacy."""
         data = session.query(DBPolicyClass).all()
         if data:
             return

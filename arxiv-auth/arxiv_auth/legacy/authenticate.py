@@ -226,7 +226,7 @@ def _get_user_by_username(username: str) -> PassData:
 
 def _get_passdata(tapir_user: DBUser) -> PassData:
     """
-    Retrieve password, nick name and profile data
+    Retrieve password, nick name and profile data.
 
     Parameters
     ----------

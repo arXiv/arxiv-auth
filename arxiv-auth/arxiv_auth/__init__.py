@@ -1,3 +1,1 @@
-"""
-arXiv authentication and authorization tools.
-"""
+"""arXiv authentication and authorization tools."""

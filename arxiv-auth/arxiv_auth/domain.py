@@ -88,6 +88,7 @@ class Scope(str):
     """Represents an authorization policy."""
 
     def __new__(cls, domain, action=None, resource=None):
+        """Handle __new__."""
         return str.__new__(cls, cls.from_parts(domain, action, resource))
 
     @property
@@ -116,15 +117,6 @@ class Scope(str):
         parts = parts + [None] * (3 - len(parts))
         return parts
 
-
-    # def __repr__(self) -> str:
-    #     """Return this scope as a :-delimited string."""
-    #     return str(self)
-
-    # def __str__(self) -> str:
-    #     """Return this scope as a :-delimited string."""
-    #     return ":".join([o for o in [self.domain,self.action,self.resource] if o is not None])
-
     def for_resource(self, resource_id: str) -> 'Scope':
         """Create a copy of this scope with a specific resource."""
         return Scope(domain=self.domain, action=self.action, resource=resource_id)
@@ -135,15 +127,18 @@ class Scope(str):
 
     @classmethod
     def from_parts(cls, domain, action=None, resource=None):
+        """Create a scope string from parts."""
         return ":".join([o for o in [domain,action,resource] if o is not None])
 
     @classmethod
     def to_parts(cls, scopestr):
+        """Split a scop string to parts."""
         parts = scopestr.split(':')
         return parts + [None] * (3 - len(parts))
 
     @classmethod
     def from_str(cls, scopestr:str) -> "Scope":
+        """Make a Scope from a string."""
         parts = cls.to_parts(scopestr)
         return cls(domain=parts[0], action=parts[1], resource=parts[2])
 
@@ -340,6 +335,7 @@ class Session(BaseModel):
         return int(max(duration, 0))
 
     def json_safe_dict(self) -> dict:
+        """Creates a json dict with the datetimes converted to ISO datetime strs."""
         out = self.dict()
         if self.start_time:
             out['start_time'] = self.start_time.isoformat()
@@ -348,4 +344,5 @@ class Session(BaseModel):
         return out
 
 def session_from_dict(data: dict) -> Session:
+    """Create a Session from a dict."""
     return Session.parse_obj(data)

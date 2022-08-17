@@ -16,7 +16,8 @@ from arxiv_auth.legacy.util import create_all as legacy_create_all
 def create_web_app(create_db=False) -> Flask:
     """Initialize and configure test auth application.
 
-    Similar to what is in accounts/acounts/factory.py"""
+    Similar to what is in accounts/acounts/factory.py
+    """
     app = Flask('test_auth_app')
 
     SessionStore.init_app(app)
