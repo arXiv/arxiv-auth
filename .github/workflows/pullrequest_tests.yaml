@@ -19,14 +19,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           poetry install
-          poetry run coverage pytest arxiv-auth
-          poetry run coverage report -m
+          poetry run pytest --cov=arxiv_auth arxiv_auth
       - name: Install and test accounts
         working-directory: ./accounts
         run: |
           poetry install
-          poetry run coverage pytest accounts
-          poetry run coverage report -m
+          poetry run pytest --cov=accounts accounts
       - name: linter
         run: |
           pip install pylint
