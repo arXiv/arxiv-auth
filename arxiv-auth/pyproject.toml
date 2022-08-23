@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "arxiv-auth"
-version = "1.0.0rc1"
+version = "1.0.0rc2"
 description = "Auth libraries for arXiv."
 authors = ["arxiv.org"]
 
 [tool.poetry.dependencies]
-python = "3.10"
-arxiv-base = "~=1.0.0a1"
+python = "^3.10"
+arxiv-base = ">=1.0.0a3"
 pycountry = "*"
 flask = "*"
 sqlalchemy = "*"
