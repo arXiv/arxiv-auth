@@ -5,7 +5,7 @@ description = "common auth parts of arXiv"
 authors = ["arxiv.org"]
 
 [tool.poetry.dependencies]
-python = "3.10"
+python = "^3.10"
 arxiv-base = "^1.0.0a2"
 bleach = "^3.3.0"
 captcha = "^0.4"
