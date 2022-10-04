@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arxiv-auth"
-version = "1.0.0rc2"
+version = "1.0.0rc3"
 description = "Auth libraries for arXiv."
 authors = ["arxiv.org"]
 

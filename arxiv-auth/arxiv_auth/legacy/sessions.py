@@ -78,13 +78,14 @@ def load(cookie: str) -> domain.Session:
                  session_id, user_id, ip)
 
     if expires_at <= datetime.now(tz=UTC):
-        raise SessionExpired(f'Session {session_id} has expired')
+        raise SessionExpired(f'Session {session_id} has expired in cookie')
 
     data: Tuple[DBUser, DBSession, DBUserNickname, DBProfile]
     try:
         data = db.session.query(DBUser, DBSession, DBUserNickname, DBProfile) \
             .join(DBSession).join(DBUserNickname).join(DBProfile) \
             .filter(DBUser.user_id == user_id) \
+            .filter(DBSession.session_id == session_id ) \
             .first()
     except OperationalError as e:
         raise Unavailable('Database is temporarily unavailable') from e
@@ -94,10 +95,8 @@ def load(cookie: str) -> domain.Session:
 
     db_user, db_session, db_nick, db_profile = data
 
-    # Verify that the session is not expired.
     if db_session.end_time != 0 and db_session.end_time < util.now():
-        logger.info('Session has expired: %s', session_id)
-        raise SessionExpired(f'Session {session_id} has expired')
+        raise SessionExpired(f'Session {session_id} has expired in the DB')
 
     user = domain.User(
         user_id=str(user_id),
