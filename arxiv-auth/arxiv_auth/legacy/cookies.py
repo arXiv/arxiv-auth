@@ -7,7 +7,7 @@ The parts are:
 2. tapir_users.user_id
 3. ip the session was started at
 4. time issued at as unix epoch
-5. 'capacilites'
+5. capabilities
 6. b64 encoced sha1 hash of parts 1-5
 
 In a way it is similar to a JWT where parts 1-5 are similar to the JWT

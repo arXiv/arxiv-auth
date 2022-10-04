@@ -129,10 +129,12 @@ class Auth(object):
         if isinstance(session, Exception):
             logger.debug('Middleware passed an exception: %s', session)
             raise session
+
         # use legacy DB to authorize request if available
         if legacy.is_configured():
-            logger.debug('No session; attempting to get legacy from cookies')
             session = self.first_valid(self.legacy_cookies())
+        else:
+            logger.warning('No legacy DB, will not check tapir auth.')
 
         # Attach the session to the request so that other
         # components can access it easily.
@@ -153,10 +155,16 @@ class Auth(object):
 
     def first_valid(self, cookies: List[str]) -> Optional[domain.Session]:
         """First valid legacy session or None if there are none."""
-        return next(filter(bool,
-                           map(self._get_legacy_session,
-                               cookies)),
-                    None)
+        first =  next(filter(bool,
+                             map(self._get_legacy_session,
+                                 cookies)), None)
+
+        if first is None:
+            logger.debug("Out of %d cookies, no legacy cookie found", len(cookies))
+        else:
+            logger.debug("Out of %d cookies, found a good legacy cookie", len(cookies))
+
+        return first
 
     def legacy_cookies(self) -> List[str]:
         """Gets list of legacy cookies.
