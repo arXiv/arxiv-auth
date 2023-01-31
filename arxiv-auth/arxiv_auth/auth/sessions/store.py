@@ -96,7 +96,9 @@ class SessionStore(object):
             start_time=start_time,
             end_time=end_time,
             authorizations=authorizations,
-            nonce=_generate_nonce()
+            nonce=_generate_nonce(),
+            remote_host=remote_host,
+            ip_address=ip_address
         )
         logger.debug('storing session %s', session)
         try:

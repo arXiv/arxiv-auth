@@ -123,6 +123,7 @@ def compress_endorsements(endorsements: Endorsements) -> Endorsements:
 
     """
     compressed: Endorsements = []
+
     grouped = groupby(sorted(endorsements, key=_get_archive), key=_get_archive)
     for archive, archive_endorsements in grouped:
         archive_endorsements_list = list(archive_endorsements)
