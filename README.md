@@ -25,9 +25,9 @@ There are currently four pieces of software in this repository:
 ```bash
 pyenv install 3.6.2
 pyenv virtualenv 3.6.2 arxiv-auth 
-pip install pipenv==2021.5.29
-pipenv sync -d
-pipenv run pytest \
+pip install -r requirements.txt
+pip install ./users
+pytest \
     --cov=accounts \
     --cov=users/arxiv \
     --cov-report=term-missing \
@@ -38,7 +38,7 @@ Run this to enable integration + end-to-end tests with Redis, (which requires
 Docker to be running and port 7000 to be free on your machine):
 
 ```bash
-WITH_INTEGRATION=1 pipenv run pytest \
+WITH_INTEGRATION=1 pytest \
     --cov=accounts \
     --cov=users/arxiv \
     --cov-report=term-missing \
@@ -66,10 +66,6 @@ To start the application itself, first make sure that all dependencies are
 installed. You'll need to install the ``arxiv.users`` package; see
 [#dependencies](dependencies).
 
-```bash
-pipenv install --dev
-```
-
 You will also need to decide what you want to use for the legacy user and
 session database backend. For local development/testing purposes, it's fine to
 use an on-disk SQLite database. You should also be able to use a local MySQL
@@ -81,7 +77,7 @@ dev/testing purposes only, and should never be used on a production DB ever
 under any circumstances with no exceptions.
 
 ```bash
-CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 pipenv run python create_user.py
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 python create_user.py
 ```
 
 You should be prompted to enter some profile details. Note that this currently
@@ -90,14 +86,14 @@ selects your default category and groups at random.
 Then start the Flask dev server with:
 
 ```bash
-CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 flask run
 ```
 
 To use MySQL/MariaDB:
 
 ```bash
 CLASSIC_DATABASE_URI=mysql+mysqldb://[USERNAME]:[PASSWORD]@localhost:3306/[DATABASE] \
- FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+ FLASK_APP=app.py FLASK_DEBUG=1 flask run
 ```
 
 Set the username, password, and database to whatever you're using. If the DB
@@ -108,14 +104,15 @@ You should be able to register a new user at
 http://localhost:5000/register.
 
 ## Dependencies
-We use pipenv to manage dependencies. To install the dependencies for this
-project, run ``pipenv install`` in the root of this repository.
+Currently this project is using a ``requirements.txt`` file for
+dependencies. This is due to problems using pipenv related to an out
+of date environment on the web nodes. In the future pipenv or poetry
+should be revisited.
 
-Note that the ``Pipfile`` does not contain a reference to the ``arxiv.users``
-package, which is located in ``users/``. To test against the code in your
-current branch, install the package directly with ``pipenv install ./users``.
-Otherwise, you can install the latest release with
-``pipenv install arxiv-users``.
+The ``requirements.txt`` does not contain a reference to the
+``arxiv.users`` package, which is located in ``users/``. To test
+against the code in your current branch, install the package directly
+with ``pip install ./users``.
 
 ## Generating auth tokens
 
@@ -128,7 +125,7 @@ the same secret is always used.
 
 
 ```bash
-$ JWT_SECRET=foosecret pipenv run python generate_token.py
+$ JWT_SECRET=foosecret python generate_token.py
 Numeric user ID: 4
 Email address: joe@bloggs.com
 Username: jbloggs1
@@ -150,7 +147,7 @@ eyJ0e(~900 chars omited)1jEsY
 Start the dev server with:
 
 ```bash
-$ JWT_SECRET=foosecret FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+$ JWT_SECRET=foosecret FLASK_APP=app.py FLASK_DEBUG=1 flask run
 ```
 
 
@@ -177,7 +174,7 @@ on commits, PRs, and tags, with a target score of >= 9/10.
 Here's how we use pylint in CI or from the command line:
 
 ```bash
-$ pipenv run pylint accounts/accounts users/arxiv/users
+$ pylint accounts/accounts users/arxiv/users
 ```
 
 ### Docstyle
@@ -187,7 +184,7 @@ To verify the documentation style, use the tool
 Here's how we run pydocstyle in CI:
 
 ```bash
-pipenv run pydocstyle --convention=numpy --add-ignore=D401 accounts users/arxiv
+pydocstyle --convention=numpy --add-ignore=D401 accounts users/arxiv
 ```
 
 ## Type hints and static checking
@@ -203,7 +200,7 @@ just simplying adding the `# type: ignore` without further comment is fine.
 Try running mypy with (from project root):
 
 ```bash
-pipenv run mypy accounts users/arxiv | grep -v "test.*" | grep -v "defined here"
+mypy accounts users/arxiv | grep -v "test.*" | grep -v "defined here"
 ```
 
 Mypy options are most easily specified by adding them to `mypy.ini` in the repo's
