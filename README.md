@@ -1,110 +1,49 @@
-[![Build Status](https://img.shields.io/travis/arxiv/arxiv-auth/master.svg)](https://travis-ci.org/arxiv/arxiv-auth) [![Coverage Status](https://img.shields.io/coveralls/github/arXiv/arxiv-auth/master.svg)](https://coveralls.io/github/arXiv/arxiv-auth?branch=master)
+# arXiv Auth and accounts
 
-# arXiv Accounts
-
-This project provides applications and libraries to support authentication and
-authorization, including account creation and login, user sessions, and API
-token management.
+This project provides applications and libraries to support
+authentication and authorization, including login, user sessions, and
+API token management.
 
 There are currently four pieces of software in this repository:
 
-1. [``users/``](users/) contains the ``arxiv.users``
-   package which provides core authentication and authorization
-   functionality and domain classes.  This includes integrations with
-   the legacy database for user accounts and sessions. This is
-   intended to be used by NG systems to ensure consistency and avoid
-   code reuse.
-2. [``accounts/``](accounts/) contains a service that provides the
-   main UIs for registration, the login/logout pages, profile management, etc.
-3. [``authenticator/``](authenticator/) **Not in use** contains the
-   authenticator service.  Handles authentication requests from NGINX
-   in a cloud deployment scenario.
-4. [``registry/``](registry/) **Not in use** contains the API client
-   registry application.  This implements OAuth2 workflows, client
-   registration, and the root API landing page.
+1. [``users/``](users/) contains the ``arxiv.users`` package, which provides
+   core authentication and authorization functionality and domain classes.
+   This includes integrations with the legacy database for user accounts and
+   sessions.
+2. [``accounts/``](accounts/) contains the user accounts service, which
+   provides the main UIs for registration, /login, /logout, /user, etc. 
+   Only login, logout and the user page are currently in use.
+3. [``authenticator/``](authenticator/) contains the authenticator service.
+   Handles authentication requests from NGINX in a cloud deployment scenario.
+   *This is NOT in use in production.*
+4. [``registry/``](registry/) contains the API client registry application.
+   This implements OAuth2 workflows, client registration, and the root API
+   landing page. *This is NOT in use in production.*
 
-TLS is considered an infrastructure concern, and is therefore out of scope
-(albeit critical) for this project.
-
-## TODO
-
-- Password reset in ``arxiv.users.legacy.accounts`` and in the accounts
-  service.
-- Support for permanent login token.
-- Clean up and document authenticator service.
-
-## Updates
-
-- Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
-  application config to rename ``request.session`` to ``request.auth``.
-  ``request.auth`` will be the default name for the authenticated session
-  starting in v0.4.1.
-
-## Dependencies
-We use pipenv to manage dependencies. To install the dependencies for this
-project, run ``pipenv install`` in the root of this repository.
-
-Note that the ``Pipfile`` does contain a reference to the
-``arxiv.users`` package, which is located in ``users/``. This allows
-you to test against the code in your current branch, install the
-package directly with ``pipenv install ./users``.
-
-In the past it did not contain a reference to ``arxiv.users`` and you
-could either install this from pypi or from ./users. This was changed
-by Erick P. in 2019-06.
-
-## Testing
-
-Each of the applications/packages in this repository has its own test suite.
-
-You can run everything together with:
+# Testing
 
 ```bash
-pipenv run pytest \
+pyenv install 3.6.2
+pyenv virtualenv 3.6.2 arxiv-auth 
+pip install -r requirements.txt
+pip install ./users
+pytest \
     --cov=accounts \
     --cov=users/arxiv \
     --cov-report=term-missing \
     accounts users/arxiv
 ```
 
-To enable integration + end-to-end tests with Redis, run:
+Run this to enable integration + end-to-end tests with Redis, (which requires
+Docker to be running and port 7000 to be free on your machine):
 
 ```bash
-WITH_INTEGRATION=1 pipenv run pytest \
+WITH_INTEGRATION=1 pytest \
     --cov=accounts \
     --cov=users/arxiv \
     --cov-report=term-missing \
     accounts users/arxiv
 ```
-
-Note that this requires Docker to be running, and port 7000 to be free on your
-machine.
-
-
-### ``arxiv.users``
-
-You can run the tests for the ``arxiv.users`` package with:
-
-```bash
-pipenv run pytest --cov=users/arxiv --cov-report=term-missing users/arxiv
-```
-
-### Accounts service
-
-You can run tests for the accounts service with:
-
-```bash
-pipenv run pytest --cov=accounts --cov-report=term-missing accounts
-```
-
-To run integration and end-to-end tests with a live Redis, use:
-
-```bash
-WITH_INTEGRATION=1 pipenv run pytest --cov=accounts --cov-report=term-missing accounts
-```
-
-Note that this requires Docker to be running, and port 7000 to be free on your
-machine.
 
 ## Local development + manual testing
 
@@ -123,9 +62,9 @@ Redis instance.
 Note: we're running Redis in cluster mode; the image used in this example
 is for dev/test purposes only.
 
-```bash
-pipenv install --dev
-```
+To start the application itself, first make sure that all dependencies are
+installed. You'll need to install the ``arxiv.users`` package; see
+[#dependencies](dependencies).
 
 You will also need to decide what you want to use for the legacy user and
 session database backend. For local development/testing purposes, it's fine to
@@ -138,7 +77,7 @@ dev/testing purposes only, and should never be used on a production DB ever
 under any circumstances with no exceptions.
 
 ```bash
-CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=accounts/app.py FLASK_DEBUG=1 pipenv run python accounts/create_user.py
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 python create_user.py
 ```
 
 You should be prompted to enter some profile details. Note that this currently
@@ -147,14 +86,14 @@ selects your default category and groups at random.
 Then start the Flask dev server with:
 
 ```bash
-CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=accounts/app.py FLASK_DEBUG=1 pipenv run flask run
+CLASSIC_DATABASE_URI=sqlite:///my.db FLASK_APP=app.py FLASK_DEBUG=1 flask run
 ```
 
 To use MySQL/MariaDB:
 
 ```bash
 CLASSIC_DATABASE_URI=mysql+mysqldb://[USERNAME]:[PASSWORD]@localhost:3306/[DATABASE] \
- FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+ FLASK_APP=app.py FLASK_DEBUG=1 flask run
 ```
 
 Set the username, password, and database to whatever you're using. If the DB
@@ -163,6 +102,17 @@ tables. Otherwise conventional read/write access should be sufficient.
 
 You should be able to register a new user at
 http://localhost:5000/register.
+
+## Dependencies
+Currently this project is using a ``requirements.txt`` file for
+dependencies. This is due to problems using pipenv related to an out
+of date environment on the web nodes. In the future pipenv or poetry
+should be revisited.
+
+The ``requirements.txt`` does not contain a reference to the
+``arxiv.users`` package, which is located in ``users/``. To test
+against the code in your current branch, install the package directly
+with ``pip install ./users``.
 
 ## Generating auth tokens
 
@@ -175,7 +125,7 @@ the same secret is always used.
 
 
 ```bash
-$ JWT_SECRET=foosecret pipenv run python generate_token.py
+$ JWT_SECRET=foosecret python generate_token.py
 Numeric user ID: 4
 Email address: joe@bloggs.com
 Username: jbloggs1
@@ -190,14 +140,14 @@ Submission groups (comma delim) [grp_physics]:
 Endorsement categories (comma delim) [astro-ph.CO,astro-ph.GA]:
 Authorization scope (comma delim) [upload:read,upload:write,upload:admin]:
 
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiZTljMGQwMDUtMTk1My00YWRiLWE0YzEtYzdmNWY1OGM5YTk4Iiwic3RhcnRfdGltZSI6IjIwMTgtMDgtMDlUMTQ6NDg6MDguNzY2NjUzLTA0OjAwIiwidXNlciI6eyJ1c2VybmFtZSI6ImVyaWNrIiwiZW1haWwiOiJlcmlja0Bmb28uY29tIiwidXNlcl9pZCI6IjQiLCJuYW1lIjp7ImZvcmVuYW1lIjoiSmFuZSIsInN1cm5hbWUiOiJEb2UiLCJzdWZmaXgiOiJJViJ9LCJwcm9maWxlIjp7ImFmZmlsaWF0aW9uIjoiQ29ybmVsbCBVbml2ZXJzaXR5IiwiY291bnRyeSI6InVzIiwicmFuayI6Mywic3VibWlzc2lvbl9ncm91cHMiOlsiZ3JwX3BoeXNpY3MiXSwiZGVmYXVsdF9jYXRlZ29yeSI6eyJhcmNoaXZlIjoiYXN0cm8tcGgiLCJzdWJqZWN0IjoiR0EifSwiaG9tZXBhZ2VfdXJsIjoiIiwicmVtZW1iZXJfbWUiOnRydWV9fSwiY2xpZW50IjpudWxsLCJlbmRfdGltZSI6IjIwMTgtMDgtMTBUMDA6NDg6MDguNzY2NjUzLTA0OjAwIiwiYXV0aG9yaXphdGlvbnMiOnsiY2xhc3NpYyI6MCwiZW5kb3JzZW1lbnRzIjpbW1siYXN0cm8tcGgiLCJDTyJdLG51bGxdLFtbImFzdHJvLXBoIiwiR0EiXSxudWxsXV0sInNjb3BlcyI6W1sidXBsb2FkOnJlYWQiLCJ1cGxvYWQ6d3JpdGUiLCJ1cGxvYWQ6YWRtaW4iXV19LCJpcF9hZGRyZXNzIjpudWxsLCJyZW1vdGVfaG9zdCI6bnVsbCwibm9uY2UiOm51bGx9.aOgRj73TT-zsRvF7gnPPjplJzcnXkKzYzEvMB61jEsY
+eyJ0e(~900 chars omited)1jEsY
 ```
 
 
 Start the dev server with:
 
 ```bash
-$ JWT_SECRET=foosecret FLASK_APP=app.py FLASK_DEBUG=1 pipenv run flask run
+$ JWT_SECRET=foosecret FLASK_APP=app.py FLASK_DEBUG=1 flask run
 ```
 
 
@@ -221,28 +171,10 @@ Use [Pylint](https://www.pylint.org/) to check your code prior to raising a
 pull request. The parameters below will be used when checking code  cleanliness
 on commits, PRs, and tags, with a target score of >= 9/10.
 
-If you're using Atom as your text editor, consider using the
-[linter-pylama](https://atom.io/packages/linter-pylama) package for real-time
-feedback.
-
-Here's how we use pylint in CI:
+Here's how we use pylint in CI or from the command line:
 
 ```bash
-$ pipenv run pylint accounts/accounts users/arxiv/users
-************* Module accounts.context
-accounts/context.py:10: [W0212(protected-access), get_application_config] Access to a protected member _Environ of a client class
-************* Module accounts.encode
-accounts/encode.py:11: [E0202(method-hidden), ISO8601JSONEncoder.default] An attribute defined in json.encoder line 158 hides this method
-************* Module accounts.controllers.baz
-accounts/controllers/baz.py:1: [C0102(blacklisted-name), ] Black listed name "baz"
-************* Module accounts.services.baz
-accounts/services/baz.py:1: [C0102(blacklisted-name), ] Black listed name "baz"
-************* Module accounts.services.things
-accounts/services/things.py:11: [R0903(too-few-public-methods), Thing] Too few public methods (0/2)
-accounts/services/things.py:49: [E1101(no-member), get_a_thing] Instance of 'scoped_session' has no 'query' member
-
-------------------------------------------------------------------
-Your code has been rated at 9.49/10 (previous run: 9.41/10, +0.07)
+$ pylint accounts/accounts users/arxiv/users
 ```
 
 ### Docstyle
@@ -252,7 +184,7 @@ To verify the documentation style, use the tool
 Here's how we run pydocstyle in CI:
 
 ```bash
-pipenv run pydocstyle --convention=numpy --add-ignore=D401 accounts users/arxiv
+pydocstyle --convention=numpy --add-ignore=D401 accounts users/arxiv
 ```
 
 ## Type hints and static checking
@@ -268,7 +200,7 @@ just simplying adding the `# type: ignore` without further comment is fine.
 Try running mypy with (from project root):
 
 ```bash
-pipenv run mypy accounts users/arxiv | grep -v "test.*" | grep -v "defined here"
+mypy accounts users/arxiv | grep -v "test.*" | grep -v "defined here"
 ```
 
 Mypy options are most easily specified by adding them to `mypy.ini` in the repo's
@@ -310,6 +242,27 @@ for more info.
 Architectural documentation is located at
 [``docs/source/architecture.rst``](docs/source/architecture.rst). This can be
 exploded into multiple files, if necessary.
+
+This architecture documentation is based on the [arc42](http://arc42.org/)
+documentation model, and also draws heavily on the [C4 software architecture
+model](https://www.structurizr.com/help/c4>). The C4 model describes an
+architecture at four hierarchical levels, from the business context of the
+system to the internal architecture of small parts of the system.
+
+In document for arXiv NG services, we have departed slightly from the original
+language of C4 in order to avoid collision with names in adjacent domains.
+Specifically, we describe the system at three levels:
+
+1. **Context**: This includes both the business and technical contexts in the
+   arc42 model. It describes the interactions between a service and
+   other services and systems.
+2. **Building block**: This is similar to the "container" concept in the C4
+   model. A building block is a part of the system that is developed, tested,
+   and deployed quasi-independently. This might be a single application, or
+   a data store.
+3. **Component**: A component is an internal part of a building block. In the
+   case of a Flask application, this might be a module or submodule that has
+   specific responsibilities, behaviors, and interactions.
 
 ### Code API documentation
 

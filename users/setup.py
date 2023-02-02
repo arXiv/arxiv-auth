@@ -14,7 +14,7 @@ setup(
         "mimesis",
         "mysqlclient",
         "python-dateutil",
-        "arxiv-base==0.17.4.post2",
+        "arxiv-base==0.17.8",
         "pyjwt",
         "redis==2.10.6",
         "redis-py-cluster==1.3.6",
