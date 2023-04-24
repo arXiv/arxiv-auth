@@ -2,6 +2,7 @@
 
 from typing import Optional, Union, Any, List
 import warnings
+import os
 
 from flask import Flask, request, Response
 from werkzeug.http import parse_cookie
@@ -20,6 +21,9 @@ logger = logging.getLogger(__name__)
 class Auth(object):
     """
     Attaches session and authn/z information to the request.
+
+    Set env var or `Flask.config` `ARXIV_AUTH_DEBUG` to True to get
+    additional debugging in the logs.
 
     Intended for use in a Flask application factory, for example:
 
@@ -93,6 +97,10 @@ class Auth(object):
                                    'https://arxiv.org')
         self.app.config.setdefault('DEFAULT_LOGIN_REDIRECT_URL',
                                    'https://arxiv.org')
+
+        if app.config.get('ARXIV_AUTH_DEBUG') or os.getenv('ARXIV_AUTH_DEBUG'):
+            self.auth_debug()
+            logger.debug("ARXIV_AUTH_DEBUG is set and auth debug messages to logging is turned on")
 
         @self.app.teardown_request
         def teardown_request(exception: Optional[Exception]) -> None:
@@ -190,3 +198,11 @@ class Auth(object):
             return []
         cookies = parse_cookie(raw_cookie, cls=MultiDict)
         return cookies.getlist(self.app.config['CLASSIC_COOKIE_NAME'])
+
+    def auth_debug(self) -> None:
+        """Sets several auth loggers to DEBUG.
+
+        This is useful to get an idea of what is going on with auth."""
+        logger.setLevel(logging.DEBUG)
+        sessions.logger.setLevel(Logging.DEBUG)
+        authenticate.logger.setLevel(Logging.DEBUG)
