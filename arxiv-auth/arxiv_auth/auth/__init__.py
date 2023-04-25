@@ -204,5 +204,5 @@ class Auth(object):
 
         This is useful to get an idea of what is going on with auth."""
         logger.setLevel(logging.DEBUG)
-        legacy.sessions.logger.setLevel(Logging.DEBUG)
-        legacy.authenticate.logger.setLevel(Logging.DEBUG)
+        legacy.sessions.logger.setLevel(logging.DEBUG)
+        legacy.authenticate.logger.setLevel(logging.DEBUG)
