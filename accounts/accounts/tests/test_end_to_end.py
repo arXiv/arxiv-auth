@@ -59,7 +59,8 @@ class TestLoginLogoutRoutes(TestCase):
 
     def setUp(self):
         self.ip_address = '10.1.2.3'
-        self.environ_base = {'REMOTE_ADDR': self.ip_address}
+        self.environ_base = {'REMOTE_ADDR': self.ip_address,
+                             'ARXIV_AUTH_DEBUG': True}
         self.app = create_web_app()
         self.app.register_blueprint(blueprint)
         self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
