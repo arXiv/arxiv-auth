@@ -11,7 +11,7 @@ from retry import retry
 
 from .. import domain, legacy
 
-from arxiv.base import logging
+import logging
 
 from . import decorators
 
