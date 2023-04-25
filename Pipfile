@@ -18,7 +18,7 @@ SQLAlchemy = ">=1.3.0"  # CVE-2019-7548, CVE-2019-7164
 uWSGI = "*"
 WTForms = "==2.3.1"
 arxiv-auth = {path = "./users"}
-arxiv-base = "*" # fixed by version used by arxiv-auth
+arxiv-base = "*" # constrained by version set by arxiv-auth
 Authlib = "==0.11" # ARXIVNG-2993
 openapi-spec-validator = "*"
 bleach = "*"
