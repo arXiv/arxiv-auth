@@ -9,9 +9,6 @@ APP_VERSION = '0.4'
 
 BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 
-NAMESPACE = os.environ.get('NAMESPACE')
-"""Namespace in which this service is deployed; to qualify keys for secrets."""
-
 SECRET_KEY = os.environ.get('SECRET_KEY', 'asdf1234')
 
 APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
@@ -100,8 +97,6 @@ CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
 
 RELEASE_NOTES_URL = "https://github.com/arXiv/arxiv-auth/releases"
 RELEASE_NOTES_TEXT = "Accounts v1.1.0"
-
-NS_AFFIX = '' if NAMESPACE == 'production' else f'-{NAMESPACE}'
 
 FLASKS3_BUCKET_NAME = os.environ.get('FLASKS3_BUCKET_NAME', 'some_bucket')
 FLASKS3_CDN_DOMAIN = os.environ.get('FLASKS3_CDN_DOMAIN', 'static.arxiv.org')
