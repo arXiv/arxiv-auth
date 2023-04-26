@@ -29,9 +29,7 @@ def anonymous_only(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.auth:
-            next_page = request.args.get('next_page',
-                                         current_app.config['DEFAULT_LOGIN_REDIRECT_URL'])
-            return make_response(redirect(next_page, code=status.HTTP_303_SEE_OTHER))
+            return make_response(redirect(_checked_next_page(), code=status.HTTP_303_SEE_OTHER))
         else:
             return func(*args, **kwargs)
     return wrapper
@@ -112,7 +110,7 @@ def register() -> Response:
     """Interface for creating new accounts."""
     captcha_secret = current_app.config['CAPTCHA_SECRET']
     ip_address = request.remote_addr
-    next_page = request.args.get('next_page', url_for('account'))
+    next_page = _checked_next_page(otherwise=url_for('account'))
     data, code, headers = registration.register(request.method, request.form,
                                                 captcha_secret, ip_address,
                                                 next_page)
@@ -134,8 +132,7 @@ def login() -> Response:
     """User can log in with username and password, or permanent token."""
     ip_address = request.remote_addr
     form_data = request.form
-    default_next_page = current_app.config['DEFAULT_LOGIN_REDIRECT_URL']
-    next_page = request.args.get('next_page', default_next_page)
+    next_page = _checked_next_page()
     logger.debug('Request to log in, then redirect to %s', next_page)
     data, code, headers = authentication.login(request.method,
                                                form_data, ip_address,
@@ -165,8 +162,7 @@ def logout() -> Response:
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_key, None)
     classic_cookie = request.cookies.get(classic_cookie_key, None)
-    default_next_page = current_app.config['DEFAULT_LOGOUT_REDIRECT_URL']
-    next_page = request.args.get('next_page', default_next_page)
+    next_page = _checked_next_page()
     logger.debug('Request to log out, then redirect to %s', next_page)
     data, code, headers = authentication.logout(session_cookie, classic_cookie,
                                                 next_page)
@@ -198,3 +194,12 @@ def captcha() -> Response:
 def auth_status() -> Response:
     """Get if the app is running."""
     return make_response("OK")
+
+def _checked_next_page(otherwise=None) -> str:
+    if not otherwise:
+        otherwise = current_app.config['DEFAULT_LOGIN_REDIRECT_URL']
+    next_page = request.args.get('next_page', otherwise)
+    if authentication.good_next_page(next_page):
+        return next_page
+    else:
+        return otherwise
