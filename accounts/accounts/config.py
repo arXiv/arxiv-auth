@@ -57,8 +57,6 @@ for this allows relative URLs and URLs to subdomains of the
 BASE_SERVER.
 """
 
-login_redirect_pattern = re.compile(LOGIN_REDIRECT_REGEX)
-
 AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
 AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', '.arxiv.org')
 AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))

@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 
 ResponseData = Tuple[dict, int, dict]
 
+_login_redirect_pattern = re.compile(config.LOGIN_REDIRECT_REGEX)
 
 def login(method: str, form_data: MultiDict, ip: str,
           next_page: str, track: str = '') -> ResponseData:
@@ -220,4 +221,4 @@ def _do_logout(classic_session_cookie: str) -> None:
 def good_next_page(next_page: str) -> bool:
     """True if next_page is a valid query parameter for use with the login page."""
     return next_page == config.DEFAULT_LOGIN_REDIRECT_URL \
-        or re.search(config.login_redirect_pattern, next_page)
+        or re.search(_login_redirect_pattern, next_page)
