@@ -1,5 +1,5 @@
 """Flask configuration."""
-
+import secrets
 import os
 import re
 
@@ -48,7 +48,7 @@ REDIS_FAKE = os.environ.get('REDIS_FAKE', False)
 
 Useful for testing, dev, beta."""
 
-JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
+JWT_SECRET = os.environ.get('JWT_SECRET', secrets.token_urlsafe(16))
 """JWT secret used with NG JWTs in `arxiv-auth`."""
 
 AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
@@ -69,14 +69,16 @@ CLASSIC_TOKEN_RECOVERY_TIMEOUT = os.environ.get(
     'CLASSIC_TOKEN_RECOVERY_TIMEOUT',
     '86400'
 )
-CLASSIC_SESSION_HASH = os.environ.get('CLASSIC_SESSION_HASH', 'foosecret')
+CLASSIC_SESSION_HASH = os.environ.get('CLASSIC_SESSION_HASH', secrets.token_urlsafe(16))
 SESSION_DURATION = os.environ.get(
     'SESSION_DURATION',
     '36000'
 )
 
 CLASSIC_DATABASE_URI = os.environ.get('CLASSIC_DATABASE_URI')
-"""If not set, legacy database integrations will not be available."""
+"""SQLALCHEMY_DATABASE_URI for legacy DB.
+
+If not set, legacy database integrations will not be available."""
 
 SQLALCHEMY_DATABASE_URI = CLASSIC_DATABASE_URI
 
@@ -86,13 +88,13 @@ CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
 
 
 #################### Minor configs ##############################
-SECRET_KEY = os.environ.get('SECRET_KEY', 'asdf1234')
+SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_urlsafe(16))
 """Sets the `Flask` secret key used for sessions. Not directly used in arxiv auth."""
 
 RELEASE_NOTES_URL = "https://github.com/arXiv/arxiv-auth/releases"
 RELEASE_NOTES_TEXT = "Accounts v1.1.0"
 
-CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', 'foocaptcha')
+CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', secrets.token_urlsafe(16))
 """Used to encrypt captcha answers, so that we don't need to store them.
 
 Used by registration form."""
