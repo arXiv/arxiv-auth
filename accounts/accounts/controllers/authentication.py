@@ -44,7 +44,11 @@ _login_redirect_pattern = re.compile(config.LOGIN_REDIRECT_REGEX)
 def login(method: str, form_data: MultiDict, ip: str,
           next_page: str, track: str = '') -> ResponseData:
     """
-    Provide the login form.
+    Provide the login form and handles login if the form data is POSTed.
+
+    This will attempt to create both a NG style `ARXIVNG_SESSION_ID` cookie with
+    a session in redis and legacy style `tapir_session` cookie with a session in
+    the DB.
 
     Parameters
     ----------
@@ -140,7 +144,7 @@ def logout(session_cookie: Optional[str],
            classic_session_cookie: Optional[str],
            next_page: str) -> ResponseData:
     """
-    Log the user out, and redirect to arXiv.org.
+    Log the user out, and redirect to `config.DEFAULT_LOGOUT_REDIRECT_URL`.
 
     Parameters
     ----------

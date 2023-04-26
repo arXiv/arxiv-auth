@@ -5,16 +5,25 @@ import re
 
 #################### General config for app ####################
 BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
+"""Sets base server for use when doman name is needed.
 
+The default configs for `DEFAULT_LOGIN_REDIRECT_URL` and
+`DEFAULT_LOGOUT_REDIRECT_URL` and `AUTH_SESSION_COOKIE_DOMAIN` will use
+this. They can be independently configured if needed.
+"""
 
 DEFAULT_LOGIN_REDIRECT_URL = os.environ.get(
     'DEFAULT_LOGIN_REDIRECT_URL',
-    'https://arxiv.org/user'
+    f'https://{BASE_SERVER}/user'
 )
+"""URL to redirect the user to on a successful login, if they have not provided
+a `next_page` query param."""
+
 DEFAULT_LOGOUT_REDIRECT_URL = os.environ.get(
     'DEFAULT_LOGOUT_REDIRECT_URL',
-    'https://arxiv.org'
+    f'https://{BASE_SERVER}'
 )
+"""URL to redirect the user to on a logout."""
 
 LOGIN_REDIRECT_REGEX = os.environ.get('LOGIN_REDIRECT_REGEX',
                                       fr'(/.*)|(https://([a-zA-Z0-9\-.])*{re.escape(BASE_SERVER)}/.*)')
@@ -43,7 +52,7 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
 """JWT secret used with NG JWTs in `arxiv-auth`."""
 
 AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
-AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', '.arxiv.org')
+AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', f'.{BASE_SERVER}')
 AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))
 
 
@@ -119,9 +128,12 @@ AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
 LOGLEVEL = os.environ.get('LOGLEVEL', 20)
 """Used by base.logging but that package seems buggy so maybe remove"""
 
+#################### Flask configs ####################
+"""See https://flask.palletsprojects.com/en/2.3.x/config/"""
+
+APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
+
 #################### unused ####################
 """These are unused in auth and base """
 
 LOGFILE = os.environ.get('LOGFILE')
-
-APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
