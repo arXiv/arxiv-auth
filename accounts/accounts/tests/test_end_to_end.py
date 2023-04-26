@@ -676,6 +676,7 @@ class TestLoginLogoutRoutes(TestCase):
         response = client.post('/login', data=form_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+
     @given(st.text()) #Limited to utf-8
     @settings(max_examples=5000)
     def test_post_login_fuzz(self, fuzzed_pw):
@@ -686,3 +687,15 @@ class TestLoginLogoutRoutes(TestCase):
         client = self.app.test_client()
         response = client.post('/login', data=form_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+    def test_post_login_with_next_page(self):
+        """POST request to /login with valid form data but bad next_page."""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+        form_data = {'username': 'foouser', 'password': 'thepassword'}
+        bad_next_page = 'https://bbc.co.uk'
+        response = client.post(f'/login?next_page={bad_next_page}', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+
+        assert bad_next_page not in response.headers['Location'] #  redirect should NOT point at value of `bad_next_page` param

@@ -221,4 +221,5 @@ def _do_logout(classic_session_cookie: str) -> None:
 def good_next_page(next_page: str) -> bool:
     """True if next_page is a valid query parameter for use with the login page."""
     return next_page == config.DEFAULT_LOGIN_REDIRECT_URL \
-        or re.search(config.login_redirect_pattern, next_page)
+        or (len(next_page) < 2048  # avoids crazy inputs
+            and re.match(config.login_redirect_pattern, next_page))

@@ -23,8 +23,11 @@ There are currently four pieces of software in this repository:
 # Testing
 
 ```bash
-pyenv install 3.6.2
-pyenv virtualenv 3.6.2 arxiv-auth 
+pyenv install 3.6.8
+pyenv virtualenv 3.6.8 arxiv-auth
+pip install pipenv==2022.4.8
+pipenv install -d
+
 pip install -r requirements.txt
 pip install ./users
 pytest \
