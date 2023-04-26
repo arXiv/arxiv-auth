@@ -20,10 +20,11 @@ logger = logging.getLogger(__name__)
 
 class Auth(object):
     """
-    Attaches session and authn/z information to the request.
+    Attaches session and authentication information to the request.
 
     Set env var or `Flask.config` `ARXIV_AUTH_DEBUG` to True to get
-    additional debugging in the logs.
+    additional debugging in the logs. Only use this for short term debugging of
+    configs. This may be used in produciton but should not be left on in production.
 
     Intended for use in a Flask application factory, for example:
 
@@ -37,7 +38,7 @@ class Auth(object):
        def create_web_app() -> Flask:
           app = Flask('someapp')
           app.config.from_pyfile('config.py')
-          Auth(app)   # Registers the base/UI blueprint.
+          Auth(app)   # Registers the before_reques auth check
           app.register_blueprint(routes.blueprint)    # Your blueprint.
        return app
 
@@ -46,7 +47,7 @@ class Auth(object):
 
     def __init__(self, app: Optional[Flask] = None) -> None:
         """
-        Initialize ``app`` with base blueprint.
+        Initialize ``app`` with `Auth`.
 
         Parameters
         ----------
@@ -140,26 +141,14 @@ class Auth(object):
 
         # use legacy DB to authorize request if available
         if legacy.is_configured():
-            session = self.first_valid(self.legacy_cookies())
+            auth = self.first_valid(self.legacy_cookies())
         else:
             logger.warning('No legacy DB, will not check tapir auth.')
 
-        # Attach the session to the request so that other
-        # components can access it easily.
-        if self.app.config.get('AUTH_UPDATED_SESSION_REF'):
-            request.auth = session
-        else:
-            # This clobbers the built-in Flask session interface. This is a
-            # design flaw that's blocking other work. This is deprecated and
-            # will be removed in 0.4.1.
-            warnings.warn(
-                "Accessing the authenticated session via request.auth is"
-                " deprecated, and will be removed in 0.4.1. Use request.auth"
-                " instead. ARXIVNG-1920.",
-                DeprecationWarning
-            )
-            request.session = session
+        # Attach obj to the request for use by other components
+        request.auth = auth
         return None
+
 
     def first_valid(self, cookies: List[str]) -> Optional[domain.Session]:
         """First valid legacy session or None if there are none."""
@@ -168,9 +157,9 @@ class Auth(object):
                                  cookies)), None)
 
         if first is None:
-            logger.debug("Out of %d cookies, no legacy cookie found", len(cookies))
+            logger.debug("Out of %d cookies, no good legacy cookie found", len(cookies))
         else:
-            logger.debug("Out of %d cookies, found a good legacy cookie", len(cookies))
+            logger.debug("Out of %d cookies, using first good legacy cookie", len(cookies))
 
         return first
 

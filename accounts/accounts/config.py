@@ -101,13 +101,7 @@ URLS = [
 CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
 
 RELEASE_NOTES_URL = "https://github.com/arXiv/arxiv-auth/releases"
-RELEASE_NOTES_TEXT = "Accounts v0.4.2 released 2020-03-10"
-
-# Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
-# application config to rename ``request.session`` to ``request.auth``.
-# ``request.auth`` will be the default name for the authenticated session
-# starting in v0.4.1.
-AUTH_UPDATED_SESSION_REF = True
+RELEASE_NOTES_TEXT = "Accounts v1.1.0"
 
 NS_AFFIX = '' if NAMESPACE == 'production' else f'-{NAMESPACE}'
 
