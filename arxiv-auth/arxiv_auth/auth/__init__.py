@@ -117,14 +117,20 @@ class Auth(object):
             session.remove()
 
     def load_session(self) -> Optional[Response]:
-        """
-        Look for an active session, and attach it to the request.
+        """Look for an active session, and attach it to the request.
+
+        This is run before each Flask reqeust if :class:`arxiv_auth.auth.Auth`
+        is setup on the `Flask` app.
 
         The typical scenario will involve the
         :class:`.middleware.AuthMiddleware` unpacking a session token and
         adding it to the WSGI request environ. As a fallback, if the legacy
         database is available, this method will also attempt to load an
         active legacy session.
+
+        As of 2023-04 this only chekcs for the legacy `tapir_session`
+        cookie. Use of the NG `ARXIVNG_SESSION_ID` has never been implemented in
+        this class.
         """
         # Check the WSGI request environ for the ``session`` key, which
         # is where the auth middleware puts any unpacked auth information from
