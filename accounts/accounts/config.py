@@ -3,37 +3,9 @@
 import os
 import re
 
-VERSION = '0.4'
-APP_VERSION = '0.4'
-"""The application version."""
-
+#################### General config for app ####################
 BASE_SERVER = os.environ.get('BASE_SERVER', 'arxiv.org')
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'asdf1234')
-
-APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
-
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', 'nope')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', 'nope')
-AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
-
-LOGFILE = os.environ.get('LOGFILE')
-LOGLEVEL = os.environ.get('LOGLEVEL', 20)
-
-REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
-REDIS_PORT = os.environ.get('REDIS_PORT', '7000')
-REDIS_DATABASE = os.environ.get('REDIS_DATABASE', '0')
-REDIS_TOKEN = os.environ.get('REDIS_TOKEN', None)
-"""This is the token used in the AUTH procedure."""
-REDIS_CLUSTER = os.environ.get('REDIS_CLUSTER', '1')
-
-REDIS_FAKE = os.environ.get('REDIS_FAKE', False)
-"""Use the FakeRedis library instead of a redis service.
-
-Useful for testing, dev, beta."""
-
-
-JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
 
 DEFAULT_LOGIN_REDIRECT_URL = os.environ.get(
     'DEFAULT_LOGIN_REDIRECT_URL',
@@ -54,9 +26,29 @@ for this allows relative URLs and URLs to subdomains of the
 BASE_SERVER.
 """
 
+#################### NG JWT Auth configs ####################
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+REDIS_PORT = os.environ.get('REDIS_PORT', '7000')
+REDIS_DATABASE = os.environ.get('REDIS_DATABASE', '0')
+REDIS_TOKEN = os.environ.get('REDIS_TOKEN', None)
+"""This is the token used in the AUTH procedure."""
+REDIS_CLUSTER = os.environ.get('REDIS_CLUSTER', '1')
+
+REDIS_FAKE = os.environ.get('REDIS_FAKE', False)
+"""Use the FakeRedis library instead of a redis service.
+
+Useful for testing, dev, beta."""
+
+JWT_SECRET = os.environ.get('JWT_SECRET', 'foosecret')
+"""JWT secret used with NG JWTs in `arxiv-auth`."""
+
 AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
 AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', '.arxiv.org')
 AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))
+
+
+#################### Classic Auth ####################
+"""Classic tpair_session cookie based auth."""
 
 CLASSIC_COOKIE_NAME = os.environ.get('CLASSIC_COOKIE_NAME', 'tapir_session')
 CLASSIC_PERMANENT_COOKIE_NAME = os.environ.get(
@@ -81,22 +73,33 @@ SQLALCHEMY_DATABASE_URI = CLASSIC_DATABASE_URI
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
+
+
+#################### Minor configs ##############################
+SECRET_KEY = os.environ.get('SECRET_KEY', 'asdf1234')
+"""Sets the `Flask` secret key used for sessions. Not directly used in arxiv auth."""
+
+RELEASE_NOTES_URL = "https://github.com/arXiv/arxiv-auth/releases"
+RELEASE_NOTES_TEXT = "Accounts v1.1.0"
+
 CAPTCHA_SECRET = os.environ.get('CAPTCHA_SECRET', 'foocaptcha')
-"""Used to encrypt captcha answers, so that we don't need to store them."""
+"""Used to encrypt captcha answers, so that we don't need to store them.
+
+Used by registration form."""
 
 CAPTCHA_FONT = os.environ.get('CAPTCHA_FONT', None)
+"""Used by registration form."""
 
+
+#################### Supports arxiv-base ####################
 URLS = [
     ("register", "/user/register", BASE_SERVER),
     ("lost_password", "/user/lost_password", BASE_SERVER),
     ("login", "/login", BASE_SERVER),
     ("account", "/user", BASE_SERVER)
 ]
-
-CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
-
-RELEASE_NOTES_URL = "https://github.com/arXiv/arxiv-auth/releases"
-RELEASE_NOTES_TEXT = "Accounts v1.1.0"
+"""`arxiv-base` will add these for use in `Flask` `url_for()`."""
 
 FLASKS3_BUCKET_NAME = os.environ.get('FLASKS3_BUCKET_NAME', 'some_bucket')
 FLASKS3_CDN_DOMAIN = os.environ.get('FLASKS3_CDN_DOMAIN', 'static.arxiv.org')
@@ -104,3 +107,21 @@ FLASKS3_USE_HTTPS = os.environ.get('FLASKS3_USE_HTTPS', 1)
 FLASKS3_FORCE_MIMETYPE = os.environ.get('FLASKS3_FORCE_MIMETYPE', 1)
 FLASKS3_ACTIVE = os.environ.get('FLASKS3_ACTIVE', 0)
 """Flask-S3 plugin settings."""
+
+VERSION = '0.4'
+APP_VERSION = '0.4'
+"""The application version."""
+
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', 'nope')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', 'nope')
+AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+
+LOGLEVEL = os.environ.get('LOGLEVEL', 20)
+"""Used by base.logging but that package seems buggy so maybe remove"""
+
+#################### unused ####################
+"""These are unused in auth and base """
+
+LOGFILE = os.environ.get('LOGFILE')
+
+APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')
