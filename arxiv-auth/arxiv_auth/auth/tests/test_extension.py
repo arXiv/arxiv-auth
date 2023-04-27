@@ -21,7 +21,7 @@ def test_no_session_legacy_available(mocker, app_with_cookie):
     with app_with_cookie.test_request_context():
         mock_legacy = mocker.patch(f'{auth.__name__}.legacy')
         mock_request = mocker.patch(f'{auth.__name__}.request')
-        mock_request.environ = {'session': None,
+        mock_request.environ = {'auth': None,
                                 'HTTP_COOKIE': 'foo_cookie=sessioncookie123'}
 
         mock_legacy.is_configured.return_value = True
@@ -38,11 +38,10 @@ def test_legacy_is_valid(mocker, app_with_cookie):
     with app_with_cookie.test_request_context():
         mock_legacy = mocker.patch(f'{auth.__name__}.legacy')
         mock_request = mocker.patch(f'{auth.__name__}.request')
-
-        mock_request.environ = {'session': None,
+        mock_request.environ = {'auth': None,
                                 'HTTP_COOKIE': 'foo_cookie=sessioncookie123'}
 
-        mock_request.session = None
+        mock_request.auth = None
         mock_legacy.is_configured.return_value = True
         session = domain.Session(
             session_id='fooid',
@@ -71,13 +70,13 @@ def test_auth_session_rename(mocker, app_with_cookie):
     with app_with_cookie.test_request_context():
         mock_legacy = mocker.patch(f'{auth.__name__}.legacy')
         mock_request = mocker.patch(f'{auth.__name__}.request')
-        mock_request.environ = {'session': None,
+        mock_request.environ = {'auth': None,
                                 'HTTP_COOKIE': 'foo_cookie=sessioncookie123'}
-        mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
 
         mock_request.auth = None
         mock_legacy.is_configured.return_value = True
-        session = domain.Session(
+
+        authex = domain.Session(
             session_id='fooid',
             start_time=datetime.now(tz=UTC),
             user=domain.User(
@@ -89,10 +88,10 @@ def test_auth_session_rename(mocker, app_with_cookie):
                 scopes=[auth.scopes.VIEW_SUBMISSION]
             )
         )
-        mock_legacy.sessions.load.return_value = session
+        mock_legacy.sessions.load.return_value = authex
 
         inst.load_session()
-        assert mock_request.auth == session, "Session is attached to the request"
+        assert mock_request.auth == authex, "Auth is attached to the request"
 
 
 

@@ -16,10 +16,13 @@ payload, though fixed in strucutre, and part 6 forms the signature.
 Parts 1-5 are not b64 encoded.
 """
 
-from typing import Tuple
+from typing import Tuple, List
 from base64 import b64encode
 import hashlib
 from datetime import datetime, timedelta
+
+from werkzeug.http import parse_cookie
+from werkzeug.datastructures import MultiDict
 
 from .exceptions import InvalidCookie
 from . import util
@@ -106,3 +109,29 @@ def pack(session_id: str, user_id: str, ip: str, issued_at: datetime,
     to_sign = f'{value}-{session_hash}'.encode('utf-8')
     cookie_hash = b64encode(hashlib.sha1(to_sign).digest())
     return value + ':' + cookie_hash.decode('utf-8')[:-1]
+
+
+def get_cookies(request, cookie_name:str) -> List[str]:
+    """Gets list of legacy cookies.
+
+    Duplicate cookies occur due to the browser sending both the
+    cookies for both arxiv.org and sub.arxiv.org. If this is being
+    served at sub.arxiv.org, there is no response that will cause
+    the browser to alter its cookie store for arxiv.org. Duplicate
+    cookies must be handled gracefully to for the domain and
+    subdomain to coexist.
+
+    The standard way to avoid this problem is to append part of
+    the domain's name to the cookie key but this needs to work
+    even if the configuration is not ideal.
+
+    """
+    # By default, werkzeug uses a dict-based struct that supports only a
+    # single value per key. This isn't really up to speed with RFC 6265.
+    # Luckily we can just pass in an alternate struct to parse_cookie()
+    # that can cope with multiple values.
+    raw_cookie = request.environ.get('HTTP_COOKIE', None)
+    if raw_cookie is None:
+        return []
+    cookies = parse_cookie(raw_cookie, cls=MultiDict)
+    return cookies.getlist(cookie_name)

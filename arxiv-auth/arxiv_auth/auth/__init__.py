@@ -5,10 +5,10 @@ import warnings
 import os
 
 from flask import Flask, request, Response
-from werkzeug.http import parse_cookie
-from werkzeug.datastructures import MultiDict
+
 from retry import retry
 
+from ..legacy.cookies import get_cookies
 from .. import domain, legacy
 
 import logging
@@ -56,30 +56,6 @@ class Auth(object):
         """
         if app is not None:
             self.init_app(app)
-
-    @retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
-    def _get_legacy_session(self,
-                            cookie_value: str) -> Optional[domain.Session]:
-        """
-        Attempt to load a legacy auth session.
-
-        Returns
-        -------
-        :class:`domain.Session` or None
-
-        """
-        if cookie_value is None:
-            return None
-        try:
-            with legacy.transaction():
-                return legacy.sessions.load(cookie_value)
-        except legacy.exceptions.UnknownSession as e:
-            logger.debug('No legacy session available: %s', e)
-        except legacy.exceptions.InvalidCookie as e:
-            logger.debug('Invalid legacy cookie: %s', e)
-        except legacy.exceptions.SessionExpired as e:
-            logger.debug('Legacy session is expired: %s', e)
-        return None
 
     def init_app(self, app: Flask) -> None:
         """
@@ -148,9 +124,9 @@ class Auth(object):
             raise auth
         elif auth:
             request.auth = auth
-        # use legacy DB to authorize request if available
         elif legacy.is_configured():
-            request.auth = self.first_valid(self.legacy_cookies())
+            cookies = get_cookies(request, self.app.config['CLASSIC_COOKIE_NAME'])
+            request.auth = self.first_valid(cookies)
         else:
             logger.warning('No legacy DB, will not check tapir auth.')
             request.auth = None
@@ -169,30 +145,29 @@ class Auth(object):
 
         return first
 
-    def legacy_cookies(self) -> List[str]:
-        """Gets list of legacy cookies.
+    @retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
+    def _get_legacy_session(self,
+                            cookie_value: str) -> Optional[domain.Session]:
+        """
+        Attempt to load a legacy auth session.
 
-        Duplicate cookies occur due to the browser sending both the
-        cookies for both arxiv.org and sub.arxiv.org. If this is being
-        served at sub.arxiv.org, there is no response that will cause
-        the browser to alter its cookie store for arxiv.org. Duplicate
-        cookies must be handled gracefully to for the domain and
-        subdomain to coexist.
-
-        The standard way to avoid this problem is to append part of
-        the domain's name to the cookie key but this needs to work
-        even if the configuration is not ideal.
+        Returns
+        -------
+        :class:`domain.Session` or None
 
         """
-        # By default, werkzeug uses a dict-based struct that supports only a
-        # single value per key. This isn't really up to speed with RFC 6265.
-        # Luckily we can just pass in an alternate struct to parse_cookie()
-        # that can cope with multiple values.
-        raw_cookie = request.environ.get('HTTP_COOKIE', None)
-        if raw_cookie is None:
-            return []
-        cookies = parse_cookie(raw_cookie, cls=MultiDict)
-        return cookies.getlist(self.app.config['CLASSIC_COOKIE_NAME'])
+        if cookie_value is None:
+            return None
+        try:
+            with legacy.transaction():
+                return legacy.sessions.load(cookie_value)
+        except legacy.exceptions.UnknownSession as e:
+            logger.debug('No legacy session available: %s', e)
+        except legacy.exceptions.InvalidCookie as e:
+            logger.debug('Invalid legacy cookie: %s', e)
+        except legacy.exceptions.SessionExpired as e:
+            logger.debug('Legacy session is expired: %s', e)
+        return None
 
     def auth_debug(self) -> None:
         """Sets several auth loggers to DEBUG.
