@@ -74,7 +74,7 @@ class AuthMiddleware(BaseMiddleware):
 
     def before(self, environ: dict, start_response: Callable) -> WSGIRequest:
         """Decode and unpack the auth token on the request."""
-        environ['session'] = None      # Create the session key, at a minimum.
+        environ['auth'] = None      # Create the session key, at a minimum.
         environ['token'] = None
         token = environ.get('HTTP_AUTHORIZATION')    # We may not have a token.
         if token is None:
@@ -90,16 +90,16 @@ class AuthMiddleware(BaseMiddleware):
             # Try to verify the token in the Authorization header, and attach
             # the decoded session data to the request.
             session: domain.Session = tokens.decode(token, secret)
-            environ['session'] = session
+            environ['auth'] = session
 
             # Attach the encrypted token so that we can use it in subrequests.
             environ['token'] = token
         except InvalidToken as e:   # Let the application decide what to do.
             logger.error(f'Auth token not valid: {token}')
             exception = Unauthorized('Invalid auth token')
-            environ['session'] = exception
+            environ['auth'] = exception
         except Exception as e:
             logger.error(f'Unhandled exception: {e}')
             exception = InternalServerError(f'Unhandled: {e}')  # type: ignore
-            environ['session'] = exception
+            environ['auth'] = exception
         return environ, start_response

@@ -99,7 +99,7 @@ def get_scopes(db_user: DBUser) -> List[domain.Scope]:
 def is_configured() -> bool:
     """Determine whether or not the legacy auth is configured of the `Flask` app."""
     config = get_application_config()
-    return bool(missing_configs(config))
+    return not bool(missing_configs(config))
 
 def missing_configs(config) -> List[str]:
     """Returns a list of all missing keys for configs that are needed in

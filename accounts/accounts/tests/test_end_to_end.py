@@ -61,18 +61,19 @@ class TestLoginLogoutRoutes(TestCase):
         self.ip_address = '10.1.2.3'
         os.environ['ARXIV_AUTH_DEBUG'] = '1'
 
+        os.environ['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
+        os.environ['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
+        os.environ['AUTH_SESSION_COOKIE_SECURE'] = '0'
+        os.environ['SESSION_DURATION'] = str(self.expiry)
+        os.environ['JWT_SECRET'] = self.secret
+        os.environ['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+        os.environ['CLASSIC_SESSION_HASH'] = 'xyz1234'
+        os.environ['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
+        os.environ['REDIS_FAKE'] = '1'
+
         self.environ_base = {'REMOTE_ADDR': self.ip_address}
         self.app = create_web_app()
         self.app.register_blueprint(blueprint)
-        self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-        self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
-        self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
-        self.app.config['SESSION_DURATION'] = self.expiry
-        self.app.config['JWT_SECRET'] = self.secret
-        self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
-        self.app.config['CLASSIC_SESSION_HASH'] = 'xyz1234'
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
-        self.app.config['REDIS_FAKE'] = True
 
         with self.app.app_context():
             util.drop_all()

@@ -138,25 +138,22 @@ class Auth(object):
         # is where the auth middleware puts any unpacked auth information from
         # the request OR any exceptions that need to be raised withing the
         # request context.
-        session: Optional[Union[domain.Session, Exception]] = \
-            request.environ.get('session')
+        auth: Optional[Union[domain.Session, Exception]] = \
+            request.environ.get('auth')
 
         # Middlware may have passed an exception, which needs to be raised
         # within the app/execution context to be handled correctly.
-        if isinstance(session, Exception):
-            logger.debug('Middleware passed an exception: %s', session)
-            raise session
-
+        if isinstance(auth, Exception):
+            logger.debug('Middleware passed an exception: %s', auth)
+            raise auth
+        elif auth:
+            request.auth = auth
         # use legacy DB to authorize request if available
-        if legacy.is_configured():
-            auth = self.first_valid(self.legacy_cookies())
+        elif legacy.is_configured():
+            request.auth = self.first_valid(self.legacy_cookies())
         else:
             logger.warning('No legacy DB, will not check tapir auth.')
-            auth = None
-
-        # Attach obj to the request for use by other components
-        request.auth = auth
-        return None
+            request.auth = None
 
 
     def first_valid(self, cookies: List[str]) -> Optional[domain.Session]:

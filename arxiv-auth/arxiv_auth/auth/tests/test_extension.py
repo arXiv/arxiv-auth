@@ -101,7 +101,7 @@ def test_middleware_exception(mocker, app_with_cookie):
     inst = app_with_cookie.config['arxiv_auth.Auth']
     with app_with_cookie.test_request_context():
         mock_request  = mocker.patch(f'{auth.__name__}.request')
-        mock_request.environ = {'session': RuntimeError('Nope!')}
+        mock_request.environ = {'auth': RuntimeError('Nope!')}
 
 
         with pytest.raises(RuntimeError):

@@ -24,8 +24,8 @@ blueprint = Blueprint('fooprint', __name__, url_prefix='')
 
 @blueprint.route('/public', methods=['GET'])
 def public():     # type: ignore
-    """Return the request session as a JSON document, or raise exceptions."""
-    data = request.environ.get('session')
+    """Return the request auth as a JSON document, or raise exceptions."""
+    data = request.environ.get('auth')
     if data:
         if isinstance(data, Exception):
             raise data
