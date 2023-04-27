@@ -21,9 +21,12 @@ class TestEndorsement(TestCase):
     def setUp(self):
         """Generate some fake data."""
         self.app = Flask('test')
-        util.init_app(self.app)
         self.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         self.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
+        self.app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
+        self.app.config['SESSION_DURATION'] = '36000'
+
+        util.init_app(self.app)
 
         with self.app.app_context():
             util.create_all()
@@ -146,9 +149,12 @@ class TestAutoEndorsement(TestCase):
     def setUp(self):
         """Generate some fake data."""
         self.app = Flask('test')
-        util.init_app(self.app)
         self.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         self.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
+        self.app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
+        self.app.config['SESSION_DURATION'] = '36000'
+
+        util.init_app(self.app)
 
         with self.app.app_context():
             util.create_all()

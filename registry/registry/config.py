@@ -55,9 +55,3 @@ SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI',
                                          'sqlite://')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 CREATE_DB = bool(int(os.environ.get('CREATE_DB', 0)))
-
-# Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
-# application config to rename ``request.session`` to ``request.auth``.
-# ``request.auth`` will be the default name for the authenticated session
-# starting in v0.4.1.
-AUTH_UPDATED_SESSION_REF = True

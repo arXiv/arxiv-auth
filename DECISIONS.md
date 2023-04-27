@@ -18,3 +18,6 @@ Starting with v0.3.1, set ``AUTH_UPDATED_SESSION_REF=True`` in your
 application config to rename ``request.session`` to ``request.auth``.
 ``request.auth`` will be the default name for the authenticated session
 starting in v0.4.1.
+
+## 2023-04 Removed AUTH_UPDATED_SESSION_REF
+Auth obj is now always placed at ``request.auth``.

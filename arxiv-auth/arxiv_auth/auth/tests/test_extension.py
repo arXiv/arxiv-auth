@@ -28,13 +28,12 @@ def test_no_session_legacy_available(mocker, app_with_cookie):
         mock_legacy.sessions.load.return_value = None
 
         inst.load_session()
-        assert mock_request.session is None
+        assert mock_request.auth is None
 
         assert mock_legacy.sessions.load.call_count == 1, "An attempt is made to load a legacy session"
 
 def test_legacy_is_valid(mocker, app_with_cookie):
     """A valid legacy session is available."""
-    app_with_cookie.config['AUTH_UPDATED_SESSION_REF'] = True
     inst = app_with_cookie.config['arxiv_auth.Auth']
     with app_with_cookie.test_request_context():
         mock_legacy = mocker.patch(f'{auth.__name__}.legacy')
@@ -68,7 +67,6 @@ def test_auth_session_rename(mocker, app_with_cookie):
 
     Per ARXIVNG-1920 using ``request.auth`` is deprecated.
     """
-    app_with_cookie.config['AUTH_UPDATED_SESSION_REF'] = True
     inst = app_with_cookie.config['arxiv_auth.Auth']
     with app_with_cookie.test_request_context():
         mock_legacy = mocker.patch(f'{auth.__name__}.legacy')
@@ -78,7 +76,6 @@ def test_auth_session_rename(mocker, app_with_cookie):
         mock_request.cookies = {'foo_cookie': 'sessioncookie123'}
 
         mock_request.auth = None
-        mock_request.session = None
         mock_legacy.is_configured.return_value = True
         session = domain.Session(
             session_id='fooid',
@@ -96,7 +93,7 @@ def test_auth_session_rename(mocker, app_with_cookie):
 
         inst.load_session()
         assert mock_request.auth == session, "Session is attached to the request"
-        assert mock_request.session is None, "request.session is not set"
+
 
 
 def test_middleware_exception(mocker, app_with_cookie):

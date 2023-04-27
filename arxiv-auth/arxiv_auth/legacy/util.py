@@ -55,6 +55,11 @@ def transaction() -> Generator:
 
 def init_app(app: Flask) -> None:
     """Set configuration defaults and attach session to the application."""
+    missing = missing_configs(app.config)
+    if missing:
+        #  Error early if misconfiged, don't catch these, let the stop the app startup
+        raise RuntimeError(f"Missing the following configs: {missing}")
+
     db.init_app(app)
 
 
@@ -92,12 +97,18 @@ def get_scopes(db_user: DBUser) -> List[domain.Scope]:
 
 
 def is_configured() -> bool:
-    """Determine whether or not the legacy database is configured."""
+    """Determine whether or not the legacy auth is configured of the `Flask` app."""
     config = get_application_config()
-    if 'CLASSIC_DATABASE_URI' in config and 'CLASSIC_SESSION_HASH' in config:
-        return True
-    return False
+    return bool(missing_configs(config))
 
+def missing_configs(config) -> List[str]:
+    """Returns a list of all missing keys for configs that are needed in
+    `Flask.config` for legacy auth to work.
+    """
+    missing = [key for key in ['CLASSIC_DATABASE_URI', 'CLASSIC_SESSION_HASH',
+                               'SESSION_DURATION', 'CLASSIC_COOKIE_NAME']
+               if key not in config]
+    return missing
 
 def get_session_hash() -> str:
     """Get the legacy hash secret."""

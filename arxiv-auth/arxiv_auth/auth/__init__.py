@@ -92,6 +92,11 @@ class Auth(object):
         """
         self.app = app
         app.config['arxiv_auth.Auth'] = self
+
+        if app.config.get('ARXIV_AUTH_DEBUG') or os.getenv('ARXIV_AUTH_DEBUG'):
+            self.auth_debug()
+            logger.debug("ARXIV_AUTH_DEBUG is set and auth debug messages to logging are turned on")
+
         legacy.init_app(app)
         self.app.before_request(self.load_session)
         self.app.config.setdefault('DEFAULT_LOGOUT_REDIRECT_URL',
@@ -99,9 +104,6 @@ class Auth(object):
         self.app.config.setdefault('DEFAULT_LOGIN_REDIRECT_URL',
                                    'https://arxiv.org')
 
-        if app.config.get('ARXIV_AUTH_DEBUG') or os.getenv('ARXIV_AUTH_DEBUG'):
-            self.auth_debug()
-            logger.debug("ARXIV_AUTH_DEBUG is set and auth debug messages to logging is turned on")
 
         @self.app.teardown_request
         def teardown_request(exception: Optional[Exception]) -> None:
@@ -150,6 +152,7 @@ class Auth(object):
             auth = self.first_valid(self.legacy_cookies())
         else:
             logger.warning('No legacy DB, will not check tapir auth.')
+            auth = None
 
         # Attach obj to the request for use by other components
         request.auth = auth

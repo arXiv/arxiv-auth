@@ -44,10 +44,12 @@ class TestBootstrap(TestCase):
     def setUpClass(cls):
         """Generate some fake data."""
         cls.app = Flask('test')
-        util.init_app(cls.app)
         cls.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         cls.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
+        cls.app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
         cls.app.config['SESSION_DURATION'] = '36000'
+
+        util.init_app(cls.app)
 
         with cls.app.app_context():
             util.create_all()

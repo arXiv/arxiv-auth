@@ -2,10 +2,14 @@
 
 from unittest import TestCase, mock
 import os
+import logging
+
 from flask import Flask
+
 from arxiv import status
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
+
 from .. import auth, helpers, legacy
 
 
@@ -21,6 +25,11 @@ class TestGenerateToken(TestCase):
                                        scope=scope)
 
         app = Flask('test')
+        app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
+        app.config['CLASSIC_SESSION_HASH'] = 'foohash'
+        app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
+        app.config['SESSION_DURATION'] = '36000'
+
         legacy.init_app(app)
         app.config.update({
             'JWT_SECRET': 'thesecret',
@@ -28,8 +37,8 @@ class TestGenerateToken(TestCase):
             'SQLALCHEMY_DATABASE_URI': 'sqlite:///'
         })
         Base(app)
-        auth.Auth(app)    # <- Install the Auth extension.
-        wrap(app, [auth.middleware.AuthMiddleware])    # <- Install middleware.
+        auth.Auth(app)
+        wrap(app, [auth.middleware.AuthMiddleware])
 
         @app.route('/')
         @auth.decorators.scoped(auth.scopes.EDIT_SUBMISSION)

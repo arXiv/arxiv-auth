@@ -14,6 +14,9 @@ def temporary_db(database_url: str = 'sqlite:///:memory:',
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['CLASSIC_SESSION_HASH'] = 'foohash'
+    app.config['SESSION_DURATION'] = 3600
+    app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session'
+
     with app.app_context():
         util.init_app(app)
         if create:
