@@ -1,11 +1,7 @@
 # ``arxiv-auth`` Library
 
-This is the code that gets uploaded to pypy as arxiv-auth. The code
-for the `/login` page lives in [`accounts`](../accounts).
-
-This package provides functionality for working with arxiv users in arXiv
-services. This package provides the new JWT functionality and legacy user and
-session data in the classic database.
+This package provides a Flask add on and other code for working with arxiv
+authenticated users in arXiv services.
 
 Housing these components in a library separate from web apps ensures that users
 and sessions are represented and manipulated consistently. The login+logout, user
@@ -13,27 +9,32 @@ accounts(TBD), API client registry(TBD), and authenticator(TBD) services all
 rely on this package.
 
 # Quick start
-For typical use-cases where you want to check if a request is from an
-authenticated arxiv user, you will need to do the following:
+For use-cases to check if a request is from an authenticated arxiv user, do the
+following:
 
-1. Install this package into your virtual environment.
-2. Install :class:`arxiv_auth.auth.Auth` onto your application. This will make
-   information about the current authenticated :class:`.domain.Session`
-   available to you on the Flask request proxy object as
-   ``flask.request.auth``.
+1. Install this package into your virtual environment
+2. Install :class:`arxiv_auth.auth.Auth` onto your application. This adds a
+   function called for each request to Flask that adds an instance of
+   :class:`arxiv_auth.domain.Session` at ``flask.request.auth`` if the client is
+   authenticated.
 3. Add to the ``flask.config`` to setup :class:`arxiv_auth.auth.Auth` and
-   related classes.
+   related classes
    
 Here's an example of how you might do #2 and #3:
 ```
    from flask import Flask
    from arxiv.base import Base
-   from arxiv.base.middleware import wrap
    from arxiv_users import auth
 
    app = Flask(__name__)
    Base(app)
-   # TODO WHAT CONFIG IS NEEDED?
+
+   # config settings required to use legacy auth 
+   app.config['CLASSIC_SESSION_HASH'] = '{hash_private_secret}'
+   app.config['CLASSIC_DATABASE_URI'] = '{your_sqlalchemy_db_uri_to_legacy_db'}
+   app.config['SESSION_DURATION'] = 36000
+   app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session'
+
    auth.Auth(app)    # <- Install the Auth to get auth checks and request.auth
 
    @app.route("/")
@@ -44,8 +45,15 @@ Here's an example of how you might do #2 and #3:
            return "<p>Hello unknown client.</p>"
 ```
 
-Checking endorsements
----------------------
+# How can develop and test my Flask app?
+TODO: To run your flask app with arxiv-auth and log in an test your app...
+
+
+# /login page?
+The code for the `/login` page lives in [`accounts`](../accounts).
+
+# Checking endorsements
+
 Endorsements for submission are represented as categories on the
 :class:`.Authorization` object (generally
 ``session.authorizations.endorsements``). To avoid enumerating all of
@@ -65,8 +73,8 @@ For convenience, endorsement authorizations can be checked with the
        print("This user/client is endorsed for cs.AI")
 ```
 
-Middleware
-----------
+# Middleware
+
 In during NG there was middleware for arxiv-auth that could be used in NGINX to
 do the authentication there. As of 2023 it is not in use.
 

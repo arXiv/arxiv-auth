@@ -71,6 +71,11 @@ that change in `accounts` you will need to reinstall `arxiv-auth` by running
 `poetry install`. Flask's auto-restart of the service in debug mod will not pick
 up changes to `arxiv-auth`.
 
+## TODO
+- Password reset in ``arxiv.users.legacy.accounts`` and in the accounts service.
+- Investigate the state of the accounts user registration and clean up, test and
+  document if useful.
+
 ## Generating auth tokens
 
 Use the helper script ``generate_token.py`` to generate auth tokens for
