@@ -47,8 +47,10 @@ DEFAULT_LOGOUT_REDIRECT_URL = os.environ.get(
     'https://arxiv.org'
 )
 
+_relative_urls = r"(^\/(?:[^\/]+\/)*[^\/]+$)"
+_absolute_urls = rf"(^https://([a-zA-Z0-9\-.])*{re.escape(BASE_SERVER)}/.*$)"
 LOGIN_REDIRECT_REGEX = os.environ.get('LOGIN_REDIRECT_REGEX',
-                                      fr'(^/.*)|(^https://([a-zA-Z0-9\-.])*{re.escape(BASE_SERVER)}/.*)')
+                                      f"{_relative_urls}|{_absolute_urls}")
 """Regex to check next_page of /login.
 
 Only next_page values that match this regex will be allowed. All
