@@ -5,7 +5,7 @@ from typing import Any, Optional, List, NamedTuple
 from datetime import datetime
 from pytz import timezone, UTC
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, ValidationError
 from arxiv import taxonomy
 from arxiv.taxonomy import Category
 from arxiv.base import logging
@@ -23,6 +23,7 @@ RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]
 
 class UserProfile(BaseModel):
     """User profile data."""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     affiliation: str
     """Institutional affiliation."""
@@ -145,6 +146,7 @@ class Scope(str):
 
 class Authorizations(BaseModel):
     """Authorization information, e.g. associated with a :class:`.Session`."""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     classic: int = 0
     """Capability code associated with a user's session."""
@@ -282,6 +284,7 @@ class Client(BaseModel):
 
 class Session(BaseModel):
     """Represents an authenticated session in the arXiv system."""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     session_id: str
     """Unique identifier for the session."""
