@@ -12,7 +12,6 @@ from arxiv_auth.auth.middleware import AuthMiddleware
 from accounts.routes import ui
 
 from arxiv_auth.auth.sessions import SessionStore
-from arxiv_auth.legacy.util import init_app as legacy_init_app
 from arxiv_auth.legacy.util import create_all as legacy_create_all
 
 s3 = FlaskS3()
@@ -43,7 +42,6 @@ def create_web_app() -> Flask:
     app.config['SERVER_NAME'] = None
 
     SessionStore.init_app(app)
-    legacy_init_app(app)
 
     app.register_blueprint(ui.blueprint)
     Base(app)    # Gives us access to the base UI templates and resources.
