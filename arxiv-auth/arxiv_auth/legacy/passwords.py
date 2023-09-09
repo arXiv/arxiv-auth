@@ -3,12 +3,10 @@
 import secrets
 from base64 import b64encode, b64decode
 import hashlib
-
-from arxiv.base import logging
+import logging
 
 from .exceptions import PasswordAuthenticationFailed
 
-logger = logging.getLogger(__name__)
 
 def _hash_salt_and_password(salt: bytes, password: str) -> bytes:
     return hashlib.sha1(salt + b'-' + password.encode('ascii')).digest()

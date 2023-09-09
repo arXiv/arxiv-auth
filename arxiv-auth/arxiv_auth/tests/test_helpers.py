@@ -25,7 +25,7 @@ class TestGenerateToken(TestCase):
                                        scope=scope)
 
         app = Flask('test')
-        app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
         app.config['CLASSIC_SESSION_HASH'] = 'foohash'
         app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
         app.config['SESSION_DURATION'] = '36000'

@@ -5,6 +5,7 @@ import hashlib
 from base64 import b64encode, b64decode
 from contextlib import contextmanager
 from datetime import datetime
+import logging
 
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.orm.exc import NoResultFound
@@ -12,7 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from . import util, endorsements
 from .. import domain
 from ..auth import scopes
-from arxiv.base import logging
+
 from . passwords import check_password, is_ascii
 from .models import DBUser, DBUserPassword, DBPermanentToken, \
     DBUserNickname, DBProfile, db

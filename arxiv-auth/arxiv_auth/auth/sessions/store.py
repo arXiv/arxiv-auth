@@ -9,6 +9,7 @@ import random
 from datetime import datetime, timedelta
 import dateutil.parser
 from pytz import timezone, UTC
+import logging
 
 from typing import Optional, Union
 
@@ -22,7 +23,6 @@ from ..exceptions import SessionCreationFailed, InvalidToken, \
     SessionDeletionFailed, UnknownSession, ExpiredToken
 
 from arxiv.base.globals import get_application_config, get_application_global
-from arxiv.base import logging
 
 logger = logging.getLogger(__name__)
 EASTERN = timezone('US/Eastern')
@@ -204,7 +204,7 @@ class SessionStore(object):
         """Get session data by session ID."""
         session_jwt: str = self.r.get(session_id)
         if not session_jwt:
-            logger.error(f'No such session: {session_id}')
+            logger.debug(f'No such session: {session_id}')
             raise UnknownSession(f'Failed to find session {session_id}')
         if decode:
             return self._decode(session_jwt)

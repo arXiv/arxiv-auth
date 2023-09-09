@@ -2,15 +2,15 @@
 
 
 from typing import Any, Optional, List, NamedTuple
+from collections.abc import Iterable
+
 from datetime import datetime
 from pytz import timezone, UTC
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError, BeforeValidator, field_validator
 from arxiv import taxonomy
 from arxiv.taxonomy import Category
-from arxiv.base import logging
 
-logger = logging.getLogger(__name__)
 EASTERN = timezone('US/Eastern')
 
 STAFF = ('1', 'Staff')
@@ -19,6 +19,16 @@ POST_DOC = ('3', 'Post doc')
 GRAD_STUDENT = ('4', 'Grad student')
 OTHER = ('5', 'Other')
 RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]
+
+
+def _check_category(data: Any) -> Category:
+    if isinstance(data, Category):
+        return data
+    if not isinstance(data, str):
+        raise ValidationError(f"object of type {type(data)} cannnot be used as a Category")
+    cat = Category(data)
+    cat.name # possible rasie value error on non-existance
+    return cat
 
 
 class UserProfile(BaseModel):
@@ -47,6 +57,11 @@ class UserProfile(BaseModel):
 
     Should be one of :ref:`arxiv.taxonomy.CATEGORIES`.
     """
+
+    @field_validator('default_category', mode='before')
+    @classmethod
+    def check_category(cls, data: Any) -> Category:
+        return _check_category(data)
 
     homepage_url: str = ''
     """User's homepage or external profile URL."""
@@ -153,6 +168,14 @@ class Authorizations(BaseModel):
 
     endorsements: List[Category] = []
     """Categories to which the user is permitted to submit."""
+
+    @field_validator('endorsements', mode='before')
+    @classmethod
+    def check_endorsements(cls, data: Any) -> List[Category]:
+        if isinstance(data, str) or not issubclass(type(data), Iterable):
+            raise ValidationError("endorsements must be a list")
+        return [ _check_category(obj) for obj in data ]
+
 
     scopes: List[str] = []
     """Authorized :class:`.scope`s. See also :mod:`arxiv.users.auth.scopes`."""

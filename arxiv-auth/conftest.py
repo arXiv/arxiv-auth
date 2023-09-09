@@ -14,14 +14,17 @@ from arxiv_auth.auth.middleware import AuthMiddleware
 
 @pytest.fixture()
 def app():
-    app = Flask('test_auth_app')
-    SessionStore.init_app(app)
-    Base(app)
 
-    app.config['CLASSIC_DATABASE_URI'] = f'fake set in {__file__}'
+    app = Flask('test_auth_app')
+    app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
     app.config['CLASSIC_SESSION_HASH'] = f'fake set in {__file__}'
     app.config['SESSION_DURATION'] = f'fake set in {__file__}'
     app.config['CLASSIC_COOKIE_NAME'] = f'fake set in {__file__}'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+
+    SessionStore.init_app(app)
+    Base(app)
+
 
     Auth(app)
     wrap(app, [AuthMiddleware])

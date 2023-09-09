@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from pytz import timezone, UTC
 import hashlib
 from base64 import b64encode, b64decode
+import logging
 
 from typing import Optional, Generator, Tuple, List
 
@@ -15,8 +16,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-
-from arxiv.base import logging
 
 from .. import domain
 from .models import db
@@ -38,7 +37,7 @@ def _load(session_id: str) -> DBSession:
         .filter(DBSession.session_id == session_id) \
         .first()
     if not db_session:
-        logger.error(f'No session found with id {session_id}')
+        logger.debug(f'No session found with id {session_id}')
         raise UnknownSession('No such session')
     return db_session
 
@@ -49,7 +48,7 @@ def _load_audit(session_id: str) -> DBSessionsAudit:
         .filter(DBSessionsAudit.session_id == session_id) \
         .first()
     if not db_sessions_audit:
-        logger.error(f'No session audit found with id {session_id}')
+        logger.debug(f'No session audit found with id {session_id}')
         raise UnknownSession('No such session audit')
     return db_sessions_audit
 

@@ -81,8 +81,8 @@ from typing import Optional, Callable, Any, List
 from functools import wraps
 from flask import request
 from werkzeug.exceptions import Unauthorized, Forbidden
+import logging
 
-from arxiv.base import logging
 from .. import domain
 
 INVALID_TOKEN = {'reason': 'Invalid authorization token'}

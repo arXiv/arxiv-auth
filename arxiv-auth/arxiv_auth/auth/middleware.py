@@ -36,11 +36,11 @@ For convenience, this is intended to be used with
 import os
 from typing import Callable, Iterable, Tuple
 import jwt
+import logging
 
 from werkzeug.exceptions import Unauthorized, InternalServerError
 
 from arxiv.base.middleware import BaseMiddleware
-from arxiv.base import logging
 
 from . import tokens
 from .exceptions import InvalidToken, ConfigurationError, MissingToken
@@ -95,7 +95,7 @@ class AuthMiddleware(BaseMiddleware):
             # Attach the encrypted token so that we can use it in subrequests.
             environ['token'] = token
         except InvalidToken as e:   # Let the application decide what to do.
-            logger.error(f'Auth token not valid: {token}')
+            logger.debug(f'Auth token not valid: {token}')
             exception = Unauthorized('Invalid auth token')
             environ['auth'] = exception
         except Exception as e:

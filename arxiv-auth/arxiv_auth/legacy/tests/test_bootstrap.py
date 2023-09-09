@@ -13,6 +13,7 @@ from datetime import datetime
 from pytz import timezone, UTC
 from mimesis import Person, Internet, Datetime, locales
 
+from sqlalchemy import select, func
 from arxiv import taxonomy
 from .. import models, util, sessions, authenticate, exceptions
 from ..passwords import hash_password
@@ -44,34 +45,43 @@ class TestBootstrap(TestCase):
     def setUpClass(cls):
         """Generate some fake data."""
         cls.app = Flask('test')
-        cls.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         cls.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
         cls.app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
         cls.app.config['SESSION_DURATION'] = '36000'
+        cls.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://' #in memory
 
         util.init_app(cls.app)
 
         with cls.app.app_context():
             util.create_all()
             with util.transaction() as session:
+                edc = session.execute(select(models.DBEndorsementDomain)).all()
+                for row in edc:
+                    print(row)
+                assert len(edc) == 0, "Expect the table to be empty at the start"
+
                 session.add(models.DBEndorsementDomain(
-                    endorsement_domain='test_domain',
+                    endorsement_domain='test_domain_bootstrap',
                     endorse_all='n',
                     mods_endorse_all='n',
                     endorse_email='y',
                     papers_to_endorse=3
                 ))
-                for category in taxonomy.CATEGORIES_ACTIVE.keys():
-                    if '.' in category:
-                        archive, subject_class = category.split('.', 1)
-                    else:
-                        archive, subject_class = category, ''
+
+            for category in taxonomy.CATEGORIES_ACTIVE.keys():
+                if '.' in category:
+                    archive, subject_class = category.split('.', 1)
+                else:
+                    archive, subject_class = category, ''
+
+                with util.transaction() as session:
+                    print(f"arch: {archive} sc: {subject_class}")
                     session.add(models.DBCategory(
                         archive=archive,
                         subject_class=subject_class,
                         definitive=1,
                         active=1,
-                        endorsement_domain='test_domain'
+                        endorsement_domain='test_domain_bootstrap'
                     ))
 
             COUNT = 100
@@ -210,12 +220,6 @@ class TestBootstrap(TestCase):
                         (approved, deleted, banned, username_is_valid),
                     ))
 
-    @classmethod
-    def tearDownClass(cls):
-        try:
-            os.remove('./test.db')
-        except FileNotFoundError:
-            pass
 
     def test_authenticate_and_use_session(self):
         """Attempt to authenticate users and create/load auth sessions."""

@@ -6,11 +6,11 @@ from base64 import b64encode, b64decode
 from contextlib import contextmanager
 from datetime import datetime
 import secrets
+import logging
 
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.orm.exc import NoResultFound
 
-from arxiv.base import logging
 from .. import domain
 from . import util, endorsements, exceptions, models
 from .passwords import hash_password

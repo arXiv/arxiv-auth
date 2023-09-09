@@ -4,12 +4,12 @@ from typing import Generator, List, Any
 from datetime import datetime
 from pytz import timezone, UTC
 from contextlib import contextmanager
+import logging
 
 from flask import Flask
 from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 
-from arxiv.base import logging
 from arxiv.base.globals import get_application_config
 
 from ..auth import scopes
@@ -60,7 +60,10 @@ def init_app(app: Flask) -> None:
         #  Error early if misconfiged, don't catch these, let the stop the app startup
         raise RuntimeError(f"Missing the following configs: {missing}")
 
-    db.init_app(app)
+    if "sqlalchemy" in app.extensions:
+        logger.warning("Skipping init of sqlalchemy since it is already setup")
+    else:
+        db.init_app(app)
 
 
 def current_session() -> Session:
@@ -105,8 +108,7 @@ def missing_configs(config) -> List[str]:
     """Returns a list of all missing keys for configs that are needed in
     `Flask.config` for legacy auth to work.
     """
-    missing = [key for key in ['CLASSIC_DATABASE_URI', 'CLASSIC_SESSION_HASH',
-                               'SESSION_DURATION', 'CLASSIC_COOKIE_NAME']
+    missing = [key for key in ['CLASSIC_SESSION_HASH', 'SESSION_DURATION', 'CLASSIC_COOKIE_NAME']
                if key not in config]
     return missing
 
