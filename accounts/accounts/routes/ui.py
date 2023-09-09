@@ -4,12 +4,13 @@ from typing import Any, Callable
 from datetime import datetime, timedelta
 from functools import wraps
 from pytz import timezone, UTC
+import logging
+
 from flask import Blueprint, render_template, url_for, request, \
     make_response, redirect, current_app, send_file, Response
 
 from arxiv import status
 from arxiv_auth import domain
-from arxiv.base import logging
 
 from accounts.controllers import captcha_image, registration, authentication
 
@@ -52,15 +53,15 @@ def set_cookies(response: Response, data: dict) -> None:
         cookie_name = current_app.config[f'{cookie_key.upper()}_NAME']
         max_age = timedelta(seconds=expires)
         # expires_date = expires_date.replace(tzinfo=EASTERN)
-        logger.debug('Set cookie %s with %s, max_age %s',
-                     cookie_name, cookie_value, max_age)
         domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
+        logger.info('Set cookie %s with %s, max_age %s domain %s',
+                    cookie_name, cookie_value, max_age, domain)
         params = dict(httponly=True, domain=domain)
         if current_app.config['AUTH_SESSION_COOKIE_SECURE']:
             # Setting samesite to lax, to allow reasonable links to
             # authenticated views using GET requests.
             params.update({'secure': True, 'samesite': 'lax'})
-        response.set_cookie(cookie_name, cookie_value, max_age=max_age,
+        response.set_cookie(key=cookie_name, value=cookie_value, max_age=max_age,
                             **params)
 
 
@@ -77,7 +78,7 @@ def unset_submission_cookie(response: Response) -> None:
     submission session upon subsequent logins. This can lead to weird
     inconsistencies.
     """
-    response.set_cookie('submit_session', '', max_age=0, httponly=True)
+    response.set_cookie(key='submit_session', value='', max_age=0, httponly=True)
 
 
 def unset_permanent_cookie(response: Response) -> None:
@@ -89,11 +90,11 @@ def unset_permanent_cookie(response: Response) -> None:
     permanent_cookie_name = current_app.config['CLASSIC_PERMANENT_COOKIE_NAME']
     domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
     now = datetime.now(UTC)
-    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=now,
+    response.set_cookie(key=permanent_cookie_name, value='', max_age=0, expires=now,
                         httponly=True)
-    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=now,
+    response.set_cookie(key=permanent_cookie_name, value='', max_age=0, expires=now,
                         httponly=True, domain=domain)
-    response.set_cookie(permanent_cookie_name, '', max_age=0, expires=now,
+    response.set_cookie(key=permanent_cookie_name, value='', max_age=0, expires=now,
                         httponly=True, domain=domain.lstrip('.'))
 
 

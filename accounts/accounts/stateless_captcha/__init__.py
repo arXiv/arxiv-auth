@@ -26,13 +26,13 @@ import random
 import io
 from typing import Dict, Mapping, Any, Optional
 from datetime import datetime, timedelta
+import logging
 from pytz import timezone, UTC
 import dateutil.parser
 import string
 import jwt
 from captcha.image import ImageCaptcha
 
-from arxiv.base import logging
 
 EASTERN = timezone('US/Eastern')
 logger = logging.getLogger(__name__)

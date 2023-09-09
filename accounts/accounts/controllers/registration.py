@@ -10,12 +10,13 @@ ORCID.
 """
 
 from typing import Dict, Tuple, Any, Optional
+import logging
+
 from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import BadRequest, InternalServerError
 
 from arxiv import status
 from arxiv_auth import domain
-from arxiv.base import logging
 from arxiv_auth import domain
 
 from arxiv_auth.auth.sessions import SessionStore

@@ -12,6 +12,7 @@ authorization information.
 
 from typing import Dict, Tuple, Any, Optional
 import re
+import logging
 
 from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import InternalServerError
@@ -23,7 +24,6 @@ from wtforms.validators import DataRequired
 from retry import retry
 
 from arxiv import status
-from arxiv.base import logging
 
 from arxiv_auth.domain import User, Authorizations, Session
 

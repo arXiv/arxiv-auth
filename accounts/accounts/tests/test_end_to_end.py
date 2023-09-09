@@ -60,7 +60,6 @@ class TestLoginLogoutRoutes(TestCase):
     def setUp(self):
         self.ip_address = '10.1.2.3'
         os.environ['ARXIV_AUTH_DEBUG'] = '1'
-
         os.environ['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
         os.environ['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
         os.environ['AUTH_SESSION_COOKIE_SECURE'] = '0'
@@ -165,8 +164,8 @@ class TestLoginLogoutRoutes(TestCase):
         classic_cookie = cookies[classic_cookie_name]
 
         # Verify that the domain is correct.
-        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
-        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+        self.assertEqual(cookie['Domain'], 'arxiv.org', 'Domain is set')
+        self.assertEqual(classic_cookie['Domain'], 'arxiv.org',
                          'Domain is set')
 
         # Verify that the correct expiry is set.
@@ -226,11 +225,11 @@ class TestLoginLogoutRoutes(TestCase):
         # localhost so we have to work around like this.
         auth_cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
         cookie = _parse_cookies(response.headers.getlist('Set-Cookie'))[auth_cookie_name]
-        client.set_cookie('localhost', auth_cookie_name, cookie['value'])
+        client.set_cookie(key=auth_cookie_name, value=cookie['value'], domain='localhost')
 
         legacy_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
         cookie = _parse_cookies(response.headers.getlist('Set-Cookie'))[legacy_cookie_name]
-        client.set_cookie('localhost', legacy_cookie_name, cookie['value'])
+        client.set_cookie(key=legacy_cookie_name, value=cookie['value'], domain='localhost')
 
         next_page = 'https://arxiv.org/some_sort_of_next_page?cheeseburger=yes%20please'
         response = client.get('/login?next_page=' + quote_plus(next_page))
@@ -252,11 +251,11 @@ class TestLoginLogoutRoutes(TestCase):
         # localhost so we have to work around like this.
         auth_cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
         cookie = _parse_cookies(response.headers.getlist('Set-Cookie'))[auth_cookie_name]
-        client.set_cookie('localhost', auth_cookie_name, cookie['value'])
+        client.set_cookie(key=auth_cookie_name, value=cookie['value'], domain='localhost')
 
         legacy_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
         cookie = _parse_cookies(response.headers.getlist('Set-Cookie'))[legacy_cookie_name]
-        client.set_cookie('localhost', legacy_cookie_name, cookie['value'])
+        client.set_cookie(key=legacy_cookie_name, value=cookie['value'], domain='localhost')
 
         next_page = 'https://arxiv.org/some_sort_of_next_page?cheeseburger=yes%20please'
         response = client.get('/login?next_page=' + quote_plus(next_page))
@@ -290,9 +289,8 @@ class TestLoginLogoutRoutes(TestCase):
         classic_cookie = cookies[classic_cookie_name]
 
         # Verify that the domain is correct.
-        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
-        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
-                         'Domain is set')
+        self.assertEqual(cookie['Domain'], 'arxiv.org', 'Domain is set')
+        self.assertEqual(classic_cookie['Domain'], 'arxiv.org', 'Domain is set')
 
         # Verify that the correct expiry is set.
         self.assertEqual(int(cookie['Max-Age']), self.expiry - 1)
@@ -315,8 +313,8 @@ class TestLoginLogoutRoutes(TestCase):
                 self.assertEqual(db_session.end_time, 0)
 
         response = client.get('/logout')
+        assert response.status_code == 303
         logout_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
-
         cookie = logout_cookies[cookie_name]
         classic_cookie = logout_cookies[classic_cookie_name]
 
@@ -324,7 +322,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.assertEqual(cookie['Max-Age'], '0', 'Session cookie is expired')
         self.assertLessEqual(parse(cookie['Expires']), datetime.now(UTC),
                              "Session cookie is expired")
-        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
+        self.assertEqual(cookie['Domain'], 'arxiv.org', 'Domain is set')
 
         self.assertEqual(classic_cookie['value'], '',
                          'Classic cookie is unset')
@@ -333,7 +331,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.assertLessEqual(parse(classic_cookie['Expires']),
                              datetime.now(UTC),
                              'Classic session cookie is expired')
-        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+        self.assertEqual(classic_cookie['Domain'], 'arxiv.org',
                          'Domain is set')
 
         # Verify that the expiry is set in the database.
@@ -351,7 +349,6 @@ class TestLoginLogoutRoutes(TestCase):
     def test_logout_clears_legacy_submit_cookie(self):
         """When the user logs out, the legacy submit cookie is unset."""
         client = self.app.test_client()
-        # client.set_cookie('localhost')
         form_data = {'username': 'foouser', 'password': 'thepassword'}
 
         # Werkzeug should keep the cookies around for the next request.
@@ -361,7 +358,7 @@ class TestLoginLogoutRoutes(TestCase):
         cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
         classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
 
-        client.set_cookie('', 'submit_session', '12345678')
+        client.set_cookie(key='submit_session', value='12345678')
         self.assertIn(cookie_name, cookies, "Sets cookie for authn session.")
         self.assertIn(classic_cookie_name, cookies,
                       "Sets cookie for classic sessions.")
@@ -370,8 +367,8 @@ class TestLoginLogoutRoutes(TestCase):
         classic_cookie = cookies[classic_cookie_name]
 
         # Verify that the domain is correct.
-        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
-        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+        self.assertEqual(cookie['Domain'], 'arxiv.org', 'Domain is set')
+        self.assertEqual(classic_cookie['Domain'], 'arxiv.org',
                          'Domain is set')
 
         # Verify that the correct expiry is set.
@@ -395,7 +392,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.assertEqual(cookie['Max-Age'], '0', 'Session cookie is expired')
         self.assertLessEqual(parse(cookie['Expires']), datetime.now(UTC),
                              "Session cookie is expired")
-        self.assertEqual(cookie['Domain'], '.arxiv.org', 'Domain is set')
+        self.assertEqual(cookie['Domain'], 'arxiv.org', 'Domain is set')
         self.assertEqual(classic_cookie['value'], '',
                          'Classic cookie is unset')
         self.assertEqual(classic_cookie['Max-Age'], '0',
@@ -403,7 +400,7 @@ class TestLoginLogoutRoutes(TestCase):
         self.assertLessEqual(parse(classic_cookie['Expires']),
                              datetime.now(UTC),
                              "Classic cookie is expired")
-        self.assertEqual(classic_cookie['Domain'], '.arxiv.org',
+        self.assertEqual(classic_cookie['Domain'], 'arxiv.org',
                          'Classic cookie domain is set')
         self.assertEqual(logout_cookies['submit_session']['Max-Age'], '0',
                          'Legacy submission cookie is expired')

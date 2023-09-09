@@ -1,5 +1,5 @@
 """Tests for mod:`accounts.controllers`."""
-
+import os
 from unittest import TestCase, mock
 from datetime import datetime
 from pytz import timezone, UTC
@@ -41,17 +41,18 @@ class TestAuthenticationController(TestCase):
     def setUp(self):
         self.ip_address = '10.1.2.3'
         self.environ_base = {'REMOTE_ADDR': self.ip_address}
+
+        os.environ['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
+        os.environ['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
+        os.environ['AUTH_SESSION_COOKIE_SECURE'] = '0'
+        os.environ['SESSION_DURATION'] = f"{self.expiry}"
+        os.environ['JWT_SECRET'] = self.secret
+        os.environ['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+        os.environ['CLASSIC_SESSION_HASH'] = 'xyz1234'
+        os.environ['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
+        os.environ['REDIS_FAKE'] = "true"
+        os.environ['SERVER_NAME'] = 'example.com' # to do urls in emails
         self.app = create_web_app()
-        self.app.config['CLASSIC_COOKIE_NAME'] = 'foo_tapir_session'
-        self.app.config['AUTH_SESSION_COOKIE_NAME'] = 'baz_session'
-        self.app.config['AUTH_SESSION_COOKIE_SECURE'] = '0'
-        self.app.config['SESSION_DURATION'] = self.expiry
-        self.app.config['JWT_SECRET'] = self.secret
-        self.app.config['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
-        self.app.config['CLASSIC_SESSION_HASH'] = 'xyz1234'
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
-        self.app.config['REDIS_FAKE'] = True
-        self.app.config['SERVER_NAME'] = 'example.com' # to do urls in emails
 
         with self.app.app_context():
             util.drop_all()
@@ -190,7 +191,7 @@ class TestAuthenticationController(TestCase):
         next_page = '/foo'
         start_time = datetime.now(tz=UTC)
         user = domain.User(
-            user_id=42,
+            user_id="42",
             username='foouser',
             email='user@ema.il',
             verified=True
@@ -245,7 +246,7 @@ class TestAuthenticationController(TestCase):
         next_page = '/foo'
         start_time = datetime.now(tz=UTC)
         user = domain.User(
-            user_id=42,
+            user_id='42',
             username='foouser',
             email='user@ema.il',
             verified=False
