@@ -48,7 +48,7 @@ def transaction() -> Generator:
         if db.session.new or db.session.dirty or db.session.deleted:
             db.session.commit()
     except Exception as e:
-        logger.warning('Commit failed, rolling back: %s', str(e))
+        logger.debug('Commit failed, rolling back: %s', str(e))
         db.session.rollback()
         raise
 

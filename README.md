@@ -1,7 +1,7 @@
 # arXiv Auth
 
 This repo provides applications and libraries to support authentication and
-authorization, including login, user sessions, account creation(TBD) and API
+authorization, including /login, user sessions, account creation(TBD) and API
 token management(TBD).
 
 In this repository there are the following:
@@ -28,4 +28,3 @@ looking to use.
 
 # TODO
 - Investigate the state of the registry service and clean up, test and document if useful.
-

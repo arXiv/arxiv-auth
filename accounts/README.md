@@ -66,7 +66,7 @@ the DB structure does not already exist, you will need to be able to
 create tables. Conventional read/write access should be sufficient.
 
 ## Need to reinstall arxiv-auth
-If you are doing local development and make a change to arxiv-auth and want have
+If you are doing local development and make a change to `arxiv-auth` and want have
 that change in `accounts` you will need to reinstall `arxiv-auth` by running
 `poetry install`. Flask's auto-restart of the service in debug mod will not pick
 up changes to `arxiv-auth`.
