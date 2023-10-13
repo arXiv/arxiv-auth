@@ -31,7 +31,7 @@ def anonymous_only(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.auth:
-            next_page = good_next_page(request.args.get('next_page',None))
+            next_page = good_next_page(request.args.get('next_page', None))
             return make_response(redirect(next_page, code=status.HTTP_303_SEE_OTHER))
         else:
             return func(*args, **kwargs)

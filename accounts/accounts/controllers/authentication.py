@@ -189,7 +189,7 @@ def logout(session_cookie: Optional[str],
             'classic_cookie': ('', 0)
         }
     }
-    return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
+    return data, status.HTTP_303_SEE_OTHER, {'Location': good_next_page(next_page)}
 
 
 class LoginForm(Form):

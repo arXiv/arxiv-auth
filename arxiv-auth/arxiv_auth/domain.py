@@ -33,6 +33,7 @@ def _check_category(data: Any) -> Category:
 
 class UserProfile(BaseModel):
     """User profile data."""
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     affiliation: str
@@ -61,6 +62,7 @@ class UserProfile(BaseModel):
     @field_validator('default_category', mode='before')
     @classmethod
     def check_category(cls, data: Any) -> Category:
+        """Checks if `data` is a category."""
         return _check_category(data)
 
     homepage_url: str = ''
@@ -161,6 +163,7 @@ class Scope(str):
 
 class Authorizations(BaseModel):
     """Authorization information, e.g. associated with a :class:`.Session`."""
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     classic: int = 0
@@ -172,6 +175,7 @@ class Authorizations(BaseModel):
     @field_validator('endorsements', mode='before')
     @classmethod
     def check_endorsements(cls, data: Any) -> List[Category]:
+        """Checks if `data` contains endorsements."""
         if isinstance(data, str) or not issubclass(type(data), Iterable):
             raise ValidationError("endorsements must be a list")
         return [ _check_category(obj) for obj in data ]
@@ -307,6 +311,7 @@ class Client(BaseModel):
 
 class Session(BaseModel):
     """Represents an authenticated session in the arXiv system."""
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     session_id: str

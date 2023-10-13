@@ -105,9 +105,7 @@ def is_configured() -> bool:
     return not bool(missing_configs(config))
 
 def missing_configs(config) -> List[str]:
-    """Returns a list of all missing keys for configs that are needed in
-    `Flask.config` for legacy auth to work.
-    """
+    """Returns missing keys for configs  needed in `Flask.config` for legacy auth to work."""
     missing = [key for key in ['CLASSIC_SESSION_HASH', 'SESSION_DURATION', 'CLASSIC_COOKIE_NAME']
                if key not in config]
     return missing

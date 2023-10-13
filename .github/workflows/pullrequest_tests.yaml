@@ -20,12 +20,12 @@ jobs:
       - name: Install and test arxiv-auth
         working-directory: ./arxiv-auth
         run: |
-          poetry install
+          poetry install --with=dev
           poetry run pytest --cov=arxiv_auth arxiv_auth
       - name: Install and test accounts
         working-directory: ./accounts
         run: |
-          poetry install
+          poetry install --with=dev
           poetry run pytest --cov=accounts accounts
       - name: linter
         run: |

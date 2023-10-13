@@ -114,7 +114,7 @@ class TestAuthenticationController(TestCase):
         mock_legacy_ses.invalidate_session.return_value = None
         mock_SessionStore.current_session.return_value \
             .delete.return_value = None
-        next_page = '/'
+        next_page = 'https://arxiv.org/some_next_page'
         session_id = 'foosession'
         classic_id = 'bazsession'
         with self.app.app_context():
@@ -131,7 +131,7 @@ class TestAuthenticationController(TestCase):
         mock_legacy_ses.invalidate_session.return_value = None
         mock_SessionStore.current_session.return_value \
             .delete.return_value = None
-        next_page = '/'
+        next_page = 'https://arxiv.org/some_next_page?param=11%x'
         with self.app.app_context():
             data, status_code, header = logout(None, None, next_page)
         self.assertEqual(status_code, status.HTTP_303_SEE_OTHER,

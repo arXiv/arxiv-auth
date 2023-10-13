@@ -172,7 +172,8 @@ class Auth(object):
     def auth_debug(self) -> None:
         """Sets several auth loggers to DEBUG.
 
-        This is useful to get an idea of what is going on with auth."""
+        This is useful to get an idea of what is going on with auth.
+        """
         logger.setLevel(logging.DEBUG)
         legacy.sessions.logger.setLevel(logging.DEBUG)
         legacy.authenticate.logger.setLevel(logging.DEBUG)
