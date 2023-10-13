@@ -12,6 +12,7 @@ from flask import Blueprint, render_template, url_for, request, \
 from arxiv import status
 from arxiv_auth import domain
 
+from accounts.next_page import good_next_page
 from accounts.controllers import captcha_image, registration, authentication
 
 EASTERN = timezone('US/Eastern')
@@ -30,7 +31,8 @@ def anonymous_only(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.auth:
-            return make_response(redirect(_checked_next_page(), code=status.HTTP_303_SEE_OTHER))
+            next_page = good_next_page(request.args.get('next_page',None))
+            return make_response(redirect(next_page, code=status.HTTP_303_SEE_OTHER))
         else:
             return func(*args, **kwargs)
     return wrapper

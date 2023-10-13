@@ -54,9 +54,6 @@ REDIS_FAKE = os.environ.get('REDIS_FAKE', False)
 
 Useful for testing, dev, beta."""
 
-JWT_SECRET = os.environ.get('JWT_SECRET', secrets.token_urlsafe(16))
-"""JWT secret used with NG JWTs in `arxiv-auth`."""
-
 AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
 AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', f'.{BASE_SERVER}')
 AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))
