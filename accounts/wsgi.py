@@ -14,7 +14,10 @@ def application(environ, start_response):    # type: ignore
         # in config.py or via an os.environ var loaded by config.py.
         if key == 'SERVER_NAME':
             continue
-        os.environ[key] = str(value)
+        try:
+            os.environ[key] = str(value)
+        except UnicodeEncodeError as uee:
+            print(f"{__file__} Could not decode bytes '{value}' for '{key}' most likely due to a surrogate. {uee}")
 
     global __flask_app__
     if __flask_app__ is None:
