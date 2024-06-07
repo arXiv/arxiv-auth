@@ -10,8 +10,9 @@ import hashlib
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 
+from arxiv.db import models
 
-from .. import authenticate, exceptions, models, util
+from .. import authenticate, exceptions, util
 
 from .util import temporary_db
 
@@ -30,9 +31,9 @@ class TestAuthenticateWithPermanentToken(TestCase):
         self.user_id = '1'
         with temporary_db(self.db, drop=False) as session:
             self.user_class = session.scalar(
-                select(models.DBPolicyClass).where(models.DBPolicyClass.class_id==2))
+                select(models.TapirPolicyClass).where(models.TapirPolicyClass.class_id==2))
             self.email = 'first@last.iv'
-            self.db_user = models.DBUser(
+            self.db_user = models.TapirUser(
                 user_id=self.user_id,
                 first_name='first',
                 last_name='last',
@@ -48,7 +49,7 @@ class TestAuthenticateWithPermanentToken(TestCase):
                 tracking_cookie='foocookie',
             )
             self.username = 'foouser'
-            self.db_nick = models.DBUserNickname(
+            self.db_nick = models.TapirNickname(
                 nickname=self.username,
                 user_id=self.user_id,
                 user_seq=1,
@@ -60,14 +61,14 @@ class TestAuthenticateWithPermanentToken(TestCase):
             self.salt = b'foo'
             self.password = b'thepassword'
             hashed = hashlib.sha1(self.salt + b'-' + self.password).digest()
-            self.db_password = models.DBUserPassword(
+            self.db_password = models.TapirUsersPassword(
                 user_id=self.user_id,
                 password_storage=2,
                 password_enc=hashed
             )
             n = util.epoch(datetime.now(tz=UTC))
             self.secret = 'foosecret'
-            self.db_token = models.DBPermanentToken(
+            self.db_token = models.TapirPermanentToken(
                 user_id=self.user_id,
                 secret=self.secret,
                 valid=1,
@@ -140,9 +141,9 @@ class TestAuthenticateWithPassword(TestCase):
         with temporary_db(self.db, drop=False) as session:
             # We have a good old-fashioned user.
             self.user_class = session.scalar(
-                select(models.DBPolicyClass).where(models.DBPolicyClass.class_id==2))
+                select(models.TapirPolicyClass).where(models.TapirPolicyClass.class_id==2))
             self.email = 'first@last.iv'
-            self.db_user = models.DBUser(
+            self.db_user = models.TapirUser(
                 user_id=self.user_id,
                 first_name='first',
                 last_name='last',
@@ -158,7 +159,7 @@ class TestAuthenticateWithPassword(TestCase):
                 tracking_cookie='foocookie',
             )
             self.username = 'foouser'
-            self.db_nick = models.DBUserNickname(
+            self.db_nick = models.TapirNickname(
                 nickname=self.username,
                 user_id=self.user_id,
                 user_seq=1,
@@ -172,7 +173,7 @@ class TestAuthenticateWithPassword(TestCase):
             # hashed = hashlib.sha1(self.salt + b'-' + self.password).digest()
 
             hashed = hash_password(self.password)
-            self.db_password = models.DBUserPassword(
+            self.db_password = models.TapirUsersPassword(
                 user_id=self.user_id,
                 password_storage=2,
                 password_enc=hashed

@@ -18,11 +18,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 from .. import domain
-from .models import db
+from arxiv.db import session
 from . import cookies, util
 
-from .models import DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
-    DBUserNickname, DBProfile
+from arxiv.db.models import TapirSession, TapirSessionsAudit, TapirUser, Endorsement, \
+    TapirNickname, Demographic
 from .exceptions import UnknownSession, SessionCreationFailed, \
     SessionDeletionFailed, SessionExpired, InvalidCookie, Unavailable
 from .endorsements import get_endorsements
@@ -31,10 +31,10 @@ logger = logging.getLogger(__name__)
 EASTERN = timezone('US/Eastern')
 
 
-def _load(session_id: str) -> DBSession:
-    """Get DBSession from session id."""
-    db_session: DBSession = db.session.query(DBSession) \
-        .filter(DBSession.session_id == session_id) \
+def _load(session_id: str) -> TapirSession:
+    """Get TapirSession from session id."""
+    db_session: TapirSession = session.query(TapirSession) \
+        .filter(TapirSession.session_id == session_id) \
         .first()
     if not db_session:
         logger.debug(f'No session found with id {session_id}')
@@ -42,10 +42,10 @@ def _load(session_id: str) -> DBSession:
     return db_session
 
 
-def _load_audit(session_id: str) -> DBSessionsAudit:
-    """Get DBSessionsAudit from session id."""
-    db_sessions_audit: DBSessionsAudit = db.session.query(DBSessionsAudit) \
-        .filter(DBSessionsAudit.session_id == session_id) \
+def _load_audit(session_id: str) -> TapirSessionsAudit:
+    """Get TapirSessionsAudit from session id."""
+    db_sessions_audit: TapirSessionsAudit = session.query(TapirSessionsAudit) \
+        .filter(TapirSessionsAudit.session_id == session_id) \
         .first()
     if not db_sessions_audit:
         logger.debug(f'No session audit found with id {session_id}')
@@ -79,12 +79,12 @@ def load(cookie: str) -> domain.Session:
     if expires_at <= datetime.now(tz=UTC):
         raise SessionExpired(f'Session {session_id} has expired in cookie')
 
-    data: Tuple[DBUser, DBSession, DBUserNickname, DBProfile]
+    data: Tuple[TapirUser, TapirSession, TapirNickname, Demographic]
     try:
-        data = db.session.query(DBUser, DBSession, DBUserNickname, DBProfile) \
-            .join(DBSession).join(DBUserNickname).join(DBProfile) \
-            .filter(DBUser.user_id == user_id) \
-            .filter(DBSession.session_id == session_id ) \
+        data = session.query(TapirUser, TapirSession, TapirNickname, Demographic) \
+            .join(TapirSession).join(TapirNickname).join(Demographic) \
+            .filter(TapirUser.user_id == user_id) \
+            .filter(TapirSession.session_id == session_id ) \
             .first()
     except OperationalError as e:
         raise Unavailable('Database is temporarily unavailable') from e
@@ -151,20 +151,20 @@ def create(authorizations: domain.Authorizations,
     start = datetime.now(tz=UTC)
     end = start + timedelta(seconds=util.get_session_duration())
     try:
-        tapir_session = DBSession(
+        tapir_session = TapirSession(
             user_id=user.user_id,
             last_reissue=util.epoch(start),
             start_time=util.epoch(start),
             end_time=0
         )
-        tapir_sessions_audit = DBSessionsAudit(
+        tapir_sessions_audit = TapirSessionsAudit(
             session=tapir_session,
             ip_addr=ip,
             remote_host=remote_host,
             tracking_cookie=tracking_cookie
         )
-        db.session.add(tapir_sessions_audit)
-        db.session.commit()
+        session.add(tapir_sessions_audit)
+        session.commit()
     except Exception as e:
         raise SessionCreationFailed(f'Failed to create: {e}') from e
 
@@ -245,8 +245,8 @@ def invalidate_by_id(session_id: str) -> None:
     try:
         tapir_session = _load(session_id)
         tapir_session.end_time = end - 1
-        db.session.merge(tapir_session)
-        db.session.commit()
+        session.merge(tapir_session)
+        session.commit()
     except NoResultFound as e:
         raise UnknownSession(f'No such session {session_id}') from e
     except SQLAlchemyError as e:

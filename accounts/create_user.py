@@ -18,7 +18,8 @@ from pytz import timezone, UTC
 import click
 
 from arxiv import taxonomy
-from arxiv_auth.legacy import models, util, sessions, authenticate, exceptions
+from arxiv.db import models
+from arxiv_auth.legacy import util, sessions, authenticate, exceptions
 from arxiv_auth.legacy.password import hash_password
 from arxiv_auth import domain
 
@@ -61,7 +62,7 @@ def create_user(username: str, email: str, password: str,
         with util.transaction() as session:
             ip_addr = '127.0.0.1'
             joined_date = util.epoch(datetime.now().replace(tzinfo=EASTERN))
-            db_user = models.DBUser(
+            db_user = models.TapirUser(
                 first_name=first_name,
                 last_name=last_name,
                 suffix_name=suffix_name,
@@ -84,7 +85,7 @@ def create_user(username: str, email: str, password: str,
             session.add(db_user)
 
             # Create a username.
-            db_nick = models.DBUserNickname(
+            db_nick = models.TapirNickname(
                 user=db_user,
                 nickname=username,
                 flag_valid=1,
@@ -93,7 +94,7 @@ def create_user(username: str, email: str, password: str,
 
             # Create the user's profile.
             archive, subject_class = _random_category()
-            db_profile = models.DBProfile(
+            db_profile = models.Demographic(
                 user=db_user,
                 country='us',
                 affiliation=affiliation,
@@ -111,7 +112,7 @@ def create_user(username: str, email: str, password: str,
             )
 
             # Set the user's password.
-            db_password = models.DBUserPassword(
+            db_password = models.TapirUsersPassword(
                 user=db_user,
                 password_storage=2,
                 password_enc=util.hash_password(password)

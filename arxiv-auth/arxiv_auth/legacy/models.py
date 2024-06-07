@@ -12,7 +12,7 @@ from .. import domain
 db: SQLAlchemy = SQLAlchemy()
 
 
-class DBSession(db.Model):
+class TapirSession(db.Model):
     """
     Legacy arXiv session table.
 
@@ -38,10 +38,10 @@ class DBSession(db.Model):
     end_time = Column(Integer, nullable=False, index=True,
                       server_default=text("'0'"))
 
-    user = relationship('DBUser')
+    user = relationship('TapirUser')
 
 
-class DBSessionsAudit(db.Model):
+class TapirSessionsAudit(db.Model):
     """Legacy arXiv session audit table. Notably has a tracking cookie."""
 
     __tablename__ = 'tapir_sessions_audit'
@@ -57,10 +57,10 @@ class DBSessionsAudit(db.Model):
     tracking_cookie = Column(String(255), nullable=False, index=True,
                              server_default=text("''"))
 
-    session = relationship('DBSession')
+    session = relationship('TapirSession')
 
 
-class DBUser(db.Model):
+class TapirUser(db.Model):
     """Legacy user data table."""
 
     __tablename__ = 'tapir_users'
@@ -94,7 +94,7 @@ class DBUser(db.Model):
     flag_allow_tex_produced = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBPolicyClass(db.Model):
+class TapirPolicyClass(db.Model):
     """Legacy authorization table."""
 
     __tablename__ = 'tapir_policy_classes'
@@ -121,15 +121,15 @@ class DBPolicyClass(db.Model):
     @staticmethod
     def insert_policy_classes(session) -> None:
         """Insert all the policy classes for legacy."""
-        data = session.query(DBPolicyClass).all()
+        data = session.query(TapirPolicyClass).all()
         if data:
             return
 
-        for datum in DBPolicyClass.POLICY_CLASSES:
-            session.add(DBPolicyClass(**datum))
+        for datum in TapirPolicyClass.POLICY_CLASSES:
+            session.add(TapirPolicyClass(**datum))
 
 
-class DBUserPassword(db.Model):
+class TapirUsersPassword(db.Model):
     """Legacy password table."""
 
     __tablename__ = 'tapir_users_password'
@@ -140,10 +140,10 @@ class DBUserPassword(db.Model):
                               server_default=text("'0'"))
     password_enc = Column(String(50), nullable=False)
 
-    user = relationship('DBUser')
+    user = relationship('TapirUser')
 
 
-class DBPermanentToken(db.Model):
+class TapirPermanentToken(db.Model):
     """
     Bearer token for user authentication.
 
@@ -174,7 +174,7 @@ class DBPermanentToken(db.Model):
     session_id = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBUserNickname(db.Model):
+class TapirNickname(db.Model):
     """
     Users' usernames (because why not have a separate table).
 
@@ -204,11 +204,11 @@ class DBUserNickname(db.Model):
     policy = Column(Integer, nullable=False, server_default=text("'0'"))
     flag_primary = Column(Integer, nullable=False, server_default=text("'0'"))
 
-    user = relationship('DBUser')
+    user = relationship('TapirUser')
 
 
 # TODO: update based on recent schema changes.
-class DBProfile(db.Model):
+class Demographic(db.Model):
     """Legacy user profiles."""
 
     __tablename__ = 'arXiv_demographics'
@@ -240,7 +240,7 @@ class DBProfile(db.Model):
     flag_group_stat = Column(Integer, nullable=False, server_default=text("'0'"))
     flag_group_econ = Column(Integer, nullable=False, server_default=text("'0'"))
     flag_group_eess = Column(Integer, nullable=False, server_default=text("'0'"))
-    user = relationship('DBUser')
+    user = relationship('TapirUser')
 
     GROUP_FLAGS = [
         ('grp_physics', 'flag_group_physics'),
@@ -276,7 +276,7 @@ class DBProfile(db.Model):
         )
 
 
-class DBEndorsement(db.Model):
+class Endorsement(db.Model):
     """
     Category endorsements for arXiv users.
 
@@ -311,10 +311,10 @@ class DBEndorsement(db.Model):
     issued_when = Column(Integer, nullable=False, server_default=text("'0'"))
     request_id = Column(Integer, nullable=True, server_default=None)
 
-    endorsee = relationship('DBUser')
+    endorsee = relationship('TapirUser')
 
 
-class DBEndorsementDomain(db.Model):
+class EndorsementDomain(db.Model):
     """
     Encodes some policies about endorsement.
 
@@ -339,7 +339,7 @@ class DBEndorsementDomain(db.Model):
                                server_default=text("'4'"))
 
 
-class DBCategory(db.Model):
+class Category(db.Model):
     """
     Metadata about arXiv categories.
 
@@ -391,7 +391,7 @@ class DBPaperOwners(db.Model):
     valid = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
-class DBDocuments(db.Model):
+class Document(db.Model):
     """
     Represents an arXiv paper.
 

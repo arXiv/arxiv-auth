@@ -13,9 +13,10 @@ from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import BadRequest
 
 from arxiv import status
+from arxiv.db import models
 
 from arxiv_auth import domain
-from arxiv_auth.legacy import exceptions, util, models
+from arxiv_auth.legacy import exceptions, util
 
 from accounts.factory import create_web_app
 from accounts.controllers.authentication import login, logout, LoginForm
@@ -60,7 +61,7 @@ class TestAuthenticationController(TestCase):
 
             with util.transaction() as session:
                 # We have a good old-fashioned user.
-                db_user = models.DBUser(
+                db_user = models.TapirUser(
                     user_id=1,
                     first_name='first',
                     last_name='last',
@@ -75,7 +76,7 @@ class TestAuthenticationController(TestCase):
                     flag_banned=0,
                     tracking_cookie='foocookie',
                 )
-                db_nick = models.DBUserNickname(
+                db_nick = models.TapirNickname(
                     nick_id=1,
                     nickname='foouser',
                     user_id=1,
@@ -85,7 +86,7 @@ class TestAuthenticationController(TestCase):
                     policy=0,
                     flag_primary=1
                 )
-                db_demo = models.DBProfile(
+                db_demo = models.Demographic(
                     user_id=1,
                     country='US',
                     affiliation='Cornell U.',
@@ -97,7 +98,7 @@ class TestAuthenticationController(TestCase):
                 password = b'thepassword'
                 hashed = hashlib.sha1(salt + b'-' + password).digest()
                 encrypted = b64encode(salt + hashed)
-                db_password = models.DBUserPassword(
+                db_password = models.TapirUsersPassword(
                     user_id=1,
                     password_storage=2,
                     password_enc=encrypted

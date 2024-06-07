@@ -15,14 +15,15 @@ from .. import domain
 from ..auth import scopes
 
 from . passwords import check_password, is_ascii
-from .models import DBUser, DBUserPassword, DBPermanentToken, \
-    DBUserNickname, DBProfile, db
+from arxiv.db import session
+from arxiv.db.models import TapirUser, TapirUsersPassword, TapirPermanentToken, \
+    TapirNickname, Demographic
 from .exceptions import NoSuchUser, AuthenticationFailed, \
     PasswordAuthenticationFailed, Unavailable
 
 logger = logging.getLogger(__name__)
 
-PassData = Tuple[DBUser, DBUserPassword, DBUserNickname, DBProfile]
+PassData = Tuple[TapirUser, TapirUsersPassword, TapirNickname, Demographic]
 
 
 def authenticate(username_or_email: Optional[str] = None,
@@ -94,7 +95,7 @@ def authenticate(username_or_email: Optional[str] = None,
     return user, auths
 
 
-def _authenticate_token(token: str) -> DBPermanentToken:
+def _authenticate_token(token: str) -> TapirPermanentToken:
     """
     Authenticate using a permanent token.
 
@@ -104,10 +105,10 @@ def _authenticate_token(token: str) -> DBPermanentToken:
 
     Returns
     -------
-    :class:`.DBUser`
-    :class:`.DBPermanentToken`
-    :class:`.DBUserNickname`
-    :class:`.DBProfile`
+    :class:`.TapirUser`
+    :class:`.TapirPermanentToken`
+    :class:`.TapirNickname`
+    :class:`.Demographic`
 
     Raises
     ------
@@ -139,9 +140,9 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
 
     Returns
     -------
-    :class:`.DBUser`
-    :class:`.DBUserPassword`
-    :class:`.DBUserNickname`
+    :class:`.TapirUser`
+    :class:`.TapirUsersPassword`
+    :class:`.TapirNickname`
 
     Raises
     ------
@@ -184,11 +185,11 @@ def _authenticate_password(username_or_email: str, password: str) -> PassData:
 
 
 def _get_user_by_user_id(user_id: int) -> PassData:
-    tapir_user: DBUser = db.session.query(DBUser) \
-        .filter(DBUser.user_id == int(user_id)) \
-        .filter(DBUser.flag_approved == 1) \
-        .filter(DBUser.flag_deleted == 0) \
-        .filter(DBUser.flag_banned == 0) \
+    tapir_user: TapirUser = session.query(TapirUser) \
+        .filter(TapirUser.user_id == int(user_id)) \
+        .filter(TapirUser.flag_approved == 1) \
+        .filter(TapirUser.flag_deleted == 0) \
+        .filter(TapirUser.flag_banned == 0) \
         .first()
     return _get_passdata(tapir_user)
 
@@ -196,11 +197,11 @@ def _get_user_by_user_id(user_id: int) -> PassData:
 def _get_user_by_email(email: str) -> PassData:
     if not email or '@' not in email:
         raise ValueError("must be an email address")
-    tapir_user: DBUser = db.session.query(DBUser) \
-        .filter(DBUser.email == email) \
-        .filter(DBUser.flag_approved == 1) \
-        .filter(DBUser.flag_deleted == 0) \
-        .filter(DBUser.flag_banned == 0) \
+    tapir_user: TapirUser = session.query(TapirUser) \
+        .filter(TapirUser.email == email) \
+        .filter(TapirUser.flag_approved == 1) \
+        .filter(TapirUser.flag_deleted == 0) \
+        .filter(TapirUser.flag_banned == 0) \
         .first()
     return _get_passdata(tapir_user)
 
@@ -209,23 +210,23 @@ def _get_user_by_username(username: str) -> PassData:
     """Username is the tapir nickname."""
     if not username or '@' in username:
         raise ValueError("username must not contain a @")
-    tapir_nick = db.session.query(DBUserNickname) \
-            .filter(DBUserNickname.nickname == username) \
-            .filter(DBUserNickname.flag_valid == 1) \
+    tapir_nick = session.query(TapirNickname) \
+            .filter(TapirNickname.nickname == username) \
+            .filter(TapirNickname.flag_valid == 1) \
             .first()
     if not tapir_nick:
         raise NoSuchUser('User lacks a nickname')
 
-    tapir_user = db.session.query(DBUser) \
-                .filter(DBUser.user_id == tapir_nick.user_id) \
-                .filter(DBUser.flag_approved == 1) \
-                .filter(DBUser.flag_deleted == 0) \
-                .filter(DBUser.flag_banned == 0) \
+    tapir_user = session.query(TapirUser) \
+                .filter(TapirUser.user_id == tapir_nick.user_id) \
+                .filter(TapirUser.flag_approved == 1) \
+                .filter(TapirUser.flag_deleted == 0) \
+                .filter(TapirUser.flag_banned == 0) \
                 .first()
     return _get_passdata(tapir_user)
 
 
-def _get_passdata(tapir_user: DBUser) -> PassData:
+def _get_passdata(tapir_user: TapirUser) -> PassData:
     """
     Retrieve password, nick name and profile data.
 
@@ -235,10 +236,10 @@ def _get_passdata(tapir_user: DBUser) -> PassData:
 
     Returns
     -------
-    :class:`.DBUser`
-    :class:`.DBUserPassword`
-    :class:`.DBUserNickname`
-    :class:`.DBProfile`
+    :class:`.TapirUser`
+    :class:`.TapirUsersPassword`
+    :class:`.TapirNickname`
+    :class:`.Demographic`
 
     Raises
     ------
@@ -251,21 +252,21 @@ def _get_passdata(tapir_user: DBUser) -> PassData:
     if not tapir_user:
         raise NoSuchUser('User does not exist')
 
-    tapir_nick = db.session.query(DBUserNickname) \
-            .filter(DBUserNickname.user_id ==tapir_user.user_id) \
-            .filter(DBUserNickname.flag_valid == 1) \
+    tapir_nick = session.query(TapirNickname) \
+            .filter(TapirNickname.user_id ==tapir_user.user_id) \
+            .filter(TapirNickname.flag_valid == 1) \
             .first()
     if not tapir_nick:
         raise NoSuchUser('User lacks a nickname')
 
-    tapir_password: DBUserPassword = db.session.query(DBUserPassword) \
-        .filter(DBUserPassword.user_id == tapir_user.user_id) \
+    tapir_password: TapirUsersPassword = session.query(TapirUsersPassword) \
+        .filter(TapirUsersPassword.user_id == tapir_user.user_id) \
         .first()
     if not tapir_password:
         raise RuntimeError(f'Missing password')
 
-    tapir_profile: DBProfile = db.session.query(DBProfile) \
-        .filter(DBProfile.user_id == tapir_user.user_id) \
+    tapir_profile: Demographic = session.query(Demographic) \
+        .filter(Demographic.user_id == tapir_user.user_id) \
         .first()
     return tapir_user, tapir_password, tapir_nick, tapir_profile
 
@@ -287,11 +288,11 @@ def _invalidate_token(user_id: str, secret: str) -> None:
     """
     db_token = _get_token(user_id, secret)
     db_token.valid = 0
-    db.session.add(db_token)
-    db.session.commit()
+    session.add(db_token)
+    session.commit()
 
 
-def _get_token(user_id: str, secret: str) -> DBPermanentToken:
+def _get_token(user_id: str, secret: str) -> TapirPermanentToken:
     """
     Retrieve a user's permanent token.
 
@@ -306,7 +307,7 @@ def _get_token(user_id: str, secret: str) -> DBPermanentToken:
 
     Returns
     -------
-    :class:`.DBPermanentToken`
+    :class:`.TapirPermanentToken`
 
     Raises
     ------
@@ -323,10 +324,10 @@ def _get_token(user_id: str, secret: str) -> DBPermanentToken:
     if len(secret) > 40:
         raise ValueError("secret too long")
 
-    db_token: DBPermanentToken = db.session.query(DBPermanentToken) \
-        .filter(DBPermanentToken.user_id == user_id) \
-        .filter(DBPermanentToken.secret == secret) \
-        .filter(DBPermanentToken.valid == 1) \
+    db_token: TapirPermanentToken = session.query(TapirPermanentToken) \
+        .filter(TapirPermanentToken.user_id == user_id) \
+        .filter(TapirPermanentToken.secret == secret) \
+        .filter(TapirPermanentToken.valid == 1) \
         .first()    # The token must still be valid.
     if not db_token:
         raise NoSuchUser('No such token')

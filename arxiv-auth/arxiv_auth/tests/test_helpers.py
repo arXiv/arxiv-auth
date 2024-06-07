@@ -30,7 +30,6 @@ class TestGenerateToken(TestCase):
         app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
         app.config['SESSION_DURATION'] = '36000'
 
-        legacy.init_app(app)
         app.config.update({
             'JWT_SECRET': 'thesecret',
             'SQLALCHEMY_TRACK_MODIFICATIONS': False,

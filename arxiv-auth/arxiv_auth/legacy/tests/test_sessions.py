@@ -5,7 +5,8 @@ from unittest import mock, TestCase
 from datetime import datetime
 from pytz import timezone, UTC
 
-from .. import exceptions, sessions, util, models, cookies
+from arxiv.db import models
+from .. import exceptions, sessions, util, cookies
 
 from .util import temporary_db
 
@@ -82,7 +83,7 @@ class TestInvalidateSession(TestCase):
         with temporary_db() as db_session:
             cookie = cookies.pack(session_id, user_id, ip, start, capabilities)
             with util.transaction() as db_session:
-                tapir_session = models.DBSession(
+                tapir_session = models.TapirSession(
                     session_id=session_id,
                     user_id=12345,
                     last_reissue=util.epoch(start),

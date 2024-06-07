@@ -7,9 +7,9 @@ from collections.abc import Iterable
 from datetime import datetime
 from pytz import timezone, UTC
 
-from pydantic import BaseModel, ConfigDict, ValidationError, BeforeValidator, field_validator
-from arxiv import taxonomy
-from arxiv.taxonomy import Category
+from pydantic import BaseModel, ConfigDict, ValidationError, validator
+from arxiv.taxonomy.category import Category
+from arxiv.taxonomy import definitions
 
 EASTERN = timezone('US/Eastern')
 
@@ -59,7 +59,7 @@ class UserProfile(BaseModel):
     Should be one of :ref:`arxiv.taxonomy.CATEGORIES`.
     """
 
-    @field_validator('default_category', mode='before')
+    @validator('default_category', mode='before')
     @classmethod
     def check_category(cls, data: Any) -> Category:
         """Checks if `data` is a category."""
@@ -80,7 +80,7 @@ class UserProfile(BaseModel):
     @property
     def default_archive(self) -> str:
         """The archive of the default category."""
-        archive: str = taxonomy.CATEGORIES[self.default_category]['in_archive']
+        archive: str = definitions.CATEGORIES[self.default_category]['in_archive']
         return archive
 
     @property
@@ -97,7 +97,7 @@ class UserProfile(BaseModel):
     def groups_display(self) -> str:
         """Display-ready representation of active groups for this profile."""
         return ", ".join([
-            taxonomy.definitions.GROUPS[group]['name']
+            definitions.GROUPS[group]['name']
             for group in self.submission_groups
         ])
 
@@ -172,7 +172,7 @@ class Authorizations(BaseModel):
     endorsements: List[Category] = []
     """Categories to which the user is permitted to submit."""
 
-    @field_validator('endorsements', mode='before')
+    @validator('endorsements', mode='before')
     @classmethod
     def check_endorsements(cls, data: Any) -> List[Category]:
         """Checks if `data` contains endorsements."""

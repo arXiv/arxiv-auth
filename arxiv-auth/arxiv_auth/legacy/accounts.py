@@ -12,11 +12,12 @@ from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.orm.exc import NoResultFound
 
 from .. import domain
-from . import util, endorsements, exceptions, models
+from . import util, endorsements, exceptions
 from .passwords import hash_password
 from .exceptions import Unavailable
-from .models import DBUser, DBUserPassword, DBPermanentToken, \
-    DBUserNickname, DBProfile, DBPolicyClass, db
+from arxiv.db import session
+from arxiv.db.models import TapirUser, TapirUsersPassword, TapirPermanentToken, \
+    TapirNickname, Demographic, TapirPolicyClass
 
 
 logger = logging.getLogger(__name__)
@@ -36,8 +37,8 @@ def does_username_exist(username: str) -> bool:
 
     """
     try:
-        data = db.session.query(DBUserNickname) \
-            .filter(DBUserNickname.nickname == username) \
+        data = session.query(TapirNickname) \
+            .filter(TapirNickname.nickname == username) \
             .first()
     except OperationalError as e:
         raise Unavailable('Database is temporarily unavailable') from e
@@ -60,7 +61,7 @@ def does_email_exist(email: str) -> bool:
 
     """
     try:
-        data = db.session.query(DBUser).filter(DBUser.email == email).first()
+        data = session.query(TapirUser).filter(TapirUser.email == email).first()
     except OperationalError as e:
         raise Unavailable('Database is temporarily unavailable') from e
     if data:
@@ -94,7 +95,7 @@ def register(user: domain.User, password: str, ip: str,
     """
     try:
         db_user, db_nick, db_profile = _create(user, password, ip, remote_host)
-        db.session.commit()
+        session.commit()
     except OperationalError as e:
         raise Unavailable('Database is temporarily unavailable') from e
     except Exception as e:
@@ -173,16 +174,16 @@ def update(user: domain.User) -> Tuple[domain.User, domain.Authorizations]:
                                      user.profile.default_archive)
             _update_field_if_changed(db_profile, 'subject_class',
                                      user.profile.default_subject)
-            for grp, field in DBProfile.GROUP_FLAGS:
+            for grp, field in Demographic.GROUP_FLAGS:
                 _update_field_if_changed(db_profile, field,
                                          _has_group(grp))
-            db.session.add(db_profile)
+            session.add(db_profile)
         else:
             db_profile = _create_profile(user, db_user)
 
-    db.session.add(db_nick)
-    db.session.add(db_user)
-    db.session.commit()
+    session.add(db_nick)
+    session.add(db_user)
+    session.commit()
 
     user = domain.User(
         user_id=str(db_user.user_id),
@@ -208,36 +209,36 @@ def _update_field_if_changed(obj: Any, field: Any, update_with: Any) -> None:
         setattr(obj, field, update_with)
 
 
-def _get_user_data(user_id: str) -> Tuple[DBUser, DBUserNickname, DBProfile]:
+def _get_user_data(user_id: str) -> Tuple[TapirUser, TapirNickname, Demographic]:
 
     try:
-        db_user, db_nick = db.session.query(DBUser, DBUserNickname) \
-            .filter(DBUser.user_id == user_id) \
-            .filter(DBUser.flag_approved == 1) \
-            .filter(DBUser.flag_deleted == 0) \
-            .filter(DBUser.flag_banned == 0) \
-            .filter(DBUserNickname.flag_primary == 1) \
-            .filter(DBUserNickname.flag_valid == 1) \
-            .filter(DBUserNickname.user_id == DBUser.user_id) \
+        db_user, db_nick = session.query(TapirUser, TapirNickname) \
+            .filter(TapirUser.user_id == user_id) \
+            .filter(TapirUser.flag_approved == 1) \
+            .filter(TapirUser.flag_deleted == 0) \
+            .filter(TapirUser.flag_banned == 0) \
+            .filter(TapirNickname.flag_primary == 1) \
+            .filter(TapirNickname.flag_valid == 1) \
+            .filter(TapirNickname.user_id == TapirUser.user_id) \
             .first()
     except TypeError:   # first() returns a single None if no match.
         raise exceptions.NoSuchUser('User does not exist')
     # Profile may not exist.
-    db_profile = db.session.query(models.DBProfile) \
-        .filter(models.DBProfile.user_id == user_id) \
+    db_profile = session.query(Demographic) \
+        .filter(Demographic.user_id == user_id) \
         .first()
     if not db_user:
         raise exceptions.NoSuchUser('User does not exist')
     return db_user, db_nick, db_profile
 
 
-def _create_profile(user: domain.User, db_user: DBUser) -> DBProfile:
+def _create_profile(user: domain.User, db_user: TapirUser) -> Demographic:
     def _has_group(group: str) -> int:
         if user.profile is None:
             return 0
         return int(group in user.profile.submission_groups)
 
-    db_profile = DBProfile(
+    db_profile = Demographic(
         user=db_user,
         country=user.profile.country if user.profile else None,
         affiliation=user.profile.affiliation if user.profile else None,
@@ -255,12 +256,12 @@ def _create_profile(user: domain.User, db_user: DBUser) -> DBProfile:
         flag_group_eess=_has_group('grp_eess'),
         flag_group_econ=_has_group('grp_econ'),
     )
-    db.session.add(db_profile)
+    session.add(db_profile)
     return db_profile
 
 
 def _create(user: domain.User, password: str, ip: str, remote_host: str) \
-        -> Tuple[DBUser, DBUserNickname, Optional[DBProfile]]:
+        -> Tuple[TapirUser, TapirNickname, Optional[Demographic]]:
     if not user.name.forename:
         raise ValueError("Must have forename to create user")
     if not user.name.surname:
@@ -268,7 +269,7 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
 
     data = dict(
         email=user.email,
-        policy_class=DBPolicyClass.PUBLIC_USER,
+        policy_class=TapirPolicyClass.PUBLIC_USER,
         joined_ip_num=ip,
         joined_remote_host=remote_host,
         joined_date=util.now(),
@@ -282,27 +283,27 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
         ))
 
     # Main user entry.
-    db_user = DBUser(**data)
-    db.session.add(db_user)
+    db_user = TapirUser(**data)
+    session.add(db_user)
 
     # Nickname is where we keep the username.
-    db_nick = DBUserNickname(
+    db_nick = TapirNickname(
         user=db_user,
         nickname=user.username,
         flag_valid=1,
         flag_primary=1
     )
-    db.session.add(db_nick)
+    session.add(db_nick)
 
-    db_profile: Optional[DBProfile]
+    db_profile: Optional[Demographic]
     if user.profile is not None:
         db_profile = _create_profile(user, db_user)
     else:
         db_profile = None
 
-    db_pass = DBUserPassword(
+    db_pass = TapirUsersPassword(
         user=db_user,
         password_enc=hash_password(password)
     )
-    db.session.add(db_pass)
+    session.add(db_pass)
     return db_user, db_nick, db_profile

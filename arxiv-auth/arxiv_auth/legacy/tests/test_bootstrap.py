@@ -14,8 +14,9 @@ from pytz import timezone, UTC
 from mimesis import Person, Internet, Datetime, locales
 
 from sqlalchemy import select, func
-from arxiv import taxonomy
-from .. import models, util, sessions, authenticate, exceptions
+from arxiv.db import models
+from arxiv.taxonomy import definitions
+from .. import util, sessions, authenticate, exceptions
 from ..passwords import hash_password
 from ... import domain
 
@@ -24,7 +25,7 @@ EASTERN = timezone('US/Eastern')
 
 
 def _random_category() -> Tuple[str, str]:
-    category = random.choice(list(taxonomy.CATEGORIES_ACTIVE.items()))
+    category = random.choice(list(definitions.CATEGORIES_ACTIVE.items()))
     archive = category[1]['in_archive']
     subject_class = category[0].split('.')[-1] if '.' in category[0] else ''
     return archive, subject_class
@@ -55,12 +56,12 @@ class TestBootstrap(TestCase):
         with cls.app.app_context():
             util.create_all()
             with util.transaction() as session:
-                edc = session.execute(select(models.DBEndorsementDomain)).all()
+                edc = session.execute(select(models.Endorsement)).all()
                 for row in edc:
                     print(row)
                 assert len(edc) == 0, "Expect the table to be empty at the start"
 
-                session.add(models.DBEndorsementDomain(
+                session.add(models.Endorsement(
                     endorsement_domain='test_domain_bootstrap',
                     endorse_all='n',
                     mods_endorse_all='n',
@@ -68,7 +69,7 @@ class TestBootstrap(TestCase):
                     papers_to_endorse=3
                 ))
 
-            for category in taxonomy.CATEGORIES_ACTIVE.keys():
+            for category in definitions.CATEGORIES_ACTIVE.keys():
                 if '.' in category:
                     archive, subject_class = category.split('.', 1)
                 else:
@@ -107,7 +108,7 @@ class TestBootstrap(TestCase):
                     joined_date = util.epoch(
                         Datetime(locale).datetime().replace(tzinfo=EASTERN)
                     )
-                    db_user = models.DBUser(
+                    db_user = models.TapirUser(
                         first_name=first_name,
                         last_name=last_name,
                         suffix_name=suffix_name,
@@ -132,7 +133,7 @@ class TestBootstrap(TestCase):
                     # Create a username.
                     username_is_valid = 1 if _prob(90) else 0
                     username = person.username()
-                    db_nick = models.DBUserNickname(
+                    db_nick = models.TapirNickname(
                         user=db_user,
                         nickname=username,
                         flag_valid=username_is_valid,
@@ -141,7 +142,7 @@ class TestBootstrap(TestCase):
 
                     # Create the user's profile.
                     archive, subject_class = _random_category()
-                    db_profile = models.DBProfile(
+                    db_profile = models.Demographic(
                         user=db_user,
                         country=locale,
                         affiliation=person.university(),
@@ -160,7 +161,7 @@ class TestBootstrap(TestCase):
 
                     # Set the user's password.
                     password = person.password()
-                    db_password = models.DBUserPassword(
+                    db_password = models.TapirUsersPassword(
                         user=db_user,
                         password_storage=2,
                         password_enc=hash_password(password)
@@ -180,7 +181,7 @@ class TestBootstrap(TestCase):
                         issued_when = util.epoch(
                             Datetime(locale).datetime().replace(tzinfo=EASTERN)
                         )
-                        session.add(models.DBEndorsement(
+                        session.add(models.Endorsement(
                             endorsee=db_user,
                             endorser_id=endorser_id,
                             archive=archive,

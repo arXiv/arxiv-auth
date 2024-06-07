@@ -8,7 +8,9 @@ from pytz import UTC
 from unittest import TestCase
 from sqlalchemy import select
 
-from .. import models, util, authenticate, exceptions
+from arxiv.db import models
+
+from .. import util, authenticate, exceptions
 from .. import accounts
 from .util import temporary_db
 from ... import domain
@@ -17,15 +19,15 @@ from ... import domain
 def get_user(session, user_id):
     """Helper to get user database objects by user id."""
     db_user, db_nick = (
-        session.query(models.DBUser, models.DBUserNickname)
-        .filter(models.DBUser.user_id == user_id)
-        .filter(models.DBUserNickname.flag_primary == 1)
-        .filter(models.DBUserNickname.user_id == models.DBUser.user_id)
+        session.query(models.TapirUser, models.TapirNickname)
+        .filter(models.TapirUser.user_id == user_id)
+        .filter(models.TapirNickname.flag_primary == 1)
+        .filter(models.TapirNickname.user_id == models.TapirUser.user_id)
         .first()
     )
 
-    db_profile = session.query(models.DBProfile) \
-        .filter(models.DBProfile.user_id == user_id) \
+    db_profile = session.query(models.Demographic) \
+        .filter(models.Demographic.user_id == user_id) \
         .first()
 
     return db_user, db_nick, db_profile
@@ -41,9 +43,9 @@ class SetUpUserMixin(object):
         self.user_id = '15830'
         with temporary_db(self.db_uri, drop=False) as session:
             self.user_class = session.scalar(
-                select(models.DBPolicyClass).where(models.DBPolicyClass.class_id==2))
+                select(models.TapirPolicyClass).where(models.TapirPolicyClass.class_id==2))
             self.email = 'first@last.iv'
-            self.db_user = models.DBUser(
+            self.db_user = models.TapirUser(
                 user_id=self.user_id,
                 first_name='first',
                 last_name='last',
@@ -59,7 +61,7 @@ class SetUpUserMixin(object):
                 tracking_cookie='foocookie',
             )
             self.username = 'foouser'
-            self.db_nick = models.DBUserNickname(
+            self.db_nick = models.TapirNickname(
                 nickname=self.username,
                 user_id=self.user_id,
                 user_seq=1,
@@ -71,14 +73,14 @@ class SetUpUserMixin(object):
             self.salt = b'foo'
             self.password = b'thepassword'
             hashed = hashlib.sha1(self.salt + b'-' + self.password).digest()
-            self.db_password = models.DBUserPassword(
+            self.db_password = models.TapirUsersPassword(
                 user_id=self.user_id,
                 password_storage=2,
                 password_enc=hashed
             )
             n = util.epoch(datetime.now(tz=UTC))
             self.secret = 'foosecret'
-            self.db_token = models.DBPermanentToken(
+            self.db_token = models.TapirPermanentToken(
                 user_id=self.user_id,
                 secret=self.secret,
                 valid=1,

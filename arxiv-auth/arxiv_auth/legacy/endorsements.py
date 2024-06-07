@@ -21,15 +21,16 @@ from sqlalchemy.sql.expression import literal
 
 from . import util
 from .. import domain
-from arxiv import taxonomy
-from .models import DBUser, DBEndorsement, DBPaperOwners, DBDocuments, \
-    DBDocumentInCategory, DBCategory, DBEndorsementDomain, DBEmailWhitelist, \
-    DBEmailBlacklist, db
+from arxiv.taxonomy import definitions
+from arxiv.db import session
+from arxiv.db.models import TapirUser, Endorsement, t_arXiv_paper_owners, Document, \
+    t_arXiv_in_category, Category, EndorsementDomain, t_arXiv_white_email, \
+    t_arXiv_black_email
 
 
 GENERAL_CATEGORIES = [
-    domain.Category('math.GM'),
-    domain.Category('physics.gen-ph')
+    definitions.CATEGORIES['math.GM'],
+    definitions.CATEGORIES['physics.gen-ph'],
 ]
 
 WINDOW_START = util.from_epoch(157783680)
@@ -65,7 +66,7 @@ def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
 @memoize()
 def _categories_in_archive(archive: str) -> Set[str]:
     return set(category for category, definition
-               in taxonomy.CATEGORIES_ACTIVE.items()
+               in definitions.CATEGORIES_ACTIVE.items()
                if definition['in_archive'] == archive)
 
 
@@ -77,13 +78,13 @@ def _category(archive: str, subject_class: str) -> domain.Category:
 
 
 @memoize()
-def _get_archive(category: taxonomy.Category) -> str:
+def _get_archive(category: domain.Category) -> str:
     archive: str
     if category.endswith(".*"):
         archive = category.split(".", 1)[0]
     else:
         try:
-            archive = taxonomy.CATEGORIES_ACTIVE[category]['in_archive']
+            archive = definitions.CATEGORIES_ACTIVE[category]['in_archive']
         except KeyError:
             if "." in category:
                 archive = category.split(".", 1)[0]
@@ -95,7 +96,7 @@ def _get_archive(category: taxonomy.Category) -> str:
 def _all_archives(endorsements: Endorsements) -> bool:
     archives = set(_get_archive(category) for category in endorsements
                    if category.endswith(".*"))
-    missing = set(taxonomy.ARCHIVES_ACTIVE.keys()) - archives
+    missing = set(definitions.ARCHIVES_ACTIVE.keys()) - archives
     return len(missing) == 0 or (len(missing) == 1 and 'test' in missing)
 
 
@@ -132,7 +133,7 @@ def compress_endorsements(endorsements: Endorsements) -> Endorsements:
             for endorsement in archive_endorsements_list:
                 compressed.append(endorsement)
     if _all_archives(compressed):
-        return [taxonomy.Category("*.*")]
+        return list(definitions.CATEGORIES.values())
     return compressed
 
 
@@ -154,14 +155,14 @@ def explicit_endorsements(user: domain.User) -> Endorsements:
         explicitly endorsed.
 
     """
-    data: List[DBEndorsement] = (
-        db.session.query(
-            DBEndorsement.archive,
-            DBEndorsement.subject_class,
-            DBEndorsement.point_value,
+    data: List[Endorsement] = (
+        session.query(
+            Endorsement.archive,
+            Endorsement.subject_class,
+            Endorsement.point_value,
         )
-        .filter(DBEndorsement.endorsee_id == user.user_id)
-        .filter(DBEndorsement.flag_valid == 1)
+        .filter(Endorsement.endorsee_id == user.user_id)
+        .filter(Endorsement.flag_valid == 1)
         .all()
     )
     pooled: Counter = Counter()
@@ -196,7 +197,7 @@ def implicit_endorsements(user: domain.User) -> Endorsements:
 
     """
     candidates = [domain.Category(category)
-                  for category, data in taxonomy.CATEGORIES_ACTIVE.items()]
+                  for category, data in definitions.CATEGORIES_ACTIVE.items()]
     policies = category_policies()
     invalidated = invalidated_autoendorsements(user)
     papers = domain_papers(user)
@@ -227,15 +228,15 @@ def is_academic(user: domain.User) -> bool:
 
     """
     in_whitelist = (
-        db.session.query(DBEmailWhitelist)
-        .filter(literal(user.email).like(DBEmailWhitelist.pattern))
+        session.query(t_arXiv_white_email.c.pattern)
+        .filter(literal(user.email).like(t_arXiv_white_email.c.pattern))
         .first()
     )
     if in_whitelist:
         return True
     in_blacklist = (
-        db.session.query(DBEmailBlacklist)
-        .filter(literal(user.email).like(DBEmailBlacklist.pattern))
+        session.query(t_arXiv_black_email.c.pattern)
+        .filter(literal(user.email).like(t_arXiv_black_email.c.pattern))
         .first()
     )
     if in_blacklist:
@@ -349,18 +350,18 @@ def domain_papers(user: domain.User,
         in each respective domain (int).
 
     """
-    query = db.session.query(DBPaperOwners.document_id,
-                             DBDocuments.document_id,
-                             DBDocumentInCategory.document_id,
-                             DBCategory.endorsement_domain) \
-        .filter(DBPaperOwners.user_id == user.user_id) \
-        .filter(DBDocuments.document_id == DBPaperOwners.document_id) \
-        .filter(DBDocumentInCategory.document_id == DBDocuments.document_id) \
-        .filter(DBCategory.archive == DBDocumentInCategory.archive) \
-        .filter(DBCategory.subject_class == DBDocumentInCategory.subject_class)
+    query = session.query(t_arXiv_paper_owners.c.document_id,
+                             Document.document_id,
+                             t_arXiv_in_category.c.document_id,
+                             Category.endorsement_domain) \
+        .filter(t_arXiv_paper_owners.c.user_id == user.user_id) \
+        .filter(Document.document_id == t_arXiv_paper_owners.c.document_id) \
+        .filter(t_arXiv_in_category.c.document_id == Document.document_id) \
+        .filter(Category.archive == t_arXiv_in_category.c.archive) \
+        .filter(Category.subject_class == t_arXiv_in_category.c.subject_class)
 
     if start_date:
-        query = query.filter(DBDocuments.dated > util.epoch(start_date))
+        query = query.filter(Document.dated > util.epoch(start_date))
     data = query.all()
     return dict(Counter(domain for _, _, _, domain in data).items())
 
@@ -380,16 +381,16 @@ def category_policies() -> Dict[domain.Category, Dict]:
         policiy details.
 
     """
-    data = db.session.query(DBCategory.archive,
-                            DBCategory.subject_class,
-                            DBEndorsementDomain.endorse_all,
-                            DBEndorsementDomain.endorse_email,
-                            DBEndorsementDomain.papers_to_endorse,
-                            DBEndorsementDomain.endorsement_domain) \
-        .filter(DBCategory.definitive == 1) \
-        .filter(DBCategory.active == 1) \
-        .filter(DBCategory.endorsement_domain
-                == DBEndorsementDomain.endorsement_domain) \
+    data = session.query(Category.archive,
+                            Category.subject_class,
+                            EndorsementDomain.endorse_all,
+                            EndorsementDomain.endorse_email,
+                            EndorsementDomain.papers_to_endorse,
+                            EndorsementDomain.endorsement_domain) \
+        .filter(Category.definitive == 1) \
+        .filter(Category.active == 1) \
+        .filter(Category.endorsement_domain
+                == EndorsementDomain.endorsement_domain) \
         .all()
 
     policies = {}
@@ -419,10 +420,10 @@ def invalidated_autoendorsements(user: domain.User) -> Endorsements:
         auto-endorsements revoked.
 
     """
-    data: List[DBEndorsement] = db.session.query(DBEndorsement.archive,
-                                                 DBEndorsement.subject_class) \
-        .filter(DBEndorsement.endorsee_id == user.user_id) \
-        .filter(DBEndorsement.flag_valid == 0) \
-        .filter(DBEndorsement.endorsement_type == 'auto') \
+    data: List[Endorsement] = session.query(Endorsement.archive,
+                                                 Endorsement.subject_class) \
+        .filter(Endorsement.endorsee_id == user.user_id) \
+        .filter(Endorsement.flag_valid == 0) \
+        .filter(Endorsement.endorsement_type == 'auto') \
         .all()
     return [_category(archive, subject) for archive, subject in data]

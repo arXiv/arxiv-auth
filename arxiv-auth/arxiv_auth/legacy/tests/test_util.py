@@ -1,22 +1,23 @@
 """Tests for :mod:`legacy_users.util`."""
 
 from unittest import TestCase
+from arxiv.db import models
 from .util import temporary_db
-from .. import util, models, sessions
+from .. import util, sessions
 
 class TestGetSession(TestCase):
     """
     Tests for private function :func:`._load`.
 
-    Gets a :class:`.DBSession` given a session ID.
+    Gets a :class:`.TapirSession` given a session ID.
     """
 
     def test_load_returns_a_session(self) -> None:
-        """If ID matches a known session, returns a :class:`.DBSession`."""
+        """If ID matches a known session, returns a :class:`.TapirSession`."""
         session_id = "424242424"
         with temporary_db() as db_session:
             start = util.now()
-            db_session.add(models.DBSession(
+            db_session.add(models.TapirSession(
                 session_id=session_id,
                 user_id=12345,
                 last_reissue=start,

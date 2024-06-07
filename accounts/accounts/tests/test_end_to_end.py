@@ -11,8 +11,9 @@ from base64 import b64encode
 from urllib.parse  import quote_plus
 
 from arxiv import status
+from arxiv.db import models
 #from accounts.services import legacy, users
-from arxiv_auth.legacy import util, models
+from arxiv_auth.legacy import util
 from accounts.factory import create_web_app
 
 
@@ -80,7 +81,7 @@ class TestLoginLogoutRoutes(TestCase):
 
             with util.transaction() as session:
                 # We have a good old-fashioned user.
-                db_user = models.DBUser(
+                db_user = models.TapirUser(
                     user_id=1,
                     first_name='first',
                     last_name='last',
@@ -95,7 +96,7 @@ class TestLoginLogoutRoutes(TestCase):
                     flag_banned=0,
                     tracking_cookie='foocookie',
                 )
-                db_nick = models.DBUserNickname(
+                db_nick = models.TapirNickname(
                     nick_id=1,
                     nickname='foouser',
                     user_id=1,
@@ -105,7 +106,7 @@ class TestLoginLogoutRoutes(TestCase):
                     policy=0,
                     flag_primary=1
                 )
-                db_demo = models.DBProfile(
+                db_demo = models.Demographic(
                     user_id=1,
                     country='US',
                     affiliation='Cornell U.',
@@ -117,7 +118,7 @@ class TestLoginLogoutRoutes(TestCase):
                 password = b'thepassword'
                 hashed = hashlib.sha1(salt + b'-' + password).digest()
                 encrypted = b64encode(salt + hashed)
-                db_password = models.DBUserPassword(
+                db_password = models.TapirUsersPassword(
                     user_id=1,
                     password_storage=2,
                     password_enc=encrypted
@@ -182,9 +183,9 @@ class TestLoginLogoutRoutes(TestCase):
         # a weird "feature" of the classic auth system.
         with self.app.app_context():
             with util.transaction() as session:
-                db_session = session.query(models.DBSession) \
-                    .filter(models.DBSession.user_id == 1) \
-                    .order_by(models.DBSession.session_id.desc()) \
+                db_session = session.query(models.TapirSession) \
+                    .filter(models.TapirSession.user_id == 1) \
+                    .order_by(models.TapirSession.session_id.desc()) \
                     .first()
                 self.assertEqual(db_session.end_time, 0)
 
@@ -331,9 +332,9 @@ class TestLoginLogoutRoutes(TestCase):
         # a weird "feature" of the classic auth system.
         with self.app.app_context():
             with util.transaction() as session:
-                db_session = session.query(models.DBSession) \
-                    .filter(models.DBSession.user_id == 1) \
-                    .order_by(models.DBSession.session_id.desc()) \
+                db_session = session.query(models.TapirSession) \
+                    .filter(models.TapirSession.user_id == 1) \
+                    .order_by(models.TapirSession.session_id.desc()) \
                     .first()
                 self.assertEqual(db_session.end_time, 0)
 
@@ -362,9 +363,9 @@ class TestLoginLogoutRoutes(TestCase):
         # Verify that the expiry is set in the database.
         with self.app.app_context():
             with util.transaction() as session:
-                db_session = session.query(models.DBSession) \
-                    .filter(models.DBSession.user_id == 1) \
-                    .order_by(models.DBSession.session_id.desc()) \
+                db_session = session.query(models.TapirSession) \
+                    .filter(models.TapirSession.user_id == 1) \
+                    .order_by(models.TapirSession.session_id.desc()) \
                     .first()
                 self.assertLessEqual(
                     datetime.fromtimestamp(db_session.end_time, tz=UTC),

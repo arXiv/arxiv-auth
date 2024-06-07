@@ -14,11 +14,21 @@ from arxiv.base.globals import get_application_config
 
 from ..auth import scopes
 from .. import domain
-from .models import db, DBUser, DBPolicyClass
+from arxiv.db import session, Base, engine, transaction
+from arxiv.db.models import TapirUser, TapirPolicyClass
 
 EASTERN = timezone('US/Eastern')
 logger = logging.getLogger(__name__)
 logger.propagate = False
+
+ADMIN = 1
+PUBLIC_USER = 2
+LEGACY_USER = 3
+POLICY_CLASSES = [
+    {"name": "Administrator", "class_id": ADMIN, "description": ""},
+    {"name": "Public user", "class_id": PUBLIC_USER, "description": ""},
+    {"name": "Legacy user", "class_id": LEGACY_USER, "description": ""}
+]
 
 
 def now() -> int:
@@ -37,64 +47,36 @@ def from_epoch(t: int) -> datetime:
     return datetime.fromtimestamp(t, tz=EASTERN)
 
 
-@contextmanager
-def transaction() -> Generator:
-    """Context manager for database transaction."""
-    try:
-        yield db.session
-        # The caller may have explicitly committed already, in order to
-        # implement exception handling logic. We only want to commit here if
-        # there is anything remaining that is not flushed.
-        if db.session.new or db.session.dirty or db.session.deleted:
-            db.session.commit()
-    except Exception as e:
-        logger.debug('Commit failed, rolling back: %s', str(e))
-        db.session.rollback()
-        raise
-
-
-def init_app(app: Flask) -> None:
-    """Set configuration defaults and attach session to the application."""
-    missing = missing_configs(app.config)
-    if missing:
-        #  Error early if misconfiged, don't catch these, let the stop the app startup
-        raise RuntimeError(f"Missing the following configs: {missing}")
-
-    if "sqlalchemy" in app.extensions:
-        logger.warning("Skipping init of sqlalchemy since it is already setup")
-    else:
-        db.init_app(app)
-
-
-def current_session() -> Session:
-    """Get/create database session for this context."""
-    return db.session
-
-
 def create_all() -> None:
     """Create all tables in the database."""
-    db.create_all()
+    print (engine.url)
+    Base.metadata.create_all(engine)
     with transaction() as session:
-        DBPolicyClass.insert_policy_classes(session)
+        data = session.query(TapirPolicyClass).all()
+        if data:
+            return
+
+        for datum in POLICY_CLASSES:
+            session.add(TapirPolicyClass(**datum))
         session.commit()
 
 def drop_all() -> None:
     """Drop all tables in the database."""
-    db.drop_all()
+    Base.metadata.drop_all(engine)
 
 
-def compute_capabilities(tapir_user: DBUser) -> int:
+def compute_capabilities(tapir_user: TapirUser) -> int:
     """Calculate the privilege level code for a user."""
     return int(sum([2 * tapir_user.flag_edit_users,
                     4 * tapir_user.flag_email_verified,
                     8 * tapir_user.flag_edit_system]))
 
 
-def get_scopes(db_user: DBUser) -> List[domain.Scope]:
+def get_scopes(db_user: TapirUser) -> List[domain.Scope]:
     """Generate a list of authz scopes for a legacy user based on class."""
-    if db_user.policy_class == DBPolicyClass.PUBLIC_USER:
+    if db_user.policy_class == TapirPolicyClass.PUBLIC_USER:
         return scopes.GENERAL_USER
-    if db_user.policy_class == DBPolicyClass.ADMIN:
+    if db_user.policy_class == TapirPolicyClass.ADMIN:
         return scopes.ADMIN_USER
     return []
 
@@ -127,7 +109,7 @@ def get_session_duration() -> int:
 def is_available(**kwargs: Any) -> bool:
     """Check our connection to the database."""
     try:
-        db.session.query("1").from_statement(text("SELECT 1")).all()
+        session.query("1").from_statement(text("SELECT 1")).all()
     except Exception as e:
         logger.error('Encountered an error talking to database: %s', e)
         return False
