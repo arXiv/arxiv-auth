@@ -57,6 +57,10 @@ class Auth(object):
         """
         if app is not None:
             self.init_app(app)
+            if self.app.config.get('AUTH_UPDATED_SESSION_REF'):
+                self.auth_session_name = "auth"
+            else:
+                self.auth_session_name = "session"
 
     @retry(legacy.exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
     def _get_legacy_session(self,
@@ -124,7 +128,8 @@ class Auth(object):
         # the request OR any exceptions that need to be raised withing the
         # request context.
         session: Optional[Union[domain.Session, Exception]] = \
-            request.environ.get('session')
+            request.environ.get(self.auth_session_name)
+
 
         # Middlware may have passed an exception, which needs to be raised
         # within the app/execution context to be handled correctly.
@@ -138,21 +143,8 @@ class Auth(object):
         else:
             logger.warning('No legacy DB, will not check tapir auth.')
 
-        # Attach the session to the request so that other
-        # components can access it easily.
-        if self.app.config.get('AUTH_UPDATED_SESSION_REF'):
-            request.auth = session
-        else:
-            # This clobbers the built-in Flask session interface. This is a
-            # design flaw that's blocking other work. This is deprecated and
-            # will be removed in 0.4.1.
-            warnings.warn(
-                "Accessing the authenticated session via request.auth is"
-                " deprecated, and will be removed in 0.4.1. Use request.auth"
-                " instead. ARXIVNG-1920.",
-                DeprecationWarning
-            )
-            request.session = session
+        # Attach session to the request so other can access easily. request.auth
+        setattr(request, self.auth_session_name, session)
         return None
 
     def first_valid(self, cookies: List[str]) -> Optional[domain.Session]:
