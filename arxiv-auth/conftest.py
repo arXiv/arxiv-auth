@@ -1,10 +1,11 @@
 import pytest
 
 from flask import Flask
-
+from sqlalchemy import create_engine
 
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
+from arxiv.db.models import reconfigure_db
 
 from arxiv_auth.auth.sessions import SessionStore
 from arxiv_auth.legacy.util import create_all as legacy_create_all
@@ -23,11 +24,14 @@ def app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 
     SessionStore.init_app(app)
-    Base(app)
 
+    engine = create_engine('sqlite:///test.db')
+    reconfigure_db(engine)
+    Base(app)
 
     Auth(app)
     wrap(app, [AuthMiddleware])
+
 
     return app
 

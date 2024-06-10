@@ -26,7 +26,6 @@ class TestRoundTrip(TestCase):
         """Set up a temporary DB."""
         self.app = Flask('test')
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-        datastore.init_app(self.app)
         with self.app.app_context():
             datastore.drop_all()
             datastore.create_all()

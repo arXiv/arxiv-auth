@@ -269,7 +269,7 @@ class TestAutoEndorsement(TestCase):
                 ))
 
             policies = endorsements.category_policies()
-            category = domain.Category('astro-ph.CO')
+            category = definitions.CATEGORIES['astro-ph.CO']
             self.assertIn(category, policies, "Data are loaded for categories")
             self.assertEqual(policies[category]['domain'], 'astro-ph')
             self.assertFalse(policies[category]['endorse_all'])

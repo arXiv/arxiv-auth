@@ -8,8 +8,9 @@ from pytz import timezone, UTC
 from flask import Flask
 from mimesis import Person, Internet, Datetime
 
-from arxiv import taxonomy
-from .. import endorsements, util, models
+from arxiv.db import models
+from arxiv.taxonomy import definitions
+from .. import endorsements, util
 from ... import domain
 
 EASTERN = timezone('US/Eastern')
@@ -27,8 +28,6 @@ class TestAutoEndorsement(TestCase):
         self.app.config['SESSION_DURATION'] = '36000'
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://' #in memory
 
-        util.init_app(self.app)
-
         with self.app.app_context():
             util.create_all()
             with util.transaction() as session:
@@ -45,7 +44,7 @@ class TestAutoEndorsement(TestCase):
                 joined_date = util.epoch(
                     Datetime('en').datetime().replace(tzinfo=EASTERN)
                 )
-                db_user = models.DBUser(
+                db_user = models.TapirUser(
                     first_name=first_name,
                     last_name=last_name,
                     suffix_name=suffix_name,
@@ -86,7 +85,7 @@ class TestAutoEndorsement(TestCase):
                 issued_when = util.epoch(
                     Datetime('en').datetime().replace(tzinfo=EASTERN)
                 )
-                session.add(models.DBEndorsement(
+                session.add(models.Endorsement(
                     endorsee_id=self.user.user_id,
                     archive='astro-ph',
                     subject_class='CO',
@@ -95,7 +94,7 @@ class TestAutoEndorsement(TestCase):
                     point_value=10,
                     issued_when=issued_when
                 ))
-                session.add(models.DBEndorsement(
+                session.add(models.Endorsement(
                     endorsee_id=self.user.user_id,
                     archive='astro-ph',
                     subject_class='CO',
@@ -104,7 +103,7 @@ class TestAutoEndorsement(TestCase):
                     point_value=10,
                     issued_when=issued_when
                 ))
-                session.add(models.DBEndorsement(
+                session.add(models.Endorsement(
                     endorsee_id=self.user.user_id,
                     archive='astro-ph',
                     subject_class='CO',
@@ -113,7 +112,7 @@ class TestAutoEndorsement(TestCase):
                     point_value=10,
                     issued_when=issued_when
                 ))
-                session.add(models.DBEndorsement(
+                session.add(models.Endorsement(
                     endorsee_id=self.user.user_id,
                     archive='astro-ph',
                     subject_class='CO',
@@ -130,14 +129,14 @@ class TestAutoEndorsement(TestCase):
         """Load category endorsement policies from the database."""
         with self.app.app_context():
             with util.transaction() as session:
-                session.add(models.DBCategory(
+                session.add(models.Category(
                     archive='astro-ph',
                     subject_class='CO',
                     definitive=1,
                     active=1,
                     endorsement_domain='astro-ph'
                 ))
-                session.add(models.DBEndorsementDomain(
+                session.add(models.EndorsementDomain(
                     endorsement_domain='astro-ph',
                     endorse_all='n',
                     mods_endorse_all='n',
@@ -146,7 +145,7 @@ class TestAutoEndorsement(TestCase):
                 ))
 
             policies = endorsements.category_policies()
-            category = domain.Category('astro-ph.CO')
+            category = definitions.CATEGORIES['astro-ph.CO']
             self.assertIn(category, policies, "Data are loaded for categories")
             self.assertEqual(policies[category]['domain'], 'astro-ph')
             self.assertFalse(policies[category]['endorse_all'])

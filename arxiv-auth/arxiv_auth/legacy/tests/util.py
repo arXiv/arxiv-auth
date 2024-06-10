@@ -1,19 +1,23 @@
 """Testing helpers."""
-
-import os
 from contextlib import contextmanager
+
 from flask import Flask
+from sqlalchemy import create_engine
+
+from arxiv.db.models import reconfigure_db
 from .. import util
 
 
 @contextmanager
-def temporary_db(create: bool = True, drop: bool = True):
+def temporary_db(db_uri: str, create: bool = True, drop: bool = True):
     """Provide an in-memory sqlite database for testing purposes."""
     app = Flask('foo')
-    app.config['CLASSIC_DATABASE_URI'] = os.environ.get('CLASSIC_DATABASE_URI')
     app.config['CLASSIC_SESSION_HASH'] = 'foohash'
     app.config['SESSION_DURATION'] = 3600
     app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session'
+
+    engine = create_engine(db_uri)
+    reconfigure_db (engine)
 
     with app.app_context():
         if create:

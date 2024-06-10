@@ -23,7 +23,6 @@ def create_web_app() -> Flask:
 
     # app.register_blueprint(ui.blueprint)
 
-    datastore.init_app(app)
     SessionStore.init_app(app)
 
     Base(app)    # Gives us access to the base UI templates and resources.
