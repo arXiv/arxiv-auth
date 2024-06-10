@@ -25,7 +25,7 @@ def _check_category(data: Any) -> Category:
     if isinstance(data, Category):
         return data
     if not isinstance(data, str):
-        raise ValidationError(f"object of type {type(data)} cannnot be used as a Category")
+        raise ValidationError(f"object of type {type(data)} cannnot be used as a Category", Category)
     cat = Category(data)
     cat.name # possible rasie value error on non-existance
     return cat
@@ -177,7 +177,7 @@ class Authorizations(BaseModel):
     def check_endorsements(cls, data: Any) -> List[Category]:
         """Checks if `data` contains endorsements."""
         if isinstance(data, str) or not issubclass(type(data), Iterable):
-            raise ValidationError("endorsements must be a list")
+            raise ValidationError("endorsements must be a list", cls)
         return [ _check_category(obj) for obj in data ]
 
 

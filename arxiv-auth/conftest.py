@@ -22,6 +22,7 @@ def app():
     app.config['SESSION_DURATION'] = f'fake set in {__file__}'
     app.config['CLASSIC_COOKIE_NAME'] = f'fake set in {__file__}'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+    app.config['AUTH_UPDATED_SESSION_REF'] = True
 
     SessionStore.init_app(app)
 
