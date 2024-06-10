@@ -38,8 +38,9 @@ class SetUpUserMixin(object):
 
     def setUp(self):
         """Set up the database."""
-        self.db_path = tempfile.mkdtemp()
-        self.db_uri = f'sqlite:///{self.db_path}/test.db'
+        # self.db_path = tempfile.mkdtemp()
+        # self.db_uri = f'sqlite:///{self.db_path}/test.db'
+        self.db_uri = f'sqlite:///:memory:'
         self.user_id = '15830'
         with temporary_db(self.db_uri, drop=False) as session:
             self.user_class = session.scalar(

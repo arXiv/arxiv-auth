@@ -59,7 +59,7 @@ class UserProfile(BaseModel):
     Should be one of :ref:`arxiv.taxonomy.CATEGORIES`.
     """
 
-    @validator('default_category', pre=True)
+    @validator('default_category')
     @classmethod
     def check_category(cls, data: Any) -> Category:
         """Checks if `data` is a category."""
@@ -172,7 +172,7 @@ class Authorizations(BaseModel):
     endorsements: List[Category] = []
     """Categories to which the user is permitted to submit."""
 
-    @validator('endorsements', pre=True)
+    @validator('endorsements')
     @classmethod
     def check_endorsements(cls, data: Any) -> List[Category]:
         """Checks if `data` contains endorsements."""
