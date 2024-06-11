@@ -40,7 +40,14 @@ class Auth(object):
           app = Flask('someapp')
           app.config.from_pyfile('config.py')
           Auth(app)   # Registers the before_reques auth check
-          app.register_blueprint(routes.blueprint)    # Your blueprint.
+
+          @app.route("/hello")
+          def hello():
+              if request.auth:
+                 return f"Hello {request.auth.user.name}!"
+              else:
+                 return f"Hello world! (not authenticated)"
+
        return app
 
 
