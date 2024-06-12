@@ -9,6 +9,7 @@ from flask import Flask
 from mimesis import Person, Internet, Datetime
 
 from arxiv.db import models
+from arxiv.config import Settings
 from arxiv.taxonomy import definitions
 from .. import endorsements, util
 from ... import domain
@@ -27,9 +28,14 @@ class TestAutoEndorsement(TestCase):
         self.app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
         self.app.config['SESSION_DURATION'] = '36000'
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://' #in memory
+        settings = Settings(
+                        CLASSIC_DB_URI='sqlite:///:memory:',
+                        LATEXML_DB_URI=None)
+
+        engine, _ = models.configure_db(settings)
 
         with self.app.app_context():
-            util.create_all()
+            util.create_all(engine)
             with util.transaction() as session:
                 person = Person('en')
                 net = Internet()

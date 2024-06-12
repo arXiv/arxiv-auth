@@ -48,7 +48,7 @@ class TestAuthenticationController(TestCase):
         os.environ['AUTH_SESSION_COOKIE_SECURE'] = '0'
         os.environ['SESSION_DURATION'] = f"{self.expiry}"
         os.environ['JWT_SECRET'] = self.secret
-        os.environ['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+        os.environ['CLASSIC_DB_URI'] = f'sqlite:///{self.db}'
         os.environ['CLASSIC_SESSION_HASH'] = 'xyz1234'
         os.environ['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
         os.environ['REDIS_FAKE'] = "true"
@@ -56,8 +56,8 @@ class TestAuthenticationController(TestCase):
         self.app = create_web_app()
 
         with self.app.app_context():
-            util.drop_all()
-            util.create_all()
+            util.drop_all(self.app.config['DB_ENGINE'])
+            util.create_all(self.app.config['DB_ENGINE'])
 
             with util.transaction() as session:
                 # We have a good old-fashioned user.

@@ -34,8 +34,8 @@ sphinx = ["sphinx", "sphinx-autodoc-typehints", "sphinxcontrib-websupport"]
 [package.source]
 type = "git"
 url = "https://github.com/arXiv/arxiv-base.git"
-reference = "8df5c45da776cced4e3629542eaab8f44f0e08cb"
-resolved_reference = "8df5c45da776cced4e3629542eaab8f44f0e08cb"
+reference = "537bfe4013b2090d3f0dcf900b83b3d7969bd65f"
+resolved_reference = "537bfe4013b2090d3f0dcf900b83b3d7969bd65f"
 
 [[package]]
 name = "attrs"
@@ -1657,4 +1657,4 @@ email = ["email-validator"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4e386c33f69be0bdf7f6935b404ea7855f102c1630885a75a339a29359129bce"
+content-hash = "2dc7c66eea89eb88ef284f6e3b29cddf17bb9fc27d24928f5e22b5adb19cf611"

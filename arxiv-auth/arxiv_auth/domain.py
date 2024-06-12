@@ -10,6 +10,7 @@ from pytz import timezone, UTC
 from pydantic import BaseModel, ConfigDict, ValidationError, validator
 from arxiv.taxonomy.category import Category
 from arxiv.taxonomy import definitions
+from arxiv.db.models import Demographic
 
 EASTERN = timezone('US/Eastern')
 
@@ -80,17 +81,16 @@ class UserProfile(BaseModel):
     @property
     def default_archive(self) -> str:
         """The archive of the default category."""
-        archive: str = definitions.CATEGORIES[self.default_category]['in_archive']
-        return archive
+        return self.default_category.in_archive
 
     @property
     def default_subject(self) -> Optional[str]:
         """The subject of the default category."""
         subject: str
-        if '.' in self.default_category:
-            subject = self.default_category.split('.', 1)[1]
+        if '.' in self.default_category.id:
+            subject = self.default_category.id.split('.', 1)[1]
         else:
-            subject = self.default_category
+            subject = self.default_category.id
         return subject
 
     @property
@@ -100,6 +100,25 @@ class UserProfile(BaseModel):
             definitions.GROUPS[group]['name']
             for group in self.submission_groups
         ])
+    
+    @staticmethod
+    def from_orm (model: Demographic) -> 'UserProfile':
+        if model.subject_class:
+            print (model.archive)
+            print (model.subject_class)
+            print (type(model))
+            category = definitions.CATEGORIES[f'{model.archive}.{model.subject_class}']
+        else:
+            category = definitions.CATEGORIES[f'{model.archive}']
+
+        return UserProfile(
+            affiliation=model.affiliation,
+            country=model.country,
+            rank=model.type,
+            submission_groups=model.groups,
+            default_category=category,
+            homepage_url=model.url,
+        )
 
 
 class Scope(str):

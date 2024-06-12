@@ -46,8 +46,8 @@ class TestRegister(TestCase):
         self.app.config['SERVER_NAME'] = 'example.com' # to do urls in emails
 
         with self.app.app_context():
-            util.drop_all()
-            util.create_all()
+            util.drop_all(self.app.config['DB_ENGINE'])
+            util.create_all(self.app.config['DB_ENGINE'])
 
             with util.transaction() as session:
                 # We have a good old-fashioned user.

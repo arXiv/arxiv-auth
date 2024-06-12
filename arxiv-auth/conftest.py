@@ -1,14 +1,16 @@
 import pytest
+import os
+# os.environ['CLASSIC_DB_URI'] = 'sqlite:///:memory:'
 
 from flask import Flask
 from sqlalchemy import create_engine
 
 from arxiv.base import Base
+from arxiv.config import Settings
 from arxiv.base.middleware import wrap
-from arxiv.db.models import reconfigure_db
+from arxiv.db.models import configure_db
 
 from arxiv_auth.auth.sessions import SessionStore
-from arxiv_auth.legacy.util import create_all as legacy_create_all
 from arxiv_auth.auth import Auth
 from arxiv_auth.auth.middleware import AuthMiddleware
 
@@ -23,11 +25,15 @@ def app():
     app.config['CLASSIC_COOKIE_NAME'] = f'fake set in {__file__}'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
     app.config['AUTH_UPDATED_SESSION_REF'] = True
+    settings = Settings (
+        CLASSIC_DB_URI = 'sqlite:///test.db',
+        LATEXML_DB_URI = None
+    )
+    engine, _ = configure_db(settings)
+    app.config['DB_ENGINE'] = engine
 
     SessionStore.init_app(app)
 
-    engine = create_engine('sqlite:///test.db')
-    reconfigure_db(engine)
     Base(app)
 
     Auth(app)

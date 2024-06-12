@@ -15,6 +15,7 @@ from mimesis import Person, Internet, Datetime, locales
 
 from sqlalchemy import select, func
 from arxiv.db import models
+from arxiv.config import Settings
 from arxiv.taxonomy import definitions
 from .. import util, sessions, authenticate, exceptions
 from ..passwords import hash_password
@@ -49,12 +50,14 @@ class TestBootstrap(TestCase):
         cls.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
         cls.app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
         cls.app.config['SESSION_DURATION'] = '36000'
-        cls.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://' #in memory
+        settings = Settings(
+                        CLASSIC_DB_URI='sqlite:///:memory:',
+                        LATEXML_DB_URI=None)
 
-        util.init_app(cls.app)
+        engine, _ = models.configure_db(settings)
 
         with cls.app.app_context():
-            util.create_all()
+            util.create_all(engine)
             with util.transaction() as session:
                 edc = session.execute(select(models.Endorsement)).all()
                 for row in edc:

@@ -201,7 +201,7 @@ class TestAuthenticateWithPassword(TestCase):
         username = 'foouser'
         password = ''
         with self.assertRaises(exceptions.AuthenticationFailed):
-            with temporary_db():
+            with temporary_db(self.db):
                 authenticate.authenticate(username, password)
 
     def test_password_is_incorrect(self):

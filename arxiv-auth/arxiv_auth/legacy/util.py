@@ -7,28 +7,19 @@ from contextlib import contextmanager
 import logging
 
 from flask import Flask
-from sqlalchemy import text
+from sqlalchemy import text, Engine
 from sqlalchemy.orm.session import Session
 
 from arxiv.base.globals import get_application_config
 
 from ..auth import scopes
 from .. import domain
-from arxiv.db import session, Base, engine, transaction
+from arxiv.db import session, Base, transaction
 from arxiv.db.models import TapirUser, TapirPolicyClass
 
 EASTERN = timezone('US/Eastern')
 logger = logging.getLogger(__name__)
 logger.propagate = False
-
-ADMIN = 1
-PUBLIC_USER = 2
-LEGACY_USER = 3
-POLICY_CLASSES = [
-    {"name": "Administrator", "class_id": ADMIN, "description": ""},
-    {"name": "Public user", "class_id": PUBLIC_USER, "description": ""},
-    {"name": "Legacy user", "class_id": LEGACY_USER, "description": ""}
-]
 
 
 def now() -> int:
@@ -47,20 +38,19 @@ def from_epoch(t: int) -> datetime:
     return datetime.fromtimestamp(t, tz=EASTERN)
 
 
-def create_all() -> None:
+def create_all(engine: Engine) -> None:
     """Create all tables in the database."""
-    print (engine.url)
     Base.metadata.create_all(engine)
     with transaction() as session:
         data = session.query(TapirPolicyClass).all()
         if data:
             return
 
-        for datum in POLICY_CLASSES:
+        for datum in TapirPolicyClass.POLICY_CLASSES:
             session.add(TapirPolicyClass(**datum))
         session.commit()
 
-def drop_all() -> None:
+def drop_all(engine: Engine) -> None:
     """Drop all tables in the database."""
     Base.metadata.drop_all(engine)
 

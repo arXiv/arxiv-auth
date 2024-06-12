@@ -2,9 +2,9 @@
 from contextlib import contextmanager
 
 from flask import Flask
-from sqlalchemy import create_engine
 
-from arxiv.db.models import reconfigure_db
+from arxiv.config import Settings
+from arxiv.db.models import configure_db
 from .. import util
 
 
@@ -15,16 +15,18 @@ def temporary_db(db_uri: str, create: bool = True, drop: bool = True):
     app.config['CLASSIC_SESSION_HASH'] = 'foohash'
     app.config['SESSION_DURATION'] = 3600
     app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session'
+    settings = Settings(
+                        CLASSIC_DB_URI=db_uri,
+                        LATEXML_DB_URI=None)
 
-    engine = create_engine(db_uri)
-    reconfigure_db (engine)
+    engine, _ = configure_db (settings)
 
     with app.app_context():
         if create:
-            util.create_all()
+            util.create_all(engine)
         try:
             with util.transaction():
                 yield util.session
         finally:
             if drop:
-                util.drop_all()
+                util.drop_all(engine)

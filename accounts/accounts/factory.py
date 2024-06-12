@@ -5,6 +5,8 @@ from flask_s3 import FlaskS3
 
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
+from arxiv.config import Settings
+from arxiv.db.models import configure_db
 
 from arxiv_auth import auth
 from arxiv_auth.auth.middleware import AuthMiddleware
@@ -21,7 +23,12 @@ def create_web_app() -> Flask:
     """Initialize and configure the accounts application."""
     app = Flask('accounts')
     app.config.from_pyfile('config.py')
-
+    settings = Settings(
+        CLASSIC_DB_URI = app.config['CLASSIC_DATABASE_URI'],
+        LATEXML_DB_URI = None
+    )
+    engine, _ = configure_db(settings)
+    app.config['DB_ENGINE'] = engine
     # Don't set SERVER_NAME, it switches flask blueprints to be
     # subdomain aware.  Then each blueprint will only be served on
     # it's subdomain.  This doesn't work with mutliple domains like
@@ -53,6 +60,6 @@ def create_web_app() -> Flask:
 
     if app.config['CREATE_DB']:
         with app.app_context():
-            legacy_create_all()
+            legacy_create_all(engine)
 
     return app

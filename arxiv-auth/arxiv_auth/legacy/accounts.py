@@ -111,7 +111,7 @@ def register(user: domain.User, password: str, ip: str,
             surname=db_user.last_name,
             suffix=db_user.suffix_name
         ),
-        profile=db_profile.to_domain() if db_profile is not None else None
+        profile=domain.UserProfile.from_orm(db_profile) if db_profile is not None else None
     )
     auths = domain.Authorizations(
         classic=util.compute_capabilities(db_user),
@@ -136,7 +136,7 @@ def get_user_by_id(user_id: str) -> domain.User:
             surname=db_user.last_name,
             suffix=db_user.suffix_name
         ),
-        profile=db_profile.to_domain() if db_profile is not None else None
+        profile=domain.UserProfile.from_orm(db_profile) if db_profile is not None else None
     )
     return user
 
@@ -243,7 +243,7 @@ def _create_profile(user: domain.User, db_user: TapirUser) -> Demographic:
         country=user.profile.country if user.profile else None,
         affiliation=user.profile.affiliation if user.profile else None,
         url=user.profile.homepage_url if user.profile else None,
-        rank=user.profile.rank if user.profile else None,
+        type=user.profile.rank if user.profile else None,
         archive=user.profile.default_archive if user.profile else None,
         subject_class=user.profile.default_subject if user.profile else None,
         original_subject_classes='',
@@ -266,10 +266,9 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
         raise ValueError("Must have forename to create user")
     if not user.name.surname:
         raise ValueError("Must have surname to create user")
-
     data = dict(
         email=user.email,
-        policy_class=TapirPolicyClass.PUBLIC_USER,
+        policy_class=2,
         joined_ip_num=ip,
         joined_remote_host=remote_host,
         joined_date=util.now(),
@@ -281,11 +280,11 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
             last_name=user.name.surname,
             suffix_name=user.name.suffix
         ))
+    print (data)
 
     # Main user entry.
     db_user = TapirUser(**data)
     session.add(db_user)
-
     # Nickname is where we keep the username.
     db_nick = TapirNickname(
         user=db_user,
@@ -303,7 +302,10 @@ def _create(user: domain.User, password: str, ip: str, remote_host: str) \
 
     db_pass = TapirUsersPassword(
         user=db_user,
+        password_storage=2,
         password_enc=hash_password(password)
     )
     session.add(db_pass)
+    from sqlalchemy import select
+    print(session.execute(select(TapirUser.email)).all())
     return db_user, db_nick, db_profile

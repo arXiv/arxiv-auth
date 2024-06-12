@@ -196,7 +196,7 @@ def implicit_endorsements(user: domain.User) -> Endorsements:
         auto-endorsed.
 
     """
-    candidates = [domain.Category(category)
+    candidates = [definitions.CATEGORIES[category]
                   for category, data in definitions.CATEGORIES_ACTIVE.items()]
     policies = category_policies()
     invalidated = invalidated_autoendorsements(user)
@@ -424,6 +424,6 @@ def invalidated_autoendorsements(user: domain.User) -> Endorsements:
                                                  Endorsement.subject_class) \
         .filter(Endorsement.endorsee_id == user.user_id) \
         .filter(Endorsement.flag_valid == 0) \
-        .filter(Endorsement.endorsement_type == 'auto') \
+        .filter(Endorsement.type == 'auto') \
         .all()
     return [_category(archive, subject) for archive, subject in data]

@@ -10,6 +10,7 @@ from mimesis import Person, Internet, Datetime
 from sqlalchemy import insert
 
 from arxiv.taxonomy import definitions
+from arxiv.config import Settings
 from arxiv.db import models
 from .. import endorsements, util
 from ... import domain
@@ -25,9 +26,14 @@ class TestEndorsement(TestCase):
         self.app = Flask('test')
         self.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         self.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
+        settings = Settings(
+                        CLASSIC_DB_URI='sqlite:///test.db',
+                        LATEXML_DB_URI=None)
+
+        engine, _ = models.configure_db(settings)
 
         with self.app.app_context():
-            util.create_all()
+            util.create_all(engine)
             with util.transaction() as session:
                 person = Person('en')
                 net = Internet()
@@ -145,9 +151,14 @@ class TestAutoEndorsement(TestCase):
         util.init_app(self.app)
         self.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         self.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
+        settings = Settings(
+                        CLASSIC_DB_URI='sqlite:///test.db',
+                        LATEXML_DB_URI=None)
+
+        engine, _ = models.configure_db(settings)
 
         with self.app.app_context():
-            util.create_all()
+            util.create_all(engine)
             with util.transaction() as session:
                 person = Person('en')
                 net = Internet()

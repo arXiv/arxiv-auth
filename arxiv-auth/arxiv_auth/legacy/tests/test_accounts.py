@@ -8,6 +8,7 @@ from pytz import UTC
 from unittest import TestCase
 from sqlalchemy import select
 
+from arxiv.taxonomy import definitions
 from arxiv.db import models
 
 from .. import util, authenticate, exceptions
@@ -38,11 +39,17 @@ class SetUpUserMixin(object):
 
     def setUp(self):
         """Set up the database."""
-        # self.db_path = tempfile.mkdtemp()
-        # self.db_uri = f'sqlite:///{self.db_path}/test.db'
-        self.db_uri = f'sqlite:///:memory:'
+        self.db_path = tempfile.mkdtemp()
+        self.db_uri = f'sqlite:///{self.db_path}/test.db'
         self.user_id = '15830'
-        with temporary_db(self.db_uri, drop=False) as session:
+        with temporary_db(self.db_uri, create=True, drop=False) as session:
+            # Insert tapir policy classes
+            data = session.query(models.TapirPolicyClass).all()
+            if data:
+                return
+            for datum in models.TapirPolicyClass.POLICY_CLASSES:
+                session.add(models.TapirPolicyClass(**datum))
+
             self.user_class = session.scalar(
                 select(models.TapirPolicyClass).where(models.TapirPolicyClass.class_id==2))
             self.email = 'first@last.iv'
@@ -184,7 +191,7 @@ class TestRegister(SetUpUserMixin, TestCase):
             country='de',
             rank=1,
             submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs.DL'),
+            default_category=definitions.CATEGORIES['cs.DL'],
             homepage_url='https://google.com'
         )
         name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
@@ -231,7 +238,7 @@ class TestGetUserById(SetUpUserMixin, TestCase):
             country='de',
             rank=1,
             submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs.DL'),
+            default_category=definitions.CATEGORIES['cs.DL'],
             homepage_url='https://google.com'
         )
         name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
@@ -320,7 +327,7 @@ class TestUpdate(SetUpUserMixin, TestCase):
             country='de',
             rank=1,
             submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs.DL'),
+            default_category=definitions.CATEGORIES['cs.DL'],
             homepage_url='https://google.com'
         )
         name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
@@ -337,7 +344,7 @@ class TestUpdate(SetUpUserMixin, TestCase):
             country='us',
             rank=2,
             submission_groups=['grp_cs', 'grp_physics'],
-            default_category=domain.Category('cs.IR'),
+            default_category=definitions.CATEGORIES['cs.IR'],
             homepage_url='https://google.com'
         )
         updated_user = domain.User(user_id=user.user_id,
