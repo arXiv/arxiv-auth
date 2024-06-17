@@ -25,8 +25,8 @@ def temporary_db(db_uri: str, create: bool = True, drop: bool = True):
         if create:
             util.create_all(engine)
         try:
-            with util.transaction():
-                yield util.session
+            with util.transaction() as session:
+                yield session
         finally:
             if drop:
                 util.drop_all(engine)

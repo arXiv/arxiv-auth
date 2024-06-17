@@ -32,6 +32,12 @@ class TestEndorsement(TestCase):
 
         engine, _ = models.configure_db(settings)
 
+        self.default_tracking_data = {
+            'remote_addr': '0.0.0.0',
+            'remote_host': 'foo-host.foo.com',
+            'tracking_cookie': '0'
+        }
+
         with self.app.app_context():
             util.create_all(engine)
             with util.transaction() as session:
@@ -104,22 +110,35 @@ class TestEndorsement(TestCase):
                     papers_to_endorse=3
                 ))
 
-                for category, definition in definitions.CATEGORIES_ACTIVE.items():
-                    if '.' in category:
-                        archive, subject_class = category.split('.', 1)
-                    else:
-                        archive, subject_class = category, ''
-                    session.add(models.Category(
-                        archive=archive,
-                        subject_class=subject_class,
-                        definitive=1,
-                        active=1,
-                        endorsement_domain='test_domain'
-                    ))
+                # for category, definition in definitions.CATEGORIES_ACTIVE.items():
+                #     if '.' in category:
+                #         archive, subject_class = category.split('.', 1)
+                #     else:
+                #         archive, subject_class = category, ''
+                #     session.add(models.Category(
+                #         archive=archive,
+                #         subject_class=subject_class,
+                #         definitive=1,
+                #         active=1,
+                #         endorsement_domain='test_domain'
+                #     ))
 
     def test_get_endorsements(self):
         """Test :func:`endoresement.get_endorsements`."""
         with self.app.app_context():
+            with util.transaction() as session:
+                for category, definition in definitions.CATEGORIES_ACTIVE.items():
+                        if '.' in category:
+                            archive, subject_class = category.split('.', 1)
+                        else:
+                            archive, subject_class = category, ''
+                        session.add(models.Category(
+                            archive=archive,
+                            subject_class=subject_class,
+                            definitive=1,
+                            active=1,
+                            endorsement_domain='test_domain'
+                        ))
             all_endorsements = set(
                 endorsements.get_endorsements(self.user, compress=False)
             )
@@ -141,6 +160,13 @@ class TestEndorsement(TestCase):
                 if definition['in_archive'] == 'cs' and category != 'cs.NA':
                     self.assertIn(category, some)
 
+    def tearDown(self):
+        """Remove the test DB."""
+        try:
+            os.remove('./test.db')
+        except FileNotFoundError:
+            pass
+
 
 class TestAutoEndorsement(TestCase):
     """Tests for :func:`get_autoendorsements`."""
@@ -148,7 +174,6 @@ class TestAutoEndorsement(TestCase):
     def setUp(self):
         """Generate some fake data."""
         self.app = Flask('test')
-        util.init_app(self.app)
         self.app.config['CLASSIC_DATABASE_URI'] = 'sqlite:///test.db'
         self.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
         settings = Settings(
@@ -156,6 +181,12 @@ class TestAutoEndorsement(TestCase):
                         LATEXML_DB_URI=None)
 
         engine, _ = models.configure_db(settings)
+
+        self.default_tracking_data = {
+            'remote_addr': '0.0.0.0',
+            'remote_host': 'foo-host.foo.com',
+            'tracking_cookie': '0'
+        }
 
         with self.app.app_context():
             util.create_all(engine)
@@ -225,7 +256,7 @@ class TestAutoEndorsement(TestCase):
                     archive='astro-ph',
                     subject_class='CO',
                     flag_valid=0,
-                    endorsement_type='auto',
+                    type='auto',
                     point_value=10,
                     issued_when=issued_when
                 ))
@@ -234,7 +265,7 @@ class TestAutoEndorsement(TestCase):
                     archive='astro-ph',
                     subject_class='CO',
                     flag_valid=0,
-                    endorsement_type='auto',
+                    type='auto',
                     point_value=10,
                     issued_when=issued_when
                 ))
@@ -243,7 +274,7 @@ class TestAutoEndorsement(TestCase):
                     archive='astro-ph',
                     subject_class='CO',
                     flag_valid=1,
-                    endorsement_type='auto',
+                    type='auto',
                     point_value=10,
                     issued_when=issued_when
                 ))
@@ -252,7 +283,7 @@ class TestAutoEndorsement(TestCase):
                     archive='astro-ph',
                     subject_class='CO',
                     flag_valid=1,
-                    endorsement_type='user',
+                    type='user',
                     point_value=10,
                     issued_when=issued_when
                 ))
@@ -298,11 +329,14 @@ class TestAutoEndorsement(TestCase):
                         document_id=1,
                         user_id=self.user.user_id,
                         flag_author=0,
-                        valid=1
+                        valid=1,
+                        **self.default_tracking_data
                     )
                 )
                 session.add(models.Document(
                     document_id=1,
+                    title='Foo Title',
+                    submitter_email='foo@bar.baz',
                     paper_id='2101.00123',
                     dated=util.epoch(datetime.now(tz=UTC))
                 ))
@@ -329,11 +363,14 @@ class TestAutoEndorsement(TestCase):
                         document_id=2,
                         user_id=self.user.user_id,
                         flag_author=1,
-                        valid=1
+                        valid=1,
+                        **self.default_tracking_data
                     )
                 )
                 session.add(models.Document(
                     document_id=2,
+                    title='Foo Title',
+                    submitter_email='foo@bar.baz',
                     paper_id='2101.00124',
                     dated=util.epoch(datetime.now(tz=UTC))
                 ))
@@ -360,11 +397,14 @@ class TestAutoEndorsement(TestCase):
                         document_id=3,
                         user_id=self.user.user_id,
                         flag_author=1,
-                        valid=1
+                        valid=1,
+                        **self.default_tracking_data
                     )
                 )
                 session.add(models.Document(
                     document_id=3,
+                    title='Foo Title',
+                    submitter_email='foo@bar.baz',
                     paper_id='2101.00125',
                     dated=util.epoch(datetime.now(tz=UTC))
                 ))

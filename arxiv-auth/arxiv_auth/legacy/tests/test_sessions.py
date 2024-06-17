@@ -29,7 +29,7 @@ class TestCreateSession(TestCase):
         ip_address = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         tracking = "1.foo"
-        with temporary_db():
+        with temporary_db('sqlite:///:memory:'):
             user_session = sessions.create(auths, ip_address, remote_host,
                                            tracking, user=user)
             self.assertIsInstance(user_session, sessions.domain.Session)
@@ -80,7 +80,7 @@ class TestInvalidateSession(TestCase):
         capabilities = 6
         start = datetime.now(tz=UTC)
 
-        with temporary_db() as db_session:
+        with temporary_db('sqlite:///:memory:') as db_session:
             cookie = cookies.pack(session_id, user_id, ip, start, capabilities)
             with util.transaction() as db_session:
                 tapir_session = models.TapirSession(
@@ -101,6 +101,6 @@ class TestInvalidateSession(TestCase):
     def test_invalidate_nonexistant_session(self, mock_get_duration):
         """An exception is raised if the session doesn't exist."""
         mock_get_duration.return_value = 36000
-        with temporary_db():
+        with temporary_db('sqlite:///:memory:'):
             with self.assertRaises(exceptions.UnknownSession):
                 sessions.invalidate('1:1:10.10.10.10:1531145500:4')

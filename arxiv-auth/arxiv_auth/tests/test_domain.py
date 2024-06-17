@@ -2,6 +2,7 @@
 
 from unittest import TestCase
 from datetime import datetime
+from arxiv.taxonomy import definitions
 from arxiv_auth.domain import Session
 from pytz import timezone
 from ..auth import scopes
@@ -24,13 +25,13 @@ class TestSession(TestCase):
                     affiliation='FSU',
                     rank=3,
                     country='us',
-                    default_category=domain.Category('astro-ph.CO'),
+                    default_category=definitions.CATEGORIES['astro-ph.CO'],
                     submission_groups=['grp_physics']
                 )
             ),
             authorizations=domain.Authorizations(
                 scopes=[scopes.VIEW_SUBMISSION, scopes.CREATE_SUBMISSION],
-                endorsements=[domain.Category('astro-ph.CO')]
+                endorsements=[definitions.CATEGORIES['astro-ph.CO']]
             )
         )
         session_data = session.dict()

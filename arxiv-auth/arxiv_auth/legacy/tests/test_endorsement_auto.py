@@ -6,6 +6,7 @@ from datetime import datetime
 from pytz import timezone, UTC
 
 from flask import Flask
+from sqlalchemy import insert
 from mimesis import Person, Internet, Datetime
 
 from arxiv.db import models
@@ -33,6 +34,11 @@ class TestAutoEndorsement(TestCase):
                         LATEXML_DB_URI=None)
 
         engine, _ = models.configure_db(settings)
+        self.default_tracking_data = {
+            'remote_addr': '0.0.0.0',
+            'remote_host': 'foo-host.foo.com',
+            'tracking_cookie': '0'
+        }
 
         with self.app.app_context():
             util.create_all(engine)
@@ -96,7 +102,7 @@ class TestAutoEndorsement(TestCase):
                     archive='astro-ph',
                     subject_class='CO',
                     flag_valid=0,
-                    endorsement_type='auto',
+                    type='auto',
                     point_value=10,
                     issued_when=issued_when
                 ))
@@ -105,7 +111,7 @@ class TestAutoEndorsement(TestCase):
                     archive='astro-ph',
                     subject_class='CO',
                     flag_valid=0,
-                    endorsement_type='auto',
+                    type='auto',
                     point_value=10,
                     issued_when=issued_when
                 ))
@@ -114,7 +120,7 @@ class TestAutoEndorsement(TestCase):
                     archive='astro-ph',
                     subject_class='CO',
                     flag_valid=1,
-                    endorsement_type='auto',
+                    type='auto',
                     point_value=10,
                     issued_when=issued_when
                 ))
@@ -123,7 +129,7 @@ class TestAutoEndorsement(TestCase):
                     archive='astro-ph',
                     subject_class='CO',
                     flag_valid=1,
-                    endorsement_type='user',
+                    type='user',
                     point_value=10,
                     issued_when=issued_when
                 ))
@@ -163,24 +169,33 @@ class TestAutoEndorsement(TestCase):
         with self.app.app_context():
             with util.transaction() as session:
                 # User owns three papers.
-                session.add(models.DBPaperOwners(
+                session.execute(
+                    insert(models.t_arXiv_paper_owners)
+                    .values(
+                        document_id=1,
+                        user_id=self.user.user_id,
+                        flag_author=0,  # <- User is _not_ an author.
+                        valid=1,
+                        **self.default_tracking_data
+                    )
+                )
+                session.add(models.Document(
                     document_id=1,
-                    user_id=self.user.user_id,
-                    flag_author=0,  # <- User is _not_ an author.
-                    valid=1
-                ))
-                session.add(models.DBDocuments(
-                    document_id=1,
+                    title='Foo Title',
+                    submitter_email='foo@bar.baz',
                     paper_id='2101.00123',
                     dated=util.epoch(datetime.now(tz=UTC))
                 ))
-                session.add(models.DBDocumentInCategory(
-                    document_id=1,
-                    archive='cs',
-                    subject_class='DL',
-                    is_primary=1
-                ))
-                session.add(models.DBCategory(
+                session.execute(
+                    insert(models.t_arXiv_in_category)
+                    .values(
+                        document_id=1,
+                        archive='cs',
+                        subject_class='DL',
+                        is_primary=1
+                    )
+                )
+                session.add(models.Category(
                     archive='cs',
                     subject_class='DL',
                     definitive=1,
@@ -188,24 +203,33 @@ class TestAutoEndorsement(TestCase):
                     endorsement_domain='firstdomain'
                 ))
                 # Here's another paper.
-                session.add(models.DBPaperOwners(
+                session.execute(
+                    insert(models.t_arXiv_paper_owners)
+                    .values(
+                        document_id=2,
+                        user_id=self.user.user_id,
+                        flag_author=1,  # <- User is an author.
+                        valid=1,
+                        **self.default_tracking_data
+                    )
+                )
+                session.add(models.Document(
                     document_id=2,
-                    user_id=self.user.user_id,
-                    flag_author=1,  # <- User is an author.
-                    valid=1
-                ))
-                session.add(models.DBDocuments(
-                    document_id=2,
+                    title='Foo Title',
+                    submitter_email='foo@bar.baz',
                     paper_id='2101.00124',
                     dated=util.epoch(datetime.now(tz=UTC))
                 ))
-                session.add(models.DBDocumentInCategory(
-                    document_id=2,
-                    archive='cs',
-                    subject_class='IR',
-                    is_primary=1
-                ))
-                session.add(models.DBCategory(
+                session.execute(
+                    insert(models.t_arXiv_in_category)
+                    .values(
+                        document_id=2,
+                        archive='cs',
+                        subject_class='IR',
+                        is_primary=1
+                    )
+                )
+                session.add(models.Category(
                     archive='cs',
                     subject_class='IR',
                     definitive=1,
@@ -213,38 +237,50 @@ class TestAutoEndorsement(TestCase):
                     endorsement_domain='firstdomain'
                 ))
                 # Here's a paper for which the user is an author.
-                session.add(models.DBPaperOwners(
+                session.execute(
+                    insert(models.t_arXiv_paper_owners)
+                    .values(
+                        document_id=3,
+                        user_id=self.user.user_id,
+                        flag_author=1,
+                        valid=1,
+                        **self.default_tracking_data
+                    )
+                )
+                session.add(models.Document(
                     document_id=3,
-                    user_id=self.user.user_id,
-                    flag_author=1,
-                    valid=1
-                ))
-                session.add(models.DBDocuments(
-                    document_id=3,
+                    title='Foo Title',
+                    submitter_email='foo@bar.baz',
                     paper_id='2101.00125',
                     dated=util.epoch(datetime.now(tz=UTC))
                 ))
                 # It has both a primary and a secondary classification.
-                session.add(models.DBDocumentInCategory(
-                    document_id=3,
-                    archive='astro-ph',
-                    subject_class='EP',
-                    is_primary=1
-                ))
-                session.add(models.DBDocumentInCategory(
-                    document_id=3,
-                    archive='astro-ph',
-                    subject_class='CO',
-                    is_primary=0    # <- secondary!
-                ))
-                session.add(models.DBCategory(
+                session.execute(
+                    insert(models.t_arXiv_in_category)
+                    .values(
+                        document_id=3,
+                        archive='astro-ph',
+                        subject_class='EP',
+                        is_primary=1
+                    )
+                )
+                session.execute(
+                    insert(models.t_arXiv_in_category)
+                    .values(
+                        document_id=3,
+                        archive='astro-ph',
+                        subject_class='CO',
+                        is_primary=0    # <- secondary!
+                    )
+                )
+                session.add(models.Category(
                     archive='astro-ph',
                     subject_class='EP',
                     definitive=1,
                     active=1,
                     endorsement_domain='seconddomain'
                 ))
-                session.add(models.DBCategory(
+                session.add(models.Category(
                     archive='astro-ph',
                     subject_class='CO',
                     definitive=1,
@@ -262,13 +298,15 @@ class TestAutoEndorsement(TestCase):
         with self.app.app_context():
             with util.transaction() as session:
                 for pattern in ok_patterns:
-                    session.add(models.DBEmailWhitelist(
-                        pattern=str(pattern)
-                    ))
+                    session.execute(insert(
+                        models.t_arXiv_white_email)
+                        .values(pattern=str(pattern))
+                    )
                 for pattern in bad_patterns:
-                    session.add(models.DBEmailBlacklist(
-                        pattern=str(pattern)
-                    ))
+                    session.execute(insert(
+                        models.t_arXiv_black_email)
+                        .values(pattern=str(pattern))
+                    )
 
             self.assertTrue(endorsements.is_academic(domain.User(
                 user_id='2',

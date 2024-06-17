@@ -73,8 +73,8 @@ def _categories_in_archive(archive: str) -> Set[str]:
 @memoize()
 def _category(archive: str, subject_class: str) -> domain.Category:
     if subject_class:
-        return domain.Category(f'{archive}.{subject_class}')
-    return domain.Category(archive)
+        return definitions.CATEGORIES[f'{archive}.{subject_class}']
+    return definitions.CATEGORIES[archive]
 
 
 @memoize()

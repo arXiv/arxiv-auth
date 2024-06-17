@@ -15,7 +15,7 @@ class TestGetSession(TestCase):
     def test_load_returns_a_session(self) -> None:
         """If ID matches a known session, returns a :class:`.TapirSession`."""
         session_id = "424242424"
-        with temporary_db() as db_session:
+        with temporary_db('sqlite:///:memory:') as db_session:
             start = util.now()
             db_session.add(models.TapirSession(
                 session_id=session_id,

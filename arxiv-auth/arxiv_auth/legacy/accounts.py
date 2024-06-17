@@ -62,6 +62,7 @@ def does_email_exist(email: str) -> bool:
     """
     try:
         data = session.query(TapirUser).filter(TapirUser.email == email).first()
+        print (session.query(TapirUser).all())
     except OperationalError as e:
         raise Unavailable('Database is temporarily unavailable') from e
     if data:
@@ -167,7 +168,7 @@ def update(user: domain.User) -> Tuple[domain.User, domain.Authorizations]:
                                      user.profile.affiliation)
             _update_field_if_changed(db_profile, 'country',
                                      user.profile.country)
-            _update_field_if_changed(db_profile, 'rank', user.profile.rank)
+            _update_field_if_changed(db_profile, 'type', user.profile.rank)
             _update_field_if_changed(db_profile, 'url',
                                      user.profile.homepage_url)
             _update_field_if_changed(db_profile, 'archive',
@@ -194,7 +195,7 @@ def update(user: domain.User) -> Tuple[domain.User, domain.Authorizations]:
             surname=db_user.last_name,
             suffix=db_user.suffix_name
         ),
-        profile=db_profile.to_domain() if db_profile is not None else None
+        profile=domain.UserProfile.from_orm(db_profile) if db_profile is not None else None
     )
     auths = domain.Authorizations(
         classic=util.compute_capabilities(db_user),

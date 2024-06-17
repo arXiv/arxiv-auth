@@ -16,7 +16,7 @@ import logging
 
 from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import InternalServerError
-from flask import Markup
+from markupsafe import Markup
 
 from wtforms import StringField, PasswordField, Form
 from wtforms.validators import DataRequired
