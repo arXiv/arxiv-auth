@@ -56,11 +56,6 @@ class SetUpUserMixin(TestCase):
         with self.app.app_context():
             util.create_all(self.engine)
             with util.transaction() as session:
-                data = session.query(models.TapirPolicyClass).all()
-                if not data:
-                    for datum in models.TapirPolicyClass.POLICY_CLASSES:
-                        session.add(models.TapirPolicyClass(**datum))
-
                 self.user_class = session.scalar(
                     select(models.TapirPolicyClass).where(models.TapirPolicyClass.class_id==2))
                 self.email = 'first@last.iv'
