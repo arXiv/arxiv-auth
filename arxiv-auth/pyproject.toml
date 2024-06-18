@@ -6,7 +6,7 @@ authors = ["arxiv.org"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-arxiv-base = {git = "https://github.com/arXiv/arxiv-base.git", rev = "5967b97e70ee895cc940c80fa87cdbd878db85d7"}
+arxiv-base = {git = "https://github.com/arXiv/arxiv-base.git", rev = "adb431b8234e08578d58fa4f5ef504ad54a5860e"}
 pycountry = "*"
 mimesis = "*"
 mysqlclient = "*"

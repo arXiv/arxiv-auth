@@ -24,7 +24,7 @@ class TestGetSession(TestCase):
                 start_time=start,
                 end_time=0
             ))
-
+            db_session.commit()
             tapir_session = sessions._load(session_id)
             self.assertIsNotNone(tapir_session, 'verifying we have a session')
             self.assertEqual(tapir_session.session_id, int(session_id),

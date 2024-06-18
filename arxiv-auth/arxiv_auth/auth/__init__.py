@@ -137,7 +137,6 @@ class Auth(object):
         session: Optional[Union[domain.Session, Exception]] = \
             request.environ.get(self.auth_session_name)
 
-
         # Middlware may have passed an exception, which needs to be raised
         # within the app/execution context to be handled correctly.
         if isinstance(session, Exception):

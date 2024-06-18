@@ -16,8 +16,6 @@ from arxiv.db import models
 from .. import util, authenticate, exceptions
 from .. import accounts
 from ... import domain
-from flask.globals import app_ctx
-
 
 
 def get_user(session, user_id):
@@ -42,9 +40,8 @@ class SetUpUserMixin(TestCase):
 
     def setUp(self):
         """Set up the database."""
-
         self.db_path = tempfile.mkdtemp()
-        self.db_uri = f'sqlite:///:memory:'
+        self.db_uri = f'sqlite:///{self.db_path}/test.db'
         self.user_id = '15830'
         self.app = Flask('test')
         self.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
@@ -60,63 +57,63 @@ class SetUpUserMixin(TestCase):
             util.create_all(engine)
             with util.transaction() as session:
                 data = session.query(models.TapirPolicyClass).all()
-                if data:
-                    return
-                for datum in models.TapirPolicyClass.POLICY_CLASSES:
-                    session.add(models.TapirPolicyClass(**datum))
+                if not data:
+                    for datum in models.TapirPolicyClass.POLICY_CLASSES:
+                        session.add(models.TapirPolicyClass(**datum))
 
                 self.user_class = session.scalar(
                     select(models.TapirPolicyClass).where(models.TapirPolicyClass.class_id==2))
                 self.email = 'first@last.iv'
                 self.db_user = models.TapirUser(
                     user_id=self.user_id,
-                first_name='first',
-                last_name='last',
-                suffix_name='iv',
-                email=self.email,
-                policy_class=self.user_class.class_id,
-                flag_edit_users=1,
-                flag_email_verified=1,
-                flag_edit_system=0,
-                flag_approved=1,
-                flag_deleted=0,
-                flag_banned=0,
-                tracking_cookie='foocookie',
-            )
-            self.username = 'foouser'
-            self.db_nick = models.TapirNickname(
-                nickname=self.username,
-                user_id=self.user_id,
-                user_seq=1,
-                flag_valid=1,
-                role=0,
-                policy=0,
-                flag_primary=1
-            )
-            self.salt = b'foo'
-            self.password = b'thepassword'
-            hashed = hashlib.sha1(self.salt + b'-' + self.password).digest()
-            self.db_password = models.TapirUsersPassword(
-                user_id=self.user_id,
-                password_storage=2,
-                password_enc=hashed
-            )
-            n = util.epoch(datetime.now(tz=UTC))
-            self.secret = 'foosecret'
-            self.db_token = models.TapirPermanentToken(
-                user_id=self.user_id,
-                secret=self.secret,
-                valid=1,
-                issued_when=n,
-                issued_to='127.0.0.1',
-                remote_host='foohost.foo.com',
-                session_id=0
-            )
-            session.add(self.user_class)
-            session.add(self.db_user)
-            session.add(self.db_password)
-            session.add(self.db_nick)
-            session.add(self.db_token)
+                    first_name='first',
+                    last_name='last',
+                    suffix_name='iv',
+                    email=self.email,
+                    policy_class=self.user_class.class_id,
+                    flag_edit_users=1,
+                    flag_email_verified=1,
+                    flag_edit_system=0,
+                    flag_approved=1,
+                    flag_deleted=0,
+                    flag_banned=0,
+                    tracking_cookie='foocookie',
+                )
+                self.username = 'foouser'
+                self.db_nick = models.TapirNickname(
+                    nickname=self.username,
+                    user_id=self.user_id,
+                    user_seq=1,
+                    flag_valid=1,
+                    role=0,
+                    policy=0,
+                    flag_primary=1
+                )
+                self.salt = b'foo'
+                self.password = b'thepassword'
+                hashed = hashlib.sha1(self.salt + b'-' + self.password).digest()
+                self.db_password = models.TapirUsersPassword(
+                    user_id=self.user_id,
+                    password_storage=2,
+                    password_enc=hashed
+                )
+                n = util.epoch(datetime.now(tz=UTC))
+                self.secret = 'foosecret'
+                self.db_token = models.TapirPermanentToken(
+                    user_id=self.user_id,
+                    secret=self.secret,
+                    valid=1,
+                    issued_when=n,
+                    issued_to='127.0.0.1',
+                    remote_host='foohost.foo.com',
+                    session_id=0
+                )
+                session.add(self.user_class)
+                session.add(self.db_user)
+                session.add(self.db_password)
+                session.add(self.db_nick)
+                session.add(self.db_token)
+                session.commit()
 
     def tearDown(self):
         shutil.rmtree(self.db_path)
@@ -124,8 +121,6 @@ class SetUpUserMixin(TestCase):
 
 class TestUsernameExists(SetUpUserMixin):
     """Tests for :mod:`accounts.does_username_exist`."""
-
-
 
     def test_with_nonexistant_user(self):
         """There is no user with the passed username."""
@@ -137,7 +132,7 @@ class TestUsernameExists(SetUpUserMixin):
         # with temporary_db(self.db_uri, create=False, drop=False):
         #     with util.transaction() as session:
         #         print (f'NICKS: {session.query(models.TapirNickname).all()}')
-        self.setUp()
+        # self.setUp()
         with self.app.app_context():
             self.assertTrue(accounts.does_username_exist('foouser'))
 
@@ -253,7 +248,7 @@ class TestRegister(SetUpUserMixin, TestCase):
                 self.assertEqual(str(db_user.user_id), auth_user.user_id)
 
 
-class TestGetUserById(SetUpUserMixin, TestCase):
+class TestGetUserById(SetUpUserMixin):
     """Tests for :func:`accounts.get_user_by_id`."""
 
     def test_user_exists(self):

@@ -139,6 +139,8 @@ def scoped(required: Optional[domain.Scope] = None,
     if required and not isinstance(required, domain.Scope):
         required = domain.Scope(required)
 
+    print (required)
+
     def protector(func: Callable) -> Callable:
         """Decorator that provides scope enforcement."""
         @wraps(func)
@@ -159,10 +161,13 @@ def scoped(required: Optional[domain.Scope] = None,
             """
             if hasattr(request, 'auth'):
                 session = request.auth
+                print ("HAS AUTH")
             elif hasattr(request, 'session'):
                 session = request.session
+                print ("HAS SESSION")
             else:
                 raise Unauthorized('No active session on request')
+            print (session)
             scopes: List[domain.Scope] = []
             authorized: bool = False
             logger.debug('Required: %s, authorizer: %s, unauthorized: %s',

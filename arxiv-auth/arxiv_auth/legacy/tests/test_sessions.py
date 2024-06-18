@@ -5,7 +5,9 @@ from unittest import mock, TestCase
 from datetime import datetime
 from pytz import timezone, UTC
 
-from arxiv.db import models
+from flask import Flask
+
+from arxiv.db import models, session
 from .. import exceptions, sessions, util, cookies
 
 from .util import temporary_db
@@ -31,9 +33,8 @@ class TestCreateSession(TestCase):
         tracking = "1.foo"
         with temporary_db('sqlite:///:memory:'):
             user_session = sessions.create(auths, ip_address, remote_host,
-                                           tracking, user=user)
+                                        tracking, user=user)
             self.assertIsInstance(user_session, sessions.domain.Session)
-            
             tapir_session = sessions._load(user_session.session_id)
             self.assertIsNotNone(user_session, 'verifying we have a session')
             if tapir_session is not None:
@@ -43,9 +44,9 @@ class TestCreateSession(TestCase):
                     "Returned session has correct session id."
                 )
                 self.assertEqual(tapir_session.user_id, int(user.user_id),
-                                 "Returned session has correct user id.")
+                                "Returned session has correct user id.")
                 self.assertEqual(tapir_session.end_time, 0,
-                                 "End time is 0 (no end time)")
+                                "End time is 0 (no end time)")
 
             tapir_session_audit = sessions._load_audit(user_session.session_id)
             self.assertIsNotNone(tapir_session_audit)
