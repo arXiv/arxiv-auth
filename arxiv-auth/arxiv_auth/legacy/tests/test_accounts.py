@@ -41,7 +41,7 @@ class SetUpUserMixin(TestCase):
     def setUp(self):
         """Set up the database."""
         self.db_path = tempfile.mkdtemp()
-        self.db_uri = f'sqlite:///:memory:'
+        self.db_uri = f'sqlite:///{self.db_path}/test.db'
         self.user_id = '15830'
         self.app = Flask('test')
         self.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
@@ -51,10 +51,10 @@ class SetUpUserMixin(TestCase):
                         CLASSIC_DB_URI=self.db_uri,
                         LATEXML_DB_URI=None)
 
-        engine, _ = models.configure_db(settings)            # Insert tapir policy classes
+        self.engine, _ = models.configure_db(settings)            # Insert tapir policy classes
 
         with self.app.app_context():
-            util.create_all(engine)
+            util.create_all(self.engine)
             with util.transaction() as session:
                 data = session.query(models.TapirPolicyClass).all()
                 if not data:
@@ -115,8 +115,9 @@ class SetUpUserMixin(TestCase):
                 session.add(self.db_token)
                 session.commit()
 
-    # def tearDown(self):
-    #     shutil.rmtree(self.db_path)
+    def tearDown(self):
+        util.drop_all(self.engine)
+        shutil.rmtree(self.db_path)
 
 
 class TestUsernameExists(SetUpUserMixin):
