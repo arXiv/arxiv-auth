@@ -53,18 +53,18 @@ class UserProfile(BaseModel):
     Items should be one of :ref:`arxiv.taxonomy.definitions.GROUPS`.
     """
 
-    default_category: Category
+    default_category: Optional[Category]
     """
     Default submission category.
 
     Should be one of :ref:`arxiv.taxonomy.CATEGORIES`.
     """
 
-    @validator('default_category')
-    @classmethod
-    def check_category(cls, data: Any) -> Category:
-        """Checks if `data` is a category."""
-        return _check_category(data)
+    # @validator('default_category')
+    # @classmethod
+    # def check_category(cls, data: Any) -> Category:
+    #     """Checks if `data` is a category."""
+    #     return _check_category(data)
 
     homepage_url: str = ''
     """User's homepage or external profile URL."""
@@ -79,19 +79,21 @@ class UserProfile(BaseModel):
         return _rank
 
     @property
-    def default_archive(self) -> str:
+    def default_archive(self) -> Optional[str]:
         """The archive of the default category."""
-        return self.default_category.in_archive
+        return self.default_category.in_archive if self.default_category else None
 
     @property
     def default_subject(self) -> Optional[str]:
         """The subject of the default category."""
-        subject: str
-        if '.' in self.default_category.id:
-            subject = self.default_category.id.split('.', 1)[1]
-        else:
-            subject = self.default_category.id
-        return subject
+        if self.default_category is not None:
+            subject: str
+            if '.' in self.default_category.id:
+                subject = self.default_category.id.split('.', 1)[1]
+            else:
+                subject = self.default_category.id
+            return subject
+        return None
 
     @property
     def groups_display(self) -> str:
@@ -104,12 +106,11 @@ class UserProfile(BaseModel):
     @staticmethod
     def from_orm (model: Demographic) -> 'UserProfile':
         if model.subject_class:
-            print (model.archive)
-            print (model.subject_class)
-            print (type(model))
             category = definitions.CATEGORIES[f'{model.archive}.{model.subject_class}']
-        else:
+        elif model.archive:
             category = definitions.CATEGORIES[f'{model.archive}']
+        else:
+            category = None
 
         return UserProfile(
             affiliation=model.affiliation,

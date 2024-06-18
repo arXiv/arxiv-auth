@@ -106,7 +106,7 @@ def load(cookie: str) -> domain.Session:
             surname=db_user.last_name,
             suffix=db_user.suffix_name
         ),
-        profile=db_profile.to_domain() if db_profile else None,
+        profile=domain.UserProfile.from_orm(db_profile) if db_profile else None,
         verified=bool(db_user.flag_email_verified)
     )
 
