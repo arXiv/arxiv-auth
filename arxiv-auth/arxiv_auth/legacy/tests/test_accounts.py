@@ -41,7 +41,7 @@ class SetUpUserMixin(TestCase):
     def setUp(self):
         """Set up the database."""
         self.db_path = tempfile.mkdtemp()
-        self.db_uri = f'sqlite:///{self.db_path}/test.db'
+        self.db_uri = f'sqlite:///:memory:'
         self.user_id = '15830'
         self.app = Flask('test')
         self.app.config['CLASSIC_SESSION_HASH'] = 'foohash'
@@ -115,8 +115,8 @@ class SetUpUserMixin(TestCase):
                 session.add(self.db_token)
                 session.commit()
 
-    def tearDown(self):
-        shutil.rmtree(self.db_path)
+    # def tearDown(self):
+    #     shutil.rmtree(self.db_path)
 
 
 class TestUsernameExists(SetUpUserMixin):

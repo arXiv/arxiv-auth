@@ -75,8 +75,6 @@ def authenticate(username_or_email: Optional[str] = None,
         raise AuthenticationFailed() from ex
 
     db_user, _, db_nick, db_profile = passdata
-    print ("DB PROF")
-    print (db_profile.archive)
     user = domain.User(
         user_id=str(db_user.user_id),
         username=db_nick.nickname,
