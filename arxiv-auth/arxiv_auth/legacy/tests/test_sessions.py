@@ -31,7 +31,7 @@ class TestCreateSession(TestCase):
         ip_address = '127.0.0.1'
         remote_host = 'foo-host.foo.com'
         tracking = "1.foo"
-        with temporary_db('sqlite:///:memory:'):
+        with temporary_db('sqlite:///:memory:', create=True):
             user_session = sessions.create(auths, ip_address, remote_host,
                                         tracking, user=user)
             self.assertIsInstance(user_session, sessions.domain.Session)
