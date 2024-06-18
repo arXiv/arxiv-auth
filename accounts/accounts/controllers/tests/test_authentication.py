@@ -91,7 +91,7 @@ class TestAuthenticationController(TestCase):
                     country='US',
                     affiliation='Cornell U.',
                     url='http://example.com/bogus',
-                    rank=2,
+                    type=2,
                     original_subject_classes='cs.OH',
                     )
                 salt = b'fdoo'

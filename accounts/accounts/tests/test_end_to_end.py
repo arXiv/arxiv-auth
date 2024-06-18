@@ -66,7 +66,7 @@ class TestLoginLogoutRoutes(TestCase):
         os.environ['AUTH_SESSION_COOKIE_SECURE'] = '0'
         os.environ['SESSION_DURATION'] = str(self.expiry)
         os.environ['JWT_SECRET'] = self.secret
-        os.environ['CLASSIC_DATABASE_URI'] = f'sqlite:///{self.db}'
+        os.environ['CLASSIC_DB_URI'] = f'sqlite:///{self.db}'
         os.environ['CLASSIC_SESSION_HASH'] = 'xyz1234'
         os.environ['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
         os.environ['REDIS_FAKE'] = '1'
@@ -111,7 +111,7 @@ class TestLoginLogoutRoutes(TestCase):
                     country='US',
                     affiliation='Cornell U.',
                     url='http://example.com/bogus',
-                    rank=2,
+                    type=2,
                     original_subject_classes='cs.OH',
                     )
                 salt = b'fdoo'
@@ -129,8 +129,6 @@ class TestLoginLogoutRoutes(TestCase):
                 session.add(db_demo)
 
     def tearDown(self):
-        with self.app.app_context():
-            util.drop_all()
         try:
             os.remove(self.db)
         except FileNotFoundError:
@@ -303,6 +301,7 @@ class TestLoginLogoutRoutes(TestCase):
 
         # Werkzeug should keep the cookies around for the next request.
         response = client.post('/login', data=form_data)
+        print (response.headers)
         cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
 
         cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']

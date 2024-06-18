@@ -1,5 +1,4 @@
 """Application factory for accounts app."""
-
 from flask import Flask
 from flask_s3 import FlaskS3
 
@@ -24,11 +23,11 @@ def create_web_app() -> Flask:
     app = Flask('accounts')
     app.config.from_pyfile('config.py')
     settings = Settings(
-        CLASSIC_DB_URI = app.config['CLASSIC_DATABASE_URI'],
         LATEXML_DB_URI = None
     )
     engine, _ = configure_db(settings)
     app.config['DB_ENGINE'] = engine
+    app.config['AUTH_UPDATED_SESSION_REF'] = True
     # Don't set SERVER_NAME, it switches flask blueprints to be
     # subdomain aware.  Then each blueprint will only be served on
     # it's subdomain.  This doesn't work with mutliple domains like

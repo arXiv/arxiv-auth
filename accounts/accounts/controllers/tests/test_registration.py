@@ -81,7 +81,7 @@ class TestRegister(TestCase):
                     country='US',
                     affiliation='Cornell U.',
                     url='http://example.com/bogus',
-                    rank=2,
+                    type=2,
                     original_subject_classes='cs.OH',
                     )
                 salt = b'fdoo'
@@ -99,8 +99,6 @@ class TestRegister(TestCase):
                 session.add(db_demo)
 
     def tearDown(self):
-        with self.app.app_context():
-            util.drop_all()
         try:
             os.remove(self.db)
         except FileNotFoundError:

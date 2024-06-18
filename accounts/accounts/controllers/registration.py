@@ -25,7 +25,8 @@ from wtforms import StringField, PasswordField, SelectField, \
     BooleanField, Form, HiddenField
 from wtforms.validators import DataRequired, Email, Length, URL, optional, \
     ValidationError
-from flask import url_for, Markup
+from flask import url_for
+from markupsafe import Markup
 import pycountry
 
 from arxiv import taxonomy
@@ -172,17 +173,17 @@ class ProfileForm(Form):
         [(country.alpha_2, country.name) for country in pycountry.countries]
     RANKS = [('', '')] + domain.RANKS
     GROUPS = [
-        (key, group['name'])
+        (key, group.full_name)
         for key, group in taxonomy.definitions.GROUPS.items()
-        if not group.get('is_test', False)
+        if not group.is_test
     ]
     CATEGORIES = [
-        (archive['name'], [
-            (category_id, category['name'])
-            for category_id, category in taxonomy.CATEGORIES_ACTIVE.items()
-            if category['in_archive'] == archive_id
+        (archive.full_name, [
+            (category_id, category.full_name)
+            for category_id, category in taxonomy.definitions.CATEGORIES_ACTIVE.items()
+            if category.in_archive == archive_id
         ])
-        for archive_id, archive in taxonomy.ARCHIVES_ACTIVE.items()
+        for archive_id, archive in taxonomy.definitions.ARCHIVES_ACTIVE.items()
     ]
     """Categories grouped by archive."""
 

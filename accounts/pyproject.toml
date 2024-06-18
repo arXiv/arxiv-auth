@@ -5,13 +5,15 @@ description = "common auth parts of arXiv"
 authors = ["arxiv.org"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 captcha = "^0.4"
 pycountry = "^22.3.5"
 redis = "*"  # constrained by what is set in arxiv-auth
 redis-py-cluster = "*"  # constrained by what is set in arxiv-auth
 arxiv-auth = {path = "../arxiv-auth"}
-arxiv-base = {git = "https://github.com/arXiv/arxiv-base.git", rev = "1.0.1"}
+greenlet = "^3.0.3"
+arxiv-base = {git = "https://github.com/arXiv/arxiv-base.git", rev = "adb431b8234e08578d58fa4f5ef504ad54a5860e"}
+email_validator = "*"
 
 [tool.poetry.dev-dependencies]
 mimesis = "*"
