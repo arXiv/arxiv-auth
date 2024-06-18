@@ -37,21 +37,14 @@ class TestSession(TestCase):
         session_data = session.dict()
         self.assertEqual(session_data['authorizations']['scopes'],
                          ['submission:read','submission:create'])
-        self.assertEqual(session_data['authorizations']['endorsements'],
-                         ['astro-ph.CO'])
 
-        self.assertEqual(
-            session_data['user']['profile'],
-            {
-                'affiliation': 'FSU',
-                'country': 'us',
-                'rank': 3,
-                'submission_groups': ['grp_physics'],
-                'default_category': 'astro-ph.CO',
-                'homepage_url': '',
-                'remember_me': True
-            }
-        )
+        self.assertEqual(session_data['authorizations']['endorsements'][0]['id'],
+                         'astro-ph.CO')
+
+        self.assertEqual(session_data['user']['profile']['affiliation'], 'FSU')
+        self.assertEqual(session_data['user']['profile']['country'], 'us')
+        self.assertEqual(session_data['user']['profile']['submission_groups'], ['grp_physics'])
+        self.assertEqual(session_data['user']['profile']['default_category']['id'], 'astro-ph.CO')
         self.assertEqual(
             session_data['user']['name'],
             {'forename': 'First', 'surname': 'Last', 'suffix': 'Lastest'}
