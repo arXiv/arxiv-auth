@@ -121,36 +121,35 @@ class Auth(object):
 
 
     def load_session(self) -> Optional[Response]:
-        """
-        Look for an active session, and attach it to the request.
+        """Look for an active session, and attach it to the request.
 
         The typical scenario will involve the
         :class:`.middleware.AuthMiddleware` unpacking a session token and
-        adding it to the WSGI request environ. As a fallback, if the legacy
-        database is available, this method will also attempt to load an
-        active legacy session.
+        adding it to the WSGI request environ.
+
+        As a fallback, if the legacy database is available, this method will
+        also attempt to load an active legacy session.
+
         """
-        # Check the WSGI request environ for the ``session`` key, which
-        # is where the auth middleware puts any unpacked auth information from
-        # the request OR any exceptions that need to be raised withing the
-        # request context.
-        session: Optional[Union[domain.Session, Exception]] = \
+        # Check the WSGI request environ for the key, which is where the auth
+        # middleware puts any unpacked auth information from the request OR any
+        # exceptions that need to be raised withing the request context.
+        req_auth: Optional[Union[domain.Session, Exception]] = \
             request.environ.get(self.auth_session_name)
 
-        # Middlware may have passed an exception, which needs to be raised
-        # within the app/execution context to be handled correctly.
-        if isinstance(session, Exception):
-            logger.debug('Middleware passed an exception: %s', session)
-            raise session
+        # Middlware may raise exception, needs to be raised in to be handled correctly.
+        if isinstance(req_auth, Exception):
+            logger.debug('Middleware passed an exception: %s', req_auth)
+            raise req_auth
 
-        # use legacy DB to authorize request if available
-        if legacy.is_configured():
-            session = self.first_valid(self.legacy_cookies())
-        else:
-            logger.warning('No legacy DB, will not check tapir auth.')
+        if not req_auth:
+            if legacy.is_configured():
+                req_auth = self.first_valid(self.legacy_cookies())
+            else:
+                logger.warning('No legacy DB, will not check tapir auth.')
 
-        # Attach session to the request so other can access easily. request.auth
-        setattr(request, self.auth_session_name, session)
+        # Attach auth to the request so other can access easily. request.auth
+        setattr(request, self.auth_session_name, req_auth)
         return None
 
     def first_valid(self, cookies: List[str]) -> Optional[domain.Session]:
