@@ -38,16 +38,13 @@ WINDOW_START = util.from_epoch(157783680)
 Endorsements = List[Union[domain.Category,str]]
 
 
-def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
+def get_endorsements(user: domain.User) -> Endorsements:
     """
     Get all endorsements (explicit and implicit) for a user.
 
     Parameters
     ----------
     user : :class:`.domain.User`
-    compress : bool
-        If True, if the entire set of categories in an archive are present,
-        they will be replaced with a wildcard category (e.g. `cs.*`).
 
     Returns
     -------
@@ -58,8 +55,7 @@ def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
     """
     endorsements = list(set(explicit_endorsements(user))
                         | set(implicit_endorsements(user)))
-    if compress:
-        return compress_endorsements(endorsements)
+
     return endorsements
 
 

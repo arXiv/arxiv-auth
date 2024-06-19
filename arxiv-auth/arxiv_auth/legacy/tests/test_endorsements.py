@@ -140,25 +140,10 @@ class TestEndorsement(TestCase):
                             endorsement_domain='test_domain'
                         ))
             all_endorsements = set(
-                endorsements.get_endorsements(self.user, compress=False)
+                endorsements.get_endorsements(self.user)
             )
             all_possible = set(definitions.CATEGORIES_ACTIVE.values())
             self.assertEqual(all_endorsements, all_possible)
-            all_compressed = set(
-                endorsements.get_endorsements(self.user, compress=True)
-            )
-            self.assertEqual(all_compressed, {"*.*"})
-
-            # Exclude cs.NA, and verify compression output.
-            all_endorsements.remove('cs.NA')
-
-            some = endorsements.compress_endorsements(all_endorsements)
-            for archive in definitions.ARCHIVES_ACTIVE.keys():
-                if archive not in ['cs', 'test']:
-                    self.assertIn(f"{archive}.*", some)
-            for category, definition in definitions.CATEGORIES_ACTIVE.items():
-                if definition['in_archive'] == 'cs' and category != 'cs.NA':
-                    self.assertIn(category, some)
 
     def tearDown(self):
         """Remove the test DB."""
