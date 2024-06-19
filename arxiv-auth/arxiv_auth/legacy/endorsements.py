@@ -11,7 +11,7 @@ relevant policies can be found on the `arXiv help pages
 <https://arxiv.org/help/endorsement>`_.
 """
 
-from typing import List, Dict, Optional, Callable, Set, Iterable
+from typing import List, Dict, Optional, Callable, Set, Iterable, Union
 from collections import Counter
 from datetime import datetime
 from functools import lru_cache as memoize
@@ -35,7 +35,7 @@ GENERAL_CATEGORIES = [
 
 WINDOW_START = util.from_epoch(157783680)
 
-Endorsements = List[domain.Category]
+Endorsements = List[Union[domain.Category,str]]
 
 
 def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
@@ -67,7 +67,7 @@ def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
 def _categories_in_archive(archive: str) -> Set[str]:
     return set(category for category, definition
                in definitions.CATEGORIES_ACTIVE.items()
-               if definition['in_archive'] == archive)
+               if definition.in_archive == archive)
 
 
 @memoize()
@@ -79,12 +79,13 @@ def _category(archive: str, subject_class: str) -> domain.Category:
 
 @memoize()
 def _get_archive(category: domain.Category) -> str:
+    return category.in_archive
     archive: str
-    if category.endswith(".*"):
-        archive = category.split(".", 1)[0]
+    if category.id.endswith(".*"):
+        archive = category.id.split(".", 1)[0]
     else:
         try:
-            archive = definitions.CATEGORIES_ACTIVE[category]['in_archive']
+            archive = definitions.CATEGORIES_ACTIVE[category].in_archive
         except KeyError:
             if "." in category:
                 archive = category.split(".", 1)[0]
@@ -95,7 +96,7 @@ def _get_archive(category: domain.Category) -> str:
 
 def _all_archives(endorsements: Endorsements) -> bool:
     archives = set(_get_archive(category) for category in endorsements
-                   if category.endswith(".*"))
+                   if category.id.endswith(".*"))
     missing = set(definitions.ARCHIVES_ACTIVE.keys()) - archives
     return len(missing) == 0 or (len(missing) == 1 and 'test' in missing)
 
@@ -128,7 +129,13 @@ def compress_endorsements(endorsements: Endorsements) -> Endorsements:
     for archive, archive_endorsements in grouped:
         archive_endorsements_list = list(archive_endorsements)
         if _all_subjects_in_archive(archive, archive_endorsements_list):
-            compressed.append(_category(archive, "*"))
+            compressed.append(domain.Category(id=f"{archive}.*",
+                                       full_name=f"all of {archive}",
+                                       is_active=True,
+                                       in_archive=archive,
+                                       is_general=False,
+                                       ))
+
         else:
             for endorsement in archive_endorsements_list:
                 compressed.append(endorsement)

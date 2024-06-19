@@ -224,9 +224,10 @@ class Authorizations(BaseModel):
 
         """
         archive = category.split(".", 1)[0] if "." in category else category
-        return category in self.endorsements \
-            or f"{archive}.*" in self.endorsements \
-            or "*.*" in self.endorsements
+        endorsement_ids = [ cat if isinstance(cat, str) else cat.id for cat in self.endorsements]
+        return (category.id in endorsement_ids
+                or f"{archive}.*" in endorsement_ids
+                or "*.*" in endorsement_ids)
 
     @classmethod
     def before_init(cls, data: dict) -> None:

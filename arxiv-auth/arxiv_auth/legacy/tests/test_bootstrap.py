@@ -27,7 +27,7 @@ EASTERN = timezone('US/Eastern')
 
 def _random_category() -> Tuple[str, str]:
     category = random.choice(list(definitions.CATEGORIES_ACTIVE.items()))
-    archive = category[1]['in_archive']
+    archive = category[1].in_archive
     subject_class = category[0].split('.')[-1] if '.' in category[0] else ''
     return archive, subject_class
 
@@ -64,7 +64,7 @@ class TestBootstrap(TestCase):
                     print(row)
                 assert len(edc) == 0, "Expect the table to be empty at the start"
 
-                session.add(models.Endorsement(
+                session.add(models.EndorsementDomain(
                     endorsement_domain='test_domain_bootstrap',
                     endorse_all='n',
                     mods_endorse_all='n',
@@ -79,8 +79,8 @@ class TestBootstrap(TestCase):
                     archive, subject_class = category, ''
 
                 with util.transaction() as session:
-                    print(f"arch: {archive} sc: {subject_class}")
-                    session.add(models.DBCategory(
+                    #print(f"arch: {archive} sc: {subject_class}")
+                    session.add(models.Category(
                         archive=archive,
                         subject_class=subject_class,
                         definitive=1,
@@ -150,7 +150,7 @@ class TestBootstrap(TestCase):
                         country=locale,
                         affiliation=person.university(),
                         url=net.url(),
-                        rank=random.randint(1, 5),
+                        type=random.randint(1, 5),
                         archive=archive,
                         subject_class=subject_class,
                         original_subject_classes='',
@@ -190,7 +190,7 @@ class TestBootstrap(TestCase):
                             archive=archive,
                             subject_class=subject_class,
                             flag_valid=1,
-                            endorsement_type=etype,
+                            type=etype,
                             point_value=point_value,
                             issued_when=issued_when
                         ))
@@ -209,7 +209,7 @@ class TestBootstrap(TestCase):
                                 surname=db_user.last_name,
                                 suffix=db_user.suffix_name
                             ),
-                            profile=db_profile.to_domain(),
+                            profile=domain.UserProfile.from_orm(db_profile),
                             verified=bool(db_user.flag_email_verified)
                         ),
                         domain.Authorizations(
@@ -274,7 +274,11 @@ class TestBootstrap(TestCase):
                 if endorsement[2] > 0:
                     self.assertTrue(auths.endorsed_for(
                         domain.Category(
-                            f'{endorsement[0]}.{endorsement[1]}'
+                            id=f'{endorsement[0]}.{endorsement[1]}',
+                            full_name="fake",
+                            is_active=False,
+                            in_archive=endorsement[0],
+                            is_general=False
                         )
                     ), "Endorsements are included in authorizations")
 

@@ -142,7 +142,7 @@ class TestEndorsement(TestCase):
             all_endorsements = set(
                 endorsements.get_endorsements(self.user, compress=False)
             )
-            all_possible = set(definitions.CATEGORIES_ACTIVE.keys())
+            all_possible = set(definitions.CATEGORIES_ACTIVE.values())
             self.assertEqual(all_endorsements, all_possible)
             all_compressed = set(
                 endorsements.get_endorsements(self.user, compress=True)
