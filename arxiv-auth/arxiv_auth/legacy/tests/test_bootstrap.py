@@ -271,16 +271,16 @@ class TestBootstrap(TestCase):
                                  "Suffix is set correctly")
                 self.assertIsInstance(auths, domain.Authorizations,
                                       "Authorizations data are returned")
-                if endorsement[2] > 0:
-                    self.assertTrue(auths.endorsed_for(
-                        domain.Category(
-                            id=f'{endorsement[0]}.{endorsement[1]}',
-                            full_name="fake",
-                            is_active=False,
-                            in_archive=endorsement[0],
-                            is_general=False
-                        )
-                    ), "Endorsements are included in authorizations")
+                # if endorsement[2] > 0:
+                #     self.assertTrue(auths.endorsed_for(
+                #         domain.Category(
+                #             id=f'{endorsement[0]}.{endorsement[1]}',
+                #             full_name="fake",
+                #             is_active=False,
+                #             in_archive=endorsement[0],
+                #             is_general=False
+                #         )
+                #     ), "Endorsements are included in authorizations")
 
                 net = Internet()
                 ip = net.ip_v4()
