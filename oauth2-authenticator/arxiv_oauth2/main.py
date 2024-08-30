@@ -1,5 +1,8 @@
 import os
 from typing import Callable
+
+from arxiv.auth.legacy.util import missing_configs
+from arxiv.base.globals import get_application_config
 from fastapi import FastAPI, Request
 from fastapi.responses import Response, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +14,16 @@ from arxiv.auth.openid.oidc_idp import ArxivOidcIdpClient
 
 from .authentication import router as auth_router
 from .app_logging import setup_logger
+
+#
+# Since this is not a flask app, the config needs to be in the os.environ
+# Fill in these if it's missing
+#
+CONFIG_DEFAULTS = {
+    'SESSION_DURATION': '10',
+    'CLASSIC_COOKIE_NAME': 'foo',
+    'CLASSIC_SESSION_HASH': 'bar'
+}
 
 #
 # LOGOUT_REDIRECT_URL
@@ -46,11 +59,16 @@ _idp_ = ArxivOidcIdpClient(CALLBACK_URL,
 
 origins = ["http://127.0.0.1", "http://localhost", "https://dev3.arxiv.org"]
 
+
 def create_app(*args, **kwargs) -> FastAPI:
     setup_logger()
     from arxiv.config import settings
-    engine, _ = configure_db(settings)
 
+    for key in missing_configs(get_application_config()):
+        os.environ[key] = CONFIG_DEFAULTS[key]
+        os.putenv(key, CONFIG_DEFAULTS[key])
+
+    engine, _ = configure_db(settings)
     app = FastAPI(
         idp=_idp_,
         arxiv_db_engine=engine,

@@ -13,9 +13,12 @@ from arxiv.auth.user_claims_to_legacy import create_tapir_session_from_user_clai
 from arxiv.auth.legacy.sessions import invalidate as legacy_invalidate
 from arxiv.db.models import TapirCountry
 from arxiv.db import SessionLocal
+from arxiv.auth.legacy.exceptions import NoSuchUser
+
 # from arxiv.db import get_db
 
 from . import get_current_user, get_db
+import socket
 
 def get_db():
     """Dependency for fastapi routes"""
@@ -57,13 +60,17 @@ async def oauth2_callback(request: Request,
     idp: ArxivOidcIdpClient = request.app.extra["idp"]
     user_claims: ArxivUserClaims = idp.from_code_to_user_claims(code)
 
+    session_cookie_key = request.app.extra['AUTH_SESSION_COOKIE_NAME']
+    classic_cookie_key = request.app.extra['CLASSIC_COOKIE_NAME']
+
     if user_claims is None:
         logger.warning("Getting user claim failed. code: %s", repr(code))
         request.session.clear()
-        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-
-    session_cookie_key = request.app.extra['AUTH_SESSION_COOKIE_NAME']
-    classic_cookie_key = request.app.extra['CLASSIC_COOKIE_NAME']
+        # return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+        response = RedirectResponse(request.app.extra['ARXIV_URL_LOGIN'])
+        response.set_cookie(session_cookie_key, '', max_age=0)
+        response.set_cookie(classic_cookie_key, '', max_age=0)
+        return response
 
     # NG cookie
     secret = request.app.extra['JWT_SECRET']
@@ -71,8 +78,21 @@ async def oauth2_callback(request: Request,
 
     # legacy cookie
     tapir_cookie = ""
+    client_ip = request.client.host
+    client_host = ''
     try:
-        tapir_cookie = create_tapir_session_from_user_claims(user_claims)
+        client_host = socket.gethostbyaddr(client_ip)[0]
+    except Exception as _exc:
+        logger.info('client host resolve failed for ip %s', client_ip)
+        pass
+
+    try:
+        tapir_cookie = create_tapir_session_from_user_claims(user_claims, client_host, client_ip)
+    except NoSuchUser:
+        # Likely the user exist on keycloak but not in tapir user.
+        # Since newer apps should work without
+        logger.info("User exists on keycloak but not on tapir", exc_info=False)
+        pass
     except Exception as exc:
         logger.error("Setting up Tapir session failed.", exc_info=exc)
         pass
@@ -82,7 +102,10 @@ async def oauth2_callback(request: Request,
     response: Response = RedirectResponse(next_page, status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(session_cookie_key, token, max_age=3600, samesite="lax")
     # response.set_cookie("token", token, max_age=3600)
-    response.set_cookie(classic_cookie_key, tapir_cookie, max_age=3600, samesite="lax")
+    if tapir_cookie:
+        response.set_cookie(classic_cookie_key, tapir_cookie, max_age=3600, samesite="lax")
+    else:
+        response.set_cookie(classic_cookie_key, '', max_age=0, samesite="lax")
     # ui_response = requests.get(idp.user_info_url,
     #                            headers={"Authorization": "Bearer {}".format(user_claims.access_token)})
     return response
@@ -93,8 +116,8 @@ async def logout(request: Request,
                  _db=Depends(get_db),
                  current_user: dict = Depends(get_current_user)) -> Response:
     """Log out of arXiv."""
-    default_next_page = request.app.extra['LOGOUT_REDIRECT_URL']
-    next_page = request.query_params.get('next_page', default_next_page)
+    default_next_page = request.app.extra['ARXIV_URL_HOME']
+    next_page = request.query_params.get('next_page', request.query_params.get('next', default_next_page))
     response = RedirectResponse(next_page, status_code=status.HTTP_303_SEE_OTHER)
     session_cookie_key = request.app.extra['AUTH_SESSION_COOKIE_NAME']
     legacy_cookie_key = request.app.extra['CLASSIC_COOKIE_NAME']
@@ -110,12 +133,13 @@ async def logout(request: Request,
 
     #
     classic_cookie = request.cookies.get(legacy_cookie_key)
-    try:
-        legacy_invalidate(classic_cookie)
-        response.set_cookie(legacy_cookie_key, "", max_age=0)
-    except Exception as exc:
-        logger.error("Setting up legacy session failed.", exc_info=exc)
-        pass
+    if classic_cookie:
+        try:
+            legacy_invalidate(classic_cookie)
+            response.set_cookie(legacy_cookie_key, "", max_age=0)
+        except Exception as exc:
+            logger.error("Invalidating legacy session failed.", exc_info=exc)
+            pass
 
     return response
 
