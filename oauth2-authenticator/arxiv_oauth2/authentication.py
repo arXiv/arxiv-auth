@@ -1,5 +1,6 @@
 """Provides integration for the external user interface."""
 import urllib.parse
+from typing import Optional
 
 from fastapi import APIRouter, Depends, status, Request
 from fastapi.responses import RedirectResponse, Response, JSONResponse
@@ -17,7 +18,7 @@ from arxiv.auth.legacy.exceptions import NoSuchUser
 
 # from arxiv.db import get_db
 
-from . import get_current_user, get_db
+from . import get_current_user, get_db, get_current_user_or_none
 import socket
 
 def get_db():
@@ -34,7 +35,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.get('/login')
-def login(request: Request) -> Response:
+def login(request: Request,
+          current_user: Optional[dict] = Depends(get_current_user_or_none)
+          ) -> Response:
     """User can log in with username and password, or permanent token."""
     # redirect to IdP
     idp: ArxivOidcIdpClient = request.app.extra["idp"]
@@ -42,6 +45,8 @@ def login(request: Request) -> Response:
     next_page = request.query_params.get('next_page', request.query_params.get('next', '/'))
     if next_page:
         url = url + "&state=" + urllib.parse.quote(next_page)
+    if current_user:
+        pass
     logger.info(f"Login URL: {url}")
     return RedirectResponse(url)
 
@@ -109,6 +114,20 @@ async def oauth2_callback(request: Request,
     # ui_response = requests.get(idp.user_info_url,
     #                            headers={"Authorization": "Bearer {}".format(user_claims.access_token)})
     return response
+
+
+@router.get('/refresh')
+def login(request: Request,
+          current_user: Optional[dict] = Depends(get_current_user_or_none)
+          ) -> Response:
+    """User can log in with username and password, or permanent token."""
+    if current_user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    # redirect to IdP
+    idp: ArxivOidcIdpClient = request.app.extra["idp"]
+    url = idp.refsesh_url
+    logger.info(f"Login URL: {url}")
+    return RedirectResponse(url)
 
 
 @router.get('/logout')
