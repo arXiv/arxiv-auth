@@ -34,11 +34,12 @@ CONFIG_DEFAULTS = {
 # For the actual deployment, since this is running in a docker with plain HTTP,
 # it's up to the web server's setting.
 
+SERVER_ROOT_PATH = os.environ.get('SERVER_ROOT_PATH', "/aaa")
 #
 KEYCLOAK_SERVER_URL = os.environ.get('KEYCLOAK_SERVER_URL', 'https://oidc.arxiv.org')
 
 # This is the public URL that OAuth2 calls back when the authentication succeeds.
-CALLBACK_URL = os.environ.get("OAUTH2_CALLBACK_URL", "https://dev3.arxiv.org/callback")
+CALLBACK_URL = os.environ.get("OAUTH2_CALLBACK_URL", "https://dev3.arxiv.org/aaa/callback")
 
 # For arxiv-user, the client needs to know the secret.
 # This is in keycloak's setting. Do not ever ues this value. This is for development only.
@@ -70,6 +71,7 @@ def create_app(*args, **kwargs) -> FastAPI:
 
     engine, _ = configure_db(settings)
     app = FastAPI(
+        root_path=SERVER_ROOT_PATH,
         idp=_idp_,
         arxiv_db_engine=engine,
         arxiv_settings=settings,
