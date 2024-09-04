@@ -82,6 +82,12 @@ def create_app(*args, **kwargs) -> FastAPI:
         os.environ[key] = CONFIG_DEFAULTS[key]
         os.putenv(key, CONFIG_DEFAULTS[key])
 
+    logger = getLogger(__name__)
+    logger.info(f"SERVER_ROOT_PATH: {SERVER_ROOT_PATH}")
+    logger.info(f"CALLBACK_URL: {CALLBACK_URL}")
+    logger.info(f"AUTH_SESSION_COOKIE_NAME: {AUTH_SESSION_COOKIE_NAME}")
+    logger.info(f"CLASSIC_COOKIE_NAME: {CLASSIC_COOKIE_NAME}")
+
     engine, _ = configure_db(settings)
     app = FastAPI(
         root_path=SERVER_ROOT_PATH,
@@ -97,6 +103,9 @@ def create_app(*args, **kwargs) -> FastAPI:
     if CORS_ORIGINS:
         for cors_origin in CORS_ORIGINS.split(","):
             origins.append(cors_origin.strip())
+
+    flattened_origins = ",".join(origins)
+    logger.info(f"cors origins: {flattened_origins}")
 
     app.add_middleware(
         CORSMiddleware,

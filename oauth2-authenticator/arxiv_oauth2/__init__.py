@@ -24,7 +24,13 @@ def get_current_user_or_none(request: Request) -> ArxivUserClaims | None:
         return None
 
     try:
-        claims = ArxivUserClaims.decode_jwt_token(token, secret)
+        tokens, jwt_payload = ArxivUserClaims.unpack_token(token)
+    except ValueError:
+        logger.error("The token is bad.")
+        return None
+
+    try:
+        claims = ArxivUserClaims.decode_jwt_payload(tokens, jwt_payload, secret)
     except jwcrypto.jwt.JWTExpired:
         return None
     except jwcrypto.jwt.JWTInvalidClaimFormat:

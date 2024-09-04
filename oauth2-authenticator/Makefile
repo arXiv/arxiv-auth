@@ -4,17 +4,18 @@ app_port := 20241
 dockerport := 8080
 
 ROOT_DIR := $(shell pwd)
-AAUTH2C_CPUS := $(shell echo $${AAUTH2C_CPUS:-4})
-AAUTH2C_WORKERS := $(shell echo $${AAUTH2C_WORKERS:-8})
-AAUTH2C_DOCKER_PLATFORM := $(shell echo $${AAUTH2C_DOCKER_PLATFORM:-linux/amd64})
+AAA_CPUS := $(shell echo $${AAA_CPUS:-2})
+AAA_WORKERS := $(shell echo $${AAA_WORKERS:-2})
+AAA_DOCKER_PLATFORM := $(shell echo $${AAA_DOCKER_PLATFORM:-linux/amd64})
+AAA_CALLBACK_URI := $(shell echo $${AAA_CALLBACK_URI:-https://dev3.arxiv.org/callback})
 KEYCLOAK_SERVER_URL := ${shell cat ${HOME}/.arxiv/keycloak-url-dev}
 CLASSIC_DB_URI := $(shell cat ${HOME}/.arxiv/arxiv-db-dev)
 KEYCLOAK_CLIENT_SECRET := $(shell cat ${HOME}/.arxiv/keycloak-secret-dev)
 
-APP_DOCKER_RUN := docker run --cpus ${AAUTH2C_CPUS} --rm -p ${app_port}:${dockerport} \
--e PORT=${dockerport} -e WORKERS=${AAUTH2C_WORKERS} \
+APP_DOCKER_RUN := docker run --cpus ${AAA_CPUS} --rm -p ${app_port}:${dockerport} \
+-e PORT=${dockerport} -e WORKERS=${AAA_WORKERS} \
 -e KEYCLOAK_SERVER_URL=${KEYCLOAK_SERVER_URL} \
--e CALLBACK_URL=https://dev3.arxiv.org/callback \
+-e OAUTH2_CALLBACK_URL=${AAA_CALLBACK_URI} \
 -e KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET} \
 -e CLASSIC_DB_URI=${CLASSIC_DB_URI} \
 --name ${app_name} --security-opt="no-new-privileges=true" 

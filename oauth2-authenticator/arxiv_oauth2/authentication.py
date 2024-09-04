@@ -2,7 +2,7 @@
 import urllib.parse
 from typing import Optional
 
-from fastapi import APIRouter, Depends, status, Request
+from fastapi import APIRouter, Depends, status, Request, HTTPException
 from fastapi.responses import RedirectResponse, Response, JSONResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Query, Session
@@ -57,6 +57,7 @@ async def oauth2_callback(request: Request,
                           ) -> Response:
     """User can log in with username and password, or permanent token."""
     code = request.query_params.get('code')
+    logger.debug("callback code: %s", repr(code))
     if code is None:
         logger.warning("error: %s", repr(request.query_params))
         request.session.clear()
@@ -77,6 +78,8 @@ async def oauth2_callback(request: Request,
         response.set_cookie(classic_cookie_key, '', max_age=0)
         return response
 
+    logger.debug("User claims: user id=%s, email=%s", user_claims.user_id, user_claims.email)
+
     # NG cookie
     secret = request.app.extra['JWT_SECRET']
     token = user_claims.encode_jwt_token(secret)
@@ -85,6 +88,7 @@ async def oauth2_callback(request: Request,
     tapir_cookie = ""
     client_ip = request.client.host
     client_host = ''
+    logger.debug("User claims: ip=%s", client_ip)
     try:
         client_host = socket.gethostbyaddr(client_ip)[0]
     except Exception as _exc:
@@ -133,7 +137,7 @@ def login(request: Request,
 @router.get('/logout')
 async def logout(request: Request,
                  _db=Depends(get_db),
-                 current_user: dict = Depends(get_current_user)) -> Response:
+                 current_user: dict = Depends(get_current_user_or_none)) -> Response:
     """Log out of arXiv."""
     default_next_page = request.app.extra['ARXIV_URL_HOME']
     next_page = request.query_params.get('next_page', request.query_params.get('next', default_next_page))
