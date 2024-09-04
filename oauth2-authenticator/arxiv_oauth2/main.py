@@ -46,10 +46,12 @@ CALLBACK_URL = os.environ.get("OAUTH2_CALLBACK_URL", "https://dev3.arxiv.org/aaa
 # You should generate one, and use it in keycloak. it can generate a good one on UI.
 KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'gsG2HIu/lYZawKCwvlVE4fUYJpw=')
 
-
 # session cookie names
 AUTH_SESSION_COOKIE_NAME = os.environ.get("AUTH_SESSION_COOKIE_NAME", "arxiv_session_cookie")
 CLASSIC_COOKIE_NAME = os.environ.get("CLASSIC_COOKIE_NAME", "tapir_session_cookie")
+
+# More cors origins
+CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "")
 
 _idp_ = ArxivOidcIdpClient(CALLBACK_URL,
                            scope=["openid"],
@@ -58,8 +60,19 @@ _idp_ = ArxivOidcIdpClient(CALLBACK_URL,
                            logger=getLogger(__name__)
                            )
 
-origins = ["http://127.0.0.1", "http://localhost", "https://dev3.arxiv.org"]
-
+origins = ["http://127.0.0.1",
+           "http://127.0.0.1/",
+           "http://127.0.0.1:5000",
+           "http://127.0.0.1:5000/",
+           "http://127.0.0.1:5000/admin-console",
+           "http://127.0.0.1:5000/admin-console/",
+           "https://dev3.arxiv.org",
+           "https://dev3.arxiv.org/",
+           "https://dev.arxiv.org",
+           "https://dev.arxiv.org/",
+           "https://arxiv.org",
+           "https://arxiv.org/"
+           ]
 
 def create_app(*args, **kwargs) -> FastAPI:
     setup_logger()
@@ -80,6 +93,10 @@ def create_app(*args, **kwargs) -> FastAPI:
         CLASSIC_COOKIE_NAME=CLASSIC_COOKIE_NAME,
         **{f"ARXIV_URL_{name.upper()}": value for name, value, site in settings.URLS }
     )
+
+    if CORS_ORIGINS:
+        for cors_origin in CORS_ORIGINS.split(","):
+            origins.append(cors_origin.strip())
 
     app.add_middleware(
         CORSMiddleware,
