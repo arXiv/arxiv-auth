@@ -116,8 +116,10 @@ async def oauth2_callback(request: Request,
     response.set_cookie(session_cookie_key, token, max_age=3600, samesite="lax")
     # response.set_cookie("token", token, max_age=3600)
     if tapir_cookie:
+        logger.info('%s=%s',classic_cookie_key, tapir_cookie)
         response.set_cookie(classic_cookie_key, tapir_cookie, max_age=3600, samesite="lax")
     else:
+        logger.info('%s=<EMPTY>',classic_cookie_key)
         response.set_cookie(classic_cookie_key, '', max_age=0, samesite="lax")
     # ui_response = requests.get(idp.user_info_url,
     #                            headers={"Authorization": "Bearer {}".format(user_claims.access_token)})
