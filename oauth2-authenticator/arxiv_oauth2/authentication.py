@@ -86,17 +86,18 @@ async def oauth2_callback(request: Request,
 
     # legacy cookie
     tapir_cookie = ""
-    client_ip = request.client.host
+    client_ip = request.headers.get("x-real-ip", request.client.host)
     client_host = ''
-    logger.debug("User claims: ip=%s", client_ip)
+    logger.info("User claims: ip=%s", client_ip)
     try:
         client_host = socket.gethostbyaddr(client_ip)[0]
     except Exception as _exc:
         logger.info('client host resolve failed for ip %s', client_ip)
         pass
 
+    tapir_session = None
     try:
-        tapir_cookie = create_tapir_session_from_user_claims(user_claims, client_host, client_ip)
+        tapir_cookie, tapir_session = create_tapir_session_from_user_claims(user_claims, client_host, client_ip)
     except NoSuchUser:
         # Likely the user exist on keycloak but not in tapir user.
         # Since newer apps should work without
@@ -105,6 +106,9 @@ async def oauth2_callback(request: Request,
     except Exception as exc:
         logger.error("Setting up Tapir session failed.", exc_info=exc)
         pass
+
+    if tapir_session is not None:
+        logger.debug("tapir_session: %s", repr(tapir_session))
 
     next_page = urllib.parse.unquote(request.query_params.get("state", "/"))  # Default to root if not provided
     logger.debug("callback success: next page: %s", next_page)
