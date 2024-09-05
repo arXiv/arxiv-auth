@@ -7,7 +7,7 @@ ROOT_DIR := $(shell pwd)
 AAA_CPUS := $(shell echo $${AAA_CPUS:-2})
 AAA_WORKERS := $(shell echo $${AAA_WORKERS:-2})
 AAA_DOCKER_PLATFORM := $(shell echo $${AAA_DOCKER_PLATFORM:-linux/amd64})
-AAA_CALLBACK_URI := $(shell echo $${AAA_CALLBACK_URI:-https://dev3.arxiv.org/callback})
+AAA_CALLBACK_URI := $(shell echo $${AAA_CALLBACK_URI:-https://dev3.arxiv.org/aaa/callback})
 KEYCLOAK_SERVER_URL := ${shell cat ${HOME}/.arxiv/keycloak-url-dev}
 CLASSIC_DB_URI := $(shell cat ${HOME}/.arxiv/arxiv-db-dev)
 KEYCLOAK_CLIENT_SECRET := $(shell cat ${HOME}/.arxiv/keycloak-secret-dev)
@@ -66,3 +66,9 @@ stop:
 #-#   runs a bash shell in the container to look inside of it
 sh: stop
 	${APP_DOCKER_RUN}  -v ${HOME}/Downloads:/home/worker/Downloads -w /home/worker -it ${app_tag}:latest  /bin/bash
+
+#-#
+#-# Command: daemon
+#-#   runs the appliance container with the terminal attached (for test)
+daemon: stop
+	${APP_DOCKER_RUN} -d ${app_tag}:latest

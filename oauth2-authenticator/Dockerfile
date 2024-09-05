@@ -19,24 +19,26 @@ RUN python3 -m venv $VIRTUAL_ENV
 # Every python thing after this is in the venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN python -m pip install -U pip
+RUN $VIRTUAL_ENV/bin/python -m pip install -U pip
 
 WORKDIR /opt/arxiv/
-RUN pip install poetry
+RUN $VIRTUAL_ENV/bin/pip install poetry
 
 ADD poetry.lock /opt/arxiv/
 ADD pyproject.toml /opt/arxiv/
 
-RUN poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi
-RUN pip uninstall -y poetry
+RUN $VIRTUAL_ENV/bin/poetry config virtualenvs.create false ; exit 0
+RUN $VIRTUAL_ENV/bin/poetry lock --no-update ; exit 0
+RUN $VIRTUAL_ENV/bin/poetry install --no-dev --no-interaction --no-ansi ; exit 0
+RUN $VIRTUAL_ENV/bin/pip uninstall -y poetry
 
 ADD arxiv_oauth2 /opt/arxiv/arxiv_oauth2
 ADD app-logging.conf /opt/arxiv/
 ADD hypercorn-config.toml /opt/arxiv/
 
-RUN pip install hypercorn
+RUN $VIRTUAL_ENV/bin/pip install hypercorn
 
 ENV WORKERS 8
 ENV SQLALCHEMY_TRACK_MODIFICATIONS False
 EXPOSE $PORT
-CMD /opt/venv/bin/hypercorn --config hypercorn-config.toml --bind 0.0.0.0:$PORT --log-config app-logging.conf --workers $WORKERS "arxiv_oauth2.main:create_app()"
+CMD  $VIRTUAL_ENV/bin/hypercorn --config hypercorn-config.toml --bind 0.0.0.0:$PORT --log-config app-logging.conf --workers $WORKERS "arxiv_oauth2.main:create_app()"
