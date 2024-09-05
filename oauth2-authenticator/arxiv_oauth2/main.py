@@ -60,12 +60,12 @@ _idp_ = ArxivOidcIdpClient(CALLBACK_URL,
                            logger=getLogger(__name__)
                            )
 
-origins = ["http://127.0.0.1",
-           "http://127.0.0.1/",
-           "http://127.0.0.1:5000",
-           "http://127.0.0.1:5000/",
-           "http://127.0.0.1:5000/admin-console",
-           "http://127.0.0.1:5000/admin-console/",
+origins = ["http://localhost.arxiv.org",
+           "http://localhost.arxiv.org/",
+           "http://localhost.arxiv.org:5000",
+           "http://localhost.arxiv.org:5000/",
+           "http://localhost.arxiv.org:5000/admin-console",
+           "http://localhost.arxiv.org:5000/admin-console/",
            "https://dev3.arxiv.org",
            "https://dev3.arxiv.org/",
            "https://dev.arxiv.org",
