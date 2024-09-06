@@ -17,12 +17,17 @@ from .app_logging import setup_logger
 
 #
 # Since this is not a flask app, the config needs to be in the os.environ
-# Fill in these if it's missing
+# Fill in these if it's missing. This is required for setting up Tapir session.
+# On Apache, these are found.
+# Since this is running in docker, there is no way to get that value so needs to be set
+# as environment.
+# These look a little redundant (which probably true) but making sure they are present in the
+# os.environ wi
 #
 CONFIG_DEFAULTS = {
-    'SESSION_DURATION': '10',
-    'CLASSIC_COOKIE_NAME': 'foo',
-    'CLASSIC_SESSION_HASH': 'bar'
+    'SESSION_DURATION': os.environ.get('SESSION_DURATION', '36000'),
+    'CLASSIC_COOKIE_NAME': os.environ.get("CLASSIC_COOKIE_NAME", "tapir_session"),
+    'CLASSIC_SESSION_HASH': os.environ.get('CLASSIC_SESSION_HASH', 'not-very-safe-hash-value')
 }
 
 #
@@ -48,7 +53,8 @@ KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'gsG2HIu/lYZaw
 
 # session cookie names
 AUTH_SESSION_COOKIE_NAME = os.environ.get("AUTH_SESSION_COOKIE_NAME", "arxiv_oidc_session")
-CLASSIC_COOKIE_NAME = os.environ.get("CLASSIC_COOKIE_NAME", "tapir_session")
+
+DOMAIN = os.environ.get("DOMAIN", ".arxiv.org")
 
 # More cors origins
 CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "")
@@ -78,6 +84,7 @@ def create_app(*args, **kwargs) -> FastAPI:
     setup_logger()
     from arxiv.config import settings
 
+    # Doubly check we agree with get_application_config
     for key in missing_configs(get_application_config()):
         os.environ[key] = CONFIG_DEFAULTS[key]
         os.putenv(key, CONFIG_DEFAULTS[key])
@@ -94,6 +101,7 @@ def create_app(*args, **kwargs) -> FastAPI:
         idp=_idp_,
         arxiv_db_engine=engine,
         arxiv_settings=settings,
+        DOMAIN=DOMAIN,
         JWT_SECRET=settings.SECRET_KEY,
         AUTH_SESSION_COOKIE_NAME=AUTH_SESSION_COOKIE_NAME,
         CLASSIC_COOKIE_NAME=CLASSIC_COOKIE_NAME,

@@ -68,14 +68,15 @@ async def oauth2_callback(request: Request,
 
     session_cookie_key = request.app.extra['AUTH_SESSION_COOKIE_NAME']
     classic_cookie_key = request.app.extra['CLASSIC_COOKIE_NAME']
+    domain = request.app.extra['DOMAIN']
 
     if user_claims is None:
         logger.warning("Getting user claim failed. code: %s", repr(code))
         request.session.clear()
         # return Response(status_code=status.HTTP_401_UNAUTHORIZED)
         response = RedirectResponse(request.app.extra['ARXIV_URL_LOGIN'])
-        response.set_cookie(session_cookie_key, '', max_age=0)
-        response.set_cookie(classic_cookie_key, '', max_age=0)
+        response.set_cookie(session_cookie_key, '', max_age=0, domain=domain)
+        response.set_cookie(classic_cookie_key, '', max_age=0, domain=domain)
         return response
 
     logger.debug("User claims: user id=%s, email=%s", user_claims.user_id, user_claims.email)
@@ -113,14 +114,15 @@ async def oauth2_callback(request: Request,
     next_page = urllib.parse.unquote(request.query_params.get("state", "/"))  # Default to root if not provided
     logger.debug("callback success: next page: %s", next_page)
     response: Response = RedirectResponse(next_page, status_code=status.HTTP_303_SEE_OTHER)
-    response.set_cookie(session_cookie_key, token, max_age=3600, samesite="lax")
+    domain = request.app.extra['DOMAIN']
+    response.set_cookie(session_cookie_key, token, max_age=3600, samesite="lax", domain=domain)
     # response.set_cookie("token", token, max_age=3600)
     if tapir_cookie:
         logger.info('%s=%s',classic_cookie_key, tapir_cookie)
-        response.set_cookie(classic_cookie_key, tapir_cookie, max_age=3600, samesite="lax")
+        response.set_cookie(classic_cookie_key, tapir_cookie, max_age=3600, samesite="lax", domain=domain)
     else:
         logger.info('%s=<EMPTY>',classic_cookie_key)
-        response.set_cookie(classic_cookie_key, '', max_age=0, samesite="lax")
+        response.set_cookie(classic_cookie_key, '', max_age=0, samesite="lax", domain=domain)
     # ui_response = requests.get(idp.user_info_url,
     #                            headers={"Authorization": "Bearer {}".format(user_claims.access_token)})
     return response
@@ -158,14 +160,15 @@ async def logout(request: Request,
             # Failed to log out, so keep the cookies
             return response
 
-    response.set_cookie(session_cookie_key, "", max_age=0)
+    domain = request.app.extra['DOMAIN']
+    response.set_cookie(session_cookie_key, "", max_age=0, domain=domain)
 
     #
     classic_cookie = request.cookies.get(legacy_cookie_key)
     if classic_cookie:
         try:
             legacy_invalidate(classic_cookie)
-            response.set_cookie(legacy_cookie_key, "", max_age=0)
+            response.set_cookie(legacy_cookie_key, "", max_age=0, domain=domain)
         except Exception as exc:
             logger.error("Invalidating legacy session failed.", exc_info=exc)
             pass

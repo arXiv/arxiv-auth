@@ -11,6 +11,9 @@ AAA_CALLBACK_URI := $(shell echo $${AAA_CALLBACK_URI:-https://dev3.arxiv.org/aaa
 KEYCLOAK_SERVER_URL := ${shell cat ${HOME}/.arxiv/keycloak-url-dev}
 CLASSIC_DB_URI := $(shell cat ${HOME}/.arxiv/arxiv-db-dev)
 KEYCLOAK_CLIENT_SECRET := $(shell cat ${HOME}/.arxiv/keycloak-secret-dev)
+JWT_SECRET := $(shell cat ${HOME}/.arxiv/jwt-secret)
+CLASSIC_SESSION_HASH := $(shell cat ${HOME}/.arxiv/tapir-classic-session-hash)
+DOMAIN := $(shell cat ${HOME}/.arxiv/domain)
 
 APP_DOCKER_RUN := docker run --cpus ${AAA_CPUS} --rm -p ${app_port}:${dockerport} \
 -e PORT=${dockerport} -e WORKERS=${AAA_WORKERS} \
@@ -18,7 +21,12 @@ APP_DOCKER_RUN := docker run --cpus ${AAA_CPUS} --rm -p ${app_port}:${dockerport
 -e OAUTH2_CALLBACK_URL=${AAA_CALLBACK_URI} \
 -e KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET} \
 -e CLASSIC_DB_URI=${CLASSIC_DB_URI} \
---name ${app_name} --security-opt="no-new-privileges=true" 
+-e SESSION_DURATION=36000 \
+-e CLASSIC_COOKIE_NAME=tapir_session \
+-e CLASSIC_SESSION_HASH=${CLASSIC_SESSION_HASH} \
+-e JWT_SECRET=${JWT_SECRET} \
+-e DOMAIN=${DOMAIN} \
+--name ${app_name} --security-opt="no-new-privileges=true"
 
 .PHONY: HELLO docker run stop
 
