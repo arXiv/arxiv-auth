@@ -54,8 +54,6 @@ KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'gsG2HIu/lYZaw
 # session cookie names
 AUTH_SESSION_COOKIE_NAME = os.environ.get("AUTH_SESSION_COOKIE_NAME", "arxiv_oidc_session")
 
-DOMAIN = os.environ.get("DOMAIN", ".arxiv.org")
-
 # More cors origins
 CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "")
 
@@ -88,12 +86,29 @@ def create_app(*args, **kwargs) -> FastAPI:
     for key in missing_configs(get_application_config()):
         os.environ[key] = CONFIG_DEFAULTS[key]
         os.putenv(key, CONFIG_DEFAULTS[key])
-
+    CLASSIC_COOKIE_NAME = os.environ['CLASSIC_COOKIE_NAME']
     logger = getLogger(__name__)
+
+    # DOMAIN is okay to be None
+    DOMAIN = os.environ.get("DOMAIN")
+    if DOMAIN:
+        if DOMAIN[0] != ".":
+            DOMAIN = "." + DOMAIN
+            logger.warning("DOMAIN did not have the leading dot. %s", DOMAIN)
+    secure = True
+    SECURE = os.environ.get("SECURE", "").lower()
+    if SECURE in ["false", "no"]:
+        secure = False
+
     logger.info(f"SERVER_ROOT_PATH: {SERVER_ROOT_PATH}")
     logger.info(f"CALLBACK_URL: {CALLBACK_URL}")
     logger.info(f"AUTH_SESSION_COOKIE_NAME: {AUTH_SESSION_COOKIE_NAME}")
     logger.info(f"CLASSIC_COOKIE_NAME: {CLASSIC_COOKIE_NAME}")
+
+    if not secure:
+        logger.warning("SECURE is off. This cannot be good even in dev. This is for local development, like running under debugger.")
+
+    jwt_secret = get_application_config().get('JWT_SECRET', settings.SECRET_KEY)
 
     engine, _ = configure_db(settings)
     app = FastAPI(
@@ -101,8 +116,9 @@ def create_app(*args, **kwargs) -> FastAPI:
         idp=_idp_,
         arxiv_db_engine=engine,
         arxiv_settings=settings,
+        SECURE=secure,
         DOMAIN=DOMAIN,
-        JWT_SECRET=settings.SECRET_KEY,
+        JWT_SECRET=jwt_secret,
         AUTH_SESSION_COOKIE_NAME=AUTH_SESSION_COOKIE_NAME,
         CLASSIC_COOKIE_NAME=CLASSIC_COOKIE_NAME,
         **{f"ARXIV_URL_{name.upper()}": value for name, value, site in settings.URLS }
