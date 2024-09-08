@@ -52,6 +52,8 @@ CALLBACK_URL = os.environ.get("OAUTH2_CALLBACK_URL", "https://dev3.arxiv.org/aaa
 KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'gsG2HIu/lYZawKCwvlVE4fUYJpw=')
 
 # session cookie names
+# NOTE: You also need the classic session cookie name "tapir_session" but it's set
+# slightly differently since it needs to be passed to arxiv-base
 AUTH_SESSION_COOKIE_NAME = os.environ.get("AUTH_SESSION_COOKIE_NAME", "arxiv_oidc_session")
 
 # More cors origins
@@ -64,12 +66,11 @@ _idp_ = ArxivOidcIdpClient(CALLBACK_URL,
                            logger=getLogger(__name__)
                            )
 
-origins = ["http://localhost.arxiv.org",
-           "http://localhost.arxiv.org/",
-           "http://localhost.arxiv.org:5000",
-           "http://localhost.arxiv.org:5000/",
-           "http://localhost.arxiv.org:5000/admin-console",
-           "http://localhost.arxiv.org:5000/admin-console/",
+origins = ["http://localhost",
+           "http://localhost:5000",
+           "http://localhost:5000/",
+           "http://localhost:5000/admin-console",
+           "http://localhost:5000/admin-console/",
            "https://dev3.arxiv.org",
            "https://dev3.arxiv.org/",
            "https://dev.arxiv.org",
@@ -109,6 +110,9 @@ def create_app(*args, **kwargs) -> FastAPI:
         logger.warning("SECURE is off. This cannot be good even in dev. This is for local development, like running under debugger.")
 
     jwt_secret = get_application_config().get('JWT_SECRET', settings.SECRET_KEY)
+    if not jwt_secret or (jwt_secret == "qwert2345"):
+        logger.error("JWT_SECRET nedds to be set correctly.")
+        raise ValueError("JWT_SECRET is not set correctly.")
 
     engine, _ = configure_db(settings)
     app = FastAPI(

@@ -83,10 +83,10 @@ async def oauth2_callback(request: Request,
         request.session.clear()
         # return Response(status_code=status.HTTP_401_UNAUTHORIZED)
         response = RedirectResponse(request.app.extra['ARXIV_URL_LOGIN'])
-        response.set_cookie(session_cookie_key, '', max_age=0, domain=domain, path="/",
-                            secure=secure, samesite=samesite)
-        response.set_cookie(classic_cookie_key, '', max_age=0, domain=domain, path="/",
-                            secure=secure, samesite=samesite)
+        #response.set_cookie(session_cookie_key, '', max_age=0, domain=domain, path="/",
+        #                    secure=secure, samesite=samesite)
+        #response.set_cookie(classic_cookie_key, '', max_age=0, domain=domain, path="/",
+        #                    secure=secure, samesite=samesite)
         return response
 
     logger.debug("User claims: user id=%s, email=%s", user_claims.user_id, user_claims.email)
