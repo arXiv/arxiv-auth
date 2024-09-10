@@ -24,19 +24,15 @@ RUN $VIRTUAL_ENV/bin/python -m pip install -U pip
 WORKDIR /opt/arxiv/
 RUN $VIRTUAL_ENV/bin/pip install poetry
 
-ADD poetry.lock /opt/arxiv/
-ADD pyproject.toml /opt/arxiv/
+COPY poetry.lock app-logging.conf hypercorn-config.toml pyproject.toml /opt/arxiv/
 
 RUN $VIRTUAL_ENV/bin/poetry config virtualenvs.create false ; exit 0
 RUN $VIRTUAL_ENV/bin/poetry lock --no-update ; exit 0
 RUN $VIRTUAL_ENV/bin/poetry install --no-dev --no-interaction --no-ansi ; exit 0
+RUN $VIRTUAL_ENV/bin/pip install hypercorn
 RUN $VIRTUAL_ENV/bin/pip uninstall -y poetry
 
-ADD arxiv_oauth2 /opt/arxiv/arxiv_oauth2
-ADD app-logging.conf /opt/arxiv/
-ADD hypercorn-config.toml /opt/arxiv/
-
-RUN $VIRTUAL_ENV/bin/pip install hypercorn
+COPY arxiv_oauth2 /opt/arxiv/arxiv_oauth2
 
 ENV WORKERS 8
 ENV SQLALCHEMY_TRACK_MODIFICATIONS False
