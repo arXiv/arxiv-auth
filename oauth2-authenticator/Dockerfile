@@ -18,21 +18,20 @@ RUN python3 -m venv $VIRTUAL_ENV
 
 # Every python thing after this is in the venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
 RUN $VIRTUAL_ENV/bin/python -m pip install -U pip
+RUN $VIRTUAL_ENV/bin/pip install poetry
+RUN $VIRTUAL_ENV/bin/poetry config virtualenvs.create false ; exit 0
 
 WORKDIR /opt/arxiv/
-RUN $VIRTUAL_ENV/bin/pip install poetry
 
 COPY poetry.lock app-logging.conf hypercorn-config.toml pyproject.toml /opt/arxiv/
 
-RUN $VIRTUAL_ENV/bin/poetry config virtualenvs.create false ; exit 0
 RUN $VIRTUAL_ENV/bin/poetry lock --no-update ; exit 0
 RUN $VIRTUAL_ENV/bin/poetry install --no-dev --no-interaction --no-ansi ; exit 0
 RUN $VIRTUAL_ENV/bin/pip install hypercorn
 RUN $VIRTUAL_ENV/bin/pip uninstall -y poetry
 
-COPY arxiv_oauth2 /opt/arxiv/arxiv_oauth2
+COPY ./arxiv_oauth2 /opt/arxiv/arxiv_oauth2
 
 ENV WORKERS 8
 ENV SQLALCHEMY_TRACK_MODIFICATIONS False
