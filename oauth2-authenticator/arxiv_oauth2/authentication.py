@@ -141,7 +141,7 @@ async def refresh_tokens(request: Request) -> Response:
     body = await request.body()
     session = body.get('session')
     if not session:
-        logger.debug(f"There is no cookie '{session_cookie_key}'")
+        logger.debug(f"There is no cookie.")
 
     try:
         tokens, jwt_payload = ArxivUserClaims.unpack_token(session)
@@ -152,13 +152,13 @@ async def refresh_tokens(request: Request) -> Response:
     user = idp.refresh_access_token(tokens)
     secret = request.app.extra['JWT_SECRET']
 
-    contents = RefreshedTokens(
+    content = RefreshedTokens(
         session = user.encode_jwt_token(secret),
         classic = body.get('classic'),
-
     )
-    response = make_cookie_response(request, new_claims, next_page)
-    return response.
+    classic_cookie = body.gep('classic')
+    response = make_cookie_response(request, user, classic_cookie, '', content=content)
+    return response
 
 
 
