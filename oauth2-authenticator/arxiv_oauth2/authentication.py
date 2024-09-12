@@ -1,11 +1,13 @@
 """Provides integration for the external user interface."""
 import urllib.parse
-from typing import Optional, Tuple, Literal
+from typing import Optional, Tuple, Literal, Any
 
+from arxiv.auth.auth.exceptions import UnknownSession
 from fastapi import APIRouter, Depends, status, Request, HTTPException
 from fastapi.responses import RedirectResponse, Response, JSONResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Query, Session
+from pydantic import BaseModel
 
 from arxiv.base import logging
 from arxiv.auth.user_claims import ArxivUserClaims
@@ -126,6 +128,40 @@ async def refresh_token(
     return response
 
 
+class RefreshedTokens(BaseModel):
+    session: str
+    classic: str
+    domain: str
+    max_age: int
+    secure: bool
+    samesite: str
+
+@router.post('/refresh')
+async def refresh_tokens(request: Request) -> Response:
+    body = await request.body()
+    session = body.get('session')
+    if not session:
+        logger.debug(f"There is no cookie '{session_cookie_key}'")
+
+    try:
+        tokens, jwt_payload = ArxivUserClaims.unpack_token(session)
+    except ValueError:
+        logger.error("The token is bad.")
+        return None
+    idp: ArxivOidcIdpClient = request.app.extra["idp"]
+    user = idp.refresh_access_token(tokens)
+    secret = request.app.extra['JWT_SECRET']
+
+    contents = RefreshedTokens(
+        session = user.encode_jwt_token(secret),
+        classic = body.get('classic'),
+
+    )
+    response = make_cookie_response(request, new_claims, next_page)
+    return response.
+
+
+
 @router.get('/logout')
 async def logout(request: Request,
                  _db=Depends(get_db),
@@ -149,6 +185,10 @@ async def logout(request: Request,
         if classic_cookie:
             try:
                 legacy_invalidate(classic_cookie)
+            except UnknownSession:
+                # Trying to log out and there is no such session. What a happy coincidence
+                logger.error("Tapir session has been gone")
+                pass
             except Exception as exc:
                 logger.error("Invalidating legacy session failed.", exc_info=exc)
                 pass
@@ -173,15 +213,18 @@ async def check_db(request: Request,
 
 
 def make_cookie_response(request: Request, user_claims: Optional[ArxivUserClaims],
-                         tapir_cookie: str, next_page: str) -> Response:
+                         tapir_cookie: str, next_page: str, content: Optional[Any] = None) -> Response:
 
     session_cookie_key, classic_cookie_key, domain, secure, samesite = cookie_params(request)
     session_duration = int(request.app.extra.get('SESSION_DURATION', '36000'))
 
+    response: Response
     if (next_page):
-        response: Response = RedirectResponse(next_page, status_code=status.HTTP_303_SEE_OTHER)
+        response = RedirectResponse(url=next_page, status_code=status.HTTP_303_SEE_OTHER)
+    elif content:
+        response = JSONResponse(content=content, status_code=status.HTTP_200_OK)
     else:
-        response: Response = Response(status_code=status.HTTP_200_OK)
+        response = Response(status_code=status.HTTP_200_OK)
 
     if user_claims:
         secret = request.app.extra['JWT_SECRET']
