@@ -162,6 +162,7 @@ async def refresh_tokens(request: Request) -> Response:
 
 
 
+@router.post('/logout')
 @router.get('/logout')
 async def logout(request: Request,
                  _db=Depends(get_db),

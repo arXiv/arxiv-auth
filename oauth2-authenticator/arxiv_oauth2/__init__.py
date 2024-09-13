@@ -31,15 +31,23 @@ def get_current_user_or_none(request: Request) -> ArxivUserClaims | None:
 
     try:
         claims = ArxivUserClaims.decode_jwt_payload(tokens, jwt_payload, secret)
+
     except jwcrypto.jwt.JWTExpired:
+        # normal course of token expiring
         return None
+
     except jwcrypto.jwt.JWTInvalidClaimFormat:
         logger.warning(f"Chowed cookie '{token}'")
+        return None
+
+    except jwt.ExpiredSignatureError:
+        # normal course of token expiring
         return None
 
     except jwt.DecodeError:
         logger.warning(f"Chowed cookie '{token}'")
         return None
+
     except Exception as exc:
         logger.warning(f"token {token} is wrong?", exc_info=exc)
         return None
