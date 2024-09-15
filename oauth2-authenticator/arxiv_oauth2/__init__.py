@@ -7,7 +7,7 @@ import jwcrypto
 import jwcrypto.jwt
 
 from arxiv.auth.user_claims import ArxivUserClaims
-from arxiv.db import SessionLocal
+from sqlalchemy.orm import sessionmaker
 
 ALGORITHM = "HS256"
 
@@ -65,11 +65,19 @@ def get_current_user(request: Request) -> ArxivUserClaims | None:
     return user
 
 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False)
 def get_db():
     """Dependency for fastapi routes"""
-    db = SessionLocal()
+    from arxiv.db import _classic_engine
+    db = SessionLocal(bind=_classic_engine)
     try:
         yield db
+        if db.new or db.dirty or db.deleted:
+            db.commit()
+    except Exception as e:
+        logger = getLogger(__name__)
+        logger.warning(f'Commit failed, rolling back', exc_info=1)
+        db.rollback()
+        raise
     finally:
         db.close()
-

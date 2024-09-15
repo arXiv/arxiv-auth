@@ -2,35 +2,21 @@
 import urllib.parse
 from typing import Optional, Tuple, Literal, Any
 
-from arxiv.auth.auth.exceptions import UnknownSession
 from fastapi import APIRouter, Depends, status, Request, HTTPException
 from fastapi.responses import RedirectResponse, Response, JSONResponse
 from sqlalchemy import func
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
+from arxiv.auth.auth.exceptions import UnknownSession
 from arxiv.base import logging
 from arxiv.auth.user_claims import ArxivUserClaims
 from arxiv.auth.openid.oidc_idp import ArxivOidcIdpClient
 from arxiv.auth.legacy.sessions import invalidate as legacy_invalidate
-from arxiv.db.models import TapirCountry
-from arxiv.db import SessionLocal
 
-# from arxiv.db import get_db
-
-from . import get_current_user, get_db, get_current_user_or_none
-import socket
+from . import get_current_user_or_none, get_db
 
 from .sessions import create_tapir_session
-
-
-def get_db():
-    """Dependency for fastapi routes"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 def cookie_params(request: Request) -> Tuple[str, str, Optional[str], bool, Literal["lax", "none"]]:
@@ -209,6 +195,7 @@ async def get_token_names(request: Request) -> JSONResponse:
 @router.get('/check-db')
 async def check_db(request: Request,
                    db: Session = Depends(get_db)) -> JSONResponse:
+    from arxiv.db.models import TapirCountry
     count = db.query(func.count(TapirCountry.digraph)).scalar()
     return {"count": count}
 

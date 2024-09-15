@@ -1,15 +1,15 @@
 import os
 from typing import Callable
 
-from arxiv.auth.legacy.util import missing_configs
-from arxiv.base.globals import get_application_config
 from fastapi import FastAPI, Request
 from fastapi.responses import Response, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from sqlalchemy.orm import sessionmaker
 
+from arxiv.auth.legacy.util import missing_configs
+from arxiv.base.globals import get_application_config
 from arxiv.base.logging import getLogger
-from arxiv.db.models import configure_db
 from arxiv.auth.openid.oidc_idp import ArxivOidcIdpClient
 
 from .authentication import router as auth_router
@@ -80,6 +80,7 @@ origins = ["http://localhost",
            ]
 
 def create_app(*args, **kwargs) -> FastAPI:
+    global SessionLocal
     setup_logger()
     from arxiv.config import settings
 
@@ -114,11 +115,14 @@ def create_app(*args, **kwargs) -> FastAPI:
         logger.error("JWT_SECRET nedds to be set correctly.")
         raise ValueError("JWT_SECRET is not set correctly.")
 
-    engine, _ = configure_db(settings)
+    # engine, _ = configure_db(settings)
+    from arxiv.db import init as arxiv_db_init, _classic_engine
+    arxiv_db_init(settings=settings)
+
     app = FastAPI(
         root_path=SERVER_ROOT_PATH,
         idp=_idp_,
-        arxiv_db_engine=engine,
+        arxiv_db_engine=_classic_engine,
         arxiv_settings=settings,
         SECURE=secure,
         DOMAIN=DOMAIN,
