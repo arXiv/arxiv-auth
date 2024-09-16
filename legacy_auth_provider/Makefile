@@ -1,6 +1,8 @@
 
 tag := gcr.io/arxiv-development/arxiv-auth/legacy-auth-provider
 
+.PHONY: login docker push deploy run sh
+
 docker:
 	docker build --progress=plain --platform=linux/amd64 -t ${tag}:latest .
 
@@ -32,3 +34,8 @@ run:
 
 sh:
 	docker run --rm -it --name legacy-auth-provider --network=host -e API_SECRET_KEY=secret PORT=3034 -e CLASSIC_DB_URI=mysql://readonly:ro99beta@127.0.0.1:6201/arXiv --entrypoint=/bin/bash ${tag}:latest
+
+login:
+	gcloud auth login
+	gcloud config set project arxiv-development
+	gcloud auth configure-docker

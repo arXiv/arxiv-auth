@@ -253,9 +253,13 @@ def tapir_user_to_auth_response(tapir_user: TapirUser) -> AuthResponse:
         groups.append(tpc.name)
         roles.append(tpc.name)
 
+    username = tapir_user.tapir_nicknames.nickname
+    if os.environ.get("NORMALIZE_USERNAME", "true") == "true":
+        username = username.lower()
+
     return AuthResponse(
         id=tapir_user.user_id,
-        username=tapir_user.tapir_nicknames.nickname,
+        username=username,
         email=tapir_user.email,
         firstName=tapir_user.first_name,
         lastName=tapir_user.last_name,
