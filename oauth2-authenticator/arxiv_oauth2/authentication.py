@@ -183,6 +183,16 @@ async def logout(request: Request,
         return response
     return RedirectResponse(next_page)
 
+
+
+@router.post('/logout-callback')
+async def logout(request: Request) -> Response:
+    body = await request.body()
+    logger.info("logout-callback body: %s", json.dumps(body))
+    return Response(status_code=status.HTTP_200_OK)
+
+
+
 @router.get('/token-names')
 async def get_token_names(request: Request) -> JSONResponse:
     session_cookie_key, classic_cookie_key, _domain, _secure, _samesite = cookie_params(request)

@@ -5,8 +5,7 @@ from typing import Tuple, Optional
 from arxiv.auth.user_claims import ArxivUserClaims
 from arxiv.auth.user_claims_to_legacy import create_tapir_session_from_user_claims
 from arxiv.auth.domain import Session as ArxivSession
-from arxiv.auth.legacy.exceptions import NoSuchUser
-
+from arxiv.auth.legacy.exceptions import NoSuchUser, SessionCreationFailed
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +33,13 @@ def create_tapir_session(
         # Since newer apps should work without
         logger.info("User exists on keycloak but not on tapir", exc_info=False)
         return (None, None)
-    except Exception as exc:
-        logger.error("Setting up Tapir session failed.", exc_info=exc)
+
+    except SessionCreationFailed:
+        logger.error("Tapir session creation", exc_info=True)
+        return (None, None)
+
+    except Exception as _exc:
+        logger.error("Setting up Tapir session failed.", exc_info=True)
         return (None, None)
 
     if tapir_session is not None:
