@@ -61,8 +61,8 @@ sphinx = ["sphinx", "sphinx-autodoc-typehints", "sphinxcontrib-websupport"]
 [package.source]
 type = "git"
 url = "https://github.com/arXiv/arxiv-base.git"
-reference = "df06d5a66a38b64414a45ae230490df8ba410a19"
-resolved_reference = "df06d5a66a38b64414a45ae230490df8ba410a19"
+reference = "bfb93c64fd8e72b8277fb3ed5bdab1fb808220cc"
+resolved_reference = "bfb93c64fd8e72b8277fb3ed5bdab1fb808220cc"
 
 [[package]]
 name = "bleach"
@@ -2644,4 +2644,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0614f8a93d050502fad92837736459c80c68f08a85c8d7ae5bf451c7cf842737"
+content-hash = "58e18a01e244bd22daa5d1f49697b330e09c12e111333bcbdb2c364d2faf38a4"

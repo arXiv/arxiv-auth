@@ -1,4 +1,5 @@
 """Provides integration for the external user interface."""
+import json
 import urllib.parse
 from typing import Optional, Tuple, Literal, Any
 
@@ -101,16 +102,18 @@ async def refresh_token(
         current_user: Optional[ArxivUserClaims] = Depends(get_current_user_or_none)
         ) -> Response:
     """Refresh the access token"""
+    default_next_page = request.app.extra['ARXIV_URL_HOME']
+    next_page = request.query_params.get('next_page', request.query_params.get('next', default_next_page))
     if current_user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        login_url = request.url_for("login")  # Assuming you have a route named 'login'
+        url = f"{login_url}?next_page={urllib.parse.quote(next_page)}"
+        return RedirectResponse(url=url, status_code=status.HTTP_303_SEE_OTHER)
 
-    session_cookie_key, classic_cookie_key, domain, secure, samesite = cookie_params(request)
+    _session_cookie_key, classic_cookie_key, _domain, _secure, _samesite = cookie_params(request)
     idp: ArxivOidcIdpClient = request.app.extra["idp"]
     new_claims = idp.refresh_access_token(current_user)
-    #if current_user.tapir_cookie:
-    #    new_claims.set_tapir_cookie(current_user.tapir_cookie)
-    next_page = request.query_params.get('next_page', request.query_params.get('next', '/'))
-    response = make_cookie_response(request, new_claims, next_page)
+    tapir_cookie = request.cookies.get(classic_cookie_key, "")
+    response = make_cookie_response(request, new_claims, tapir_cookie, next_page)
     return response
 
 
@@ -143,9 +146,10 @@ async def refresh_tokens(request: Request) -> Response:
         classic = body.get('classic'),
     )
     classic_cookie = body.gep('classic')
+    default_next_page = request.app.extra['ARXIV_URL_HOME']
+    next_page = request.query_params.get('next_page', request.query_params.get('next', default_next_page))
     response = make_cookie_response(request, user, classic_cookie, '', content=content)
     return response
-
 
 
 @router.post('/logout')
@@ -161,27 +165,30 @@ async def logout(request: Request,
     classic_cookie = request.cookies.get(classic_cookie_key)
 
     logged_out = True
+    email = "?"
     if current_user is not None:
+        email = current_user.email
         logger.debug('Request to log out, then redirect to %s', next_page)
         idp: ArxivOidcIdpClient = request.app.extra["idp"]
         logged_out = idp.logout_user(current_user)
 
     if logged_out:
-        response = make_cookie_response(request, None, "", next_page)
+        logger.info('%s log out', email)
 
-        if classic_cookie:
-            try:
-                legacy_invalidate(classic_cookie)
-            except UnknownSession:
-                # Trying to log out and there is no such session. What a happy coincidence
-                logger.error("Tapir session has been gone")
-                pass
-            except Exception as exc:
-                logger.error("Invalidating legacy session failed.", exc_info=exc)
-                pass
+    if classic_cookie:
+        try:
+            legacy_invalidate(classic_cookie)
+        except UnknownSession:
+            # Trying to log out and there is no such session. What a happy coincidence
+            logger.error("Tapir session has been gone")
+            pass
+        except Exception as exc:
+            logger.error("Invalidating legacy session failed.", exc_info=exc)
+            pass
 
-        return response
-    return RedirectResponse(next_page)
+    response = make_cookie_response(request, None, "", next_page)
+    return response
+
 
 
 
