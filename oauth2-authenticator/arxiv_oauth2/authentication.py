@@ -126,7 +126,7 @@ class RefreshedTokens(BaseModel):
 
 @router.post('/refresh')
 async def refresh_tokens(request: Request) -> Response:
-    body = await request.body()
+    body = await request.json()
     session = body.get('session')
     if not session:
         logger.debug(f"There is no cookie.")
