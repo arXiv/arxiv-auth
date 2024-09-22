@@ -102,8 +102,7 @@ async def refresh_token(
         current_user: Optional[ArxivUserClaims] = Depends(get_current_user_or_none)
         ) -> Response:
     """Refresh the access token"""
-    default_next_page = request.app.extra['ARXIV_URL_HOME']
-    next_page = request.query_params.get('next_page', request.query_params.get('next', default_next_page))
+    next_page = request.query_params.get('next_page', request.query_params.get('next'))
     if current_user is None:
         login_url = request.url_for("login")  # Assuming you have a route named 'login'
         url = f"{login_url}?next_page={urllib.parse.quote(next_page)}"
