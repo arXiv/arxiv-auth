@@ -1,6 +1,7 @@
 """Provides integration for the external user interface."""
 import json
 import urllib.parse
+from json import JSONDecodeError
 from typing import Optional, Tuple, Literal, Any
 
 from fastapi import APIRouter, Depends, status, Request, HTTPException
@@ -110,7 +111,7 @@ async def refresh_token(
 
     _session_cookie_key, classic_cookie_key, _domain, _secure, _samesite = cookie_params(request)
     idp: ArxivOidcIdpClient = request.app.extra["idp"]
-    new_claims = idp.refresh_access_token(current_user)
+    new_claims = idp.refresh_access_token(current_user.refresh_token)
     tapir_cookie = request.cookies.get(classic_cookie_key, "")
     response = make_cookie_response(request, new_claims, tapir_cookie, next_page)
     return response
@@ -126,7 +127,11 @@ class RefreshedTokens(BaseModel):
 
 @router.post('/refresh')
 async def refresh_tokens(request: Request) -> Response:
-    body = await request.json()
+    try:
+        body = await request.json()
+    except JSONDecodeError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
     session = body.get('session')
     if not session:
         logger.debug(f"There is no cookie.")
@@ -137,12 +142,26 @@ async def refresh_tokens(request: Request) -> Response:
         logger.error("The token is bad.")
         return None
     idp: ArxivOidcIdpClient = request.app.extra["idp"]
-    user = idp.refresh_access_token(tokens)
+    refresh_token = tokens.get('refresh')
+    if refresh_token is None:
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED) # You can call this when refresh token available
+
+    user = idp.refresh_access_token(refresh_token)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
     secret = request.app.extra['JWT_SECRET']
+
+    session_cookie_key, classic_cookie_key, domain, secure, samesite = cookie_params(request)
+    session_duration = int(request.app.extra.get('SESSION_DURATION', '36000'))
 
     content = RefreshedTokens(
         session = user.encode_jwt_token(secret),
         classic = body.get('classic'),
+        domain = domain,
+        max_age = session_duration,
+        secure = secure,
+        samesite = samesite
     )
     classic_cookie = body.gep('classic')
     default_next_page = request.app.extra['ARXIV_URL_HOME']
