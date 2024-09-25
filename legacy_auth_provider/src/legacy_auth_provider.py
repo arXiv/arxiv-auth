@@ -1,7 +1,7 @@
 import os
 
 from arxiv.config import settings
-from fastapi import FastAPI, HTTPException, Security, Depends
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Tuple, List, Dict
 from pydantic import BaseModel
@@ -39,6 +39,7 @@ def get_user_profile(session: Session, tapir_user: TapirUser) -> UserProfile:
 
     Parameters
     ----------
+    session: DB session
     tapir_user : TapirUser
 
     Returns
@@ -239,6 +240,9 @@ def tapir_user_to_auth_response(tapir_user: TapirUser) -> AuthResponse:
         attributes["joined_ip_num"] = [tapir_user.joined_ip_num]
     if tapir_user.joined_remote_host:
         attributes["joined_remote_host"] = [tapir_user.joined_remote_host]
+
+    if tapir_user.tracking_cookie:
+        attributes["tracking_cookie"] = [tapir_user.tracking_cookie]
 
     if tapir_user.suffix_name:
         attributes["suffix_name"] = [tapir_user.suffix_name]

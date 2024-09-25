@@ -126,7 +126,7 @@ class RefreshedTokens(BaseModel):
     samesite: str
 
 @router.post('/refresh')
-async def refresh_tokens(request: Request) -> Response:
+async def refresh_tokens(request: Request) -> RefreshedTokens:
     try:
         body = await request.json()
     except JSONDecodeError:
@@ -140,7 +140,8 @@ async def refresh_tokens(request: Request) -> Response:
         tokens, jwt_payload = ArxivUserClaims.unpack_token(session)
     except ValueError:
         logger.error("The token is bad.")
-        return None
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="The session token is invalid")
+
     idp: ArxivOidcIdpClient = request.app.extra["idp"]
     refresh_token = tokens.get('refresh')
     if refresh_token is None:
@@ -163,10 +164,10 @@ async def refresh_tokens(request: Request) -> Response:
         secure = secure,
         samesite = samesite
     )
-    classic_cookie = body.gep('classic')
+    classic_cookie = body.get('classic')
     default_next_page = request.app.extra['ARXIV_URL_HOME']
     next_page = request.query_params.get('next_page', request.query_params.get('next', default_next_page))
-    response = make_cookie_response(request, user, classic_cookie, '', content=content)
+    response = make_cookie_response(request, user, classic_cookie, '', content=content.dict())
     return response
 
 
