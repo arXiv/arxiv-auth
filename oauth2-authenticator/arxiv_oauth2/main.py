@@ -25,7 +25,7 @@ from .app_logging import setup_logger
 # os.environ wi
 #
 CONFIG_DEFAULTS = {
-    'SESSION_DURATION': os.environ.get('SESSION_DURATION', '36000'),
+    'SESSION_DURATION': os.environ.get('SESSION_DURATION', '99073266'),
     'CLASSIC_COOKIE_NAME': os.environ.get("CLASSIC_COOKIE_NAME", "tapir_session"),
     'CLASSIC_SESSION_HASH': os.environ.get('CLASSIC_SESSION_HASH', 'not-very-safe-hash-value')
 }
@@ -102,10 +102,12 @@ def create_app(*args, **kwargs) -> FastAPI:
     if SECURE in ["false", "no"]:
         secure = False
 
+
     logger.info(f"SERVER_ROOT_PATH: {SERVER_ROOT_PATH}")
     logger.info(f"CALLBACK_URL: {CALLBACK_URL}")
     logger.info(f"AUTH_SESSION_COOKIE_NAME: {AUTH_SESSION_COOKIE_NAME}")
     logger.info(f"CLASSIC_COOKIE_NAME: {CLASSIC_COOKIE_NAME}")
+    logger.info(f"SESSION_DURATION: {os.environ["SESSION_DURATION"]}")
 
     if not secure:
         logger.warning("SECURE is off. This cannot be good even in dev. This is for local development, like running under debugger.")
@@ -129,6 +131,7 @@ def create_app(*args, **kwargs) -> FastAPI:
         JWT_SECRET=jwt_secret,
         AUTH_SESSION_COOKIE_NAME=AUTH_SESSION_COOKIE_NAME,
         CLASSIC_COOKIE_NAME=CLASSIC_COOKIE_NAME,
+        SESSION_DURATION=os.environ["SESSION_DURATION"],
         **{f"ARXIV_URL_{name.upper()}": value for name, value, site in settings.URLS }
     )
 

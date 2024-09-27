@@ -119,7 +119,7 @@ async def refresh_token(
 
 class RefreshedTokens(BaseModel):
     session: str
-    classic: str
+    classic: Optional[str]
     domain: str
     max_age: int
     secure: bool
@@ -154,7 +154,7 @@ async def refresh_tokens(request: Request) -> RefreshedTokens:
     secret = request.app.extra['JWT_SECRET']
 
     session_cookie_key, classic_cookie_key, domain, secure, samesite = cookie_params(request)
-    session_duration = int(request.app.extra.get('SESSION_DURATION', '36000'))
+    session_duration = int(request.app.extra['SESSION_DURATION'])
 
     content = RefreshedTokens(
         session = user.encode_jwt_token(secret),
@@ -240,7 +240,7 @@ def make_cookie_response(request: Request, user_claims: Optional[ArxivUserClaims
                          tapir_cookie: str, next_page: str, content: Optional[Any] = None) -> Response:
 
     session_cookie_key, classic_cookie_key, domain, secure, samesite = cookie_params(request)
-    session_duration = int(request.app.extra.get('SESSION_DURATION', '36000'))
+    session_duration = int(request.app.extra['SESSION_DURATION'])
 
     response: Response
     if (next_page):
