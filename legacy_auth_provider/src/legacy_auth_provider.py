@@ -218,7 +218,7 @@ def tapir_user_to_auth_response(tapir_user: TapirUser) -> AuthResponse:
     attributes = {}
 
     # not used
-    attributes["email"] = []
+    attributes["email"] = [tapir_user.email]
     if tapir_user.flag_wants_email:
         attributes["email"].append('WantsEmail')
     if tapir_user.flag_html_email:
