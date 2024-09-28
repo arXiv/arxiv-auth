@@ -107,7 +107,7 @@ def create_app(*args, **kwargs) -> FastAPI:
     logger.info(f"CALLBACK_URL: {CALLBACK_URL}")
     logger.info(f"AUTH_SESSION_COOKIE_NAME: {AUTH_SESSION_COOKIE_NAME}")
     logger.info(f"CLASSIC_COOKIE_NAME: {CLASSIC_COOKIE_NAME}")
-    logger.info(f"SESSION_DURATION: {os.environ["SESSION_DURATION"]}")
+    logger.info(f"SESSION_DURATION: {get_application_config()["SESSION_DURATION"]}")
 
     if not secure:
         logger.warning("SECURE is off. This cannot be good even in dev. This is for local development, like running under debugger.")
@@ -132,7 +132,7 @@ def create_app(*args, **kwargs) -> FastAPI:
         COOKIE_MAX_AGE=int(os.environ.get('COOKIE_MAX_AGE', '99073266')),
         AUTH_SESSION_COOKIE_NAME=AUTH_SESSION_COOKIE_NAME,
         CLASSIC_COOKIE_NAME=CLASSIC_COOKIE_NAME,
-        SESSION_DURATION=os.environ["SESSION_DURATION"],
+        SESSION_DURATION=get_application_config()["SESSION_DURATION"],
         **{f"ARXIV_URL_{name.upper()}": value for name, value, site in settings.URLS }
     )
 
