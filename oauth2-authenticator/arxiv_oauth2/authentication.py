@@ -154,13 +154,13 @@ async def refresh_tokens(request: Request) -> RefreshedTokens:
     secret = request.app.extra['JWT_SECRET']
 
     session_cookie_key, classic_cookie_key, domain, secure, samesite = cookie_params(request)
-    session_duration = int(request.app.extra['SESSION_DURATION'])
+    cookie_max_age = int(request.app.extra['COOKIE_MAX_AGE'])
 
     content = RefreshedTokens(
         session = user.encode_jwt_token(secret),
         classic = body.get('classic'),
         domain = domain,
-        max_age = session_duration,
+        max_age = cookie_max_age,
         secure = secure,
         samesite = samesite
     )
@@ -240,7 +240,7 @@ def make_cookie_response(request: Request, user_claims: Optional[ArxivUserClaims
                          tapir_cookie: str, next_page: str, content: Optional[Any] = None) -> Response:
 
     session_cookie_key, classic_cookie_key, domain, secure, samesite = cookie_params(request)
-    session_duration = int(request.app.extra['SESSION_DURATION'])
+    cookie_max_age = int(request.app.extra['COOKIE_MAX_AGE'])
 
     response: Response
     if (next_page):
@@ -254,7 +254,7 @@ def make_cookie_response(request: Request, user_claims: Optional[ArxivUserClaims
         secret = request.app.extra['JWT_SECRET']
         token = user_claims.encode_jwt_token(secret)
         logger.debug('%s=%s',session_cookie_key, token)
-        response.set_cookie(session_cookie_key, token, max_age=session_duration,
+        response.set_cookie(session_cookie_key, token, max_age=cookie_max_age,
                             domain=domain, path="/", secure=secure, samesite=samesite)
     else:
         response.set_cookie(session_cookie_key, "", max_age=0,
@@ -262,7 +262,7 @@ def make_cookie_response(request: Request, user_claims: Optional[ArxivUserClaims
 
     if tapir_cookie:
         logger.debug('%s=%s',classic_cookie_key, tapir_cookie)
-        response.set_cookie(classic_cookie_key, tapir_cookie, max_age=session_duration,
+        response.set_cookie(classic_cookie_key, tapir_cookie, max_age=cookie_max_age,
                             domain=domain, path="/", secure=secure, samesite=samesite)
     else:
         logger.debug('%s=<EMPTY>',classic_cookie_key)

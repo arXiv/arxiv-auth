@@ -25,7 +25,7 @@ from .app_logging import setup_logger
 # os.environ wi
 #
 CONFIG_DEFAULTS = {
-    'SESSION_DURATION': os.environ.get('SESSION_DURATION', '99073266'),
+    'SESSION_DURATION': os.environ.get('SESSION_DURATION', '120'),
     'CLASSIC_COOKIE_NAME': os.environ.get("CLASSIC_COOKIE_NAME", "tapir_session"),
     'CLASSIC_SESSION_HASH': os.environ.get('CLASSIC_SESSION_HASH', 'not-very-safe-hash-value')
 }
@@ -129,6 +129,7 @@ def create_app(*args, **kwargs) -> FastAPI:
         SECURE=secure,
         DOMAIN=DOMAIN,
         JWT_SECRET=jwt_secret,
+        COOKIE_MAX_AGE=int(os.environ.get('COOKIE_MAX_AGE', '99073266')),
         AUTH_SESSION_COOKIE_NAME=AUTH_SESSION_COOKIE_NAME,
         CLASSIC_COOKIE_NAME=CLASSIC_COOKIE_NAME,
         SESSION_DURATION=os.environ["SESSION_DURATION"],
