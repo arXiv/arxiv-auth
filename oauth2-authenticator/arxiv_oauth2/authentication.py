@@ -120,7 +120,7 @@ async def refresh_token(
 class RefreshedTokens(BaseModel):
     session: str
     classic: Optional[str]
-    domain: str
+    domain: Optional[str]
     max_age: int
     secure: bool
     samesite: str

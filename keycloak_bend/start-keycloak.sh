@@ -65,6 +65,15 @@ LOG_LEVEL="${LOG_LEVEL:-info}"
 LOG_OUTPUT_FORMAT="${LOG_OUTPUT_FORMAT:- --log-console-output=json}"
 
 # -------------------------------------------------------------------------------------------
+# Event Listener
+#
+
+#export GCP_CREDENTIALS
+#export GCP_PROJECT_ID
+export GCP_EVENT_TOPIC_ID=keycloak-arxiv-events
+export GCP_ADMIN_EVENT_TOPIC_ID=keycloak-arxiv-events
+
+# -------------------------------------------------------------------------------------------
 # start / start-dev
 #
 KEYCLOAK_START="${KEYCLOAK_START:-start-dev}"

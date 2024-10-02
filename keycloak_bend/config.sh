@@ -13,5 +13,5 @@ fi
 if [ -z $1 ] ; then
   cat .env
 else
-  awk -F = -e "/^$1=/ {print substr(\$0,length(\" $1=\"),999)}" .env
+  gawk -F = -e "/^$1=/ {print substr(\$0,length(\" $1=\"),999)}" .env
 fi

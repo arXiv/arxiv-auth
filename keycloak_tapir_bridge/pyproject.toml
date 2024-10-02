@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "keycloak-tapir-bridge"
+version = "0.1.0"
+description = "Subscribe to Keycloak events and update Tapir"
+authors = ["Naoyuki Tai <ntai@arxiv.org>"]
+license = "BSD-3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+google-cloud = "^0.34.0"
+google-cloud-pubsub = "^2.25.2"
+logging-json = "^0.5.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
