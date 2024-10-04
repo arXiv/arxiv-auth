@@ -99,22 +99,24 @@ def subscribe_keycloak_events(project_id: str, subscription_id: str, request_tim
         try:
             data = json.loads(json_str)
         except Exception as _exc:
-            logger.warning(f"bad({message.message_id}): {json_str[:1024]}", extra=log_extra)
+            logger.warning("bad(%s): %s", message.message_id, json_str, extra=log_extra)
             return
 
-        # If this is not for arxiv, I don't care so eat it up and move on
+        # If this is not for arxiv realm, I don't care so eat it up and move on
         realm_name = data.get("realmName")
         if realm_name != "arxiv":
+            logger.info("Not for arxiv - ack %s", data.get('id', '<no-id>'))
             message.ack()
             return
 
         message.ack()
+        logger.info("ack %s", data.get('id', '<no-id>'))
         return
 
     subscriber_client = SubscriberClient()
     subscription_path = subscriber_client.subscription_path(project_id, subscription_id)
     streaming_pull_future = subscriber_client.subscribe(subscription_path, callback=handle_keycloak_event)
-    log_extra = {"app": "pubsub"}
+    log_extra = {"app": "kc-to-tapir"}
     logger.info("Starting %s %s", project_id, subscription_id, extra=log_extra)
     with subscriber_client:
         try:
@@ -137,12 +139,10 @@ if __name__ == "__main__":
     ad.add_argument('--project',
                     help='GCP project name. Default is arxiv-production',
                     dest="project", default="arxiv-production")
-    ad.add_argument('--admin-subscription',
-                    help='Subscription name. Default is the one in production', dest="admin_subscription",
-                    default="keycloak-admin-event-sub")
-    ad.add_argument('--user-subscription',
-                    help='Subscription name. Default is the one in production', dest="user_subscription",
-                    default="keycloak-user-event-sub")
+    ad.add_argument('--subscription',
+                    help='Subscription name. Default is the one in production',
+                    dest="subscription",
+                    default="keycloak-arxiv-events-sub")
     ad.add_argument('--json-log-dir',
                     help='JSON logging directory. The default is correct on the sync-node',
                     default='/var/log/e-prints')
@@ -168,8 +168,7 @@ if __name__ == "__main__":
         logger.addHandler(json_logHandler)
 
     listeners = [
-        threading.Thread(target=subscribe_keycloak_events, args=(project_id, args.user_subscription, args.timeout)),
-        threading.Thread(target=subscribe_keycloak_events, args=(project_id, args.admin_subscription, args.timeout))
+        threading.Thread(target=subscribe_keycloak_events, args=(project_id, args.subscription, args.timeout))
     ]
 
     for listener in listeners:
