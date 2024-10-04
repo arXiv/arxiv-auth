@@ -10,7 +10,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.111.1"
-arxiv-base = {git = "https://github.com/arXiv/arxiv-base.git", rev = "683177a69257a411a30fd15eecc85d97ddd58985"}
+arxiv-base = {git = "https://github.com/arXiv/arxiv-base.git", rev = "ed2d66194e1fc71adce6b09f7f169c2afee7f780"}
 pymysql = "^1.1.0"
 ruamel-yaml = "^0.18.6"
 python-json-logger = "^2.0.7"

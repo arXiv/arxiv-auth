@@ -40,11 +40,12 @@ google-cloud-logging = "^3.8.0"
 google-cloud-monitoring = "^2.16.0"
 google-cloud-pubsub = "^2.18.4"
 google-cloud-storage = "^2.5.0"
+jwcrypto = "^1.5.6"
 markupsafe = "*"
 mimesis = "*"
 mysqlclient = ">=2.1"
 pydantic = "==1.10.*"
-pyjwt = "*"
+pyjwt = "^2.9.0"
 pytz = "*"
 redis = "==2.10.6"
 redis-py-cluster = "==1.3.6"
@@ -61,8 +62,8 @@ sphinx = ["sphinx", "sphinx-autodoc-typehints", "sphinxcontrib-websupport"]
 [package.source]
 type = "git"
 url = "https://github.com/arXiv/arxiv-base.git"
-reference = "683177a69257a411a30fd15eecc85d97ddd58985"
-resolved_reference = "683177a69257a411a30fd15eecc85d97ddd58985"
+reference = "ed2d66194e1fc71adce6b09f7f169c2afee7f780"
+resolved_reference = "ed2d66194e1fc71adce6b09f7f169c2afee7f780"
 
 [[package]]
 name = "bleach"
@@ -2644,4 +2645,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "c56f8d77dee77865cc9b960156e111c97670e6bccac935d454276fe72f5dc55a"
+content-hash = "845b5c1941ddb3c9e7d8381dbe6b0a4a2d11cb8b639662500a60cc2baaa6e5ff"
