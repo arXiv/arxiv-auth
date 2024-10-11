@@ -2,10 +2,10 @@ import os
 from typing import Callable
 
 from fastapi import FastAPI, Request
-from fastapi.responses import Response, RedirectResponse
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy.orm import sessionmaker
 
 from arxiv.auth.legacy.util import missing_configs
 from arxiv.base.globals import get_application_config
@@ -14,6 +14,7 @@ from arxiv.auth.openid.oidc_idp import ArxivOidcIdpClient
 
 from .authentication import router as auth_router
 from .app_logging import setup_logger
+from .mysql_retry import MySQLRetryMiddleware
 
 #
 # Since this is not a flask app, the config needs to be in the os.environ
@@ -153,6 +154,8 @@ def create_app(*args, **kwargs) -> FastAPI:
     )
 
     app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+
+    app.add_middleware(MySQLRetryMiddleware, retry_attempts=3)
 
     app.include_router(auth_router)
 
