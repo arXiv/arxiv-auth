@@ -12,6 +12,7 @@ redis = "*"  # constrained by what is set in arxiv-auth
 redis-py-cluster = "*"  # constrained by what is set in arxiv-auth
 arxiv-auth = {path = "../arxiv-auth"}
 arxiv-base = {git = "https://github.com/arXiv/arxiv-base.git", rev = "1.0.1"}
+email-validator = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 mimesis = "*"
