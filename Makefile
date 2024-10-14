@@ -6,4 +6,4 @@ bootstrap: .bootstrap
 	touch .bootstrap
 
 test:
-	gh act
+	gh act -P ubuntu-latest=catthehacker/ubuntu:full-latest
