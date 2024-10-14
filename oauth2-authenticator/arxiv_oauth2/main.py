@@ -155,7 +155,7 @@ def create_app(*args, **kwargs) -> FastAPI:
 
     app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
-    app.add_middleware(MySQLRetryMiddleware, retry_attempts=3)
+    app.add_middleware(MySQLRetryMiddleware, engine=_classic_engine,  retry_attempts=3)
 
     app.include_router(auth_router)
 

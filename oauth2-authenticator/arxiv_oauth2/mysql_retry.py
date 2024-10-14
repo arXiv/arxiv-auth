@@ -21,6 +21,7 @@
 #
 # MySQLdb.OperationalError: (2006, 'Server has gone away')
 #
+from typing import Callable
 
 import MySQLdb  # type: ignore
 import logging
@@ -29,21 +30,23 @@ import sqlalchemy.exc
 from fastapi import FastAPI, Request
 from sqlalchemy.engine import Engine
 import asyncio
+from starlette.types import Scope, Receive, Send
 
 
 class MySQLRetryMiddleware:
-    def __init__(self, app: FastAPI, retry_attempts: int = 2, retry_delay: int = 1):
+    def __init__(self, app: FastAPI, engine: Engine = None, retry_attempts: int = 2, retry_delay: int = 1):
         self.app = app
         self.retry_attempts = retry_attempts
         self.retry_delay = retry_delay
+        self.engine = engine
 
-    async def __call__(self, request: Request, call_next):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         attempt = 0
         while attempt <= self.retry_attempts:
             attempt += 1
             try:
-                response = await call_next(request)
-                return response
+                await self.app(scope, receive, send)
+                return
             except MySQLdb.OperationalError:
                 logging.error(f"MySQL OperationalError detected (attempt {attempt}). Disposing engine.")
                 if attempt > self.retry_attempts:
@@ -54,6 +57,5 @@ class MySQLRetryMiddleware:
                 if attempt > self.retry_attempts:
                     raise
 
-            engine: Engine = request.app.extra['arxiv_db_engine']
-            engine.dispose()
+            self.engine.dispose()
             await asyncio.sleep(self.retry_delay)
