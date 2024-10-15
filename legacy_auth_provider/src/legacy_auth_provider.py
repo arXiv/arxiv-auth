@@ -217,12 +217,16 @@ def tapir_user_to_auth_response(tapir_user: TapirUser) -> AuthResponse:
 
     attributes = {}
 
-    # not used
+    # Important to have this. Otherwise, Keycloak does not pick up the email
     attributes["email"] = [tapir_user.email]
+
+    # not used
+    email_preferences = "email_preferences"
+    attributes[email_preferences] = []
     if tapir_user.flag_wants_email:
-        attributes["email"].append('WantsEmail')
+        attributes[email_preferences].append('WantsEmail')
     if tapir_user.flag_html_email:
-        attributes["email"].append('HtmlEmail')
+        attributes[email_preferences].append('HtmlEmail')
 
     # not used
     attributes["share"] = []
