@@ -100,24 +100,66 @@ async def oauth2_callback(request: Request,
 @router.get('/refresh')
 async def refresh_token(
         request: Request,
-        current_user: Optional[ArxivUserClaims] = Depends(get_current_user_or_none)
         ) -> Response:
-    """Refresh the access token"""
-    next_page = request.query_params.get('next_page', request.query_params.get('next', ''))
-    if current_user is None:
-        login_url = request.url_for("login")  # Assuming you have a route named 'login'
-        url = f"{login_url}?next_page={urllib.parse.quote(next_page)}"
-        return RedirectResponse(url=url, status_code=status.HTTP_303_SEE_OTHER)
+    """Refresh the access token
 
+    current_user: Optional[ArxivUserClaims] = Depends(get_current_user_or_none)
+    is the standard method of getting the cookie/user but since this is a refresh request, it is likely
+    the user claims expired, and thus no "current user".
+
+    IOW, this needs to get to the refresh token, turn it into access token and recreate the cookie if
+    it succeeds.
+
+    The code here mirrors to get_current_user_or_none, so maybe I should refactor to do the first part of
+    checking the cookies and rehydrate it.
+    """
+    next_page = request.query_params.get('next_page', request.query_params.get('next', ''))
     _session_cookie_key, classic_cookie_key, _domain, _secure, _samesite = cookie_params(request)
-    idp: ArxivOidcIdpClient = request.app.extra["idp"]
-    new_claims = idp.refresh_access_token(current_user.refresh_token)
+    user_claims: Optional[ArxivUserClaims] = None
     tapir_cookie = request.cookies.get(classic_cookie_key, "")
-    response = make_cookie_response(request, new_claims, tapir_cookie, next_page)
+    login_url = request.url_for("login")  # Assuming you have a route named 'login'
+    if next_page:
+        login_url = f"{login_url}?next_page={urllib.parse.quote(next_page)}"
+
+    session_cookie_key = request.app.extra['AUTH_SESSION_COOKIE_NAME']
+    token = request.cookies.get(session_cookie_key)
+    if not token:
+        logger.debug(f"There is no cookie '{session_cookie_key}'")
+        return RedirectResponse(url=login_url, status_code=status.HTTP_303_SEE_OTHER)
+
+    secret = request.app.extra['JWT_SECRET']
+    if not secret:
+        logger.error("The app is misconfigured or no JWT secret has been set")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    try:
+        tokens, jwt_payload = ArxivUserClaims.unpack_token(token)
+    except ValueError:
+        logger.error("The token is bad.")
+        return RedirectResponse(url=login_url, status_code=status.HTTP_303_SEE_OTHER)
+
+    refresh_token = tokens.get('refresh')
+    if refresh_token is None:
+        logger.warning("Refresh token is not in the tokens")
+        return RedirectResponse(url=login_url, status_code=status.HTTP_303_SEE_OTHER)
+
+    idp: ArxivOidcIdpClient = request.app.extra["idp"]
+    user_claims = idp.refresh_access_token(refresh_token)
+    if user_claims is None:
+        # should I redirect to login?
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+    response = make_cookie_response(request, user_claims, tapir_cookie, next_page)
     return response
 
 
+class Tokens(BaseModel):
+    """Token refresh request body"""
+    classic: str
+    session: str
+
 class RefreshedTokens(BaseModel):
+    """Token refresh reply"""
     session: str
     classic: Optional[str]
     domain: Optional[str]
@@ -126,15 +168,11 @@ class RefreshedTokens(BaseModel):
     samesite: str
 
 @router.post('/refresh')
-async def refresh_tokens(request: Request) -> RefreshedTokens:
-    try:
-        body = await request.json()
-    except JSONDecodeError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-
-    session = body.get('session')
+async def refresh_tokens(request: Request, tokens: Tokens) -> RefreshedTokens:
+    session = tokens.session
     if not session:
-        logger.debug(f"There is no cookie.")
+        logger.debug(f"There is no oidc session cookie.")
+    classic_cookie = tokens.classic
 
     try:
         tokens, jwt_payload = ArxivUserClaims.unpack_token(session)
@@ -158,15 +196,15 @@ async def refresh_tokens(request: Request) -> RefreshedTokens:
 
     content = RefreshedTokens(
         session = user.encode_jwt_token(secret),
-        classic = body.get('classic'),
+        classic = classic_cookie,
         domain = domain,
         max_age = cookie_max_age,
         secure = secure,
         samesite = samesite
     )
-    classic_cookie = body.get('classic')
     default_next_page = request.app.extra['ARXIV_URL_HOME']
-    next_page = request.query_params.get('next_page', request.query_params.get('next', default_next_page))
+    # "post" should not redirect, I think.
+    # next_page = request.query_params.get('next_page', request.query_params.get('next', default_next_page))
     response = make_cookie_response(request, user, classic_cookie, '', content=content.dict())
     return response
 

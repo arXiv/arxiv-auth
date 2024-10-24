@@ -11,6 +11,7 @@ push:
 
 deploy:
 	gcloud run deploy legacy-auth-provider \
+	  --project=arxiv-development \
 	  --image=${tag}:latest \
 	  --port=8080 \
 	  --platform=managed \
