@@ -120,3 +120,6 @@ default.nix
 accounts/deploy/env_values.txt
 *.key
 *.cer
+
+.bootstrap
+./oauth2-authenticator/local-env

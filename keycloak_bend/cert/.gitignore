@@ -1,0 +1,5 @@
+*.pem
+*.key
+/db-certs-expand.sh
+/dev-authdb-db-certs-expand.sh
+/temp-certs/
