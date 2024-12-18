@@ -155,7 +155,7 @@ async def refresh_token(
 
 class Tokens(BaseModel):
     """Token refresh request body"""
-    classic: str
+    classic: Optional[str]
     session: str
 
 class RefreshedTokens(BaseModel):
@@ -247,8 +247,6 @@ async def logout(request: Request,
     return response
 
 
-
-
 @router.post('/logout-callback')
 async def logout(request: Request) -> Response:
     body = await request.body()
@@ -282,7 +280,19 @@ def make_cookie_response(request: Request, user_claims: Optional[ArxivUserClaims
 
     response: Response
     if (next_page):
-        response = RedirectResponse(url=next_page, status_code=status.HTTP_303_SEE_OTHER)
+        if user_claims and user_claims.access_token:
+            # Construct the updated URL with access token as query param
+            parsed_url = urllib.parse.urlparse(next_page)
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            query_params['access_token'] = user_claims.access_token
+            # Maybe too pedantic?
+            # query_params['token_type'] = "bearer"
+            # query_params['refresh_token'] = user_claims.refresh_token
+            updated_query = urllib.parse.urlencode(query_params, doseq=True)
+            url = urllib.parse.urlunparse(parsed_url._replace(query=updated_query))
+        else:
+            url = next_page
+        response = RedirectResponse(url=url, status_code=status.HTTP_303_SEE_OTHER)
     elif content:
         response = JSONResponse(content=content, status_code=status.HTTP_200_OK)
     else:

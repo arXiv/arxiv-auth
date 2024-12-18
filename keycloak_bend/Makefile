@@ -5,12 +5,14 @@ DB_USER := keycloak
 DB_PASS := ${shell ./config.sh DB_PASS}
 GCP_CRED := ${shell cat ~/.arxiv/arxiv-development-keycloak-pubsub-sa.b64}
 GCP_PROJECT := arxiv-development
+JDBC_CONNECTION := ${shell ./config.sh JDBC_CONNECTION}
+
 
 KC_ADMIN_PASSWORD=${shell ./config.sh KC_ADMIN_PASSWORD}
 
 tag := gcr.io/arxiv-development/keycloak
 
-.PHONY: run proxy sql docker push deploy
+.PHONY: run proxy sql docker push deploy local
 
 default: .env
 	@echo DB_ADDR_PUBLIC: ${DB_ADDR_PUBLIC}  DB_ADDR_PRIVATE:  ${DB_ADDR_PRIVATE}  DB_USER: ${DB_USER} DB_PASS: ${DB_PASS}
@@ -20,16 +22,21 @@ default: .env
 	./config.sh
 
 LOCAL_KEYCLOAK := --name keycloak-local -p 3033:8080 -e LOG_LEVEL="INFO,freemarker:DEBUG" \
+ -e JDBC_CONNECTION="${JDBC_CONNECTION}" \
  -e GCP_CREDENTIALS="${GCP_CRED}" \
  -e GCP_PROJECT_ID=${GCP_PROJECT} \
- -e BOOTSTRAP=no -e DB_ADDR=${DB_ADDR_PUBLIC} -e DB_USER=keycloak -e DB_PASS=${DB_PASS} -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD} -e LOG_OUTPUT_FORMAT="--log-console-output=default"  -v ${PWD}/cert:/secrets/authdb-certs
+ -e BOOTSTRAP=yes -e DB_ADDR=${DB_ADDR_PUBLIC} -e DB_USER=keycloak -e DB_PASS=${DB_PASS} -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD} -e LOG_OUTPUT_FORMAT="--log-console-output=default"  -v ${PWD}/cert:/secrets/authdb-certs
 
-local:
-	docker run -it --rm --name keycloak-local \
-	-e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin \
+local.bootstrap:
+	docker run -it --rm --name keycloak-local --network host \
+	-e GCP_CREDENTIALS="${GCP_CRED}" \
+	-e GCP_PROJECT_ID=${GCP_PROJECT} \
+	-e LOG_LEVEL="INFO,freemarker:DEBUG" \
 	-e KC_HOSTNAME_STRICT=false \
-	-p 3033:8080  quay.io/keycloak/keycloak:latest start-dev --db postgres --db-url-host 127.0.0.1 --db-url-port 3030 \
-	--db-username ${DB_USER} --db-password ${DB_PASS} 
+	-e BOOTSTRAP=yes -e DB_ADDR=127.0.0.1 -e DB_USER=keycloak -e DB_PASS=${DB_PASS} \
+	-e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD} \
+	-e LOG_OUTPUT_FORMAT="--log-console-output=default"  -v ${PWD}/cert:/secrets/authdb-certs \
+	-p 3033:8080  ${tag}:latest
 
 run:
 	docker run --rm -it ${LOCAL_KEYCLOAK} ${tag}:latest 
