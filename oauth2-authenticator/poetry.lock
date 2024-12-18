@@ -57,13 +57,14 @@ validators = "*"
 wtforms = "*"
 
 [package.extras]
+postgres = ["psycopg2-binary (>=2.9.9)"]
 sphinx = ["sphinx", "sphinx-autodoc-typehints", "sphinxcontrib-websupport"]
 
 [package.source]
 type = "git"
 url = "https://github.com/arXiv/arxiv-base.git"
-reference = "ed2d66194e1fc71adce6b09f7f169c2afee7f780"
-resolved_reference = "ed2d66194e1fc71adce6b09f7f169c2afee7f780"
+reference = "ba1e354e60fa444824cf347f8dce2fc65c4a52fe"
+resolved_reference = "ba1e354e60fa444824cf347f8dce2fc65c4a52fe"
 
 [[package]]
 name = "bleach"
@@ -2645,4 +2646,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "845b5c1941ddb3c9e7d8381dbe6b0a4a2d11cb8b639662500a60cc2baaa6e5ff"
+content-hash = "4808f7ec1d531a9f6afb1e824a67cb663ec2aee65ffd52c7dc53b265af5fe308"
