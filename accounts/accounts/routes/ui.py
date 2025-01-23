@@ -79,7 +79,8 @@ def set_cookies(response: Response, data: dict) -> None:
                             **params)
 
 def unset_masquerade_cookie(response: Response) -> None:
-    response.set_cookie(key='MASQUERADE', value='', max_age=0, httponly=True)
+    cookie_name = current_app.config[f'MASQUERADE_COOKIE_NAME']
+    response.set_cookie(key=cookie_name, value='', max_age=0, httponly=True)
 
 # This is unlikely to be useful once the classic submission UI is disabled.
 def unset_submission_cookie(response: Response) -> None:
@@ -415,7 +416,7 @@ def become_user_become_user_id() -> Response:
             'cookies': {
                 'AUTH_SESSION_COOKIE': (become_jwt, 3600),
                 'CLASSIC_COOKIE': (become_session_cookie, 3600),
-                'MASQUERADE': (1, 3600),
+                'MASQUERADE_COOKIE': (1, 3600),
             }
         }
         set_cookies(response, data)
