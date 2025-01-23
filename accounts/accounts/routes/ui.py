@@ -78,6 +78,8 @@ def set_cookies(response: Response, data: dict) -> None:
         response.set_cookie(key=cookie_name, value=cookie_value, max_age=max_age,
                             **params)
 
+def unset_masquerade_cookie(response: Response) -> None:
+    response.set_cookie(key='MASQUERADE', value='', max_age=0, httponly=True)
 
 # This is unlikely to be useful once the classic submission UI is disabled.
 def unset_submission_cookie(response: Response) -> None:
@@ -193,6 +195,7 @@ def logout() -> Response:
         unset_submission_cookie(response)    # Fix for ARXIVNG-1149.
         # Partial fix for ARXIVNG-1653, ARXIVNG-1644
         unset_permanent_cookie(response)
+        unset_masquerade_cookie(response)
         return response
     return redirect(next_page, code=status.HTTP_302_FOUND)
 
@@ -414,6 +417,7 @@ def become_user_become_user_id() -> Response:
             'cookies': {
                 'AUTH_SESSION_COOKIE': (become_jwt, 3600),
                 'CLASSIC_COOKIE': (become_session_cookie, 3600),
+                'MASQUERADE': (1, 3600),
             }
         }
         set_cookies(response, data)
