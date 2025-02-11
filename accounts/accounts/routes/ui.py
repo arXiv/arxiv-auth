@@ -26,7 +26,7 @@ from arxiv_auth.legacy.cookies import pack, unpack
 from arxiv_auth.legacy.models import db, DBSession, DBUserNickname, DBUser
 from arxiv_auth.legacy.models import TapirAdminAudit
 from arxiv_auth.legacy.util import compute_capabilities, epoch, get_session_duration, now
-DEBUG=1
+DEBUG=0
 
 
 EASTERN = timezone('US/Eastern')
@@ -70,7 +70,8 @@ def set_cookies(response: Response, data: dict) -> None:
         domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
         logger.info('Set cookie %s with %s, max_age %s domain %s',
                     cookie_name, cookie_value, max_age, domain)
-        params = dict(httponly=True, domain=domain)
+        is_httponly = False if cookie_name == "MASQUERADE" else True
+        params = dict(httponly=is_httponly, domain=domain)
         if current_app.config['AUTH_SESSION_COOKIE_SECURE']:
             # Setting samesite to lax, to allow reasonable links to
             # authenticated views using GET requests.
@@ -224,7 +225,8 @@ def _checked_next_page(otherwise=None) -> str:
     else:
         return otherwise
 
-# TODO: just post, but easier to test in dev with GET.
+# Only use post in production to avoid caching issues in fastly,
+#   but can include GET in dev for testing.
 @blueprint.route('/become_user', methods=['POST'])
 def become_user_become_user_id() -> Response:
 
