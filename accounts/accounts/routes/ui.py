@@ -79,6 +79,9 @@ def set_cookies(response: Response, data: dict) -> None:
         response.set_cookie(key=cookie_name, value=cookie_value, max_age=max_age,
                             **params)
 
+# Not sure unset_masquerade_cookie will be needed,
+#   as this other code should be enough to clear it first:
+#     accounts/accounts/controllers/authentication.py:190
 def unset_masquerade_cookie(response: Response) -> None:
     cookie_name = current_app.config[f'MASQUERADE_COOKIE_NAME']
     response.set_cookie(key=cookie_name, value='', max_age=0, httponly=True)
