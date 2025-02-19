@@ -1,0 +1,21 @@
+<div>
+<p>You were admin user:
+<ul>
+    <li>{{ admin_user.user_id }}</li>
+    <li>{{ admin_user.first_name }}</li>
+    <li>{{ admin_user.last_name }}</li>
+    <li>{{ admin_user.email }}</li>
+</ul>
+</p>
+<p>You are now logged in as:
+<ul>
+    <li>{{ become_user.user_id }}</li>
+    <li>{{ become_user.first_name }}</li>
+    <li>{{ become_user.last_name }}</li>
+    <li>{{ become_user.email }}</li>
+    <li>{{ become_username}}</li>
+</ul>
+</p>
+<a href="{{ next_page }}">{{ next_page }}</a>
+</div>
+

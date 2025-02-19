@@ -57,6 +57,7 @@ Useful for testing, dev, beta."""
 AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
 AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', f'.{BASE_SERVER}')
 AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))
+MASQUERADE_COOKIE_NAME = 'MASQUERADE'
 
 
 #################### Classic Auth ####################
