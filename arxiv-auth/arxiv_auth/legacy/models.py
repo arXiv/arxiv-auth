@@ -41,6 +41,47 @@ class DBSession(db.Model):
     user = relationship('DBUser')
 
 
+class TapirAdminAudit(db.Model):
+    '''
+    mysql> desc tapir_admin_audit;
+    +-----------------+--------------+------+-----+---------+----------------+
+    | Field           | Type         | Null | Key | Default | Extra          |
+    +-----------------+--------------+------+-----+---------+----------------+
+    | log_date        | int unsigned | NO   | MUL | 0       |                |
+    | session_id      | int unsigned | YES  | MUL | NULL    |                |
+    | ip_addr         | varchar(16)  | NO   | MUL |         |                |
+    | remote_host     | varchar(255) | NO   |     |         |                |
+    | admin_user      | int unsigned | YES  | MUL | NULL    |                |
+    | affected_user   | int unsigned | NO   | MUL | 0       |                |
+    | tracking_cookie | varchar(255) | NO   |     |         |                |
+    | action          | varchar(32)  | NO   |     |         |                |
+    | data            | text         | NO   | MUL | NULL    |                |
+    | comment         | text         | NO   |     | NULL    |                |
+    | entry_id        | int unsigned | NO   | PRI | NULL    | auto_increment |
+    +-----------------+--------------+------+-----+---------+----------------+
+    '''
+    __tablename__ = 'tapir_admin_audit'
+
+    log_date = Column(Integer, nullable=False, index=True, server_default=text("'0'"))
+    session_id = Column(ForeignKey('tapir_sessions.session_id'), index=True)
+    ip_addr = Column(String(16), nullable=False, index=True, server_default=text("''"))
+    remote_host = Column(String(255), nullable=False, server_default=text("''"))
+    admin_user = Column(ForeignKey('tapir_users.user_id'), index=True)
+    affected_user = Column(ForeignKey('tapir_users.user_id'), nullable=False, index=True, server_default=text("'0'"))
+    tracking_cookie = Column(String(255), nullable=False, server_default=text("''"))
+    action = Column(String(32), nullable=False, server_default=text("''"))
+    data = Column(Text, nullable=False, index=True)
+    comment = Column(Text, nullable=False)
+    entry_id = Column(Integer, primary_key=True)
+
+    #tapir_users = relationship('DBSession', primaryjoin='TapirAdminAudit.admin_user == DBUser.user_id')
+    #tapir_users1 = relationship('DBSession', primaryjoin='TapirAdminAudit.affected_user == DBUser.user_id')
+    session = relationship('DBSession')
+
+    #tapir_users = relationship('TapirUsers', primaryjoin='TapirAdminAudit.admin_user == TapirUsers.user_id')
+    #tapir_users1 = relationship('TapirUsers', primaryjoin='TapirAdminAudit.affected_user == TapirUsers.user_id')
+
+
 class DBSessionsAudit(db.Model):
     """Legacy arXiv session audit table. Notably has a tracking cookie."""
 
@@ -92,7 +133,9 @@ class DBUser(db.Model):
     flag_html_email = Column(Integer, nullable=False, server_default=text("'0'"))
     tracking_cookie = Column(String(255), nullable=False, index=True, server_default=text("''"))
     flag_allow_tex_produced = Column(Integer, nullable=False, server_default=text("'0'"))
-
+    flag_can_lock = Column(Integer, nullable=False, index=False, server_default=text("'0'"))
+    def __repr__(self):
+        return f"{ type(self) }:{ self.user_id }/{ self.first_name}/{ self.last_name}"
 
 class DBPolicyClass(db.Model):
     """Legacy authorization table."""

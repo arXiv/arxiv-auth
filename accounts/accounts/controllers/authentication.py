@@ -185,7 +185,8 @@ def logout(session_cookie: Optional[str],
     data = {
         'cookies': {
             'auth_session_cookie': ('', 0),
-            'classic_cookie': ('', 0)
+            'classic_cookie': ('', 0),
+            'MASQUERADE_COOKIE': ('', 0),
         }
     }
     return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
