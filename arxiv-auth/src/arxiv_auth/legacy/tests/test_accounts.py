@@ -126,97 +126,6 @@ class TestEmailExists(SetUpUserMixin, TestCase):
             self.assertTrue(accounts.does_email_exist('first@last.iv'))
 
 
-class TestRegister(SetUpUserMixin, TestCase):
-    """Tests for :mod:`accounts.register`."""
-
-    def test_register_with_duplicate_username(self):
-        """The username is already in the system."""
-        user = domain.User(username='foouser', email='foo@bar.com')
-        ip = '1.2.3.4'
-        with temporary_db(self.db_uri, create=False, drop=False):
-            with self.assertRaises(exceptions.RegistrationFailed):
-                accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
-
-    def test_register_with_duplicate_email(self):
-        """The email address is already in the system."""
-        user = domain.User(username='bazuser', email='first@last.iv')
-        ip = '1.2.3.4'
-        with temporary_db(self.db_uri, create=False, drop=False):
-            with self.assertRaises(exceptions.RegistrationFailed):
-                accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
-
-    def test_register_with_name_details(self):
-        """Registration includes the user's name."""
-        name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
-        user = domain.User(username='bazuser', email='new@account.edu',
-                           name=name)
-        ip = '1.2.3.4'
-
-        with temporary_db(self.db_uri, create=False, drop=False) as session:
-            u, _ = accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
-            db_user, db_nick, db_profile = get_user(session, u.user_id)
-
-            self.assertEqual(db_user.first_name, name.forename)
-            self.assertEqual(db_user.last_name, name.surname)
-            self.assertEqual(db_user.suffix_name, name.suffix)
-
-    def test_register_with_bare_minimum(self):
-        """Registration includes only a username, name, email address, password."""
-        user = domain.User(username='bazuser', email='new@account.edu',
-                           name = domain.UserFullName(forename='foo', surname='user', suffix='iv'))
-        ip = '1.2.3.4'
-
-        with temporary_db(self.db_uri, create=False, drop=False) as session:
-            u, _ = accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
-            db_user, db_nick, db_profile = get_user(session, u.user_id)
-
-            self.assertEqual(db_user.flag_email_verified, 0)
-            self.assertEqual(db_nick.nickname, user.username)
-            self.assertEqual(db_user.email, user.email)
-
-    def test_register_with_profile(self):
-        """Registration includes profile information."""
-        profile = domain.UserProfile(
-            affiliation='School of Hard Knocks',
-            country='de',
-            rank=1,
-            submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs.DL'),
-            homepage_url='https://google.com'
-        )
-        name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
-        user = domain.User(username='bazuser', email='new@account.edu',
-                           name=name, profile=profile)
-        ip = '1.2.3.4'
-
-        with temporary_db(self.db_uri, create=False, drop=False) as session:
-            u, _ = accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
-            db_user, db_nick, db_profile = get_user(session, u.user_id)
-
-            self.assertEqual(db_profile.affiliation, profile.affiliation)
-            self.assertEqual(db_profile.country, profile.country),
-            self.assertEqual(db_profile.rank, profile.rank),
-            self.assertEqual(db_profile.flag_group_cs, 1)
-            self.assertEqual(db_profile.flag_group_q_bio, 1)
-            self.assertEqual(db_profile.flag_group_physics, 0)
-            self.assertEqual(db_profile.archive, 'cs')
-            self.assertEqual(db_profile.subject_class, 'DL')
-
-    def test_can_authenticate_after_registration(self):
-        """A may authenticate a bare-minimum user after registration."""
-        user = domain.User(username='bazuser', email='new@account.edu',
-                           name=domain.UserFullName(forename='foo', surname='user'))
-        ip = '1.2.3.4'
-
-        with temporary_db(self.db_uri, create=False, drop=False) as session:
-            u, _ = accounts.register(user, 'apassword1', ip=ip, remote_host=ip)
-            db_user, db_nick, db_profile = get_user(session, u.user_id)
-            auth_user, auths = authenticate.authenticate(
-                username_or_email=user.username,
-                password='apassword1'
-            )
-            self.assertEqual(str(db_user.user_id), auth_user.user_id)
-
 
 class TestGetUserById(SetUpUserMixin, TestCase):
     """Tests for :func:`accounts.get_user_by_id`."""
@@ -228,7 +137,7 @@ class TestGetUserById(SetUpUserMixin, TestCase):
             country='de',
             rank=1,
             submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs.DL'),
+            default_category=str('cs.DL'),
             homepage_url='https://google.com'
         )
         name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
@@ -317,7 +226,7 @@ class TestUpdate(SetUpUserMixin, TestCase):
             country='de',
             rank=1,
             submission_groups=['grp_cs', 'grp_q-bio'],
-            default_category=domain.Category('cs.DL'),
+            default_category=str('cs.DL'),
             homepage_url='https://google.com'
         )
         name = domain.UserFullName(forename='foo', surname='user', suffix='iv')
@@ -334,7 +243,7 @@ class TestUpdate(SetUpUserMixin, TestCase):
             country='us',
             rank=2,
             submission_groups=['grp_cs', 'grp_physics'],
-            default_category=domain.Category('cs.IR'),
+            default_category=str('cs.IR'),
             homepage_url='https://google.com'
         )
         updated_user = domain.User(user_id=user.user_id,

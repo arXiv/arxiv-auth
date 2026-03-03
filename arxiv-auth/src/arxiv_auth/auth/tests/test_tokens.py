@@ -25,13 +25,13 @@ class TestEncodeDecode(TestCase):
                     affiliation='FSU',
                     rank=3,
                     country='us',
-                    default_category=domain.Category('astro-ph.CO'),
+                    default_category='astro-ph.CO',
                     submission_groups=['grp_physics']
                 )
             ),
             authorizations=domain.Authorizations(
                 scopes=[scopes.VIEW_SUBMISSION, scopes.CREATE_SUBMISSION],
-                endorsements=[domain.Category('astro-ph.CO')]
+                endorsements=['astro-ph.CO']
             )
         )
         secret = 'foosecret'
@@ -54,13 +54,13 @@ class TestEncodeDecode(TestCase):
                     affiliation='FSU',
                     rank=3,
                     country='us',
-                    default_category=domain.Category('astro-ph.CO'),
+                    default_category=str('astro-ph.CO'),
                     submission_groups=['grp_physics']
                 )
             ),
             authorizations=domain.Authorizations(
                 scopes=[scopes.VIEW_SUBMISSION, scopes.CREATE_SUBMISSION],
-                endorsements=[domain.Category('astro-ph.CO')]
+                endorsements=[str('astro-ph.CO')]
             )
         )
         secret = 'foosecret'

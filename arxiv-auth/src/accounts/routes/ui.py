@@ -12,7 +12,7 @@ from flask import Blueprint, render_template, url_for, request, \
 from arxiv import status
 from arxiv_auth import domain
 
-from accounts.controllers import captcha_image, registration, authentication
+from accounts.controllers import authentication
 
 # for become_user:
 import jwt

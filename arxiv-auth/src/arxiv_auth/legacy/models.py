@@ -304,10 +304,13 @@ class DBProfile(db.Model):
 
     def to_domain(self) -> domain.UserProfile:
         """Generate a domain representation from this database instance."""
-        if self.subject_class:
-            category = domain.Category(f'{self.archive}.{self.subject_class}')
+        if self.archive is None:
+            category = ''
+        elif self.subject_class is None:
+            category = self.archive
         else:
-            category = domain.Category(f'{self.archive}')
+            category = f'{self.archive}.{self.subject_class}'
+
 
         return domain.UserProfile(
             affiliation=self.affiliation,

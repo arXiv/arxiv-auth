@@ -14,9 +14,9 @@ from typing import Dict, Tuple, Any, Optional
 import re
 import logging
 
+from markupsafe import Markup
 from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import InternalServerError
-from flask import Markup
 
 from wtforms import StringField, PasswordField, Form
 from wtforms.validators import DataRequired

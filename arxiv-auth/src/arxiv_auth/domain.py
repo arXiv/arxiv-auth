@@ -9,7 +9,7 @@ from pytz import timezone, UTC
 
 from pydantic import BaseModel, ConfigDict, ValidationError, BeforeValidator, field_validator
 from arxiv import taxonomy
-from arxiv.taxonomy import Category
+from arxiv.taxonomy.definitions import CATEGORIES
 
 EASTERN = timezone('US/Eastern')
 
@@ -21,15 +21,16 @@ OTHER = ('5', 'Other')
 RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]
 
 
-def _check_category(data: Any) -> Category:
-    if isinstance(data, Category):
-        return data
-    if not isinstance(data, str):
-        raise ValidationError(f"object of type {type(data)} cannnot be used as a Category")
-    cat = Category(data)
-    cat.name # possible rasie value error on non-existance
-    return cat
-
+def _check_category(data: Any) -> str:
+    # if isinstance(data, Category):
+    #     return data
+    # if not isinstance(data, str):
+    #     raise ValidationError(f"object of type {type(data)} cannnot be used as a Category")
+    # cat = Category(data)
+    # cat.name # possible rasie value error on non-existance
+    # return cat
+    if data and data not in CATEGORIES:
+        raise ValueError(f"object {data} of type {type(data)} cannnot be used as a Category")
 
 class UserProfile(BaseModel):
     """User profile data."""
@@ -51,17 +52,17 @@ class UserProfile(BaseModel):
     Items should be one of :ref:`arxiv.taxonomy.definitions.GROUPS`.
     """
 
-    default_category: Category
+    default_category: str
     """
     Default submission category.
 
     Should be one of :ref:`arxiv.taxonomy.CATEGORIES`.
     """
 
-    @field_validator('default_category', mode='before')
-    @classmethod
-    def check_category(cls, data: Any) -> Category:
-        return _check_category(data)
+    # @field_validator('default_category', mode='before')
+    # @classmethod
+    # def check_category(cls, data: Any) -> str:
+    #     return _check_category(data)
 
     homepage_url: str = ''
     """User's homepage or external profile URL."""
@@ -166,21 +167,21 @@ class Authorizations(BaseModel):
     classic: int = 0
     """Capability code associated with a user's session."""
 
-    endorsements: List[Category] = []
+    endorsements: List[str] = []
     """Categories to which the user is permitted to submit."""
 
-    @field_validator('endorsements', mode='before')
-    @classmethod
-    def check_endorsements(cls, data: Any) -> List[Category]:
-        if isinstance(data, str) or not issubclass(type(data), Iterable):
-            raise ValidationError("endorsements must be a list")
-        return [ _check_category(obj) for obj in data ]
+    # @field_validator('endorsements', mode='before')
+    # @classmethod
+    # def check_endorsements(cls, data: Any) -> List[str]:
+    #     if isinstance(data, str) or not issubclass(type(data), Iterable):
+    #         raise ValidationError("endorsements must be a list")
+    #     return [ _check_category(obj) for obj in data ]
 
 
     scopes: List[str] = []
     """Authorized :class:`.scope`s. See also :mod:`arxiv.users.auth.scopes`."""
 
-    def endorsed_for(self, category: Category) -> bool:
+    def endorsed_for(self, category: str) -> bool:
         """
         Check whether category is included in this endorsement authorization.
 

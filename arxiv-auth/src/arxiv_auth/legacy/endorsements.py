@@ -17,24 +17,24 @@ from datetime import datetime
 from functools import lru_cache as memoize
 from itertools import groupby
 
+from arxiv.taxonomy import definitions
 from sqlalchemy.sql.expression import literal
 
 from . import util
 from .. import domain
-from arxiv import taxonomy
-from .models import DBUser, DBEndorsement, DBPaperOwners, DBDocuments, \
+from .models import DBEndorsement, DBPaperOwners, DBDocuments, \
     DBDocumentInCategory, DBCategory, DBEndorsementDomain, DBEmailWhitelist, \
     DBEmailBlacklist, db
 
 
 GENERAL_CATEGORIES = [
-    domain.Category('math.GM'),
-    domain.Category('physics.gen-ph')
+    'math.GM',
+    'physics.gen-ph'
 ]
 
 WINDOW_START = util.from_epoch(157783680)
 
-Endorsements = List[domain.Category]
+Endorsements = List[str]
 
 
 def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
@@ -64,26 +64,26 @@ def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
 
 @memoize()
 def _categories_in_archive(archive: str) -> Set[str]:
-    return set(category for category, definition
-               in taxonomy.CATEGORIES_ACTIVE.items()
-               if definition['in_archive'] == archive)
+    return set(name
+               for name, catobj in definitions.CATEGORIES.items()
+               if catobj.get_archive() == archive)
 
 
 @memoize()
-def _category(archive: str, subject_class: str) -> domain.Category:
+def _category(archive: str, subject_class: str) -> str:
     if subject_class:
-        return domain.Category(f'{archive}.{subject_class}')
-    return domain.Category(archive)
+        return str(f'{archive}.{subject_class}')
+    return str(archive)
 
 
 @memoize()
-def _get_archive(category: taxonomy.Category) -> str:
+def _get_archive(category: str) -> str:
     archive: str
     if category.endswith(".*"):
         archive = category.split(".", 1)[0]
     else:
         try:
-            archive = taxonomy.CATEGORIES_ACTIVE[category]['in_archive']
+            archive = definitions.CATEGORIES[category].in_archive()
         except KeyError:
             if "." in category:
                 archive = category.split(".", 1)[0]
@@ -95,7 +95,7 @@ def _get_archive(category: taxonomy.Category) -> str:
 def _all_archives(endorsements: Endorsements) -> bool:
     archives = set(_get_archive(category) for category in endorsements
                    if category.endswith(".*"))
-    missing = set(taxonomy.ARCHIVES_ACTIVE.keys()) - archives
+    missing = set(definitions.ARCHIVES_ACTIVE.keys()) - archives
     return len(missing) == 0 or (len(missing) == 1 and 'test' in missing)
 
 
@@ -132,7 +132,7 @@ def compress_endorsements(endorsements: Endorsements) -> Endorsements:
             for endorsement in archive_endorsements_list:
                 compressed.append(endorsement)
     if _all_archives(compressed):
-        return [taxonomy.Category("*.*")]
+        return ["*.*"]
     return compressed
 
 
@@ -150,7 +150,7 @@ def explicit_endorsements(user: domain.User) -> Endorsements:
     Returns
     -------
     list
-        Each item is a :class:`.domain.Category` for which the user is
+        Each item is a :class:`.str` for which the user is
         explicitly endorsed.
 
     """
@@ -191,12 +191,12 @@ def implicit_endorsements(user: domain.User) -> Endorsements:
     Returns
     -------
     list
-        Each item is a :class:`.domain.Category` for which the user may be
+        Each item is a :class:`.str` for which the user may be
         auto-endorsed.
 
     """
-    candidates = [domain.Category(category)
-                  for category, data in taxonomy.CATEGORIES_ACTIVE.items()]
+    candidates = [str(category)
+                  for category in definitions.CATEGORIES_ACTIVE.keys()]
     policies = category_policies()
     invalidated = invalidated_autoendorsements(user)
     papers = domain_papers(user)
@@ -243,7 +243,7 @@ def is_academic(user: domain.User) -> bool:
     return True
 
 
-def _disqualifying_invalidations(category: domain.Category,
+def _disqualifying_invalidations(category: str,
                                  invalidated: Endorsements) -> bool:
     """
     Evaluate whether endorsement invalidations are disqualifying.
@@ -268,8 +268,8 @@ def _disqualifying_invalidations(category: domain.Category,
                 or (category not in GENERAL_CATEGORIES and invalidated))
 
 
-def _endorse_by_email(category: domain.Category,
-                      policies: Dict[domain.Category, Dict],
+def _endorse_by_email(category: str,
+                      policies: Dict[str, Dict],
                       user_is_academic: bool) -> bool:
     """
     Evaluate whether an auto-endorsement can be issued based on email address.
@@ -298,8 +298,8 @@ def _endorse_by_email(category: domain.Category,
     return policy['endorse_email'] and user_is_academic
 
 
-def _endorse_by_papers(category: domain.Category,
-                       policies: Dict[domain.Category, Dict],
+def _endorse_by_papers(category: str,
+                       policies: Dict[str, Dict],
                        papers: Dict[str, int]) -> bool:
     """
     Evaluate whether an auto-endorsement can be issued based on prior papers.
@@ -365,7 +365,7 @@ def domain_papers(user: domain.User,
     return dict(Counter(domain for _, _, _, domain in data).items())
 
 
-def category_policies() -> Dict[domain.Category, Dict]:
+def category_policies() -> Dict[str, Dict]:
     """
     Load auto-endorsement policies for each category from the database.
 
@@ -376,7 +376,7 @@ def category_policies() -> Dict[domain.Category, Dict]:
     Returns
     -------
     dict
-        Keys are :class:`.domain.Category` instances. Values are dicts with
+        Keys are :class:`.str` instances. Values are dicts with
         policiy details.
 
     """
@@ -415,7 +415,7 @@ def invalidated_autoendorsements(user: domain.User) -> Endorsements:
     Returns
     -------
     list
-        Items are :class:`.domain.Category` for which the user has had past
+        Items are :class:`.str` for which the user has had past
         auto-endorsements revoked.
 
     """

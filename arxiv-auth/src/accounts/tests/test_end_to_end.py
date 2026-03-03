@@ -112,6 +112,8 @@ class TestLoginLogoutRoutes(TestCase):
                     url='http://example.com/bogus',
                     rank=2,
                     original_subject_classes='cs.OH',
+                    archive='cs',
+                    subject_class='OH',
                     )
                 salt = b'fdoo'
                 password = b'thepassword'

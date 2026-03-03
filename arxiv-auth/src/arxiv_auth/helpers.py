@@ -15,11 +15,9 @@ def generate_token(user_id: str, email: str, username: str,
                    affiliation: str = 'Cornell University',
                    rank: int = 3,
                    country: str = 'us',
-                   default_category: domain.Category = (
-                       domain.Category('astro-ph.GA')
-                   ),
+                   default_category = 'astro-ph.GA',
                    submission_groups: str = 'grp_physics',
-                   endorsements: List[domain.Category] = [],
+                   endorsements: List[str] = [],
                    scope: List[domain.Scope] = [],
                    verified: bool = False) -> str:
     """Generate an auth token for dev/testing purposes."""
