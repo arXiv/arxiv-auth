@@ -5,9 +5,8 @@ the `/login` `/logout` and other pages.
 
 ```bash
 cd accounts/
-pip install poetry
-poetry install  # installs to a venv
-poetry shell    # activates the venv
+uv sync
+source .venv/bin/activate
 pytest
 REDIS_FAKE=1 CLASSIC_DATABASE_URI=sqlite:///my.db CREATE_DB=1 python main.py
 google-chrome http://localhost:5000/login
