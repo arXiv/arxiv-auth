@@ -3,6 +3,7 @@
 import os
 from unittest import TestCase, mock
 from datetime import datetime
+from arxiv.taxonomy.definitions import ARCHIVES_ACTIVE, CATEGORIES_ACTIVE
 from pytz import timezone, UTC
 
 from flask import Flask
@@ -98,7 +99,7 @@ class TestEndorsement(TestCase):
                     papers_to_endorse=3
                 ))
 
-                for category, definition in taxonomy.CATEGORIES_ACTIVE.items():
+                for category, _ in CATEGORIES_ACTIVE.items():
                     if '.' in category:
                         archive, subject_class = category.split('.', 1)
                     else:
@@ -114,23 +115,19 @@ class TestEndorsement(TestCase):
     def test_get_endorsements(self):
         """Test :func:`endoresement.get_endorsements`."""
         with self.app.app_context():
-            all_endorsements = set(
-                endorsements.get_endorsements(self.user, compress=False)
-            )
-            all_possible = set(taxonomy.CATEGORIES_ACTIVE.keys())
+            all_endorsements = set(endorsements.get_endorsements(self.user, compress=False))
+            all_possible = set(CATEGORIES_ACTIVE.keys())
             self.assertEqual(all_endorsements, all_possible)
-            all_compressed = set(
-                endorsements.get_endorsements(self.user, compress=True)
-            )
+            all_compressed = set(endorsements.get_endorsements(self.user, compress=True))
             self.assertEqual(all_compressed, {"*.*"})
 
             # Exclude cs.NA, and verify compression output.
             all_endorsements.remove('cs.NA')
 
             some = endorsements.compress_endorsements(all_endorsements)
-            for archive in taxonomy.ARCHIVES_ACTIVE.keys():
+            for archive in ARCHIVES_ACTIVE.keys():
                 if archive not in ['cs', 'test']:
                     self.assertIn(f"{archive}.*", some)
-            for category, definition in taxonomy.CATEGORIES_ACTIVE.items():
-                if definition['in_archive'] == 'cs' and category != 'cs.NA':
+            for category, definition in CATEGORIES_ACTIVE.items():
+                if definition.in_archive == 'cs' and category != 'cs.NA':
                     self.assertIn(category, some)

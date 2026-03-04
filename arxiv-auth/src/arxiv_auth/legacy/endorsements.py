@@ -65,15 +65,15 @@ def get_endorsements(user: domain.User, compress: bool = True) -> Endorsements:
 @memoize()
 def _categories_in_archive(archive: str) -> Set[str]:
     return set(name
-               for name, catobj in definitions.CATEGORIES.items()
-               if catobj.get_archive() == archive)
+               for name, catobj in definitions.CATEGORIES_ACTIVE.items()
+               if catobj.get_archive().id == archive)
 
 
 @memoize()
 def _category(archive: str, subject_class: str) -> str:
     if subject_class:
-        return str(f'{archive}.{subject_class}')
-    return str(archive)
+        return f'{archive}.{subject_class}'
+    return archive
 
 
 @memoize()
@@ -83,7 +83,7 @@ def _get_archive(category: str) -> str:
         archive = category.split(".", 1)[0]
     else:
         try:
-            archive = definitions.CATEGORIES[category].in_archive()
+            archive = definitions.CATEGORIES[category].in_archive
         except KeyError:
             if "." in category:
                 archive = category.split(".", 1)[0]
@@ -92,15 +92,15 @@ def _get_archive(category: str) -> str:
     return archive
 
 
-def _all_archives(endorsements: Endorsements) -> bool:
-    archives = set(_get_archive(category) for category in endorsements
-                   if category.endswith(".*"))
-    missing = set(definitions.ARCHIVES_ACTIVE.keys()) - archives
-    return len(missing) == 0 or (len(missing) == 1 and 'test' in missing)
+# def _all_archives(endorsements: Endorsements) -> bool:
+#     archives = set(_get_archive(category) for category in endorsements
+#                    if category.endswith(".*"))
+#     missing = set(definitions.ARCHIVES_ACTIVE.keys()) - archives
+#     return len(missing) == 0 or (len(missing) == 1 and 'test' in missing)
 
 
-def _all_subjects_in_archive(archive: str, endorsements: Endorsements) -> bool:
-    return len(_categories_in_archive(archive) - set(endorsements)) == 0
+# def _all_subjects_in_archive(archive: str, endorsements: Endorsements) -> bool:
+#     return len(_categories_in_archive(archive) - set(endorsements)) == 0
 
 
 def compress_endorsements(endorsements: Endorsements) -> Endorsements:
@@ -123,15 +123,23 @@ def compress_endorsements(endorsements: Endorsements) -> Endorsements:
 
     """
     compressed: Endorsements = []
+
     grouped = groupby(sorted(endorsements, key=_get_archive), key=_get_archive)
     for archive, archive_endorsements in grouped:
         archive_endorsements_list = list(archive_endorsements)
-        if _all_subjects_in_archive(archive, archive_endorsements_list):
+        all_in_archive = len(_categories_in_archive(archive) - set(archive_endorsements_list)) == 0
+        if all_in_archive:
             compressed.append(_category(archive, "*"))
         else:
             for endorsement in archive_endorsements_list:
                 compressed.append(endorsement)
-    if _all_archives(compressed):
+
+    archives = set(_get_archive(category) for category in compressed
+                   if category.endswith(".*"))
+    missing = set(definitions.ARCHIVES_ACTIVE.keys()) - archives
+    all_archives = len(missing) == 0 or (len(missing) == 1 and 'test' in missing)
+
+    if all_archives:
         return ["*.*"]
     return compressed
 

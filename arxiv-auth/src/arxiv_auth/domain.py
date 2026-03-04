@@ -1,15 +1,13 @@
 """Defines user concepts for use in arXiv services."""
 
 
-from typing import Any, Optional, List, NamedTuple
-from collections.abc import Iterable
+from typing import Optional, List
 
 from datetime import datetime
 from pytz import timezone, UTC
 
-from pydantic import BaseModel, ConfigDict, ValidationError, BeforeValidator, field_validator
-from arxiv import taxonomy
-from arxiv.taxonomy.definitions import CATEGORIES
+from pydantic import BaseModel, ConfigDict
+from arxiv.taxonomy.definitions import CATEGORIES, GROUPS
 
 EASTERN = timezone('US/Eastern')
 
@@ -20,17 +18,6 @@ GRAD_STUDENT = ('4', 'Grad student')
 OTHER = ('5', 'Other')
 RANKS = [STAFF, PROFESSOR, POST_DOC, GRAD_STUDENT, OTHER]
 
-
-def _check_category(data: Any) -> str:
-    # if isinstance(data, Category):
-    #     return data
-    # if not isinstance(data, str):
-    #     raise ValidationError(f"object of type {type(data)} cannnot be used as a Category")
-    # cat = Category(data)
-    # cat.name # possible rasie value error on non-existance
-    # return cat
-    if data and data not in CATEGORIES:
-        raise ValueError(f"object {data} of type {type(data)} cannnot be used as a Category")
 
 class UserProfile(BaseModel):
     """User profile data."""
@@ -79,7 +66,7 @@ class UserProfile(BaseModel):
     @property
     def default_archive(self) -> str:
         """The archive of the default category."""
-        archive: str = taxonomy.CATEGORIES[self.default_category]['in_archive']
+        archive: str = CATEGORIES[self.default_category].in_archive
         return archive
 
     @property
@@ -96,7 +83,7 @@ class UserProfile(BaseModel):
     def groups_display(self) -> str:
         """Display-ready representation of active groups for this profile."""
         return ", ".join([
-            taxonomy.definitions.GROUPS[group]['name']
+            GROUPS[group].id
             for group in self.submission_groups
         ])
 
@@ -128,7 +115,7 @@ class Scope(str):
         return self.parts[2]
 
     @property
-    def parts(self) -> str:
+    def parts(self) -> list:
         """Get parts of the Scope."""
         parts = self.split(':')
         parts = parts + [None] * (3 - len(parts))
@@ -212,7 +199,7 @@ class Authorizations(BaseModel):
         # than to implement a general-purpose coercsion.
         # if self.endorsements and type(self.endorsements[0]) is not Category:
         data['endorsements'] = [
-            Category(obj) for obj in data.get('endorsements', [])
+            obj for obj in data.get('endorsements', [])
         ]
         if 'scopes' in data:
             if type(data['scopes']) is str:
@@ -363,7 +350,7 @@ class Session(BaseModel):
 
     def json_safe_dict(self) -> dict:
         """Creates a json dict with the datetimes converted to ISO datetime strs."""
-        out = self.dict()
+        out = self.model_dump()
         if self.start_time:
             out['start_time'] = self.start_time.isoformat()
         if self.end_time:
@@ -372,4 +359,4 @@ class Session(BaseModel):
 
 def session_from_dict(data: dict) -> Session:
     """Create a Session from a dict."""
-    return Session.parse_obj(data)
+    return Session.model_validate(data)

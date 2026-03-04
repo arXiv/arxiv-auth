@@ -52,6 +52,9 @@ class TestAuthenticationController(TestCase):
         os.environ['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{self.db}'
         os.environ['REDIS_FAKE'] = "true"
         os.environ['SERVER_NAME'] = 'example.com' # to do urls in emails
+        if hasattr(self, "app"):
+            return
+
         self.app = create_web_app()
 
         with self.app.app_context():

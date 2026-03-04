@@ -21,7 +21,6 @@ def create_web_app() -> Flask:
     """Initialize and configure the accounts application."""
     app = Flask('accounts')
     app.config.from_pyfile('config.py')
-
     # Don't set SERVER_NAME, it switches flask blueprints to be
     # subdomain aware.  Then each blueprint will only be served on
     # it's subdomain.  This doesn't work with mutliple domains like

@@ -1,31 +1,26 @@
 """Test the legacy integration with synthetic data."""
 
-import os
-import sys
+import random
 from typing import Tuple
 from unittest import TestCase
+
+from arxiv.taxonomy.definitions import CATEGORIES_ACTIVE
 from flask import Flask
-import locale
+from mimesis import Datetime, Internet, Person, locales
+from pytz import timezone
+from sqlalchemy import select
 
-from typing import List
-import random
-from datetime import datetime
-from pytz import timezone, UTC
-from mimesis import Person, Internet, Datetime, locales
-
-from sqlalchemy import select, func
-from arxiv import taxonomy
-from .. import models, util, sessions, authenticate, exceptions
-from ..passwords import hash_password
 from ... import domain
+from .. import authenticate, exceptions, models, sessions, util
+from ..passwords import hash_password
 
 LOCALES = locales.Locale.values()
 EASTERN = timezone('US/Eastern')
 
 
 def _random_category() -> Tuple[str, str]:
-    category = random.choice(list(taxonomy.CATEGORIES_ACTIVE.items()))
-    archive = category[1]['in_archive']
+    category = random.choice(list(CATEGORIES_ACTIVE.items()))
+    archive = category[1].in_archive
     subject_class = category[0].split('.')[-1] if '.' in category[0] else ''
     return archive, subject_class
 
@@ -68,7 +63,7 @@ class TestBootstrap(TestCase):
                     papers_to_endorse=3
                 ))
 
-            for category in taxonomy.CATEGORIES_ACTIVE.keys():
+            for category in CATEGORIES_ACTIVE.keys():
                 if '.' in category:
                     archive, subject_class = category.split('.', 1)
                 else:
@@ -268,11 +263,7 @@ class TestBootstrap(TestCase):
                 self.assertIsInstance(auths, domain.Authorizations,
                                       "Authorizations data are returned")
                 if endorsement[2] > 0:
-                    self.assertTrue(auths.endorsed_for(
-                        domain.Category(
-                            f'{endorsement[0]}.{endorsement[1]}'
-                        )
-                    ), "Endorsements are included in authorizations")
+                    self.assertTrue(auths.endorsed_for(f'{endorsement[0]}.{endorsement[1]}'))
 
                 net = Internet()
                 ip = net.ip_v4()

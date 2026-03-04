@@ -80,7 +80,6 @@ CLASSIC_DATABASE_URI = os.environ.get('CLASSIC_DATABASE_URI')
 """SQLALCHEMY_DATABASE_URI for legacy DB.
 
 If not set, legacy database integrations will not be available."""
-
 SQLALCHEMY_DATABASE_URI = CLASSIC_DATABASE_URI
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False

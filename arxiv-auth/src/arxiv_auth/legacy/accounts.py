@@ -99,7 +99,7 @@ def register(user: domain.User, password: str, ip: str,
         raise Unavailable('Database is temporarily unavailable') from e
     except Exception as e:
         logger.debug(e)
-        raise exceptions.RegistrationFailed('Could not create user')# from e
+        raise exceptions.RegistrationFailed('Could not create user') from e
 
     user = domain.User(
         user_id=str(db_user.user_id),
