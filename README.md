@@ -12,7 +12,8 @@ It has the following directories:
    users in arXiv services.  This provides core authentication and authorization
    functions and domain classes and provides integrations with the legacy
    database for users and sessions.
-2. [``accounts/``](accounts/) contains web app for the login/logout pages
+2. [``accounts/``](arxiv-auth/README-accounts.md/) contains web app for the
+   login/logout pages. Was in its own directory but moved into `arxiv-auth`.
 3. [``cloud_auth/``](cloud_auth/) **Not in use** authentication for use as a
    FastAPI dependency that checks legacy cookies, NG JWTs and GCP OAuth2 tokens.
 

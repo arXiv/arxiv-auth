@@ -19,20 +19,26 @@ RUN apt-get -y install default-libmysqlclient-dev
 RUN pip install -U pip uv
 COPY arxiv-auth/uv.lock arxiv-auth/pyproject.toml ./
 RUN uv sync --no-install-project --frozen --no-dev
+RUN uv pip install gunicorn
 COPY arxiv-auth/src ./src
 
 
 FROM python:3.11.8-bookworm AS runner
 
 WORKDIR /app
-COPY --from=builder /app/.venv /.venv
+COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src ./src
-
 RUN useradd --create-home e-prints
 USER e-prints
 
-ENV PATH="/.venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH"
 ENV APPLICATION_ROOT="/"
+ENV PYTHONPATH="/app/src"
 
 EXPOSE 8000
-CMD ["uwsgi", "--ini", "/arxiv-auth/uwsgi.ini"]
+CMD ["gunicorn",\
+    "--bind", ":8000",\
+    "--workers", "5",\
+    "--threads", "10",\
+    "--timeout", "60",\
+    "accounts.factory:create_web_app()"]

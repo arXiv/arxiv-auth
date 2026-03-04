@@ -9,7 +9,7 @@ cd accounts/
 uv sync
 source .venv/bin/activate
 pytest
-REDIS_FAKE=1 CLASSIC_DATABASE_URI=sqlite:///my.db CREATE_DB=1 python main.py
+JWT_SECRET=12345 REDIS_FAKE=1 CLASSIC_DATABASE_URI=sqlite:///my.db CREATE_DB=1 python main.py
 google-chrome http://localhost:5000/login
 ```
 

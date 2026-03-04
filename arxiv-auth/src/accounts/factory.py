@@ -47,9 +47,6 @@ def create_web_app() -> Flask:
     auth.Auth(app)  # Handless sessions and authn/z.
     s3.init_app(app)
 
-    middleware = [AuthMiddleware]
-    wrap(app, middleware)
-
     if app.config['CREATE_DB']:
         with app.app_context():
             legacy_create_all()
