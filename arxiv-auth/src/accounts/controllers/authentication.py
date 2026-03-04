@@ -21,8 +21,6 @@ from werkzeug.exceptions import InternalServerError
 from wtforms import StringField, PasswordField, Form
 from wtforms.validators import DataRequired
 
-from retry import retry
-
 from arxiv import status
 
 from arxiv_auth.domain import User, Authorizations, Session
@@ -199,15 +197,12 @@ class LoginForm(Form):
     password = PasswordField('Password', validators=[DataRequired()])
 
 
-# These are broken out to add retry and transaction logic.
-@retry(exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
 def _do_authn(username: str, password: str) -> Tuple[User, Authorizations]:
     with transaction():
         return authenticate(username_or_email=username,
                             password=password)
 
 
-@retry(exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
 def _do_login(auths: Authorizations, ip: str, tracking_cookie: str,
               user: User = None) -> Tuple[Session, str]:
     with transaction():
@@ -217,7 +212,6 @@ def _do_login(auths: Authorizations, ip: str, tracking_cookie: str,
         return c_session, c_cookie
 
 
-@retry(exceptions.Unavailable, tries=3, delay=0.5, backoff=2)
 def _do_logout(classic_session_cookie: str) -> None:
     with transaction():
         legacy_sessions.invalidate(classic_session_cookie)
