@@ -1,12 +1,7 @@
 # ``arxiv-auth`` Library
 
-This package provides a Flask add on and other code for working with arxiv
-authenticated users in arXiv services.
-
-Housing these components in a library separate from web apps ensures that users
-and sessions are represented and manipulated consistently. The login+logout, user
-accounts(TBD), API client registry(TBD), and authenticator(TBD) services all
-rely on this package.
+This provides a Flask add on and other code for working with arxiv authenticated
+users.
 
 # Quick start
 For use-cases to check if a request is from an authenticated arxiv user, do the
@@ -45,12 +40,8 @@ Here's an example of how you might do #2 and #3:
            return "<p>Hello unknown client.</p>"
 ```
 
-# How can develop and test my Flask app?
-TODO: To run your flask app with arxiv-auth and log in an test your app...
-
-
 # /login page?
-The code for the `/login` page lives in [`accounts`](../accounts).
+The code for the `/login` page lives in [`accounts`](./README-accounts.md).
 
 # Checking endorsements
 
@@ -72,14 +63,3 @@ For convenience, endorsement authorizations can be checked with the
    if request.auth.authorizations.endorsed_for("cs.AI"):
        print("This user/client is endorsed for cs.AI")
 ```
-
-# Middleware
-
-In during NG there was middleware for arxiv-auth that could be used in NGINX to
-do the authentication there. As of 2023 it is not in use.
-
-See :class:`arxiv_users.auth.middleware.AuthMiddleware`
-
-If you are not deploying this application in the cloud behind NGINX (and
-therefore will not support sessions from the distributed store), you do not
-need the auth middleware.

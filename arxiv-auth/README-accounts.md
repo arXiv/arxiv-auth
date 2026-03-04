@@ -4,6 +4,7 @@ the `/login` `/logout` and other pages.
 
 
 ```bash
+# This is up to date as of 2026-02
 cd accounts/
 uv sync
 source .venv/bin/activate
@@ -63,17 +64,6 @@ CLASSIC_DATABASE_URI=mysql+mysqldb://[USERNAME]:[PASSWORD]@localhost:3306/[DATAB
 Set the username, password, and database to whatever you're using. If
 the DB structure does not already exist, you will need to be able to
 create tables. Conventional read/write access should be sufficient.
-
-## Need to reinstall arxiv-auth
-If you are doing local development and make a change to arxiv-auth and want have
-that change in `accounts` you will need to reinstall `arxiv-auth` by running
-`poetry install`. Flask's auto-restart of the service in debug mod will not pick
-up changes to `arxiv-auth`.
-
-## TODO
-- Password reset in ``arxiv.users.legacy.accounts`` and in the accounts service.
-- Investigate the state of the accounts user registration and clean up, test and
-  document if useful.
 
 ## Generating auth tokens
 
