@@ -34,6 +34,7 @@ dev = [
     "pylint",
     "hypothesis>=6.54.3,<7",
     "fakeredis>=1.9.0,<2",
+    "dotenv>=0.9.9",
 ]
 
 [build-system]

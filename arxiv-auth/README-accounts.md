@@ -1,11 +1,11 @@
-# `accounts`
-The [``accounts/``](accounts/) directory contains a flask web app for
-the `/login` `/logout` and other pages.
+# `accounts` App
 
+The [``accounts/``](accounts/) package has a flask web app for `/login`
+`/logout` and `/become_user`
 
 ```bash
 # This is up to date as of 2026-02
-cd accounts/
+cd arxiv-auth/arxiv-auth
 uv sync
 source .venv/bin/activate
 pytest

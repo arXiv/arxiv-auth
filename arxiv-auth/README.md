@@ -1,9 +1,15 @@
-# ``arxiv-auth`` Library
+# ``arxiv-auth`` Library and ``accounts`` App
 
-This provides a Flask add on and other code for working with arxiv authenticated
+This provides a Flask add on and other code for working with arXiv authenticated
 users.
 
-# Quick start
+Also provides `/login` `/logout` and `/become_user` in the ``accounts`` Flask
+app.
+
+# /login page?
+The code for the `/login` page lives in [`accounts`](./README-accounts.md).
+
+# Quick start with the ``arxiv-auth`` library
 For use-cases to check if a request is from an authenticated arxiv user, do the
 following:
 
@@ -39,9 +45,6 @@ Here's an example of how you might do #2 and #3:
        else:
            return "<p>Hello unknown client.</p>"
 ```
-
-# /login page?
-The code for the `/login` page lives in [`accounts`](./README-accounts.md).
 
 # Checking endorsements
 
