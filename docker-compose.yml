@@ -31,20 +31,6 @@ services:
     # logging:
     #   driver: none
 
-  registry-maria:
-    image: mariadb:10.3
-    container_name: registry-maria
-    networks:
-      - arxiv-accounts
-    environment:
-      MYSQL_USER: foouser
-      MYSQL_PASSWORD: foopass
-      MYSQL_ROOT_PASSWORD: foorootpassword
-      MYSQL_DATABASE: registry
-    command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
-    # logging:
-    #   driver: none
-
   accounts:
     build:
       context: ./
@@ -65,57 +51,6 @@ services:
     depends_on:
       - accounts-redis-sessions
       - accounts-maria
-
-  registry:
-    build:
-      context: ./
-      dockerfile: Dockerfile-registry
-    container_name: registry
-    environment:
-      REDIS_HOST: "accounts-redis-sessions"
-      REDIS_PORT: "7000"
-      LOGLEVEL: 10
-      CLASSIC_DATABASE_URI: "mysql+mysqldb://foouser:foopass@registry-maria:3306/registry?charset=utf8"
-      CREATE_DB: 1
-    networks:
-      - arxiv-accounts
-    depends_on:
-      - accounts-redis-sessions
-      - registry-maria
-
-  authenticator:
-    build:
-      context: ./
-      dockerfile: Dockerfile-authenticator
-    container_name: authenticator
-    environment:
-      LOGLEVEL: 10
-      REDIS_HOST: "accounts-redis-sessions"
-      REDIS_PORT: "7000"
-    networks:
-      - arxiv-accounts
-    depends_on:
-      - accounts-redis-sessions
-
-  gateway:
-    build:
-      context: ./gateway/
-      dockerfile: Dockerfile
-    container_name: gateway
-    environment:
-      REDIS_ENDPOINT: "submission-redis:6379"
-      AWS_ACCESS_KEY_ID: "foo"
-      AWS_SECRET_ACCESS_KEY: "bar"
-      LOGLEVEL: 10
-    ports:
-      - "8000:8000"
-    networks:
-      - arxiv-accounts
-    depends_on:
-      - accounts-redis-sessions
-      - authenticator
-      - registry
-      - accounts
 
 networks:
   arxiv-accounts:

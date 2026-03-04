@@ -128,27 +128,6 @@ def apply_response_headers(response: Response) -> Response:
 
     return response
 
-# @blueprint.route('/register', methods=['GET', 'POST'])
-@anonymous_only
-def register() -> Response:
-    """Interface for creating new accounts."""
-    captcha_secret = current_app.config['CAPTCHA_SECRET']
-    ip_address = request.remote_addr
-    next_page = request.args.get('next_page', url_for('account'))
-    data, code, headers = registration.register(request.method, request.form,
-                                                captcha_secret, ip_address,
-                                                next_page)
-
-    # Flask puts cookie-setting methods on the response, so we do that here
-    # instead of in the controller.
-    if code is status.HTTP_303_SEE_OTHER:
-        response = make_response(redirect(headers['Location'], code=code))
-        set_cookies(response, data)
-        return response
-    content = render_template("accounts/register.html", **data)
-    response = make_response(content, code, headers)
-    return response
-
 
 @blueprint.route('/login', methods=['GET', 'POST'])
 @anonymous_only
@@ -203,17 +182,6 @@ def logout() -> Response:
         unset_masquerade_cookie(response)
         return response
     return redirect(next_page, code=status.HTTP_302_FOUND)
-
-
-# @blueprint.route('/captcha', methods=['GET'])
-@anonymous_only
-def captcha() -> Response:
-    """Provide the image for stateless captcha."""
-    secret = current_app.config['CAPTCHA_SECRET']
-    font = current_app.config.get('CAPTCHA_FONT')
-    token = request.args.get('token')
-    data, code, headers = captcha_image.get(token, secret, request.remote_addr, font)
-    return send_file(data['image'], mimetype=data['mimetype']), code, headers
 
 
 @blueprint.route('/auth_status', methods=['GET'])
