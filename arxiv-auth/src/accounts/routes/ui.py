@@ -153,12 +153,10 @@ def logout() -> Response:
     classic_cookie = request.cookies.get(classic_cookie_key, None)
     safe_page = good_next_page(request.args.get('next_page', ''))
     logger.debug('Request to log out, then redirect to %s', safe_page)
-    data, code, headers = authentication.logout(session_cookie, classic_cookie,
-                                                safe_page)
-    # Flask puts cookie-setting methods on the response, so we do that here
-    # instead of in the controller.
+    data, code, _ = authentication.logout(session_cookie, classic_cookie, safe_page)
+    # Flask puts cookie-setting methods response, do that here instead of controller.
     if code is status.HTTP_303_SEE_OTHER:
-        logger.debug('Redirecting to %s: %i', headers.get('Location'), code)
+        logger.debug('Redirecting to %s: %i', safe_page, code)
         response = make_response(redirect(safe_page, code=code))
         set_cookies(response, data)
         unset_submission_cookie(response)  # Fix for ARXIVNG-1149.
@@ -173,14 +171,6 @@ def auth_status() -> Response:
     """Get if the app is running."""
     return make_response("OK")
 
-def _checked_next_page(otherwise=None) -> str:
-    if not otherwise:
-        otherwise = current_app.config['DEFAULT_LOGIN_REDIRECT_URL']
-    next_page = request.args.get('next_page', otherwise)
-    if authentication.good_next_page(next_page):
-        return next_page
-    else:
-        return otherwise
 
 # Only use post in production to avoid caching issues in fastly,
 #   but can include GET in dev for testing.
