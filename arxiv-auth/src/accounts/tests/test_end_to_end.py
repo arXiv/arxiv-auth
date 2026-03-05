@@ -264,6 +264,31 @@ class TestLoginLogoutRoutes(TestCase):
         assert response.status_code == status.HTTP_303_SEE_OTHER
         assert response.headers['Location'] == next_page
 
+        next_page = 'https://somesubdomain.arxiv.org/some_sort_of_next_page?blt=yes%20please'
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.status_code == status.HTTP_303_SEE_OTHER
+        assert response.headers['Location'] == next_page, "/login should fowrward to arxiv subdomains"
+
+        next_page = '/some_relative_page'
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.status_code == status.HTTP_303_SEE_OTHER
+        assert response.headers['Location'].endswith(next_page), "/login should fowrward to relative pages"
+
+        next_page = 'https://scammy.example.com/whereisit?cheese=idontknow'
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.headers['Location'] != next_page, "/login should not forward to scammmy URLs"
+        assert response.headers['Location'] == self.app.config['DEFAULT_LOGIN_REDIRECT_URL']
+
+        next_page = '/whereisit?' + ','.join(30 * 'cheese=idontknow')
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.headers['Location'] != next_page, "/login should not forward to super long URL"
+        assert response.headers['Location'] == self.app.config['DEFAULT_LOGIN_REDIRECT_URL']
+
+        next_page = 'https://arxiv.org/whereisit?' + ','.join(30 * 'cheese=idontknow')
+        response = client.get('/login?next_page=' + quote_plus(next_page))
+        assert response.headers['Location'] != next_page, "/login should not forward to super long URL"
+        assert response.headers['Location'] == self.app.config['DEFAULT_LOGIN_REDIRECT_URL']
+
     def test_post_login_baddata(self):
         """POST request to /login with invalid data returns 400."""
         form_data = {'username': 'foouser', 'password': 'notthepassword'}
@@ -434,3 +459,22 @@ class TestLoginLogoutRoutes(TestCase):
     #     client = self.app.test_client()
     #     response = client.post('/login', data=form_data)
     #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+    def test_post_login_with_next_page_implicit_protocol(self):
+        """POST request to /login with valid form data but bad next_page."""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+        form_data = {'username': 'foouser', 'password': 'thepassword'}
+        bad_next_page = '//bbc.co.uk'
+        response = client.post(f'/login?next_page={bad_next_page}', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+        assert bad_next_page not in response.headers['Location'] #  redirect should NOT point at value of `bad_next_page` param
+        assert "bbc" not in response.headers['Location'] #  redirect should NOT point at value of `bad_next_page` param
+
+        # Now client should be logged in
+        bad_next_page = '//bbc.co.uk'  # implied protocol, gets a https: added by client browser on redirect
+        response = client.post(f'/login?next_page={bad_next_page}', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+        assert bad_next_page not in response.headers['Location'] #  redirect should NOT point at value of `bad_next_page` param
+        assert "bbc" not in response.headers['Location']

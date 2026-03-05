@@ -32,6 +32,7 @@ from arxiv_auth.legacy.authenticate import authenticate
 from arxiv_auth.legacy.util import transaction
 
 from accounts import config
+from accounts.next_page import good_next_page
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +135,7 @@ def login(method: str, form_data: MultiDict, ip: str,
             'classic_cookie': (c_cookie, c_session.expires)
         }
     })
-    next_page = next_page if good_next_page(next_page) else config.DEFAULT_LOGIN_REDIRECT_URL
+    next_page = good_next_page(next_page)
     return data, status.HTTP_303_SEE_OTHER, {'Location': next_page}
 
 
@@ -215,9 +216,3 @@ def _do_login(auths: Authorizations, ip: str, tracking_cookie: str,
 def _do_logout(classic_session_cookie: str) -> None:
     with transaction():
         legacy_sessions.invalidate(classic_session_cookie)
-
-
-def good_next_page(next_page: str) -> bool:
-    """True if next_page is a valid query parameter for use with the login page."""
-    return next_page == config.DEFAULT_LOGIN_REDIRECT_URL \
-        or re.search(_login_redirect_pattern, next_page)

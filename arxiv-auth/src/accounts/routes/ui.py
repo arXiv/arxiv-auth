@@ -6,8 +6,8 @@ from functools import wraps
 from pytz import timezone, UTC
 import logging
 
-from flask import Blueprint, render_template, url_for, request, \
-    make_response, redirect, current_app, send_file, Response
+from flask import Blueprint, render_template, request, \
+    make_response, redirect, current_app, Response
 
 from arxiv import status
 from arxiv_auth import domain
@@ -19,12 +19,12 @@ import jwt
 import os
 import uuid
 from arxiv_auth.auth.sessions.store import _generate_nonce
-from arxiv_auth.auth.tokens import decode
-from arxiv_auth.domain import Session as JWTSession
 from arxiv_auth.legacy.cookies import pack, unpack
 from arxiv_auth.legacy.models import db, DBSession, DBUserNickname, DBUser
 from arxiv_auth.legacy.models import TapirAdminAudit
-from arxiv_auth.legacy.util import compute_capabilities, epoch, get_session_duration, now
+from arxiv_auth.legacy.util import compute_capabilities, now
+from accounts.next_page import good_next_page
+
 DEBUG=0
 
 
@@ -34,18 +34,13 @@ logger = logging.getLogger(__name__)
 blueprint = Blueprint('ui', __name__, url_prefix='')
 
 
-def user_is_owner(session: domain.Session, user_id: str, **kw: Any) -> bool:
-    """Determine whether the authenticated user matches the requested user."""
-    return bool(session.user.user_id == user_id)
-
 
 def anonymous_only(func: Callable) -> Callable:
     """Redirect logged-in users to their profile."""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if request.auth:
-            next_page = request.args.get('next_page',
-                                         current_app.config['DEFAULT_LOGIN_REDIRECT_URL'])
+            next_page = good_next_page(request.args.get('next_page',None))
             return make_response(redirect(next_page, code=status.HTTP_303_SEE_OTHER))
         else:
             return func(*args, **kwargs)
@@ -83,7 +78,7 @@ def set_cookies(response: Response, data: dict) -> None:
 #   as this other code should be enough to clear it first:
 #     accounts/accounts/controllers/authentication.py:190
 def unset_masquerade_cookie(response: Response) -> None:
-    cookie_name = current_app.config[f'MASQUERADE_COOKIE_NAME']
+    cookie_name = current_app.config['MASQUERADE_COOKIE_NAME']
     response.set_cookie(key=cookie_name, value='', max_age=0, httponly=True)
 
 # This is unlikely to be useful once the classic submission UI is disabled.
@@ -134,29 +129,21 @@ def apply_response_headers(response: Response) -> Response:
 def login() -> Response:
     """User can log in with username and password, or permanent token."""
     ip_address = request.remote_addr
-    form_data = request.form
-    default_next_page = current_app.config['DEFAULT_LOGIN_REDIRECT_URL']
-    next_page = request.args.get('next_page', default_next_page)
+    next_page = good_next_page(request.args.get('next_page', ''))
     logger.debug('Request to log in, then redirect to %s', next_page)
-    data, code, headers = authentication.login(request.method,
-                                               form_data, ip_address,
-                                               next_page)
-    data.update({'pagetitle': 'Log in to arXiv'})
-    # Flask puts cookie-setting methods on the response, so we do that here
-    # instead of in the controller.
+    data, code, headers = authentication.login(request.method, request.form,
+                                               ip_address, next_page)
+    # Flask cookie-setting methods are on response, do here instead of in controller
     if code is status.HTTP_303_SEE_OTHER:
-        # Set the session cookie.
         response = make_response(redirect(headers.get('Location'), code=code))
         set_cookies(response, data)
-        unset_submission_cookie(response)    # Fix for ARXIVNG-1149.
+        unset_submission_cookie(response)    # Fix for ARXIVNG-1149
         return response
 
-    # Form is invalid, or login failed.
-    response = Response(
-        render_template("accounts/login.html", **data),
-        status=code
-    )
-    return response
+    # User wants login form, formdata invalid, or login failed
+    data.update({'pagetitle': 'Log in to arXiv'})
+    return Response(render_template("accounts/login.html", **data), status=code)
+
 
 @blueprint.route('/logout', methods=['GET'])
 def logout() -> Response:
