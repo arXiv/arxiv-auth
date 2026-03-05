@@ -151,22 +151,21 @@ def logout() -> Response:
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_key, None)
     classic_cookie = request.cookies.get(classic_cookie_key, None)
-    next_page = good_next_page(request.args.get('next_page', ''))
-    logger.debug('Request to log out, then redirect to %s', next_page)
+    safe_page = good_next_page(request.args.get('next_page', ''))
+    logger.debug('Request to log out, then redirect to %s', safe_page)
     data, code, headers = authentication.logout(session_cookie, classic_cookie,
-                                                next_page)
+                                                safe_page)
     # Flask puts cookie-setting methods on the response, so we do that here
     # instead of in the controller.
     if code is status.HTTP_303_SEE_OTHER:
         logger.debug('Redirecting to %s: %i', headers.get('Location'), code)
-        response = make_response(redirect(headers.get('Location'), code=code))
+        response = make_response(redirect(safe_page, code=code))
         set_cookies(response, data)
-        unset_submission_cookie(response)    # Fix for ARXIVNG-1149.
-        # Partial fix for ARXIVNG-1653, ARXIVNG-1644
-        unset_permanent_cookie(response)
+        unset_submission_cookie(response)  # Fix for ARXIVNG-1149.
+        unset_permanent_cookie(response)  # Partial fix for ARXIVNG-1653, ARXIVNG-1644
         unset_masquerade_cookie(response)
         return response
-    return redirect(next_page, code=status.HTTP_302_FOUND)
+    return redirect(safe_page, code=status.HTTP_302_FOUND)
 
 
 @blueprint.route('/auth_status', methods=['GET'])
