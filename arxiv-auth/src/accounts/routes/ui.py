@@ -128,13 +128,13 @@ def apply_response_headers(response: Response) -> Response:
 def login() -> Response:
     """User can log in with username and password, or permanent token."""
     ip_address = request.remote_addr
-    next_page = good_next_page(request.args.get('next_page', ''))
-    logger.debug('Request to log in, then redirect to %s', next_page)
+    safe_page = good_next_page(request.args.get('next_page', ''))
+    logger.debug('Request to log in, then redirect to %s', safe_page)
     data, code, headers = authentication.login(request.method, request.form,
-                                               ip_address, next_page)
+                                               ip_address, safe_page)
     # Flask cookie-setting methods are on response, do here instead of in controller
     if code is status.HTTP_303_SEE_OTHER:
-        response = make_response(redirect(headers.get('Location'), code=code))
+        response = make_response(redirect(safe_page, code=code))
         set_cookies(response, data)
         unset_submission_cookie(response)    # Fix for ARXIVNG-1149
         return response
