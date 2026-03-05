@@ -2,7 +2,6 @@
 
 from unittest import TestCase
 from datetime import datetime
-from arxiv_auth.domain import Session
 from pytz import timezone
 from ..auth import scopes
 from .. import domain

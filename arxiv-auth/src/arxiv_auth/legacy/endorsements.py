@@ -11,7 +11,7 @@ relevant policies can be found on the `arXiv help pages
 <https://arxiv.org/help/endorsement>`_.
 """
 
-from typing import List, Dict, Optional, Callable, Set, Iterable
+from typing import List, Dict, Optional, Set
 from collections import Counter
 from datetime import datetime
 from functools import lru_cache as memoize

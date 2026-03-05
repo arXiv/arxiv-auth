@@ -16,11 +16,7 @@ from arxiv_auth.legacy import util, models
 from accounts.factory import create_web_app
 
 
-import urllib
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
-import string
 
 
 EASTERN = timezone('US/Eastern')

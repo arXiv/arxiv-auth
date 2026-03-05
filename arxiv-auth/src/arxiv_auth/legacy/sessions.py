@@ -1,30 +1,21 @@
 """Provides API for legacy user sessions."""
 
-import ipaddress
-import json
 from datetime import datetime, timedelta
 from pytz import timezone, UTC
-import hashlib
-from base64 import b64encode, b64decode
 import logging
 
-from typing import Optional, Generator, Tuple, List
+from typing import Optional, Tuple
 
-from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm.session import Session
 
 from .. import domain
 from .models import db
 from . import cookies, util
 
-from .models import DBSession, DBSessionsAudit, DBUser, DBEndorsement, \
-    DBUserNickname, DBProfile
+from .models import DBSession, DBSessionsAudit, DBUser, DBUserNickname, DBProfile
 from .exceptions import UnknownSession, SessionCreationFailed, \
-    SessionDeletionFailed, SessionExpired, InvalidCookie, Unavailable
+    SessionExpired, InvalidCookie, Unavailable
 from .endorsements import get_endorsements
 
 logger = logging.getLogger(__name__)
@@ -250,4 +241,4 @@ def invalidate_by_id(session_id: str) -> None:
     except NoResultFound as e:
         raise UnknownSession(f'No such session {session_id}') from e
     except SQLAlchemyError as e:
-        raise IOError(f'Database error') from e
+        raise IOError('Database error') from e

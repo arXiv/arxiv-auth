@@ -1,8 +1,7 @@
 """Helpers and utilities for :mod:`arxiv.users`."""
 
-import os
 from typing import List
-from pytz import timezone, UTC
+from pytz import timezone
 import uuid
 from datetime import timedelta, datetime
 from . import auth, domain

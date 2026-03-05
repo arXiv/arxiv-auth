@@ -3,15 +3,11 @@
 import pytest
 from datetime import datetime
 from pytz import timezone, UTC
-import json
 
-from flask import Flask, Blueprint
-from flask import request, current_app
+from flask import request
 from werkzeug.exceptions import Unauthorized, Forbidden
 
-from arxiv.base.middleware import wrap
-from arxiv import status
-from .. import tokens, scopes, decorators
+from .. import scopes, decorators
 from ... import domain
 
 EASTERN = timezone('US/Eastern')

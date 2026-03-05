@@ -1,7 +1,6 @@
 """Provides tools for working with authenticated user/client sessions."""
 
 from typing import Optional, Union, Any, List
-import warnings
 import os
 
 from flask import Flask, request, Response
@@ -13,7 +12,7 @@ from .. import domain, legacy
 
 import logging
 
-from . import decorators
+from . import decorators # noqa: F401
 
 logger = logging.getLogger(__name__)
 

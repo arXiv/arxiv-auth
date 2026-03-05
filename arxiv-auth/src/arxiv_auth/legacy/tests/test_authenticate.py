@@ -1,6 +1,6 @@
 """Tests for :mod:`accounts.services.user_data`."""
 
-from unittest import TestCase, mock
+from unittest import TestCase
 from datetime import datetime
 from pytz import timezone, UTC
 import tempfile
@@ -8,7 +8,6 @@ import shutil
 import hashlib
 
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError, OperationalError
 
 
 from .. import authenticate, exceptions, models, util

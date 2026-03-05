@@ -1,15 +1,12 @@
 """Tests for :mod:`arxiv.users.legacy.endorsements` using a live test DB."""
 
-import os
-from unittest import TestCase, mock
-from datetime import datetime
+from unittest import TestCase
 from arxiv.taxonomy.definitions import ARCHIVES_ACTIVE, CATEGORIES_ACTIVE
-from pytz import timezone, UTC
+from pytz import timezone
 
 from flask import Flask
 from mimesis import Person, Internet, Datetime
 
-from arxiv import taxonomy
 from .. import endorsements, util, models
 from ... import domain
 

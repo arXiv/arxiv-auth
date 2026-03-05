@@ -1,6 +1,5 @@
 """Tests for :class:`arxiv.users.auth.Auth`."""
 from logging import DEBUG
-from flask.globals import current_app
 import pytest
 
 from datetime import datetime

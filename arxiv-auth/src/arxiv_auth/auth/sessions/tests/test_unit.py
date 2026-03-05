@@ -1,7 +1,6 @@
 """Tests for :mod:`arxiv.users.auth.sessions.store`."""
 
 from unittest import TestCase, mock
-import time
 import jwt
 import json
 from datetime import datetime, timedelta

@@ -1,22 +1,15 @@
 """Provide methods for working with user accounts."""
 
-from typing import Optional, Generator, Tuple, Any
-import hashlib
-from base64 import b64encode, b64decode
-from contextlib import contextmanager
-from datetime import datetime
-import secrets
+from typing import Optional, Tuple, Any
 import logging
 
-from sqlalchemy.exc import SQLAlchemyError, OperationalError
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import OperationalError
 
 from .. import domain
 from . import util, endorsements, exceptions, models
 from .passwords import hash_password
 from .exceptions import Unavailable
-from .models import DBUser, DBUserPassword, DBPermanentToken, \
-    DBUserNickname, DBProfile, DBPolicyClass, db
+from .models import DBUser, DBUserPassword, DBUserNickname, DBProfile, DBPolicyClass, db
 
 
 logger = logging.getLogger(__name__)

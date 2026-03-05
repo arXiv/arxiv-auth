@@ -1,18 +1,12 @@
 """Provide an API for user authentication using the legacy database."""
 
-from typing import Optional, Generator, Tuple
-import hashlib
-from base64 import b64encode, b64decode
-from contextlib import contextmanager
-from datetime import datetime
+from typing import Optional, Tuple
 import logging
 
-from sqlalchemy.exc import SQLAlchemyError, OperationalError
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import OperationalError
 
 from . import util, endorsements
 from .. import domain
-from ..auth import scopes
 
 from . passwords import check_password, is_ascii
 from .models import DBUser, DBUserPassword, DBPermanentToken, \
@@ -263,7 +257,7 @@ def _get_passdata(tapir_user: DBUser) -> PassData:
         .filter(DBUserPassword.user_id == tapir_user.user_id) \
         .first()
     if not tapir_password:
-        raise RuntimeError(f'Missing password')
+        raise RuntimeError('Missing password')
 
     tapir_profile: DBProfile = db.session.query(DBProfile) \
         .filter(DBProfile.user_id == tapir_user.user_id) \

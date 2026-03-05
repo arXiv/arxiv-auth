@@ -1,6 +1,5 @@
 """Tests for legacy_users service."""
 import time
-from typing import Optional
 from unittest import mock, TestCase
 from datetime import datetime
 from pytz import timezone, UTC

@@ -1,13 +1,13 @@
 """Test :mod:`arxiv.users.auth.middleware`."""
 
 import os
-from unittest import TestCase, mock
+from unittest import TestCase
 from datetime import datetime
 from pytz import timezone, UTC
 import json
 
 from flask import Flask, Blueprint
-from flask import request, current_app
+from flask import request
 
 from arxiv.base.middleware import wrap
 from arxiv import status

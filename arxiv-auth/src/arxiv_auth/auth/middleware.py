@@ -34,8 +34,7 @@ For convenience, this is intended to be used with
 """
 
 import os
-from typing import Callable, Iterable, Tuple
-import jwt
+from typing import Callable, Tuple
 import logging
 
 from werkzeug.exceptions import Unauthorized, InternalServerError
@@ -43,7 +42,7 @@ from werkzeug.exceptions import Unauthorized, InternalServerError
 from arxiv.base.middleware import BaseMiddleware
 
 from . import tokens
-from .exceptions import InvalidToken, ConfigurationError, MissingToken
+from .exceptions import InvalidToken, ConfigurationError
 from .. import domain
 
 logger = logging.getLogger(__name__)
@@ -94,7 +93,7 @@ class AuthMiddleware(BaseMiddleware):
 
             # Attach the encrypted token so that we can use it in subrequests.
             environ['token'] = token
-        except InvalidToken as e:   # Let the application decide what to do.
+        except InvalidToken:   # Let the application decide what to do.
             logger.debug(f'Auth token not valid: {token}')
             exception = Unauthorized('Invalid auth token')
             environ['auth'] = exception

@@ -8,7 +8,7 @@ from pytz import UTC
 from unittest import TestCase
 from sqlalchemy import select
 
-from .. import models, util, authenticate, exceptions
+from .. import models, util, exceptions
 from .. import accounts
 from .util import temporary_db
 from ... import domain

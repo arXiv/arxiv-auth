@@ -9,4 +9,4 @@ See :mod:`.store`.
 
 """
 
-from .store import SessionStore
+from .store import SessionStore # noqa: F401

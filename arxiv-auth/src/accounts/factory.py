@@ -4,10 +4,8 @@ from flask import Flask
 from flask_s3 import FlaskS3
 
 from arxiv.base import Base
-from arxiv.base.middleware import wrap
 
 from arxiv_auth import auth
-from arxiv_auth.auth.middleware import AuthMiddleware
 
 from accounts.routes import ui
 

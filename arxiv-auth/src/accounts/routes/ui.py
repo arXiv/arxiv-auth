@@ -10,7 +10,6 @@ from flask import Blueprint, render_template, request, \
     make_response, redirect, current_app, Response
 
 from arxiv import status
-from arxiv_auth import domain
 
 from accounts.controllers import authentication
 
@@ -152,8 +151,7 @@ def logout() -> Response:
     classic_cookie_key = current_app.config['CLASSIC_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_key, None)
     classic_cookie = request.cookies.get(classic_cookie_key, None)
-    default_next_page = current_app.config['DEFAULT_LOGOUT_REDIRECT_URL']
-    next_page = request.args.get('next_page', default_next_page)
+    next_page = good_next_page(request.args.get('next_page', ''))
     logger.debug('Request to log out, then redirect to %s', next_page)
     data, code, headers = authentication.logout(session_cookie, classic_cookie,
                                                 next_page)
@@ -236,7 +234,6 @@ def become_user_become_user_id() -> Response:
         print("BU-DEBUG: ip_address", ip_address)
 
     valid_user = False
-    jwt_session = None
     if session_cookie:
 
         data = jwt.decode(session_cookie, secret, algorithms=["HS256"])
@@ -353,7 +350,7 @@ def become_user_become_user_id() -> Response:
             print("BU-DEBUG: become_jwt", become_jwt)
 
         next_page = "https://check.dev.arxiv.org/"
-        data: Dict[str, Any] = {
+        data: dict[str, Any] = {
             'next_page': next_page,
             'admin_user': admin_user,
             'become_user': become_user,
@@ -374,7 +371,7 @@ def become_user_become_user_id() -> Response:
         if DEBUG:
             print("BU-DEBUG: become_session_cookie", become_session_cookie)
 
-        data: Dict[str, Any] = {
+        data: dict[str, Any] = {
             'cookies': {
                 'AUTH_SESSION_COOKIE': (become_jwt, 3600),
                 'CLASSIC_COOKIE': (become_session_cookie, 3600),

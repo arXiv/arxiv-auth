@@ -1,8 +1,7 @@
 """Tests for :mod:`.helpers`."""
 
-from unittest import TestCase, mock
+from unittest import TestCase
 import os
-import logging
 
 from flask import Flask
 
