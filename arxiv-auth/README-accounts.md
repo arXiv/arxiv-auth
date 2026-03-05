@@ -9,8 +9,17 @@ cd arxiv-auth/arxiv-auth
 uv sync
 source .venv/bin/activate
 pytest
-JWT_SECRET=12345 REDIS_FAKE=1 CLASSIC_DATABASE_URI=sqlite:///my.db CREATE_DB=1 python main.py
+BASE_SERVER=localhost:5000 JWT_SECRET=12345 REDIS_FAKE=1 CLASSIC_DATABASE_URI=sqlite:///my.db CREATE_DB=1 python main.py
 google-chrome http://localhost:5000/login
+```
+
+## Deploy for dev
+To get links that to to the dev servers, make sure to set
+
+```
+BASE_SERVER=dev.arxiv.org
+HELP_SERVER=info.dev.arxiv.org
+MAIN_SERVER=dev.arxiv.org
 ```
 
 ## Local development + manual testing

@@ -1,0 +1,107 @@
+name: Build arxiv-auth Login App
+run-name: "Build Login App ${{ github.ref_name }} ${{ inputs.custom_sha || github.sha }}"
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "RELEASE-*"
+    paths:
+      - "arxiv-auth/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "arxiv-auth/**"
+  workflow_dispatch:
+    inputs:
+      custom_sha:
+        description: 'Custom SHA (image rebuilds only)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  actions: write
+  pull-requests: write
+
+env:
+  DEPLOY_WORKFLOW: "deploy-login-app.yml"
+  GCP_PROJECT_ID: "arxiv-development"
+  IMAGE_NAME: "login-app"
+
+jobs:
+  terraform-format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Check version
+        run: terraform --version
+
+      - name: Format check
+        run: terraform fmt -check terraform/api_server
+
+  build-push:
+    needs: terraform-format-check
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: build-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.custom_sha || github.sha }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
+          service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker with GCP auth
+        run: gcloud auth configure-docker
+
+      - name: Build image, caching from latest
+        run: |
+          BRANCH_TAG="$(printf "%.128s" "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" | sed 's/^[.-]*//')"
+          docker build \
+            --build-arg GIT_COMMIT=${{ inputs.custom_sha || github.sha }}
+            --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
+            -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ inputs.custom_sha || github.sha }} \
+            -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${BRANCH_TAG} \
+            ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', env.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} \
+            -f Dockerfile .
+
+      - name: Push image to GCR
+        run: docker push --all-tags gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}
+
+  development:
+    needs: build-push
+    uses: ./.github/workflows/deploy-login-app.yml
+    if: ${{ github.event_name != 'workflow_dispatch' && (github.base_ref == 'main' || github.ref_name == 'main') }}
+    with:
+      env: development
+      image_tag: ${{ github.sha }}
+      image_name: ${{ env.IMAGE_NAME }}
+
+  # staging:
+  #   needs: build-push
+  #   uses: ./.github/workflows/deploy-api.yml
+  #   if: ${{ startsWith(github.ref, 'refs/tags/RELEASE-') }}
+  #   with:
+  #     env: staging
+  #     image_tag: ${{ github.sha }}
+  #     image_name: ${{ env.IMAGE_NAME }}

@@ -2,7 +2,7 @@
 
 FROM python:3.11.8-bookworm AS builder
 
-ARG git_commit
+ARG GIT_COMMIT
 
 ENV PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
