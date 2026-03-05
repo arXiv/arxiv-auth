@@ -24,7 +24,7 @@ class TestGenerateToken(TestCase):
                                        scope=scope)
 
         app = Flask('test')
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         app.config['CLASSIC_SESSION_HASH'] = 'foohash'
         app.config['CLASSIC_COOKIE_NAME'] = 'tapir_session_cookie'
         app.config['SESSION_DURATION'] = '36000'
@@ -33,7 +33,7 @@ class TestGenerateToken(TestCase):
         app.config.update({
             'JWT_SECRET': 'thesecret',
             'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-            'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.db'
+            'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:'
         })
         Base(app)
         auth.Auth(app)
