@@ -17,13 +17,13 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install the dependenices
-        run: uv sync --directory arxiv_auth --locked --all-extras --dev
+        run: uv sync --directory arxiv-auth --locked --all-extras --dev
 
       - name: Test with pytest
         run: |
-          uv run --directory arxiv_auth pytest --cov=browse --cov-fail-under=80 tests
+          uv run --directory arxiv-auth pytest --cov=browse --cov-fail-under=80 tests
 
       - name: Ruff lint check
         run: |
-          uv pip --directory arxiv_auth install ruff
-          uv run --directory arxiv_auth ruff check --output-format=github browse
+          uv pip --directory arxiv-auth install ruff
+          uv run --directory arxiv-auth ruff check --output-format=github browse
