@@ -33,7 +33,7 @@ class TestGenerateToken(TestCase):
         app.config.update({
             'JWT_SECRET': 'thesecret',
             'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-            'SQLALCHEMY_DATABASE_URI': 'sqlite:///'
+            'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.db'
         })
         Base(app)
         auth.Auth(app)
