@@ -21,7 +21,7 @@ jobs:
 
       - name: Test with pytest
         run: |
-          uv run --directory arxiv-auth pytest --cov=browse --cov-fail-under=80 src
+          uv run --directory arxiv-auth pytest --cov=arxiv_auth --cov=accounts --cov-fail-under=80 src
 
       - name: Ruff lint check
         run: |
