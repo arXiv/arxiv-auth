@@ -58,8 +58,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
-          service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME_SECRET }}
+          service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT_SECRET }}
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
