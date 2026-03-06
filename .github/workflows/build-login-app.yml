@@ -1,5 +1,5 @@
 name: Build arxiv-auth Login App
-run-name: "Build Login App ${{ github.ref_name }} ${{ inputs.custom_sha || github.sha }}"
+run-name: "Build Login App ${{ github.ref_name }} ${{ github.sha }}"
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
       - develop
     paths:
       - "arxiv-auth/**"
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - "arxiv-auth/**"
   workflow_dispatch:
-    inputs:
-      custom_sha:
-        description: 'Custom SHA (image rebuilds only)'
-        required: false
-        type: string
 
 permissions:
   contents: read
@@ -53,7 +53,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.custom_sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
@@ -71,9 +71,9 @@ jobs:
         run: |
           BRANCH_TAG="$(printf "%.128s" "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" | sed 's/^[.-]*//')"
           docker build \
-            --build-arg GIT_COMMIT=${{ inputs.custom_sha || github.sha }} \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
             --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
-            -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ inputs.custom_sha || github.sha }} \
+            -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${BRANCH_TAG} \
             #${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', env.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} \
             -f Dockerfile .
@@ -81,13 +81,13 @@ jobs:
       - name: Push image to GCR
         run: docker push --all-tags gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}
 
-  development:
-    needs: build-push
-    uses: ./.github/workflows/deploy-login-app.yml
-    if: ${{ github.event_name != 'workflow_dispatch' && github.ref_name == 'develop' }}
-    with:
-      env: development
-      image_tag: ${{ github.sha }}
+  # development:
+  #   needs: build-push
+  #   uses: ./.github/workflows/deploy-login-app.yml
+  #   if: ${{ github.event_name != 'workflow_dispatch' && github.ref_name == 'develop' }}
+  #   with:
+  #     env: development
+  #     image_tag: ${{ github.sha }}
 
   # staging:
   #   needs: build-push
