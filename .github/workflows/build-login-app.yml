@@ -88,7 +88,6 @@ jobs:
     with:
       env: development
       image_tag: ${{ github.sha }}
-      image_name: ${{ env.IMAGE_NAME }}
 
   # staging:
   #   needs: build-push
