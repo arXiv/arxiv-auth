@@ -33,7 +33,7 @@ resource "google_cloud_run_service_iam_binding" "default" {
 ### service account ###
 
 resource "google_service_account" "account" {
-  account_id = "login-app"
+  account_id  = "login-app"
   description = "Service account to deploy login app cloud run instance"
 }
 
@@ -127,20 +127,20 @@ resource "google_cloud_run_v2_service" "login-app" {
         value = var.env
       }
       env {
-        name = "REDIS_FAKE"
+        name  = "REDIS_FAKE"
         value = 1
       }
 
       env {
-        name = "BASE_SERVER"
+        name  = "BASE_SERVER"
         value = var.BASE_SERVER
       }
       env {
-        name = "MAIN_SERVER"
+        name  = "MAIN_SERVER"
         value = var.MAIN_SERVER
       }
       env {
-        name = "HELP_SERVER"
+        name  = "HELP_SERVER"
         value = var.HELP_SERVER
       }
 
