@@ -19,7 +19,7 @@ mypy = "^0.931"
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.0"
 mypy = "^0.931"
-requests = "^2.28"
+requests = "^2.32"
 pytest-asyncio = "^0.18.1"
 pytest-mock = "^3.7.0"
 asynctest = "^0.13.0"
