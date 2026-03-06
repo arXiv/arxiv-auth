@@ -10,17 +10,11 @@ on:
         description: "Environment"
         required: true
         type: string
-        default: ""
       image_tag:
         description: "Docker image tag (latest or the commit SHA)"
         required: false
         type: string
         default: "latest"
-      image_name:
-        description: "Docker image name"
-        required: false
-        type: string
-        default: "login-app"
 
   workflow_dispatch:
     inputs:
@@ -34,11 +28,6 @@ on:
         required: false
         type: string
         default: "latest"
-      image_name:
-        description: "Docker image name"
-        required: false
-        type: string
-        default: "login-app"
 
 permissions:
   contents: read
@@ -47,6 +36,7 @@ permissions:
 
 env:
   PORT: "8000"
+  image_name: "login-app"
 
 jobs:
   format-check:
@@ -94,10 +84,9 @@ jobs:
         run: terraform --version
 
       - name: Set environment variables
-        description: Setup which command line args for tf for tfvars file to use and the GCR image
         run: |
           TERRAFORM_ARGS="-var-file=\"envs/${{ vars.ENV_VAR }}.tfvars\" \
-            -var=\"image_path=gcr.io/arxiv-development/${{inputs.image_name}}:${{inputs.image_tag}}\""
+            -var=\"image_path=gcr.io/arxiv-development/${{env.image_name}}:${{inputs.image_tag}}\""
 
           echo "TERRAFORM_ARGS=$TERRAFORM_ARGS" >> $GITHUB_ENV
         working-directory: terraform
