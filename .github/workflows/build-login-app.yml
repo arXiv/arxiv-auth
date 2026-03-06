@@ -4,14 +4,7 @@ run-name: "Build Login App ${{ github.ref_name }} ${{ inputs.custom_sha || githu
 on:
   push:
     branches:
-      - main
-    tags:
-      - "RELEASE-*"
-    paths:
-      - "arxiv-auth/**"
-  pull_request:
-    branches:
-      - main
+      - develop
     paths:
       - "arxiv-auth/**"
   workflow_dispatch:
@@ -82,7 +75,7 @@ jobs:
             --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
             -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ inputs.custom_sha || github.sha }} \
             -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${BRANCH_TAG} \
-            ${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', env.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} \
+            #${{ github.ref_name == 'main' && format('-t gcr.io/{0}/{1}:latest', env.GCP_PROJECT_ID, env.IMAGE_NAME) || '' }} \
             -f Dockerfile .
 
       - name: Push image to GCR
@@ -91,7 +84,7 @@ jobs:
   development:
     needs: build-push
     uses: ./.github/workflows/deploy-login-app.yml
-    if: ${{ github.event_name != 'workflow_dispatch' && (github.base_ref == 'main' || github.ref_name == 'main') }}
+    if: ${{ github.event_name != 'workflow_dispatch' && github.ref_name == 'develop' }}
     with:
       env: development
       image_tag: ${{ github.sha }}
