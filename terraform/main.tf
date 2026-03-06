@@ -6,9 +6,6 @@ terraform {
       version = "~> 7.2"
     }
   }
-  backend "gcs" {
-    prefix = "activity-dashboard-api"
-  }
 }
 
 provider "google" {
@@ -94,8 +91,8 @@ resource "google_project_iam_member" "service_account_user" {
 
 ### cloud run instance ###
 
-resource "google_cloud_run_v2_service" "login_app" {
-  name     = "login_app"
+resource "google_cloud_run_v2_service" "login-app" {
+  name     = "login-app"
   location = var.gcp_region
 
   deletion_protection = false
@@ -136,15 +133,15 @@ resource "google_cloud_run_v2_service" "login_app" {
 
       env {
         name = "BASE_SERVER"
-        value = var.base_server
+        value = var.BASE_SERVER
       }
       env {
         name = "MAIN_SERVER"
-        value = var.main_server
+        value = var.MAIN_SERVER
       }
       env {
         name = "HELP_SERVER"
-        value = var.help_server
+        value = var.HELP_SERVER
       }
 
       env {

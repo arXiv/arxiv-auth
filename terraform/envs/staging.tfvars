@@ -1,6 +1,0 @@
-gcp_project_id = "arxiv-staging"
-gcp_region     = "us-central1"
-env            = "DEV"
-BASE_SERVER="stage.arxiv.org"
-HELP_SERVER="info.stage.arxiv.org"
-MAIN_SERVER="stage.arxiv.org"

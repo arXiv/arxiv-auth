@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up terraform
         uses: hashicorp/setup-terraform@v3
@@ -46,7 +46,7 @@ jobs:
         run: terraform --version
 
       - name: Format check
-        run: terraform fmt -check terraform/api_server
+        run: terraform fmt -check terraform
 
   build-push:
     needs: terraform-format-check
@@ -78,7 +78,7 @@ jobs:
         run: |
           BRANCH_TAG="$(printf "%.128s" "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" | sed 's/^[.-]*//')"
           docker build \
-            --build-arg GIT_COMMIT=${{ inputs.custom_sha || github.sha }}
+            --build-arg GIT_COMMIT=${{ inputs.custom_sha || github.sha }} \
             --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
             -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ inputs.custom_sha || github.sha }} \
             -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${BRANCH_TAG} \

@@ -338,7 +338,7 @@ def become_user_become_user_id() -> Response:
         if DEBUG:
             print("BU-DEBUG: become_jwt", become_jwt)
 
-        next_page = "https://check.dev.arxiv.org/"
+        next_page = f"https://check.{current_app.config['BASE_SERVER']}/"
         data: dict[str, Any] = {
             'next_page': next_page,
             'admin_user': admin_user,
