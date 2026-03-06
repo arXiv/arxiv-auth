@@ -69,6 +69,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create GitHub Deployment
+        uses: chrnorm/deployment-action@v2
+        id: deployment
+        with:
+          token: ${{ github.token }}
+          environment: ${{ inputs.env }}
+          initial-status: "in_progress"
+
       - name: Authenticate with target project workload identity
         uses: google-github-actions/auth@v3
         with:
@@ -119,3 +127,19 @@ jobs:
       #       --image gcr.io/arxiv-development/${{inputs.image_name}}:${{inputs.image_tag}} \
       #       --region us-central1 \
       #       --port ${{ env.PORT }}
+
+      - name: Update Deployment Status (Success)
+        if: success()
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: "success"
+
+      - name: Update Deployment Status (Failure)
+        if: failure()
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: "failure"
