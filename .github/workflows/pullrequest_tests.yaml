@@ -1,6 +1,9 @@
 name: Run Python Tests
 on:
-  pull_request
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
 
 jobs:
   build:
@@ -8,32 +11,19 @@ jobs:
     env:
       WITH_INTEGRATION: 1
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Python 3
-        uses: actions/setup-python@v1
-        with:
-          python-version: "3.10"
-      - name: Install pip and poetry
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install poetry
-      - name: Install and test arxiv-auth
-        working-directory: ./arxiv-auth
-        run: |
-          poetry install --with=dev
-          poetry run pytest --cov=arxiv_auth arxiv_auth
-      - name: Install and test accounts
-        working-directory: ./accounts
-        run: |
-          poetry install --with=dev
-          poetry run pytest --cov=accounts accounts
-      - name: linter
-        run: |
-          pip install pylint
-          ./tests/lint.sh arxiv-auth accounts
-      - name: style check
-        run: |
-          pip install pydocstyle
-          ./tests/style.sh arxiv-auth/arxiv_auth accounts/accounts
+      - uses: actions/checkout@v6
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
+      - name: Install the dependenices
+        run: uv sync --directory arxiv-auth --locked --all-extras --dev
+
+      - name: Test with pytest
+        run: |
+          uv run --directory arxiv-auth pytest --cov=arxiv_auth --cov=accounts --cov-fail-under=80 src
+
+      - name: Ruff lint check
+        run: |
+          uv pip --directory arxiv-auth install ruff
+          uv run --directory arxiv-auth ruff check --output-format=github src

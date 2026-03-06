@@ -21,3 +21,6 @@ starting in v0.4.1.
 
 ## 2023-04 Removed AUTH_UPDATED_SESSION_REF
 Auth obj is now always placed at ``request.auth``.
+
+## 2026-02 Phasing out use of this app
+This will be replaced with keycloak in the future. See the wombat project.
