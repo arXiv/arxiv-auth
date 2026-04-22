@@ -298,9 +298,11 @@ def become_user_become_user_id() -> Response:
                 admin_user = db.session.query(DBUser) \
                     .filter(DBUser.user_id == int(user_id)) \
                     .filter(DBUser.flag_edit_users == 1) \
+                    .filter(DBUser.flag_edit_system == 1) \
                     .filter(DBUser.flag_deleted == 0) \
                     .filter(DBUser.flag_banned == 0) \
                     .filter(DBUser.flag_approved == 1) \
+                    .filter(DBUser.flag_email_verified == 1) \
                     .first()
 
                 if DEBUG:
