@@ -25,12 +25,20 @@ from arxiv_auth.legacy.cookies import pack, unpack
 from arxiv_auth.legacy.models import db, DBSession, DBUserNickname, DBUser
 from arxiv_auth.legacy.models import TapirAdminAudit
 from arxiv_auth.legacy.util import compute_capabilities, epoch, get_session_duration, now
-DEBUG=0
 
 
 EASTERN = timezone('US/Eastern')
 
+# bdc34 not sure why auth doesn't log to error_log, write to specific file if needed
+# logging.basicConfig(filename="/opt_arxiv/e-prints/httpd/logs/arxiv-auth.log",
+#                     encoding="utf-8",
+#                     level=logging.DEBUG,
+#                     format='%(asctime)s - %(levelname)s - %(message)s',
+# )
+
 logger = logging.getLogger(__name__)
+
+
 blueprint = Blueprint('ui', __name__, url_prefix='')
 
 
@@ -234,85 +242,75 @@ def _checked_next_page(otherwise=None) -> str:
 #   but can include GET in dev for testing.
 @blueprint.route('/become_user', methods=['POST'])
 def become_user_become_user_id() -> Response:
-
     become_user_id = int(request.args.get('become_user_id'))
 
     classic_cookie_name = current_app.config['CLASSIC_COOKIE_NAME']
     classic_cookie = request.cookies.get(classic_cookie_name, None)
-    if DEBUG:
-        print("BU-DEBUG: classic_cookie", classic_cookie_name, classic_cookie)
+    logger.debug("BU: classic_cookie %s %s", classic_cookie_name, classic_cookie)
     classic_cookie_data = unpack(classic_cookie)
-    if DEBUG:
-        print("BU-DEBUG: classic_cookie_data", classic_cookie_data)
+    logger.debug("BU: classic_cookie_data %s", classic_cookie_data)
 
     permanent_cookie_name = current_app.config['CLASSIC_PERMANENT_COOKIE_NAME']
     permanent_cookie = request.cookies.get(permanent_cookie_name, None)
-    if DEBUG:
-        print("BU-DEBUG: permanent_cookie_name", permanent_cookie_name, permanent_cookie)
+    logger.debug("BU: permanent_cookie_name %s %s", permanent_cookie_name, permanent_cookie)
 
     session_cookie_name = current_app.config['AUTH_SESSION_COOKIE_NAME']
     session_cookie = request.cookies.get(session_cookie_name, None)
-    if DEBUG:
-        print("BU-DEBUG: session_cookie_name", session_cookie_name, session_cookie)
+    logger.debug("BU: session_cookie_name %s %s", session_cookie_name, session_cookie)
 
     session_cookie_domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
-    if DEBUG:
-        print("BU-DEBUG: session_cookie_domain", session_cookie_domain)
+    logger.debug("BU: session_cookie_domain %s", session_cookie_domain)
 
     session_cookie_secure = current_app.config['AUTH_SESSION_COOKIE_SECURE']
-    if DEBUG:
-        print("BU-DEBUG: session_cookie_secure", session_cookie_secure)
+    logger.debug("BU: session_cookie_secure %s", session_cookie_secure)
 
 
     submit_cookie_name = 'submit_session'
     submit_cookie = request.cookies.get(submit_cookie_name, None)
-    if DEBUG:
-        print("BU-DEBUG: submit_cookie", submit_cookie_name, submit_cookie)
+    logger.debug("BU: submit_cookie %s %s", submit_cookie_name, submit_cookie)
 
     tracking_cookie_name = os.environ.get('CLASSIC_TRACKING_COOKIE', 'browser')
     tracking_cookie = request.cookies.get(tracking_cookie_name, None)
-    if DEBUG:
-        print("BU-DEBUG: tracking_cookie", tracking_cookie_name, tracking_cookie)
+    logger.debug("BU: tracking_cookie %s %s", tracking_cookie_name, tracking_cookie)
 
     secret = os.environ.get('JWT_SECRET')
 
     ip_address = request.remote_addr
-    if DEBUG:
-        print("BU-DEBUG: ip_address", ip_address)
+    logger.debug("BU: ip_address %s", ip_address)
 
     valid_user = False
     jwt_session = None
     if session_cookie:
 
         data = jwt.decode(session_cookie, secret, algorithms=["HS256"])
-        if DEBUG:
-            print("BU-DEBUG: jwt decode session_cookie:", data)
+        logger.debug("BU: jwt decode session_cookie: %s", data)
 
         user_id = f"{ data.get('user_id') }"
         if user_id:
             user_id = int(user_id)
             if user_id > 0:
-                if DEBUG:
-                    print("BU-DEBUG: jwt user_id", user_id, type(user_id))
+                logger.debug("BU: jwt user_id '%s' of type %s", user_id, type(user_id))
 
                 admin_user = db.session.query(DBUser) \
                     .filter(DBUser.user_id == int(user_id)) \
                     .filter(DBUser.flag_edit_users == 1) \
+                    .filter(DBUser.flag_edit_system == 1) \
                     .filter(DBUser.flag_deleted == 0) \
                     .filter(DBUser.flag_banned == 0) \
                     .filter(DBUser.flag_approved == 1) \
+                    .filter(DBUser.flag_email_verified == 1) \
                     .first()
-
-                if DEBUG:
-                    print("BU-DEBUG: look for admin_user:", admin_user)
+                logger.debug("BU: look for admin_user: %s", admin_user)
                 if admin_user:
+                    logger.debug("BU: admin_user edit_system %d", admin_user.flag_edit_system)
                     valid_user = True
+                else:
+                    logger.debug("BU: not an admin_user for user_id %s" , user_id)
 
     valid_become_user_id = False
     if valid_user:
         if become_user_id > 0:
-            if DEBUG:
-                print("BU-DEBUG: become_user_id", become_user_id)
+            logger.debug("BU: become_user_id %s", become_user_id)
             become_user = db.session.query(DBUser) \
                 .filter(DBUser.user_id == int(become_user_id)) \
                 .filter(DBUser.flag_edit_users == 0) \
@@ -322,14 +320,10 @@ def become_user_become_user_id() -> Response:
                 .first()
                 #.filter(DBUser.flag_can_lock == 0) \
 
-            if DEBUG:
-                print("BU-DEBUG: become_user", become_user)
+            logger.debug("BU: become_user %s", become_user)
             if become_user:
                 valid_become_user_id= True
-
-            if DEBUG:
-                print(dir(become_user))
-
+                logger.debug("BU: become_user dir: %s", dir(become_user))
 
     found_username = False
     become_username = None
@@ -338,13 +332,11 @@ def become_user_become_user_id() -> Response:
             .filter(DBUserNickname.user_id == int(become_user_id)) \
             .filter(DBUserNickname.flag_valid == 1) \
             .first()
-        if DEBUG:
-            print("BU-DEBUG: become_user_nickname", become_user_nickname)
+        logger.debug("BU: become_user_nickname %s", become_user_nickname)
         if become_user_nickname:
             become_username = become_user_nickname.nickname
             found_username = True
-            if DEBUG:
-                print("BU-DEBUG: become_username", become_username)
+            logger.debug("BU: become_username %s", become_username)
 
     if not (valid_user and valid_become_user_id and found_username):
         response = make_response(redirect("/login", code=status.HTTP_303_SEE_OTHER))
@@ -354,10 +346,9 @@ def become_user_become_user_id() -> Response:
         start_time = ( datetime.now(tz=UTC) ).replace(microsecond=0)
         expires    = ( start_time + timedelta(seconds=3600) ).replace(microsecond=0)
         now1 = now()
-        if DEBUG:
-            print("BU-DEBUG: dates.start_time:", start_time)
-            print("BU-DEBUG: dates.expires:", expires)
-            print("BU-DEBUG: dates.now1:", now1)
+        logger.debug("BU: dates.start_time: %s", start_time)
+        logger.debug("BU: dates.expires: %s", expires)
+        logger.debug("BU: dates.now1: %s", now1)
 
         become_session = DBSession(
             end_time=0,
@@ -367,8 +358,7 @@ def become_user_become_user_id() -> Response:
         )
         db.session.add(become_session)
         db.session.commit()
-        if DEBUG:
-            print("BU-DEBUG: become_session", become_session)
+        logger.debug("BU: become_session %s", become_session)
 
         admin_audit = TapirAdminAudit(
             action="become-user",
@@ -383,8 +373,7 @@ def become_user_become_user_id() -> Response:
         )
         db.session.add(admin_audit)
         db.session.commit()
-        if DEBUG:
-            print("BU-DEBUG: admin_audit", admin_audit)
+        logger.debug("BU: admin_audit %s", admin_audit)
 
         become_jwt_data = {
             'user_id': become_session.user_id,
@@ -394,8 +383,7 @@ def become_user_become_user_id() -> Response:
             "start_time": start_time.isoformat(),
         }
         become_jwt = jwt.encode(become_jwt_data, secret)
-        if DEBUG:
-            print("BU-DEBUG: become_jwt", become_jwt)
+        logger.debug("BU: become_jwt %s", become_jwt)
 
         next_page = "https://check.dev.arxiv.org/"
         data: Dict[str, Any] = {
@@ -416,8 +404,7 @@ def become_user_become_user_id() -> Response:
             start_time,
             compute_capabilities(become_user),
         )
-        if DEBUG:
-            print("BU-DEBUG: become_session_cookie", become_session_cookie)
+        logger.debug("BU: become_session_cookie %s", become_session_cookie)
 
         data: Dict[str, Any] = {
             'cookies': {
