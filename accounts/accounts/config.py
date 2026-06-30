@@ -12,6 +12,13 @@ The default configs for `DEFAULT_LOGIN_REDIRECT_URL` and
 this. They can be independently configured if needed.
 """
 
+# --- Shared spinout chrome (ARXIVCE-4426) ------------------------------------
+# The host root is per-environment (prod default; 
+# dev overrides to https://static.dev.arxiv.org/static/base/1.0.1);
+BASE_STATIC = os.environ.get(
+    "BASE_STATIC", "https://static.arxiv.org/static/base/1.0.1"
+)
+
 DEFAULT_LOGIN_REDIRECT_URL = os.environ.get(
     'DEFAULT_LOGIN_REDIRECT_URL',
     f'https://{BASE_SERVER}/user'
