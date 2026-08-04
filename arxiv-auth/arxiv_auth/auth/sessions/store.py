@@ -32,6 +32,30 @@ def _generate_nonce(length: int = 8) -> str:
     return ''.join([str(random.randint(0, 9)) for i in range(length)])
 
 
+def pack_cookie(session: domain.Session, secret: str) -> str:
+    """Generate the `ARXIVNG_SESSION_ID` cookie value for a session.
+
+    The cookie is a self-contained signed JWT. Consumers verify its signature
+    rather than looking the session up in this store (see
+    `arxiv.cloud_auth.domain.Auth` for the claims they expect), so this needs no
+    connection and can be used for sessions that live only in the legacy DB.
+    """
+    if session.end_time is None:
+        raise RuntimeError('Session has no expiry')
+    if session.user is None:
+        raise RuntimeError('Session user is not set')
+    if session.nonce is None:
+        # A null nonce fails validation in consumers that model it as a
+        # required str, so refuse to mint a cookie that cannot be used.
+        raise RuntimeError('Session nonce is not set')
+    return jwt.encode({
+        'user_id': session.user.user_id,
+        'session_id': session.session_id,
+        'nonce': session.nonce,
+        'expires': session.end_time.isoformat()
+    }, secret)
+
+
 class SessionStore(object):
     """
     Manages a connection to Redis.
@@ -112,16 +136,7 @@ class SessionStore(object):
 
     def generate_cookie(self, session: domain.Session) -> str:
         """Generate a cookie from a :class:`domain.Session`."""
-        if session.end_time is None:
-            raise RuntimeError('Session has no expiry')
-        if session.user is None:
-            raise RuntimeError('Session user is not set')
-        return self._pack_cookie({
-            'user_id': session.user.user_id,
-            'session_id': session.session_id,
-            'nonce': session.nonce,
-            'expires': session.end_time.isoformat()
-        })
+        return pack_cookie(session, self._secret)
 
     def delete(self, cookie: str) -> None:
         """
