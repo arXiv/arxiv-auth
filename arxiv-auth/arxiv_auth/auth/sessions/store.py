@@ -87,7 +87,7 @@ class SessionStore(object):
         """
         if session_id is None:
             session_id = str(uuid.uuid4())
-        start_time = datetime.now(tz=UTC)
+        start_time = datetime.now(tz=UTC).replace(microsecond=0)  # round down to avoid unauth
         end_time = start_time + timedelta(seconds=self._duration)
         session = domain.Session(
             session_id=session_id,
