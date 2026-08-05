@@ -148,7 +148,7 @@ def create(authorizations: domain.Authorizations,
         raise SessionCreationFailed('Legacy sessions require a user')
 
     logger.debug('create session for user %s', user.user_id)
-    start = datetime.now(tz=UTC)
+    start = datetime.now(tz=UTC).replace(microsecond=0)  # round down to avoid unauth
     end = start + timedelta(seconds=util.get_session_duration())
     try:
         tapir_session = DBSession(
