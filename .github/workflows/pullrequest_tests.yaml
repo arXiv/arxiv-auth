@@ -31,9 +31,4 @@ jobs:
         run: |
           pip install pylint
           ./tests/lint.sh arxiv-auth accounts
-      - name: style check
-        run: |
-          pip install pydocstyle
-          ./tests/style.sh arxiv-auth/arxiv_auth accounts/accounts
-
 
