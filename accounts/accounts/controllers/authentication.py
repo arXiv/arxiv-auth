@@ -16,7 +16,7 @@ import logging
 
 from werkzeug.datastructures import MultiDict
 from werkzeug.exceptions import InternalServerError
-from flask import Markup
+from flask import Markup, current_app
 
 from wtforms import StringField, PasswordField, Form
 from wtforms.validators import DataRequired
@@ -27,7 +27,7 @@ from arxiv import status
 
 from arxiv_auth.domain import User, Authorizations, Session
 
-from arxiv_auth.auth.sessions import SessionStore
+from arxiv_auth.auth.sessions.store import _generate_nonce, pack_cookie
 
 from arxiv_auth.legacy import exceptions, sessions as legacy_sessions
 from arxiv_auth.legacy.authenticate import authenticate
@@ -46,9 +46,10 @@ def login(method: str, form_data: MultiDict, ip: str,
     """
     Provide the login form and handles login if the form data is POSTed.
 
-    This will attempt to create both a NG style `ARXIVNG_SESSION_ID` cookie with
-    a session in redis and legacy style `tapir_session` cookie with a session in
-    the DB.
+    This creates a legacy style `tapir_session` cookie backed by a session in
+    the legacy DB, and derives a NG style `ARXIVNG_SESSION_ID` cookie from it.
+    The NG cookie is a self-contained signed JWT, so no Redis distributed session
+    store is involved.
 
     Parameters
     ----------
@@ -69,7 +70,6 @@ def login(method: str, form_data: MultiDict, ip: str,
         Headers to add to the response.
 
     """
-    sessions = SessionStore.current_session()
     if method == 'GET':
         logger.debug('Request for login form')
         # TODO: If a permanent token is provided, attempt to log the user in,
@@ -113,15 +113,6 @@ def login(method: str, form_data: MultiDict, ip: str,
         })
         return data, status.HTTP_400_BAD_REQUEST, {}
 
-    try:    # Create a session in the distributed session store.
-        session = sessions.create(auths, ip, ip, track, user=user)
-        cookie = sessions.generate_cookie(session)
-        logger.debug('Created session: %s', session.session_id)
-    except sessions.exceptions.SessionCreationFailed as e:
-        logger.debug('Could not create session: %s', e)
-        logger.info('Could not create session: %s', e)
-        raise InternalServerError('Cannot log in') from e  # type: ignore
-
     try:    # Create a session in the legacy session store.
         c_session, c_cookie = _do_login(auths, ip, track, user)
     except exceptions.SessionCreationFailed as e:
@@ -129,10 +120,13 @@ def login(method: str, form_data: MultiDict, ip: str,
         logger.info('Could not create legacy session: %s', e)
         raise InternalServerError('Cannot log in') from e  # type: ignore
 
+    c_session.nonce = _generate_nonce()
+    cookie = pack_cookie(c_session, current_app.config['JWT_SECRET'])
+
     # The UI route should use these to set cookies on the response.
     data.update({
         'cookies': {
-            'auth_session_cookie': (cookie, session.expires),
+            'auth_session_cookie': (cookie, c_session.expires),
             'classic_cookie': (c_cookie, c_session.expires)
         }
     })
@@ -148,10 +142,11 @@ def logout(session_cookie: Optional[str],
 
     Parameters
     ----------
-    session_id : str or None
-        If not None, invalidates the session.
-    classic_session_id : str or None
-        If not None, invalidates the session.
+    session_cookie : str or None
+        Unused; the NG session is stateless and is ended by clearing the cookie.
+        Retained so the route signature does not change.
+    classic_session_cookie : str or None
+        If not None, invalidates the legacy session.
     next_page : str
         Page to which the user should be redirected upon logout.
 
@@ -166,13 +161,8 @@ def logout(session_cookie: Optional[str],
 
     """
     logger.debug('Request to log out')
-    sessions = SessionStore.current_session()
-    if session_cookie:
-        try:
-            sessions.delete(session_cookie)
-        except sessions.exceptions.SessionDeletionFailed as e:
-            logger.debug('Logout failed: %s', e)
-
+    # The NG session cookie is stateless, so clearing it (below) is all that is
+    # needed. Only the legacy session needs to be invalidated server-side.
     if classic_session_cookie:
         try:
             with transaction():

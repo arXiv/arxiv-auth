@@ -5,7 +5,7 @@ the `/login` `/logout` and other pages.
 
 ```bash
 cd accounts/
-pip install poetry
+pip install 'poetry<2.0'
 poetry install  # installs to a venv
 poetry shell    # activates the venv
 pytest
@@ -68,8 +68,9 @@ create tables. Conventional read/write access should be sufficient.
 ## Need to reinstall arxiv-auth
 If you are doing local development and make a change to arxiv-auth and want have
 that change in `accounts` you will need to reinstall `arxiv-auth` by running
-`poetry install`. Flask's auto-restart of the service in debug mod will not pick
-up changes to `arxiv-auth`.
+`poetry install` or `pip install arxiv-auth --force-reinstall --no-deps`.
+Flask's auto-restart of the service in debug mod will not pick up changes to
+`arxiv-auth`.
 
 ## TODO
 - Password reset in ``arxiv.users.legacy.accounts`` and in the accounts service.

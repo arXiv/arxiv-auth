@@ -1,8 +1,10 @@
 """Tests for mod:`accounts.controllers`."""
 import os
 from unittest import TestCase, mock
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone, UTC
+
+import jwt
 
 import hashlib
 from base64 import b64encode
@@ -107,13 +109,10 @@ class TestAuthenticationController(TestCase):
                 session.add(db_nick)
                 session.add(db_demo)
 
-    @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy_sessions')
-    def test_logout(self, mock_legacy_ses, mock_SessionStore):
+    def test_logout(self, mock_legacy_ses):
         """A logged-in user requests to log out."""
         mock_legacy_ses.invalidate_session.return_value = None
-        mock_SessionStore.current_session.return_value \
-            .delete.return_value = None
         next_page = '/'
         session_id = 'foosession'
         classic_id = 'bazsession'
@@ -124,13 +123,10 @@ class TestAuthenticationController(TestCase):
         self.assertEqual(header['Location'], next_page,
                          "Redirects user to next page.")
 
-    @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.legacy_sessions')
-    def test_logout_anonymous(self, mock_legacy_ses, mock_SessionStore):
+    def test_logout_anonymous(self, mock_legacy_ses):
         """An anonymous user requests to log out."""
         mock_legacy_ses.invalidate_session.return_value = None
-        mock_SessionStore.current_session.return_value \
-            .delete.return_value = None
         next_page = '/'
         with self.app.app_context():
             data, status_code, header = logout(None, None, next_page)
@@ -139,8 +135,7 @@ class TestAuthenticationController(TestCase):
         self.assertEqual(header['Location'], next_page,
                          "Redirects user to next page.")
 
-    @mock.patch('accounts.controllers.authentication.SessionStore')
-    def test_login(self, mock_SessionStore):
+    def test_login(self):
         """User requests the login page."""
         with self.app.app_context():
             data, status_code, header = login('GET', {}, '', '')
@@ -150,8 +145,7 @@ class TestAuthenticationController(TestCase):
         self.assertEqual(status_code, status.HTTP_200_OK)
 
 
-    @mock.patch('accounts.controllers.authentication.SessionStore')
-    def test_post_invalid_data(self, mock_SessionStore):
+    def test_post_invalid_data(self):
         """User submits invalid data."""
         form_data = MultiDict({'username': 'foouser'})     # Missing password.
         next_page = '/next'
@@ -182,14 +176,14 @@ class TestAuthenticationController(TestCase):
                               "Response includes a login form.")
 
     @mock.patch('accounts.controllers.authentication.legacy_sessions')
-    @mock.patch('accounts.controllers.authentication.SessionStore')
     @mock.patch('accounts.controllers.authentication.authenticate')
-    def test_post_great(self, mock_authenticate, mock_SessionStore, mock_session):
+    def test_post_great(self, mock_authenticate, mock_session):
         """Form data are valid and check out."""
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
         ip = '123.45.67.89'
         next_page = '/foo'
         start_time = datetime.now(tz=UTC)
+        end_time = start_time + timedelta(seconds=self.expiry)
         user = domain.User(
             user_id="42",
             username='foouser',
@@ -205,41 +199,39 @@ class TestAuthenticationController(TestCase):
             session_id='barsession',
             user=user,
             start_time=start_time,
+            end_time=end_time,
             authorizations=auths
         )
         c_cookie = 'bardata'
         mock_session.create.return_value = c_session
         mock_session.generate_cookie.return_value = c_cookie
-        session = domain.Session(
-            session_id='foosession',
-            user=user,
-            start_time=start_time,
-            authorizations=domain.Authorizations(
-                scopes=['public:read', 'submission:create']
-            )
-        )
-        cookie = 'foodata'
-        mock_SessionStore.current_session.return_value \
-            .create.return_value = session
-        mock_SessionStore.current_session.return_value \
-            .generate_cookie.return_value = cookie
 
         with self.app.app_context():
             data, status_code, header = login('POST', form_data, ip, next_page)
+            jwt_secret = self.app.config['JWT_SECRET']
         self.assertEqual(status_code, status.HTTP_303_SEE_OTHER,
                          "Redirects user to next page")
         self.assertEqual(header['Location'], next_page,
                          "Redirects user to next page.")
-        self.assertEqual(data['cookies']['auth_session_cookie'],
-                         (cookie, None),
-                         "Session cookie is returned")
-        self.assertEqual(data['cookies']['classic_cookie'], (c_cookie, None),
+        self.assertEqual(data['cookies']['classic_cookie'],
+                         (c_cookie, c_session.expires),
                          "Classic session cookie is returned")
 
-    @mock.patch('accounts.controllers.authentication.SessionStore')
+        ng_cookie, ng_expires = data['cookies']['auth_session_cookie']
+        self.assertAlmostEqual(ng_expires, self.expiry, delta=2,
+                               msg="NG cookie expires with the legacy session")
+        claims = jwt.decode(ng_cookie, jwt_secret, algorithms=['HS256'])
+        self.assertEqual(claims['user_id'], user.user_id,
+                         "NG cookie carries the user ID")
+        self.assertEqual(claims['session_id'], c_session.session_id,
+                         "NG cookie is derived from the legacy session")
+        self.assertEqual(claims['expires'], end_time.isoformat(),
+                         "NG cookie expiry matches the legacy session")
+        self.assertIn('nonce', claims, "NG cookie carries a nonce")
+
     @mock.patch('accounts.controllers.authentication.legacy_sessions')
     @mock.patch('accounts.controllers.authentication.authenticate')
-    def test_post_not_verified(self, mock_authenticate, mock_legacy_sess, mock_SessionStore):
+    def test_post_not_verified(self, mock_authenticate, mock_legacy_sess):
         """Form data are valid and check out."""
         form_data = MultiDict({'username': 'foouser', 'password': 'bazpass'})
         ip = '123.45.67.89'
@@ -265,19 +257,6 @@ class TestAuthenticationController(TestCase):
         c_cookie = 'bardata'
         mock_legacy_sess.create.return_value = c_session
         mock_legacy_sess.generate_cookie.return_value = c_cookie
-        session = domain.Session(
-            session_id='foosession',
-            user=user,
-            start_time=start_time,
-            authorizations=domain.Authorizations(
-                scopes=['public:read', 'submission:create']
-            )
-        )
-        cookie = 'foodata'
-        mock_SessionStore.current_session.return_value \
-            .create.return_value = session
-        mock_SessionStore.current_session.return_value \
-            .generate_cookie.return_value = cookie
 
         with self.app.app_context():
             data, status_code, header = login('POST', form_data, ip, next_page)
