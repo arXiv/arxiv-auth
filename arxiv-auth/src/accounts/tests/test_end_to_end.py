@@ -2,17 +2,19 @@
 
 from flask import request, Blueprint
 from unittest import TestCase
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone, UTC
 from dateutil.parser import parse
 import os
 import hashlib
 from base64 import b64encode
 from urllib.parse  import quote_plus
+import jwt
 
 from arxiv import status
 #from accounts.services import legacy, users
 from arxiv_auth.legacy import util, models
+from arxiv_auth.legacy.cookies import pack
 from accounts.factory import create_web_app
 
 
@@ -124,6 +126,46 @@ class TestLoginLogoutRoutes(TestCase):
                 session.add(db_password)
                 session.add(db_nick)
                 session.add(db_demo)
+
+                # Non-admin user for become_user tests
+                db_user2 = models.DBUser(
+                    user_id=2,
+                    first_name='target',
+                    last_name='user',
+                    suffix_name='',
+                    email='target@user.com',
+                    policy_class=2,
+                    flag_edit_users=0,
+                    flag_email_verified=1,
+                    flag_edit_system=0,
+                    flag_approved=1,
+                    flag_deleted=0,
+                    flag_banned=0,
+                    tracking_cookie='targetcookie',
+                )
+                db_nick2 = models.DBUserNickname(
+                    nick_id=2,
+                    nickname='targetuser',
+                    user_id=2,
+                    user_seq=1,
+                    flag_valid=1,
+                    role=0,
+                    policy=0,
+                    flag_primary=1
+                )
+                db_demo2 = models.DBProfile(
+                    user_id=2,
+                    country='US',
+                    affiliation='MIT',
+                    url='http://example.com/target',
+                    rank=2,
+                    original_subject_classes='cs.AI',
+                    archive='cs',
+                    subject_class='AI',
+                )
+                session.add(db_user2)
+                session.add(db_nick2)
+                session.add(db_demo2)
 
     def tearDown(self):
         with self.app.app_context():
@@ -474,3 +516,124 @@ class TestLoginLogoutRoutes(TestCase):
         self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
         assert bad_next_page not in response.headers['Location'] #  redirect should NOT point at value of `bad_next_page` param
         assert "bbc" not in response.headers['Location']
+
+    def test_become_user_requires_csrf(self):
+        """POST /become_user requires a CSRF token."""
+        client = self.app.test_client()
+        response = client.post('/become_user?become_user_id=1')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_become_user_stale_auth_redirects_to_login(self):
+        """POST /become_user requires a fresh auth session."""
+        client = self.app.test_client()
+        now_utc = datetime.now(tz=UTC)
+        stale_start = (now_utc - timedelta(hours=2)).replace(microsecond=0)
+        auth_cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
+        auth_cookie_value = jwt.encode(
+            {
+                'user_id': 1,
+                'session_id': 'stale-session',
+                'nonce': 'nonce',
+                'start_time': stale_start.isoformat(),
+                'expires': (now_utc + timedelta(hours=1)).isoformat(),
+            },
+            self.secret,
+            algorithm='HS256'
+        )
+        client.set_cookie(key=auth_cookie_name, value=auth_cookie_value, domain='localhost')
+
+        classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+        classic_cookie_value = pack('123', '1', self.ip_address, now_utc, '1')
+        client.set_cookie(key=classic_cookie_name, value=classic_cookie_value, domain='localhost')
+
+        csrf_cookie_name = self.app.config['BECOME_USER_CSRF_COOKIE_NAME']
+        csrf_token = 'csrf-token'
+        client.set_cookie(key=csrf_cookie_name, value=csrf_token, domain='localhost')
+
+        response = client.post(
+            '/become_user?become_user_id=2',
+            data={'csrf_token': csrf_token},
+            headers={'Referer': 'https://arxiv.org/admin'}
+        )
+        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+        self.assertTrue(response.headers['Location'].startswith('/login?next_page='))
+
+    def test_become_user_happy_path(self):
+        """POST /become_user with valid CSRF and fresh auth succeeds."""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+        now_utc = datetime.now(tz=UTC)
+        fresh_start = (now_utc - timedelta(seconds=30)).replace(microsecond=0)
+
+        auth_cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
+        auth_cookie_value = jwt.encode(
+            {
+                'user_id': 1,
+                'session_id': 'fresh-session',
+                'nonce': 'nonce',
+                'start_time': fresh_start.isoformat(),
+                'expires': (now_utc + timedelta(hours=1)).isoformat(),
+            },
+            self.secret,
+            algorithm='HS256'
+        )
+        client.set_cookie(key=auth_cookie_name, value=auth_cookie_value, domain='localhost')
+
+        classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+        classic_cookie_value = pack('123', '1', self.ip_address, now_utc, '1')
+        client.set_cookie(key=classic_cookie_name, value=classic_cookie_value, domain='localhost')
+
+        csrf_cookie_name = self.app.config['BECOME_USER_CSRF_COOKIE_NAME']
+        csrf_token = 'valid-csrf-token'
+        client.set_cookie(key=csrf_cookie_name, value=csrf_token, domain='localhost')
+
+        response = client.post(
+            '/become_user?become_user_id=2',
+            data={'csrf_token': csrf_token},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # CSRF cookie should be invalidated after use
+        cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
+        self.assertIn(csrf_cookie_name, cookies)
+        self.assertEqual(cookies[csrf_cookie_name]['Max-Age'], '0',
+                         'CSRF cookie should be cleared after use')
+
+    def test_become_user_csrf_endpoint_requires_admin(self):
+        """GET /become_user/csrf requires an admin user."""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+
+        # Unauthenticated request
+        response = client.get('/become_user/csrf')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_become_user_csrf_endpoint_issues_token(self):
+        """GET /become_user/csrf returns a CSRF token for admin users."""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+
+        # Log in as admin user (user_id=1 has flag_edit_users=1)
+        form_data = {'username': 'foouser', 'password': 'thepassword'}
+        response = client.post('/login', data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_303_SEE_OTHER)
+
+        # Set auth cookies on client for subsequent requests
+        cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
+        auth_cookie_name = self.app.config['AUTH_SESSION_COOKIE_NAME']
+        client.set_cookie(key=auth_cookie_name, value=cookies[auth_cookie_name]['value'],
+                          domain='localhost')
+        classic_cookie_name = self.app.config['CLASSIC_COOKIE_NAME']
+        client.set_cookie(key=classic_cookie_name, value=cookies[classic_cookie_name]['value'],
+                          domain='localhost')
+
+        response = client.get('/become_user/csrf')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertIn('csrf_token', data)
+        self.assertTrue(len(data['csrf_token']) > 0)
+
+        # Verify CSRF cookie was set
+        csrf_cookies = _parse_cookies(response.headers.getlist('Set-Cookie'))
+        csrf_cookie_name = self.app.config['BECOME_USER_CSRF_COOKIE_NAME']
+        self.assertIn(csrf_cookie_name, csrf_cookies)

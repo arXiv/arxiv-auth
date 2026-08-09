@@ -5,9 +5,11 @@ from datetime import datetime, timedelta
 from functools import wraps
 from pytz import timezone, UTC
 import logging
+import secrets
+import hmac
 
 from flask import Blueprint, render_template, request, \
-    make_response, redirect, current_app, Response
+    make_response, redirect, current_app, Response, jsonify
 
 from arxiv import status
 
@@ -32,6 +34,71 @@ EASTERN = timezone('US/Eastern')
 logger = logging.getLogger(__name__)
 blueprint = Blueprint('ui', __name__, url_prefix='')
 
+
+def _set_become_user_csrf_cookie(response: Response, token: str) -> None:
+    cookie_name = current_app.config['BECOME_USER_CSRF_COOKIE_NAME']
+    params = {
+        'httponly': False,
+        'domain': current_app.config['AUTH_SESSION_COOKIE_DOMAIN'],
+    }
+    if current_app.config['AUTH_SESSION_COOKIE_SECURE']:
+        params.update({'secure': True, 'samesite': 'lax'})
+    response.set_cookie(cookie_name, token, max_age=3600, **params)
+
+
+def _issue_become_user_csrf_token(response: Response) -> str:
+    token = secrets.token_urlsafe(32)
+    _set_become_user_csrf_cookie(response, token)
+    return token
+
+
+def _fresh_auth_required() -> bool:
+    """Set BECOME_USER_FRESH_AUTH_SECONDS to 0 to disable fresh-auth checks."""
+    return bool(current_app.config.get('BECOME_USER_FRESH_AUTH_SECONDS', 600) > 0)
+
+
+def _is_fresh_auth(session_start_iso: str) -> bool:
+    if not _fresh_auth_required():
+        return True
+    if not session_start_iso:
+        return False
+    try:
+        start = datetime.fromisoformat(session_start_iso)
+    except ValueError:
+        return False
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=UTC)
+    max_age = int(current_app.config['BECOME_USER_FRESH_AUTH_SECONDS'])
+    return datetime.now(tz=UTC) - start <= timedelta(seconds=max_age)
+
+
+def _reauth_redirect() -> Response:
+    referrer = request.referrer or ''
+    next_page = good_next_page(referrer)
+    login_url = f"/login?next_page={next_page}"
+    return make_response(redirect(login_url, code=status.HTTP_303_SEE_OTHER))
+
+
+def _valid_become_user_csrf() -> bool:
+    cookie_name = current_app.config['BECOME_USER_CSRF_COOKIE_NAME']
+    cookie_token = request.cookies.get(cookie_name, '')
+    request_token = request.form.get('csrf_token', '') \
+        or request.headers.get('X-CSRF-Token', '')
+    return bool(
+        cookie_token and request_token
+        and hmac.compare_digest(cookie_token, request_token)
+    )
+
+
+def unset_become_user_csrf_cookie(response: Response) -> None:
+    cookie_name = current_app.config['BECOME_USER_CSRF_COOKIE_NAME']
+    domain = current_app.config['AUTH_SESSION_COOKIE_DOMAIN']
+    # Clear with no domain, with leading-dot domain, and without leading dot
+    # to ensure the cookie is removed regardless of how the browser stored it.
+    response.set_cookie(key=cookie_name, value='', max_age=0, httponly=False)
+    response.set_cookie(key=cookie_name, value='', max_age=0, httponly=False, domain=domain)
+    response.set_cookie(key=cookie_name, value='', max_age=0, httponly=False,
+                        domain=domain.lstrip('.'))
 
 
 def anonymous_only(func: Callable) -> Callable:
@@ -136,6 +203,7 @@ def login() -> Response:
     if code is status.HTTP_303_SEE_OTHER:
         response = make_response(redirect(safe_page, code=code))
         set_cookies(response, data)
+        _issue_become_user_csrf_token(response)
         unset_submission_cookie(response)    # Fix for ARXIVNG-1149
         return response
 
@@ -162,6 +230,7 @@ def logout() -> Response:
         unset_submission_cookie(response)  # Fix for ARXIVNG-1149.
         unset_permanent_cookie(response)  # Partial fix for ARXIVNG-1653, ARXIVNG-1644
         unset_masquerade_cookie(response)
+        unset_become_user_csrf_cookie(response)
         return response
     return redirect(safe_page, code=status.HTTP_302_FOUND)
 
@@ -172,10 +241,36 @@ def auth_status() -> Response:
     return make_response("OK")
 
 
+@blueprint.route('/become_user/csrf', methods=['GET'])
+def become_user_csrf() -> Response:
+    """Issue a CSRF token for `/become_user`. Requires admin (flag_edit_users)."""
+    if not request.auth:
+        return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+    user_id = request.auth.user.user_id if request.auth.user else None
+    if not user_id:
+        return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+    admin_user = db.session.query(DBUser) \
+        .filter(DBUser.user_id == int(user_id)) \
+        .filter(DBUser.flag_edit_users == 1) \
+        .filter(DBUser.flag_deleted == 0) \
+        .filter(DBUser.flag_banned == 0) \
+        .filter(DBUser.flag_approved == 1) \
+        .first()
+    if not admin_user:
+        return Response("Forbidden", status=status.HTTP_403_FORBIDDEN)
+    token = secrets.token_urlsafe(32)
+    response = make_response(jsonify({'csrf_token': token}), status.HTTP_200_OK)
+    _set_become_user_csrf_cookie(response, token)
+    return response
+
+
 # Only use post in production to avoid caching issues in fastly,
 #   but can include GET in dev for testing.
 @blueprint.route('/become_user', methods=['POST'])
 def become_user_become_user_id() -> Response:
+
+    if not _valid_become_user_csrf():
+        return Response("Forbidden", status=status.HTTP_403_FORBIDDEN)
 
     become_user_id = int(request.args.get('become_user_id'))
 
@@ -225,9 +320,14 @@ def become_user_become_user_id() -> Response:
     valid_user = False
     if session_cookie:
 
-        data = jwt.decode(session_cookie, secret, algorithms=["HS256"])
+        try:
+            data = jwt.decode(session_cookie, secret, algorithms=["HS256"])
+        except Exception:
+            return _reauth_redirect()
         if DEBUG:
             print("BU-DEBUG: jwt decode session_cookie:", data)
+        if not _is_fresh_auth(data.get('start_time')):
+            return _reauth_redirect()
 
         user_id = f"{ data.get('user_id') }"
         if user_id:
@@ -370,6 +470,7 @@ def become_user_become_user_id() -> Response:
         set_cookies(response, data)
         unset_submission_cookie(response)
         unset_permanent_cookie(response)
+        unset_become_user_csrf_cookie(response)
         response.set_cookie(key=tracking_cookie_name, value='', max_age=0, httponly=True)
 
         return response

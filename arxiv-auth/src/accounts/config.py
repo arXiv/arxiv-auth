@@ -58,6 +58,15 @@ AUTH_SESSION_COOKIE_NAME = 'ARXIVNG_SESSION_ID'
 AUTH_SESSION_COOKIE_DOMAIN = os.environ.get('AUTH_SESSION_COOKIE_DOMAIN', f'.{BASE_SERVER}')
 AUTH_SESSION_COOKIE_SECURE = bool(int(os.environ.get('AUTH_SESSION_COOKIE_SECURE', '1')))
 MASQUERADE_COOKIE_NAME = 'MASQUERADE'
+BECOME_USER_CSRF_COOKIE_NAME = os.environ.get(
+    'BECOME_USER_CSRF_COOKIE_NAME',
+    'ARXIV_BECOME_USER_CSRF'
+)
+"""Cookie name for the CSRF token required by `/become_user`."""
+BECOME_USER_FRESH_AUTH_SECONDS = int(
+    os.environ.get('BECOME_USER_FRESH_AUTH_SECONDS', '600')
+)
+"""Max allowed seconds since auth session start for `/become_user`."""
 
 
 #################### Classic Auth ####################
