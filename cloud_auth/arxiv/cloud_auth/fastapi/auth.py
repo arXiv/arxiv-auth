@@ -69,7 +69,7 @@ async def ng_jwt_cookie(
     Mods will log in to arxiv.org/login, get the cookie set, go to mod.arxiv.org/ui,
     and that will make REST calls to mod.arxiv.org/{ENDPOINT}.
 
-    The main difficulty of this compard to a Authorization header is
+    The main difficulty of this compared to a Authorization header is
     handling the cookie so the browser will serve it to the
     API. Debugging that is painful.
 
@@ -120,7 +120,7 @@ async def rawauth(
 
 
 class AuthorizedUser:
-    """Check ensure authenticatoin and user is a mod or admin and gets a
+    """Check ensure authentication and user is a mod or admin and gets a
     User object.
 
     This will try to decode with the JWT_SECRET then try GCP.
@@ -145,7 +145,7 @@ class AuthorizedUser:
                 user = self.userstore.getuser(user_id)
                 if not user:
                     log.debug(
-                        "decode_ng_jwt() Failed: user %s is does not exist", user_id
+                        "decode_ng_jwt() Failed: user %s does not exist", user_id
                     )
                     return None
                 else:
@@ -158,23 +158,23 @@ class AuthorizedUser:
         try:
             idinfo = verify_token(self.audience, jwt)
             if not idinfo:
-                log.debug("verity_gcp() failed: Invalid JWT, No idinfo from GCP")
+                log.debug("verify_gcp() failed: Invalid JWT, No idinfo from GCP")
                 return None
             else:
-                log.debug("verity_gcp(): valid JWT from GCP")
+                log.debug("verify_gcp(): valid JWT from GCP")
                 email = email_from_idinfo(idinfo)
                 if not email:
-                    log.debug("verity_gcp() failed: no email from GCP")
+                    log.debug("verify_gcp() failed: no email from GCP")
                     return None
                 user = self.userstore.getuser_by_email(email)
                 if user:
-                    log.debug("verity_gcp() found arXiv user via GCP JWT")
+                    log.debug("verify_gcp() found arXiv user via GCP JWT")
                     return user
                 else:
-                    log.debug("verity_gcp() failed: no user with email %s", email)
+                    log.debug("verify_gcp() failed: no user with email %s", email)
                     return None
         except Exception as ex:
-            log.debug("verity_gcp() Exception during GCP JWT validation: %s", ex)
+            log.debug("verify_gcp() Exception during GCP JWT validation: %s", ex)
 
     async def __call__(self, header: RawAuth = Depends(rawauth)):
         try:
@@ -185,7 +185,7 @@ class AuthorizedUser:
                 header.rawjwt
             )
             if not user:
-                raise Exception("invaild auth data")
+                raise Exception("invalid auth data")
 
             # if mod and (mod.is_admin or mod.is_moderator):
             #     log.debug("auth_user(): Success via mod key")

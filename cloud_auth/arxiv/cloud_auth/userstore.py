@@ -22,7 +22,7 @@ class UserStoreDB:
     In most cases ``UserStore`` should be used instead.
 
     This is intended to be used where full handling of categories is
-    not needed or where additoinal code will handle active categories
+    not needed or where additional code will handle active categories
     and archives. See ``_cats_and_archives`` for more details.
 
     The intent here is to avoid the need for arxiv-base to avoid
@@ -152,7 +152,7 @@ class UserStoreDB:
                 archives = [arch for arch in user.moderated_archives
                             if arch in ARCHIVES_ACTIVE]
                 # normal categories like cs.LG
-                cats = [cat for cat in usesr.moderated_categories
+                cats = [cat for cat in user.moderated_categories
                         if cat in CATEGORIES_ACTIVE]
                 # Archive like categories. ex. hep-ph, gr-qc, nucl-ex, etc.
                 # Don't include inactive archives since they should have been
@@ -167,11 +167,11 @@ class UserStoreDB:
         Tuple of ( categories, archives)
 
 
-        The archvies where the arxiv_moderators table has just an
+        The archives where the arxiv_moderators table has just an
         archive column value and not subject_class value. This may
-        have subject categoires like hep-ph.
+        have subject categories like hep-ph.
 
-        The categories where in the arXiv_moderators table has both a archvie
+        The categories where in the arXiv_moderators table has both a archive
         and a subject_class.
 
         """
