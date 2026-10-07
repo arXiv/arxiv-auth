@@ -41,6 +41,9 @@ logger = logging.getLogger(__name__)
 
 blueprint = Blueprint('ui', __name__, url_prefix='')
 
+MAX_LOGIN_HINT_LENGTH = 128
+"""Longest `login_hint` that will be used to prefill the login form."""
+
 
 def user_is_owner(session: domain.Session, user_id: str, **kw: Any) -> bool:
     """Determine whether the authenticated user matches the requested user."""
@@ -134,6 +137,11 @@ def apply_response_headers(response: Response) -> Response:
     response.headers['Content-Security-Policy'] = "frame-ancestors 'none'"
     response.headers['X-Frame-Options'] = 'DENY'
 
+    # The login page may be personalized by `login_hint`, so it must never be
+    # stored by a shared cache or by the browser and handed to the next visitor.
+    if request.endpoint == 'ui.login':
+        response.headers['Cache-Control'] = 'no-store'
+
     return response
 
 # @blueprint.route('/register', methods=['GET', 'POST'])
@@ -166,10 +174,13 @@ def login() -> Response:
     form_data = request.form
     default_next_page = current_app.config['DEFAULT_LOGIN_REDIRECT_URL']
     next_page = request.args.get('next_page', default_next_page)
+    login_hint = \
+        request.args.get('login_hint', '')[:MAX_LOGIN_HINT_LENGTH].strip()
     logger.debug('Request to log in, then redirect to %s', next_page)
     data, code, headers = authentication.login(request.method,
                                                form_data, ip_address,
-                                               next_page)
+                                               next_page,
+                                               login_hint=login_hint)
     data.update({'pagetitle': 'Log in to arXiv'})
     # Flask puts cookie-setting methods on the response, so we do that here
     # instead of in the controller.

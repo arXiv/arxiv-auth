@@ -42,7 +42,8 @@ ResponseData = Tuple[dict, int, dict]
 _login_redirect_pattern = re.compile(config.LOGIN_REDIRECT_REGEX)
 
 def login(method: str, form_data: MultiDict, ip: str,
-          next_page: str, track: str = '') -> ResponseData:
+          next_page: str, track: str = '',
+          login_hint: Optional[str] = None) -> ResponseData:
     """
     Provide the login form and handles login if the form data is POSTed.
 
@@ -59,6 +60,8 @@ def login(method: str, form_data: MultiDict, ip: str,
         IP or hostname of client.
     next_page : str
         Page to which the user should be redirected upon login.
+    login_hint : str or None
+        If provided, used to prefill the username field on the login form.
 
     Returns
     -------
@@ -75,11 +78,12 @@ def login(method: str, form_data: MultiDict, ip: str,
         # TODO: If a permanent token is provided, attempt to log the user in,
         # and redirect if successful. Otherwise, proceed as normal without
         # complaint.
+        form = LoginForm(username=login_hint) if login_hint else LoginForm()
         if not next_page or good_next_page(next_page):
-            response_data = {'form': LoginForm(), 'next_page': next_page}
+            response_data = {'form': form, 'next_page': next_page}
             return response_data, status.HTTP_200_OK, {}
         else:
-            response_data = {'form': LoginForm(), 'error':'next_page is invalid'}
+            response_data = {'form': form, 'error':'next_page is invalid'}
             return response_data, status.HTTP_400_BAD_REQUEST, {}
 
     logger.debug('Login form submitted')

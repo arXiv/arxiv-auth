@@ -143,6 +143,25 @@ class TestAuthenticationController(TestCase):
         self.assertIsInstance(data['form'], LoginForm,
                               "Response includes a login form.")
         self.assertEqual(status_code, status.HTTP_200_OK)
+        self.assertIsNone(data['form'].username.data,
+                          "Username is not prefilled.")
+
+    def test_login_with_login_hint(self):
+        """User requests the login page with a login_hint."""
+        with self.app.app_context():
+            data, status_code, header = login('GET', {}, '', '',
+                                              login_hint='foouser')
+        self.assertEqual(status_code, status.HTTP_200_OK)
+        self.assertEqual(data['form'].username.data, 'foouser',
+                         "Username is prefilled from the login hint.")
+
+    def test_login_with_empty_login_hint(self):
+        """An empty login_hint is treated as if it were absent."""
+        with self.app.app_context():
+            data, status_code, header = login('GET', {}, '', '', login_hint='')
+        self.assertEqual(status_code, status.HTTP_200_OK)
+        self.assertIsNone(data['form'].username.data,
+                          "Username is not prefilled.")
 
 
     def test_post_invalid_data(self):

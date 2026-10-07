@@ -12,8 +12,11 @@ from urllib.parse  import quote_plus
 
 from arxiv import status
 #from accounts.services import legacy, users
-from arxiv_auth.legacy import util, models
+# accounts.factory must be imported before arxiv_auth.legacy; importing the
+# legacy package first trips a circular import in arxiv_auth.
 from accounts.factory import create_web_app
+from accounts.routes.ui import MAX_LOGIN_HINT_LENGTH
+from arxiv_auth.legacy import util, models
 
 
 import urllib
@@ -141,6 +144,52 @@ class TestLoginLogoutRoutes(TestCase):
         response = client.get('/login')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.content_type, 'text/html; charset=utf-8')
+
+    def test_get_login_with_login_hint(self):
+        """GET /login with a login_hint prefills the username field."""
+        client = self.app.test_client()
+        response = client.get('/login?login_hint=foouser')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('value="foouser"', response.data.decode('utf-8'))
+
+    def test_login_hint_is_escaped(self):
+        """A login_hint with HTML in it is escaped on the login form."""
+        hint = '"><script>alert("xss")</script>'
+        client = self.app.test_client()
+        response = client.get(f'/login?login_hint={quote_plus(hint)}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        html = response.data.decode('utf-8')
+
+        self.assertNotIn('<script>alert', html,
+                         "The hint does not break out of the value attribute.")
+        self.assertIn(
+            'value="&#34;&gt;&lt;script&gt;alert(&#34;xss&#34;)&lt;/script&gt;"',
+            html,
+            "The hint appears in the username field, fully escaped.")
+
+    def test_login_hint_is_capped(self):
+        """An over-long login_hint is truncated before it reaches the form."""
+        hint = 'a' * (MAX_LOGIN_HINT_LENGTH + 50)
+        client = self.app.test_client()
+        response = client.get(f'/login?login_hint={hint}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        html = response.data.decode('utf-8')
+        self.assertIn(f'value="{"a" * MAX_LOGIN_HINT_LENGTH}"', html,
+                      "Only the first MAX_LOGIN_HINT_LENGTH chars are used.")
+        self.assertNotIn('a' * (MAX_LOGIN_HINT_LENGTH + 1), html)
+
+    def test_login_is_not_cacheable(self):
+        """Responses from /login are marked no-store, hinted or not."""
+        client = self.app.test_client()
+        client.environ_base = self.environ_base
+        for response in [client.get('/login'),
+                         client.get('/login?login_hint=foouser'),
+                         client.post('/login?next_page=/foo',
+                                     data={'username': 'foouser',
+                                           'password': 'thepassword'}),
+                         client.post('/login', data={'username': 'foouser'})]:
+            self.assertIn('no-store', response.headers.get('Cache-Control', ''),
+                          "Login responses are never stored by any cache.")
 
     def test_post_login(self):
         """POST request to /login with valid form data returns redirect."""
