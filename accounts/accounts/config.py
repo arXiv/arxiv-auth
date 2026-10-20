@@ -12,12 +12,9 @@ The default configs for `DEFAULT_LOGIN_REDIRECT_URL` and
 this. They can be independently configured if needed.
 """
 
-# --- Shared spinout chrome (ARXIVCE-4426) ------------------------------------
-# The host root is per-environment (prod default; 
-# dev overrides to https://static.dev.arxiv.org/static/base/1.0.1);
-BASE_STATIC = os.environ.get(
-    "BASE_STATIC", "https://static.arxiv.org/static/base/1.0.1"
-)
+BRAND_STATIC_BASE = os.environ.get("BRAND_STATIC_BASE")
+"""Root URL of the design-system asset route (CSS, fonts, logos, chrome JS). Unset, the
+templates' default: the production route. A dev deployment or a local preview sets its own."""
 
 DEFAULT_LOGIN_REDIRECT_URL = os.environ.get(
     'DEFAULT_LOGIN_REDIRECT_URL',
