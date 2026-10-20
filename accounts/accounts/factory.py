@@ -3,6 +3,8 @@
 from flask import Flask
 from flask_s3 import FlaskS3
 
+import arxiv_brand
+
 from arxiv.base import Base
 from arxiv.base.middleware import wrap
 
@@ -42,6 +44,9 @@ def create_web_app() -> Flask:
     app.config['SERVER_NAME'] = None
 
     SessionStore.init_app(app)
+    # The shared head/header/footer; links and assets follow this app's config. The
+    # member acknowledgement is filled in the browser from /institutional_banner.
+    arxiv_brand.init_app(app, member_institution='<span class="ack-member-inline" hidden>, <strong></strong></span>')
 
     app.register_blueprint(ui.blueprint)
     Base(app)    # Gives us access to the base UI templates and resources.
