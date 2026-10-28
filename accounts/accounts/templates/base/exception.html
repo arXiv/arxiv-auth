@@ -1,0 +1,29 @@
+{#- arxiv-base 1.0.0a3 renders every 4xx/5xx page from base/exception.html, which
+    extends its own base/base.html and so shows the old header and footer. This copy
+    shadows it (the app's templates come before the base blueprint's) and extends
+    accounts/base.html instead; the body is arxiv-base's, unchanged. Drop it with the
+    accounts/base.html override, once accounts is on a chrome-bearing arxiv-base. -#}
+{% extends "accounts/base.html" %}
+
+{% import "base/error_macros.html" as error_macros %}
+
+{% block content %}
+<div class="has-text-centered">
+  <h1 class="title is-size-1">
+    {% block error_title %}{{ error.name }}{% endblock %}
+  </h1>
+  <div class="status-code columns is-gapless">
+    {% block error_illustration %}
+      {{ error_macros.render_error_code(error.code) }}
+    {% endblock %}
+  </div>
+  <p class="is-size-5">
+    {{ error.description|safe }}
+  </p>
+  <p class="is-size-5">
+    If the error persists, please contact arXiv support at
+    <a href="mailto:help@arxiv.org">help@arxiv.org</a>.
+  </p>
+</div>
+
+{% endblock content %}
